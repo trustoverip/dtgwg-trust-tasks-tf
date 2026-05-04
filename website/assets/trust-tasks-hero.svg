@@ -1,0 +1,48 @@
+<svg width="1600" height="600" viewBox="0 0 1600 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trust Tasks hero banner">
+  <title>Trust Tasks protocol</title>
+  <desc>A featured verified transaction between two entities, framed by protocol brackets, surrounded by a colorful network of secondary and pending trust transactions.</desc>
+
+  <g opacity="0.06">
+    <line x1="0" y1="150" x2="1600" y2="150" stroke="#1e3a5f" stroke-width="1"></line>
+    <line x1="0" y1="300" x2="1600" y2="300" stroke="#1e3a5f" stroke-width="1"></line>
+    <line x1="0" y1="450" x2="1600" y2="450" stroke="#1e3a5f" stroke-width="1"></line>
+  </g>
+
+  <g opacity="0.7">
+    <circle cx="120" cy="100" r="5" fill="#1e3a5f"></circle>
+    <circle cx="220" cy="220" r="4" fill="#fb7185"></circle>
+    <circle cx="350" cy="80" r="6" fill="#8b5cf6"></circle>
+    <circle cx="100" cy="500" r="5" fill="#f59e0b"></circle>
+    <circle cx="280" cy="540" r="4" fill="#06b6d4"></circle>
+    <circle cx="430" cy="450" r="4" fill="#0d9488"></circle>
+    <circle cx="780" cy="540" r="5" fill="#fb7185"></circle>
+    <circle cx="950" cy="60" r="4" fill="#8b5cf6"></circle>
+    <circle cx="1050" cy="540" r="5" fill="#f59e0b"></circle>
+    <circle cx="1280" cy="80" r="6" fill="#0d9488"></circle>
+    <circle cx="1450" cy="300" r="4" fill="#06b6d4"></circle>
+    <circle cx="1530" cy="500" r="5" fill="#1e3a5f"></circle>
+
+    <path d="M 120 100 L 350 80" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 4" fill="none" opacity="0.55"></path>
+    <path d="M 1280 80 L 1450 300" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 4" fill="none" opacity="0.55"></path>
+    <path d="M 100 500 L 280 540" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 4" fill="none" opacity="0.55"></path>
+    <path d="M 1050 540 L 1530 500" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 4" fill="none" opacity="0.55"></path>
+  </g>
+
+  <g opacity="0.85">
+    <path d="M 200 230 L 275 320 L 390 180" stroke="#1e3a5f" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+    <circle cx="200" cy="230" r="14" fill="#06b6d4"></circle>
+    <circle cx="390" cy="180" r="14" fill="#fb7185"></circle>
+
+    <path d="M 1240 460 L 1325 530 L 1450 410" stroke="#1e3a5f" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+    <circle cx="1240" cy="460" r="14" fill="#8b5cf6"></circle>
+    <circle cx="1450" cy="410" r="14" fill="#f59e0b"></circle>
+  </g>
+
+  <path d="M 540 200 L 510 350 L 540 500" stroke="#8b5cf6" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M 1180 100 L 1210 250 L 1180 400" stroke="#f59e0b" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+
+  <path d="M 620 360 L 800 480 L 1110 220" stroke="#1e3a5f" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+
+  <circle cx="620" cy="360" r="28" fill="#fb7185"></circle>
+  <circle cx="1110" cy="220" r="28" fill="#0d9488"></circle>
+</svg>

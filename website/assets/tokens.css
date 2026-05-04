@@ -1,0 +1,130 @@
+/* ============================================================
+   Trust Tasks — Design Tokens
+   ------------------------------------------------------------
+   Single source of truth for the visual system.
+   Override any token in :root to retheme the entire site.
+   ============================================================ */
+
+:root {
+  /* -- Brand palette ---------------------------------------- */
+  --tt-navy:    #1e3a5f;   /* anchor / depth / primary entity */
+  --tt-teal:    #0d9488;   /* verification / counterparty */
+  --tt-violet:  #8b5cf6;   /* protocol frame, left */
+  --tt-amber:   #f59e0b;   /* protocol frame, right */
+  --tt-coral:   #fb7185;   /* initiator entity / human warmth */
+  --tt-sky:     #06b6d4;   /* variety / openness */
+
+  /* -- Neutrals --------------------------------------------- */
+  --tt-cream:       #faf7f2;   /* page canvas */
+  --tt-paper:       #ffffff;   /* card surface */
+  --tt-ink:         #0f172a;   /* near-black text */
+  --tt-ink-muted:   #475569;   /* secondary text */
+  --tt-line:        #e6e1d8;   /* hairlines, dividers */
+  --tt-line-strong: #cdc5b4;
+
+  /* -- Semantic role tokens (point at palette) -------------- */
+  --tt-bg:           var(--tt-cream);
+  --tt-surface:      var(--tt-paper);
+  --tt-surface-alt:  #f3ede2;
+  --tt-text:         var(--tt-navy);
+  --tt-text-muted:   var(--tt-ink-muted);
+  --tt-border:       var(--tt-line);
+  --tt-accent:       var(--tt-navy);
+  --tt-accent-on:    #ffffff;
+  --tt-link:         var(--tt-navy);
+  --tt-link-hover:   var(--tt-teal);
+
+  /* -- Type families ---------------------------------------- */
+  --tt-font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --tt-font-body:    'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --tt-font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* -- Type scale (1.25 modular, body 17px) ----------------- */
+  --tt-text-xs:   0.75rem;   /* 12 */
+  --tt-text-sm:   0.875rem;  /* 14 */
+  --tt-text-base: 1.0625rem; /* 17 */
+  --tt-text-md:   1.25rem;   /* 20 */
+  --tt-text-lg:   1.5rem;    /* 24 */
+  --tt-text-xl:   2rem;      /* 32 */
+  --tt-text-2xl:  2.75rem;   /* 44 */
+  --tt-text-3xl:  3.75rem;   /* 60 */
+  --tt-text-4xl:  5.25rem;   /* 84 */
+
+  /* -- Line heights ----------------------------------------- */
+  --tt-leading-tight: 1.05;
+  --tt-leading-snug:  1.25;
+  --tt-leading-body:  1.6;
+  --tt-leading-loose: 1.8;
+
+  /* -- Letter spacing --------------------------------------- */
+  --tt-tracking-tight: -0.02em;
+  --tt-tracking-normal: 0;
+  --tt-tracking-wide:  0.08em;
+  --tt-tracking-mega:  0.22em;
+
+  /* -- Spacing scale (4px base) ----------------------------- */
+  --tt-space-1:  0.25rem;
+  --tt-space-2:  0.5rem;
+  --tt-space-3:  0.75rem;
+  --tt-space-4:  1rem;
+  --tt-space-5:  1.5rem;
+  --tt-space-6:  2rem;
+  --tt-space-7:  3rem;
+  --tt-space-8:  4rem;
+  --tt-space-9:  6rem;
+  --tt-space-10: 8rem;
+
+  /* -- Layout ----------------------------------------------- */
+  --tt-container:    72rem;     /* 1152px */
+  --tt-container-sm: 48rem;
+  --tt-gutter:       max(1.25rem, 4vw);
+
+  /* -- Radii ------------------------------------------------ */
+  --tt-radius-sm: 4px;
+  --tt-radius:    8px;
+  --tt-radius-lg: 16px;
+  --tt-radius-xl: 28px;
+  --tt-radius-pill: 999px;
+
+  /* -- Borders ---------------------------------------------- */
+  --tt-border-width: 1px;
+  --tt-border-strong: 1.5px;
+
+  /* -- Shadows (warm, low-saturation) ----------------------- */
+  --tt-shadow-sm: 0 1px 2px rgba(30, 58, 95, 0.06);
+  --tt-shadow:    0 4px 12px rgba(30, 58, 95, 0.08), 0 1px 2px rgba(30, 58, 95, 0.04);
+  --tt-shadow-lg: 0 18px 48px -12px rgba(30, 58, 95, 0.18), 0 4px 12px rgba(30, 58, 95, 0.06);
+
+  /* -- Motion ----------------------------------------------- */
+  --tt-ease:        cubic-bezier(0.2, 0.8, 0.2, 1);
+  --tt-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --tt-duration-1:  140ms;
+  --tt-duration-2:  240ms;
+  --tt-duration-3:  420ms;
+  --tt-duration-4:  720ms;
+
+  /* -- Z-index ---------------------------------------------- */
+  --tt-z-nav:    50;
+  --tt-z-modal: 100;
+}
+
+/* ------------------------------------------------------------
+   Dark theme — opt-in via [data-theme="dark"] on <html> or <body>
+   ------------------------------------------------------------ */
+[data-theme="dark"] {
+  --tt-bg:          #0b1726;
+  --tt-surface:     #122236;
+  --tt-surface-alt: #0f1c2c;
+  --tt-text:        #e7eef7;
+  --tt-text-muted:  #94a3b8;
+  --tt-border:      #1e3247;
+  --tt-line:        #1e3247;
+  --tt-line-strong: #2a4866;
+  --tt-accent:      var(--tt-teal);
+  --tt-accent-on:   #0b1726;
+  --tt-link:        var(--tt-sky);
+  --tt-link-hover:  var(--tt-amber);
+  --tt-shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.35);
+  --tt-shadow:      0 6px 16px rgba(0, 0, 0, 0.4);
+  --tt-shadow-lg:   0 24px 56px rgba(0, 0, 0, 0.55);
+}

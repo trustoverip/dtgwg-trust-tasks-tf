@@ -1,0 +1,9 @@
+<svg width="280" height="140" viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trust Tasks icon">
+  <title>Trust Tasks</title>
+  <desc>Two entities connected by a verified checkmark, framed by protocol brackets.</desc>
+  <path d="M 28 30 L 12 70 L 28 110" stroke="#8b5cf6" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M 252 30 L 268 70 L 252 110" stroke="#f59e0b" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M 60 80 L 115 115 L 215 45" stroke="#1e3a5f" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+  <circle cx="60" cy="80" r="12" fill="#fb7185"></circle>
+  <circle cx="215" cy="45" r="12" fill="#0d9488"></circle>
+</svg>

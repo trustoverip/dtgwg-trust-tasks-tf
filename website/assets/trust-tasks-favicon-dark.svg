@@ -1,0 +1,8 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trust Tasks favicon, dark variant">
+  <title>Trust Tasks</title>
+  <desc>Trust Tasks favicon, dark variant: navy rounded square with light checkmark connecting two entities.</desc>
+  <rect x="0" y="0" width="200" height="200" rx="40" fill="#1e3a5f"></rect>
+  <path d="M 50 110 L 90 145 L 155 65" stroke="#f8fafc" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+  <circle cx="50" cy="110" r="11" fill="#fb7185"></circle>
+  <circle cx="155" cy="65" r="11" fill="#0d9488"></circle>
+</svg>

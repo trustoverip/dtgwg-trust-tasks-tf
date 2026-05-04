@@ -1,0 +1,484 @@
+/* ============================================================
+   Trust Tasks — Stylesheet
+   Imports tokens.css and applies them to elements + components.
+   ============================================================ */
+
+@import url('./tokens.css');
+
+/* ------------------------------------------------------------
+   Reset / base
+   ------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background: var(--tt-bg);
+  color: var(--tt-text);
+  font-family: var(--tt-font-body);
+  font-size: var(--tt-text-base);
+  line-height: var(--tt-leading-body);
+  font-feature-settings: "ss01", "cv11";
+
+  /* Subtle paper texture — concentric warm gradients, no banding */
+  background-image:
+    radial-gradient(1200px 600px at 90% -10%, rgba(251, 113, 133, 0.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(13, 148, 136, 0.05), transparent 55%),
+    radial-gradient(700px 400px at 50% 110%, rgba(139, 92, 246, 0.04), transparent 60%);
+  background-attachment: fixed;
+}
+
+img, svg { display: block; max-width: 100%; }
+
+::selection {
+  background: var(--tt-amber);
+  color: var(--tt-navy);
+}
+
+/* ------------------------------------------------------------
+   Typography
+   ------------------------------------------------------------ */
+h1, h2, h3, h4, h5 {
+  font-family: var(--tt-font-display);
+  color: var(--tt-text);
+  font-weight: 400;
+  line-height: var(--tt-leading-tight);
+  letter-spacing: var(--tt-tracking-tight);
+  margin: 0 0 var(--tt-space-4);
+  /* Fraunces variable axes — subtle optical adjustments */
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+}
+
+h1 { font-size: clamp(2.5rem, 6vw, var(--tt-text-4xl)); font-weight: 350; }
+h2 { font-size: clamp(2rem, 4vw, var(--tt-text-3xl)); font-weight: 380; }
+h3 { font-size: var(--tt-text-2xl); font-weight: 400; }
+h4 { font-size: var(--tt-text-xl); font-weight: 450; }
+h5 { font-size: var(--tt-text-lg); font-weight: 500; }
+
+p { margin: 0 0 var(--tt-space-4); color: var(--tt-text-muted); max-width: 62ch; }
+p.lead {
+  font-size: var(--tt-text-md);
+  line-height: var(--tt-leading-snug);
+  color: var(--tt-text);
+  max-width: 56ch;
+}
+
+a {
+  color: var(--tt-link);
+  text-decoration: none;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  border-bottom: 1px solid currentColor;
+  transition: color var(--tt-duration-1) var(--tt-ease);
+}
+a:hover { color: var(--tt-link-hover); }
+
+code, kbd, samp {
+  font-family: var(--tt-font-mono);
+  font-size: 0.92em;
+  background: var(--tt-surface-alt);
+  padding: 0.15em 0.4em;
+  border-radius: var(--tt-radius-sm);
+  border: 1px solid var(--tt-border);
+}
+
+pre {
+  font-family: var(--tt-font-mono);
+  font-size: var(--tt-text-sm);
+  line-height: 1.7;
+  background: var(--tt-navy);
+  color: #e7eef7;
+  padding: var(--tt-space-5);
+  border-radius: var(--tt-radius-lg);
+  overflow-x: auto;
+  margin: 0;
+}
+pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* Eyebrow label — small caps, mega tracking */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tt-space-2);
+  font-family: var(--tt-font-mono);
+  font-size: var(--tt-text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tt-tracking-mega);
+  text-transform: uppercase;
+  color: var(--tt-text-muted);
+}
+.eyebrow::before {
+  content: "";
+  width: 18px; height: 1px;
+  background: currentColor;
+}
+
+/* ------------------------------------------------------------
+   Layout
+   ------------------------------------------------------------ */
+.container {
+  width: 100%;
+  max-width: var(--tt-container);
+  margin-inline: auto;
+  padding-inline: var(--tt-gutter);
+}
+.container--narrow { max-width: var(--tt-container-sm); }
+
+section {
+  padding-block: clamp(var(--tt-space-8), 8vw, var(--tt-space-10));
+}
+
+.section-head {
+  margin-bottom: var(--tt-space-7);
+  max-width: 38rem;
+}
+
+/* ------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tt-space-2);
+  padding: 0.85em 1.4em;
+  font-family: var(--tt-font-body);
+  font-size: var(--tt-text-sm);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border-radius: var(--tt-radius-pill);
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--tt-text);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1.2;
+  transition: transform var(--tt-duration-1) var(--tt-ease),
+              background var(--tt-duration-2) var(--tt-ease),
+              color var(--tt-duration-2) var(--tt-ease),
+              border-color var(--tt-duration-2) var(--tt-ease);
+}
+.btn:hover { transform: translateY(-1px); }
+
+.btn--primary {
+  background: var(--tt-accent);
+  color: var(--tt-accent-on);
+  border-color: var(--tt-accent);
+}
+.btn--primary:hover { background: var(--tt-teal); border-color: var(--tt-teal); color: #fff; }
+
+.btn--ghost {
+  border-color: var(--tt-line-strong);
+  color: var(--tt-text);
+}
+.btn--ghost:hover { border-color: var(--tt-text); }
+
+.btn { text-decoration: none; }
+/* Anchor-as-button: the global `a { border-bottom: 1px solid currentColor }` underline
+   collides with the button's own pill border. Reassert the full border explicitly. */
+a.btn,
+a.btn:hover {
+  text-decoration: none;
+  border-bottom-width: 1.5px;
+}
+a.btn[class*="--primary"] { border-bottom-color: var(--tt-accent); }
+a.btn[class*="--ghost"]   { border-bottom-color: var(--tt-line-strong); }
+a.btn[class*="--ghost"]:hover { border-bottom-color: var(--tt-text); }
+a.btn[class*="--primary"]:hover { border-bottom-color: var(--tt-teal); }
+
+/* ------------------------------------------------------------
+   Brand motif components
+   ------------------------------------------------------------ */
+
+/* The "node — tick — node" inline mark, scalable via font-size */
+.bond {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  vertical-align: -0.15em;
+}
+.bond .node {
+  width: 0.55em; height: 0.55em;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.bond .node--coral { background: var(--tt-coral); }
+.bond .node--teal  { background: var(--tt-teal); }
+.bond .node--sky   { background: var(--tt-sky); }
+.bond .node--violet{ background: var(--tt-violet); }
+.bond .tick {
+  width: 1.4em; height: 0.8em;
+  flex-shrink: 0;
+}
+
+/* Bracket-framed callout — uses the protocol-frame motif as content frame */
+.bracket-frame {
+  position: relative;
+  padding: var(--tt-space-7) var(--tt-space-7);
+}
+.bracket-frame::before,
+.bracket-frame::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 18px;
+  border: 1.5px solid;
+  border-top-style: solid;
+  border-bottom-style: solid;
+}
+.bracket-frame::before {
+  left: 0;
+  border-color: var(--tt-violet);
+  border-right: none;
+  border-radius: var(--tt-radius) 0 0 var(--tt-radius);
+}
+.bracket-frame::after {
+  right: 0;
+  border-color: var(--tt-amber);
+  border-left: none;
+  border-radius: 0 var(--tt-radius) var(--tt-radius) 0;
+}
+
+/* Section divider with center node — visual rhythm between sections */
+.protocol-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--tt-space-4);
+  border: 0;
+  margin: 0;
+  padding-block: var(--tt-space-6);
+}
+.protocol-rule::before,
+.protocol-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--tt-line);
+}
+.protocol-rule .node {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--tt-coral);
+  box-shadow:
+    14px 0 0 0 var(--tt-navy),
+    28px 0 0 0 var(--tt-teal);
+  margin-right: 28px;
+}
+
+/* Pill — entity badges, status tags */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tt-space-2);
+  padding: 0.35em 0.85em;
+  font-family: var(--tt-font-mono);
+  font-size: var(--tt-text-xs);
+  letter-spacing: 0.02em;
+  border-radius: var(--tt-radius-pill);
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-border);
+  color: var(--tt-text);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.pill .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.pill--coral  .dot { background: var(--tt-coral); }
+.pill--teal   .dot { background: var(--tt-teal); }
+.pill--violet .dot { background: var(--tt-violet); }
+.pill--amber  .dot { background: var(--tt-amber); }
+.pill--sky    .dot { background: var(--tt-sky); }
+
+/* ------------------------------------------------------------
+   Cards
+   ------------------------------------------------------------ */
+.card {
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-border);
+  border-radius: var(--tt-radius-lg);
+  padding: var(--tt-space-6);
+  transition: transform var(--tt-duration-2) var(--tt-ease),
+              border-color var(--tt-duration-2) var(--tt-ease),
+              box-shadow var(--tt-duration-2) var(--tt-ease);
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--tt-line-strong);
+  box-shadow: var(--tt-shadow);
+}
+.card .card__index {
+  font-family: var(--tt-font-mono);
+  font-size: var(--tt-text-xs);
+  letter-spacing: var(--tt-tracking-wide);
+  color: var(--tt-text-muted);
+  margin-bottom: var(--tt-space-4);
+}
+.card h4 { margin-bottom: var(--tt-space-3); }
+.card p:last-child { margin-bottom: 0; }
+
+/* Feature card — accent stripe at top */
+.card--accent { position: relative; overflow: hidden; }
+.card--accent::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--accent, var(--tt-coral));
+}
+.card--coral  { --accent: var(--tt-coral); }
+.card--teal   { --accent: var(--tt-teal); }
+.card--violet { --accent: var(--tt-violet); }
+.card--amber  { --accent: var(--tt-amber); }
+.card--sky    { --accent: var(--tt-sky); }
+
+/* ------------------------------------------------------------
+   Grids
+   ------------------------------------------------------------ */
+.grid {
+  display: grid;
+  gap: var(--tt-space-5);
+}
+.grid--2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid--3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.grid--4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+/* ------------------------------------------------------------
+   Navigation
+   ------------------------------------------------------------ */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--tt-z-nav);
+  background: color-mix(in srgb, var(--tt-bg) 85%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--tt-border);
+}
+.nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--tt-space-4);
+  gap: var(--tt-space-5);
+}
+.nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tt-space-3);
+  font-family: var(--tt-font-display);
+  font-size: var(--tt-text-md);
+  font-weight: 450;
+  color: var(--tt-text);
+  border-bottom: none;
+  letter-spacing: -0.01em;
+}
+.nav__links {
+  display: flex;
+  gap: var(--tt-space-5);
+  list-style: none;
+  margin: 0; padding: 0;
+}
+.nav__links a {
+  font-size: var(--tt-text-sm);
+  color: var(--tt-text-muted);
+  border-bottom: none;
+}
+.nav__links a:hover { color: var(--tt-text); }
+
+@media (max-width: 720px) {
+  .nav__links { display: none; }
+}
+
+/* ------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------ */
+.hero {
+  position: relative;
+  padding-block: clamp(var(--tt-space-9), 12vw, var(--tt-space-10));
+  overflow: hidden;
+}
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--tt-space-8);
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .hero__grid { grid-template-columns: 1fr; }
+}
+.hero h1 {
+  margin-bottom: var(--tt-space-5);
+}
+.hero__sub {
+  font-size: var(--tt-text-md);
+  color: var(--tt-text-muted);
+  max-width: 38ch;
+  margin-bottom: var(--tt-space-6);
+}
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tt-space-3);
+}
+.hero__visual {
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-border);
+  border-radius: var(--tt-radius-xl);
+  padding: var(--tt-space-5);
+  box-shadow: var(--tt-shadow-lg);
+}
+
+/* ------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------ */
+.footer {
+  border-top: 1px solid var(--tt-border);
+  padding-block: var(--tt-space-7);
+  margin-top: var(--tt-space-9);
+}
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tt-space-4);
+}
+.footer small {
+  font-family: var(--tt-font-mono);
+  font-size: var(--tt-text-xs);
+  letter-spacing: var(--tt-tracking-wide);
+  color: var(--tt-text-muted);
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------
+   Animation primitives
+   ------------------------------------------------------------ */
+@keyframes tt-rise {
+  from { transform: translateY(14px); }
+  to   { transform: translateY(0); }
+}
+.tt-rise {
+  opacity: 1;
+  animation: tt-rise var(--tt-duration-4) var(--tt-ease-out);
+}
+.tt-rise-1 { animation-delay: 60ms; }
+.tt-rise-2 { animation-delay: 160ms; }
+.tt-rise-3 { animation-delay: 260ms; }
+.tt-rise-4 { animation-delay: 360ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

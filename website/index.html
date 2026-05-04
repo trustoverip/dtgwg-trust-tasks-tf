@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trust Tasks — Reference registry of trust task specifications</title>
+  <meta name="description" content="An open registry of self-contained, transport-agnostic, JSON-based Trust Task specifications. Developed under the Trust over IP DTGWG. Linked to the Decentralized Trust Graph, Verifiable Trust Infrastructure, and OpenVTC projects.">
+  <link rel="icon" type="image/svg+xml" href="assets/trust-tasks-favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..600,30..100,0..1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;450;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/site.css">
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/ecosystem.js"></script>
+</head>
+<body data-bg="paper" data-density="default" data-type="editorial">
+  <div id="root"></div>
+
+  <script type="text/babel" src="assets/tweaks-panel.jsx"></script>
+  <script type="text/babel" src="assets/components.jsx"></script>
+  <script type="text/babel" src="assets/pages.jsx"></script>
+  <script type="text/babel" data-presets="react">
+    const { useState: useStateApp, useEffect: useEffectApp } = React;
+
+    /* parse pathname: /, /registry, /registry/identity, /spec/<slug>/<version>, etc. */
+    function parsePath() {
+      const path = location.pathname.replace(/^\/+|\/+$/g, "");
+      if (!path) return { name: "home" };
+      const [name, ...rest] = path.split("/");
+      if (name === "spec") {
+        const [slug, version] = rest;
+        return { name: "spec", slug, version };
+      }
+      if (name === "registry" && rest[0]) return { name: "registry", cat: rest[0] };
+      return { name };
+    }
+
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "heroLayout": "editorial",
+      "type": "technical",
+      "background": "paper",
+      "density": "compact",
+      "accent": "violet"
+    }/*EDITMODE-END*/;
+
+    function App() {
+      const [route, setRouteRaw] = useStateApp(parsePath());
+      const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+      const setRoute = (r) => {
+        setRouteRaw(r);
+        let path;
+        if (r.name === "spec") {
+          const v = r.version || (window.TT_TASKS.find(t => t.slug === r.slug || t.id === r.id) || {}).version || "";
+          path = `/spec/${r.slug || r.id}${v ? "/" + v : ""}`;
+        } else if (r.name === "registry" && r.cat) {
+          path = `/registry/${r.cat}`;
+        } else if (r.name === "home") {
+          path = "/";
+        } else {
+          path = `/${r.name}`;
+        }
+        if (location.pathname !== path) history.pushState(null, "", path);
+        window.scrollTo(0, 0);
+      };
+
+      useEffectApp(() => {
+        const onPop = () => setRouteRaw(parsePath());
+        window.addEventListener("popstate", onPop);
+        return () => window.removeEventListener("popstate", onPop);
+      }, []);
+
+      // sync body data attrs from tweaks
+      useEffectApp(() => {
+        document.body.dataset.bg = tweaks.background;
+        document.body.dataset.density = tweaks.density;
+        document.body.dataset.type = tweaks.type;
+        // accent override
+        const accentMap = {
+          navy: "var(--tt-navy)",
+          teal: "var(--tt-teal)",
+          coral: "var(--tt-coral)",
+          violet: "var(--tt-violet)"
+        };
+        document.documentElement.style.setProperty("--tt-accent", accentMap[tweaks.accent] || accentMap.navy);
+        document.documentElement.style.setProperty("--tt-link-hover", accentMap[tweaks.accent] === accentMap.teal ? "var(--tt-amber)" : "var(--tt-teal)");
+      }, [tweaks]);
+
+      let view;
+      switch (route.name) {
+        case "registry":     view = <RegistryPage initial={{ cat: route.cat, q: route.q, kw: route.kw }} setRoute={setRoute} />; break;
+        case "spec":         view = <SpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
+        case "categories":   view = <CategoriesPage setRoute={setRoute} />; break;
+        case "ecosystem":    view = <EcosystemPage setRoute={setRoute} />; break;
+        case "about":        view = <AboutPage />; break;
+        case "contributing": view = <ContributingPage />; break;
+        case "glossary":     view = <GlossaryPage />; break;
+        case "home":
+        default:             view = <HomePage tweaks={tweaks} setRoute={setRoute} />; break;
+      }
+
+      return (
+        <React.Fragment>
+          <TTNav route={route} setRoute={setRoute} />
+          <main>{view}</main>
+          <TTFooter setRoute={setRoute} />
+
+          <TweaksPanel title="Tweaks">
+            <TweakSection title="Hero">
+              <TweakRadio label="Layout" value={tweaks.heroLayout} onChange={(v) => setTweak("heroLayout", v)}
+                options={[{ value: "split", label: "Split" }, { value: "editorial", label: "Editorial" }]} />
+            </TweakSection>
+            <TweakSection title="Typography">
+              <TweakRadio label="Pairing" value={tweaks.type} onChange={(v) => setTweak("type", v)}
+                options={[{ value: "editorial", label: "Editorial" }, { value: "technical", label: "Technical" }, { value: "hybrid", label: "Hybrid" }]} />
+            </TweakSection>
+            <TweakSection title="Layout">
+              <TweakRadio label="Density" value={tweaks.density} onChange={(v) => setTweak("density", v)}
+                options={[{ value: "compact", label: "Compact" }, { value: "default", label: "Default" }, { value: "airy", label: "Airy" }]} />
+            </TweakSection>
+            <TweakSection title="Background">
+              <TweakRadio label="Treatment" value={tweaks.background} onChange={(v) => setTweak("background", v)}
+                options={[{ value: "paper", label: "Paper" }, { value: "grid", label: "Grid" }, { value: "dots", label: "Dots" }, { value: "plain", label: "Plain" }]} />
+            </TweakSection>
+            <TweakSection title="Accent">
+              <TweakRadio label="Color" value={tweaks.accent} onChange={(v) => setTweak("accent", v)}
+                options={[{ value: "navy", label: "Navy" }, { value: "teal", label: "Teal" }, { value: "coral", label: "Coral" }, { value: "violet", label: "Violet" }]} />
+            </TweakSection>
+          </TweaksPanel>
+        </React.Fragment>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

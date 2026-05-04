@@ -1,0 +1,12 @@
+<svg width="640" height="160" viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trust Tasks logo">
+  <title>Trust Tasks</title>
+  <desc>Trust Tasks logo: two entities connected by a verified checkmark, framed by protocol brackets, with the wordmark to the right.</desc>
+  <g transform="translate(0, 10)">
+    <path d="M 28 30 L 12 70 L 28 110" stroke="#8b5cf6" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M 252 30 L 268 70 L 252 110" stroke="#f59e0b" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M 60 80 L 115 115 L 215 45" stroke="#1e3a5f" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+    <circle cx="60" cy="80" r="12" fill="#fb7185"></circle>
+    <circle cx="215" cy="45" r="12" fill="#0d9488"></circle>
+  </g>
+  <text x="310" y="98" font-family="-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Inter, system-ui, sans-serif" font-size="48" font-weight="500" fill="#1e3a5f" letter-spacing="-1">Trust Tasks</text>
+</svg>

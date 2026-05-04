@@ -1,0 +1,907 @@
+/* ============================================================
+   Trust Tasks — Page views (Home, Registry, Spec, Categories, About, Contributing, Glossary)
+   ============================================================ */
+
+const { useState: useS, useEffect: useE, useMemo: useM, useRef: useR } = React;
+
+/* ============================================================
+   HOME
+   ============================================================ */
+function HomePage({ tweaks, setRoute }) {
+  const stats = window.TT_STATS;
+  const [q, setQ] = useS("");
+  const [activeCat, setActiveCat] = useS(null);
+  const [activeKw, setActiveKw] = useS(null);
+  const inputRef = useR(null);
+
+  useE(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // category counts
+  const counts = useM(() => {
+    const c = {};
+    window.TT_TASKS.forEach(t => { c[t.category] = (c[t.category] || 0) + 1; });
+    return c;
+  }, []);
+
+  // top keywords across registry
+  const topKeywords = useM(() => {
+    const kws = {};
+    window.TT_TASKS.forEach(t => t.keywords.forEach(k => { kws[k] = (kws[k] || 0) + 1; }));
+    return Object.entries(kws).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k]) => k);
+  }, []);
+
+  // filtered preview results
+  const results = useM(() => {
+    const ql = q.trim().toLowerCase();
+    return window.TT_TASKS.filter(t => {
+      if (activeCat && t.category !== activeCat) return false;
+      if (activeKw && !t.keywords.includes(activeKw)) return false;
+      if (!ql) return true;
+      const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.number).toLowerCase();
+      return hay.includes(ql);
+    });
+  }, [q, activeCat, activeKw]);
+
+  const heroLayout = tweaks.heroLayout || "split";
+
+  return (
+    <React.Fragment>
+      {/* HERO */}
+      <section className={`tt-hero ${heroLayout === "split" ? "tt-hero--split" : "tt-hero--editorial"}`}>
+        <div className="container tt-hero__inner">
+          <div>
+            <span className="eyebrow tt-hero__eyebrow tt-rise tt-rise-1">Trust over IP · DTGWG · v1.0 draft</span>
+            <h1 className="tt-rise tt-rise-2">
+              The reference registry of <em style={{ whiteSpace: "nowrap" }}>trust task</em> specifications.
+            </h1>
+            <p className="tt-hero__lede tt-rise tt-rise-3">
+              Trust Tasks are self-contained, transport-agnostic, JSON-based specifications for the verifiable work
+              that happens between entities. Part of the verifiable-trust stack alongside&nbsp;
+              <a href="https://github.com/OpenVTC/dtg-credentials" target="_blank" rel="noreferrer">DTG Credentials</a>,&nbsp;
+              <a href="https://github.com/OpenVTC/verifiable-trust-infrastructure" target="_blank" rel="noreferrer">Verifiable Trust Infrastructure</a>,
+              and <a href="https://github.com/OpenVTC/openvtc" target="_blank" rel="noreferrer">OpenVTC</a>.
+            </p>
+
+            <div className="tt-rise tt-rise-4" style={{ maxWidth: "640px" }}>
+              <label className="tt-search" htmlFor="tt-home-search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <input
+                  id="tt-home-search"
+                  ref={inputRef}
+                  type="search"
+                  placeholder="Search 6 specifications — try “credential”, “consent”, “payment”…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") setRoute({ name: "registry", q, cat: activeCat, kw: activeKw }); }}
+                />
+                <kbd>⌘K</kbd>
+              </label>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--tt-space-3)", alignItems: "center", marginTop: "var(--tt-space-4)" }}>
+                <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)" }}>Categories</span>
+                <div className="tt-chips">
+                  {window.TT_CATEGORIES.map(c => (
+                    <button
+                      key={c.id}
+                      className="tt-chip"
+                      aria-pressed={activeCat === c.id}
+                      onClick={() => setActiveCat(activeCat === c.id ? null : c.id)}
+                    >
+                      <span className="dot" style={{ background: catColor(c.id) }}></span>
+                      {c.name}
+                      <span className="tt-chip__count">{counts[c.id] || 0}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--tt-space-2)", alignItems: "center", marginTop: "var(--tt-space-3)" }}>
+                <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)", marginRight: "0.5em" }}>Keywords</span>
+                {topKeywords.map(k => (
+                  <button
+                    key={k}
+                    className="tt-keyword"
+                    aria-pressed={activeKw === k}
+                    onClick={() => setActiveKw(activeKw === k ? null : k)}
+                  >{k}</button>
+                ))}
+              </div>
+
+              {(q || activeCat || activeKw) && (
+                <div style={{ marginTop: "var(--tt-space-5)", paddingTop: "var(--tt-space-4)", borderTop: "1px solid var(--tt-line)" }}>
+                  <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-3)" }}>
+                    {results.length} match{results.length === 1 ? "" : "es"}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-2)" }}>
+                    {results.slice(0, 4).map(t => (
+                      <a
+                        key={t.id}
+                        href={`/spec/${t.slug}/${t.version}`}
+                        onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: t.slug, version: t.version }); }}
+                        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "var(--tt-space-3)", padding: "var(--tt-space-3) var(--tt-space-4)", background: "var(--tt-surface)", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", borderBottom: "1px solid var(--tt-border)", textDecoration: "none", color: "inherit" }}
+                      >
+                        <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em" }}>{t.number}</span>
+                        <span style={{ flex: 1, fontFamily: "var(--tt-font-display)", fontSize: "var(--tt-text-md)" }}><Highlight text={t.title} query={q} /></span>
+                        <TTStatus status={t.status} />
+                      </a>
+                    ))}
+                    {results.length > 4 && (
+                      <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry", q, cat: activeCat, kw: activeKw }); }} style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)", borderBottom: 0, marginTop: "var(--tt-space-2)" }}>
+                        See all {results.length} in the registry →
+                      </a>
+                    )}
+                    {results.length === 0 && <div className="tt-empty" style={{ padding: "var(--tt-space-6) 0" }}>No matches. Try a broader term.</div>}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {heroLayout === "split" && (
+            <div className="tt-hero__glyph tt-rise tt-rise-3" aria-hidden="true">
+              <HeroGlyph />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* STATS */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Registry at a glance</span>
+          <div className="tt-stats" style={{ marginTop: "var(--tt-space-4)" }}>
+            <div className="tt-stat">
+              <div className="tt-stat__accent" style={{ background: "var(--tt-coral)" }}></div>
+              <div className="tt-stat__num"><AnimNumber value={stats.total} /></div>
+              <div className="tt-stat__label">Specifications</div>
+              <div className="tt-stat__sub">across {stats.categories} categories</div>
+            </div>
+            <div className="tt-stat">
+              <div className="tt-stat__accent" style={{ background: "var(--tt-teal)" }}></div>
+              <div className="tt-stat__num"><AnimNumber value={stats.byStatus.standard || 0} /><span className="unit">/ {stats.total}</span></div>
+              <div className="tt-stat__label">Standard</div>
+              <div className="tt-stat__sub">{stats.byStatus.candidate || 0} candidate · {stats.byStatus.draft || 0} draft</div>
+            </div>
+            <div className="tt-stat">
+              <div className="tt-stat__accent" style={{ background: "var(--tt-violet)" }}></div>
+              <div className="tt-stat__num"><AnimNumber value={stats.categories} /></div>
+              <div className="tt-stat__label">Categories</div>
+              <div className="tt-stat__sub">Identity, Credentials, Payments…</div>
+            </div>
+            <div className="tt-stat">
+              <div className="tt-stat__accent" style={{ background: "var(--tt-amber)" }}></div>
+              <div className="tt-stat__num"><AnimNumber value={stats.orgs} /></div>
+              <div className="tt-stat__label">Spec owners</div>
+              <div className="tt-stat__sub">DTGWG task forces</div>
+            </div>
+            <div className="tt-stat">
+              <div className="tt-stat__accent" style={{ background: "var(--tt-sky)" }}></div>
+              <div className="tt-stat__num" style={{ fontSize: "var(--tt-text-xl)", letterSpacing: "-0.01em" }}>{stats.latest}</div>
+              <div className="tt-stat__label">Latest update</div>
+              <div className="tt-stat__sub">{stats.latestTitle}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* FEATURED */}
+      <section>
+        <div className="container">
+          <div className="section-head">
+            <span className="eyebrow">Featured trust tasks</span>
+            <h2>Recently updated specifications.</h2>
+            <p className="lead">Six self-contained tasks across the registry, each with a JSON schema, conformance rules, and reference examples.</p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)" }}>
+            {window.TT_TASKS.slice(0, 4).map(t => (
+              <RegistryCard key={t.id} task={t} setRoute={setRoute} />
+            ))}
+          </div>
+          <div style={{ marginTop: "var(--tt-space-6)", textAlign: "right" }}>
+            <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }} className="btn btn--ghost">
+              Open the registry →
+            </a>
+          </div>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
+   REGISTRY CARD (shared between Home featured + Registry list)
+   ============================================================ */
+function RegistryCard({ task, setRoute, query, activeKw, onKwToggle }) {
+  return (
+    <a
+      className="tt-task-card"
+      href={`/spec/${task.slug}/${task.version}`}
+      onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: task.slug, version: task.version }); }}
+      style={{ "--accent": catColor(task.category) }}
+    >
+      <div className="tt-task-card__num">{task.number}<br /><span style={{ opacity: 0.7 }}>v{task.version}</span></div>
+      <div>
+        <h3 className="tt-task-card__title"><Highlight text={task.title} query={query} /></h3>
+        <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ opacity: 0.6 }}>https://trusttasks.org</span>/spec/<span style={{ color: "var(--tt-text)" }}>{task.slug}</span>/<span style={{ color: catColor(task.category) }}>{task.version}</span>
+        </div>
+        <p className="tt-task-card__summary"><Highlight text={task.summary} query={query} /></p>
+        <div className="tt-task-card__meta">
+          <span className="pill" style={{ borderColor: catColor(task.category), color: catColor(task.category) }}>
+            <span className="dot" style={{ background: catColor(task.category) }}></span>
+            {catName(task.category)}
+          </span>
+          <div className="tt-task-card__keywords">
+            {task.keywords.slice(0, 5).map(k => (
+              <span
+                key={k}
+                className="tt-keyword"
+                aria-pressed={activeKw === k}
+                onClick={onKwToggle ? (e) => { e.preventDefault(); e.stopPropagation(); onKwToggle(k); } : undefined}
+              >{k}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="tt-task-card__status">
+        <TTStatus status={task.status} />
+      </div>
+    </a>
+  );
+}
+
+/* ============================================================
+   REGISTRY
+   ============================================================ */
+function RegistryPage({ initial, setRoute }) {
+  const [q, setQ] = useS(initial?.q || "");
+  const [activeCat, setActiveCat] = useS(initial?.cat || null);
+  const [activeKw, setActiveKw] = useS(initial?.kw || null);
+  const [activeStatus, setActiveStatus] = useS(null);
+
+  const counts = useM(() => {
+    const c = {};
+    window.TT_TASKS.forEach(t => { c[t.category] = (c[t.category] || 0) + 1; });
+    return c;
+  }, []);
+
+  const allKeywords = useM(() => {
+    const kws = {};
+    window.TT_TASKS.forEach(t => t.keywords.forEach(k => { kws[k] = (kws[k] || 0) + 1; }));
+    return Object.entries(kws).sort((a, b) => b[1] - a[1]);
+  }, []);
+
+  const results = useM(() => {
+    const ql = q.trim().toLowerCase();
+    return window.TT_TASKS.filter(t => {
+      if (activeCat && t.category !== activeCat) return false;
+      if (activeKw && !t.keywords.includes(activeKw)) return false;
+      if (activeStatus && t.status !== activeStatus) return false;
+      if (!ql) return true;
+      const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.number).toLowerCase();
+      return hay.includes(ql);
+    });
+  }, [q, activeCat, activeKw, activeStatus]);
+
+  const onClear = () => { setQ(""); setActiveCat(null); setActiveKw(null); setActiveStatus(null); };
+
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Registry"
+        title="Trust Task Registry"
+        lede="Every published Trust Task specification, searchable by category, keyword, and status. Each entry links to its full reference document and JSON schema."
+      />
+
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <label className="tt-search" htmlFor="tt-reg-search" style={{ marginBottom: "var(--tt-space-5)" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              id="tt-reg-search"
+              type="search"
+              placeholder="Search the registry…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </label>
+
+          <div className="tt-filter-rail">
+            <aside className="tt-filter-rail__side">
+              <div className="tt-filter-group">
+                <h5>Category</h5>
+                <div className="tt-chips" style={{ flexDirection: "column", alignItems: "flex-start" }}>
+                  {window.TT_CATEGORIES.map(c => (
+                    <button key={c.id} className="tt-chip" aria-pressed={activeCat === c.id} onClick={() => setActiveCat(activeCat === c.id ? null : c.id)}>
+                      <span className="dot" style={{ background: catColor(c.id) }}></span>
+                      {c.name}<span className="tt-chip__count">{counts[c.id] || 0}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="tt-filter-group">
+                <h5>Status</h5>
+                <div className="tt-chips" style={{ flexDirection: "column", alignItems: "flex-start" }}>
+                  {["standard", "candidate", "draft"].map(s => (
+                    <button key={s} className="tt-chip" aria-pressed={activeStatus === s} onClick={() => setActiveStatus(activeStatus === s ? null : s)}>
+                      <span className="dot" style={{ background: s === "standard" ? "var(--tt-teal)" : s === "candidate" ? "var(--tt-amber)" : "var(--tt-violet)" }}></span>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="tt-filter-group">
+                <h5>Keywords</h5>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--tt-space-2)" }}>
+                  {allKeywords.slice(0, 18).map(([k]) => (
+                    <button key={k} className="tt-keyword" aria-pressed={activeKw === k} onClick={() => setActiveKw(activeKw === k ? null : k)}>{k}</button>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            <div>
+              <div className="tt-results-bar">
+                <div className="tt-results-bar__count">
+                  <b>{results.length}</b> of {window.TT_TASKS.length} specifications
+                  {activeCat && <> · category <b>{catName(activeCat)}</b></>}
+                  {activeStatus && <> · status <b>{activeStatus}</b></>}
+                  {activeKw && <> · keyword <b>{activeKw}</b></>}
+                  {q && <> · matching <b>“{q}”</b></>}
+                </div>
+                {(q || activeCat || activeKw || activeStatus) && (
+                  <button className="tt-clear" onClick={onClear}>Clear filters</button>
+                )}
+              </div>
+
+              {results.length === 0 ? (
+                <div className="tt-empty">No specifications match these filters.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)" }}>
+                  {results.map(t => (
+                    <RegistryCard
+                      key={t.id}
+                      task={t}
+                      setRoute={setRoute}
+                      query={q}
+                      activeKw={activeKw}
+                      onKwToggle={(k) => setActiveKw(activeKw === k ? null : k)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
+   SPEC PAGE
+   ============================================================ */
+function SpecPage({ slug, version, id, setRoute }) {
+  const task = (slug && window.TT_TASKS.find(t => t.slug === slug && (!version || t.version === version)))
+            || (id && window.TT_TASKS.find(t => t.id === id))
+            || window.TT_TASKS[0];
+  const typeURI = `https://trusttasks.org/spec/${task.slug}/${task.version}`;
+  const [copied, setCopied] = useS(false);
+  const [activeSection, setActiveSection] = useS("abstract");
+
+  useE(() => {
+    const ids = ["abstract", "status", "metadata", "conformance", "definitions", "schema", "examples", "considerations", "related"];
+    const onScroll = () => {
+      for (const sid of ids) {
+        const el = document.getElementById(sid);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top > 100) { setActiveSection(sid); return; }
+      }
+      setActiveSection(ids[ids.length - 1]);
+    };
+    window.addEventListener("scroll", onScroll);
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [task.id]);
+
+  const cat = window.TT_CATEGORIES.find(c => c.id === task.category);
+
+  return (
+    <section className="container tt-spec">
+      <div>
+        <div style={{ marginBottom: "var(--tt-space-4)" }}>
+          <span className="tt-spec__num">{task.number} · v{task.version}</span>
+        </div>
+        <h1 className="tt-spec__title">{task.title}</h1>
+        <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{task.summary}</p>
+
+        <div
+          className="tt-type-uri"
+          style={{
+            display: "flex", alignItems: "stretch",
+            border: "1px solid var(--tt-border)",
+            borderLeft: `3px solid ${catColor(task.category)}`,
+            background: "var(--tt-surface-elev)",
+            marginBottom: "var(--tt-space-6)",
+            fontFamily: "var(--tt-font-mono)",
+            fontSize: "var(--tt-text-sm)",
+          }}
+        >
+          <div style={{ padding: "var(--tt-space-3) var(--tt-space-4)", borderRight: "1px solid var(--tt-border)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", display: "flex", alignItems: "center" }}>Type URI</div>
+          <code style={{ flex: 1, padding: "var(--tt-space-3) var(--tt-space-4)", overflow: "auto", whiteSpace: "nowrap", color: "var(--tt-text)" }}>{typeURI}</code>
+          <button
+            type="button"
+            onClick={() => { navigator.clipboard?.writeText(typeURI); setCopied(true); setTimeout(() => setCopied(false), 1400); }}
+            style={{ borderLeft: "1px solid var(--tt-border)", background: "transparent", padding: "0 var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: copied ? catColor(task.category) : "var(--tt-text-muted)", cursor: "pointer" }}
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+
+        <div className="tt-spec__banner">
+          <span><b>Status</b> &nbsp; <TTStatus status={task.status} /></span>
+          <span><b>Category</b> &nbsp; <a href="/categories" onClick={(e) => { e.preventDefault(); setRoute({ name: "categories" }); }} style={{ color: catColor(task.category), borderBottom: 0 }}>{cat.name}</a></span>
+          <span><b>Updated</b> &nbsp; {task.updated}</span>
+          <span><b>Editors</b> &nbsp; {task.authors.join(", ")}</span>
+        </div>
+
+        <h2 id="abstract">1. Abstract</h2>
+        <p>
+          This document defines the <b>{task.title}</b> Trust Task — a self-contained, transport-agnostic, JSON-based
+          specification for {task.summary.charAt(0).toLowerCase() + task.summary.slice(1)}
+        </p>
+        <p>
+          Trust Tasks are the unit of verifiable work between any two parties under the Trust over IP
+          ecosystem. This task does not prescribe a specific transport; conforming implementations
+          MAY exchange the JSON object defined herein over any channel that preserves message integrity.
+        </p>
+
+        <h2 id="status">2. Status of this Document</h2>
+        <p>
+          This is a <b>{task.status}</b> document of the Digital Trust Graph Working Group (DTGWG). It is
+          published under the {task.status === "standard" ? "Standard" : task.status === "candidate" ? "Candidate Recommendation" : "Working Draft"} maturity level.
+          Comments and suggestions are welcome via the&nbsp;
+          <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues" target="_blank" rel="noreferrer">project issue tracker</a>.
+        </p>
+
+        <h2 id="metadata">3. Metadata</h2>
+        <dl className="tt-meta-grid">
+          <dt>Identifier</dt><dd>{task.number}</dd>
+          <dt>Version</dt><dd>{task.version}</dd>
+          <dt>Type URI</dt><dd><code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{typeURI}</code></dd>
+          <dt>Schema URI</dt><dd>{task.schema["$id"]}</dd>
+          <dt>Parties</dt><dd>{task.parties.join(" ↔ ")}</dd>
+          <dt>Category</dt><dd>{cat.name}</dd>
+          <dt>Keywords</dt><dd>{task.keywords.join(", ")}</dd>
+        </dl>
+
+        <h2 id="conformance">4. Conformance</h2>
+        <div className="tt-conformance">
+          <p style={{ margin: 0 }}>
+            <b>Normative.</b> The keywords <i>MUST</i>, <i>MUST NOT</i>, <i>SHOULD</i>, <i>SHOULD NOT</i>, and
+            <i> MAY</i> in this document are to be interpreted as described in <a href="https://www.rfc-editor.org/rfc/rfc2119" target="_blank" rel="noreferrer">RFC&nbsp;2119</a>
+            and <a href="https://www.rfc-editor.org/rfc/rfc8174" target="_blank" rel="noreferrer">RFC&nbsp;8174</a> when, and only when, they appear in all capitals.
+          </p>
+        </div>
+        <p>
+          A conforming <b>producer</b> MUST emit a JSON document that validates against the schema in
+          §6 below. A conforming <b>consumer</b> MUST reject documents that fail schema validation. Both
+          parties SHOULD preserve unrecognized properties to allow forward compatibility.
+        </p>
+
+        <h2 id="definitions">5. Definitions</h2>
+        <p>
+          The following terms are used throughout this document. Where a term is also defined in the
+          <a href="/glossary" onClick={(e) => { e.preventDefault(); setRoute({ name: "glossary" }); }}> Trust Tasks glossary</a>,
+          the meaning here is consistent.
+        </p>
+        <ul style={{ color: "var(--tt-text-muted)", lineHeight: 1.8 }}>
+          {task.parties.map(p => (
+            <li key={p}><b style={{ color: "var(--tt-text)" }}>{p}.</b> A participant in this task; identified by a decentralized identifier (DID).</li>
+          ))}
+          <li><b style={{ color: "var(--tt-text)" }}>Task Identifier.</b> A URI that uniquely identifies an instance of this task.</li>
+        </ul>
+
+        <h2 id="schema">6. JSON Schema</h2>
+        <p>The normative JSON Schema for this Trust Task (Draft 2020-12):</p>
+        <CodeBlock json={task.schema} />
+
+        <h2 id="examples">7. Examples</h2>
+        <h3>7.1 Minimal example</h3>
+        <p>A producer-side instance demonstrating the required fields:</p>
+        <CodeBlock json={task.example} />
+
+        <h3>7.2 Wire envelope</h3>
+        <p>The same task instance carried in a transport-agnostic envelope (illustrative — non-normative):</p>
+        <CodeBlock json={{
+          type: "https://trusttasks.org/envelope/v1",
+          task: task.number,
+          version: task.version,
+          payload: task.example,
+          signature: { alg: "EdDSA", kid: "did:web:example#key-1", value: "z58D…" }
+        }} />
+
+        <h2 id="considerations">8. Security &amp; Privacy Considerations</h2>
+        <p>
+          Implementers MUST consider the integrity, authenticity, and privacy of the task payload. The
+          JSON document defined here carries no inherent transport security; conforming
+          implementations MUST sign the task using a signature suite agreed upon by both parties, and
+          SHOULD minimize the personal data carried in the payload to that necessary for the task.
+        </p>
+
+        <h2 id="related">9. Related Trust Tasks</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-3)" }}>
+          {(task.related || []).map(rid => {
+            const r = window.TT_TASKS.find(t => t.id === rid);
+            if (!r) return null;
+            return (
+              <a key={rid} href={`/spec/${(window.TT_TASKS.find(x=>x.id===rid)||{}).slug}/${(window.TT_TASKS.find(x=>x.id===rid)||{}).version}`} onClick={(e) => { e.preventDefault(); (() => { const rr = window.TT_TASKS.find(x => x.id === rid); setRoute({ name: "spec", slug: rr?.slug, version: rr?.version }); })(); window.scrollTo(0, 0); }}
+                 style={{ padding: "var(--tt-space-4)", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--tt-border)", textDecoration: "none", color: "inherit" }}>
+                <span><span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", marginRight: "var(--tt-space-3)" }}>{r.number}</span>{r.title}</span>
+                <TTStatus status={r.status} />
+              </a>
+            );
+          })}
+          {(!task.related || task.related.length === 0) && <p style={{ color: "var(--tt-text-muted)" }}>No related tasks recorded.</p>}
+        </div>
+
+        <div style={{ marginTop: "var(--tt-space-8)", paddingTop: "var(--tt-space-5)", borderTop: "1px solid var(--tt-line)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--tt-space-4)" }}>
+          <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }} className="btn btn--ghost">← Back to registry</a>
+          <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/specs/${task.id}.md`} target="_blank" rel="noreferrer" className="btn btn--ghost">Edit on GitHub →</a>
+        </div>
+      </div>
+
+      <aside className="tt-spec__sidebar">
+        <div className="tt-toc-title">On this page</div>
+        <ol className="tt-toc">
+          {[
+            ["abstract", "1. Abstract"],
+            ["status", "2. Status"],
+            ["metadata", "3. Metadata"],
+            ["conformance", "4. Conformance"],
+            ["definitions", "5. Definitions"],
+            ["schema", "6. JSON Schema"],
+            ["examples", "7. Examples"],
+            ["considerations", "8. Security & Privacy"],
+            ["related", "9. Related"]
+          ].map(([sid, label]) => (
+            <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{label}</a></li>
+          ))}
+        </ol>
+      </aside>
+    </section>
+  );
+}
+
+/* ============================================================
+   CATEGORIES
+   ============================================================ */
+function CategoriesPage({ setRoute }) {
+  const counts = useM(() => {
+    const c = {};
+    window.TT_TASKS.forEach(t => { c[t.category] = (c[t.category] || 0) + 1; });
+    return c;
+  }, []);
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Browse"
+        title="Categories"
+        lede="Every Trust Task belongs to a category — the broad domain in which the task makes sense. Pick a category to scope the registry."
+      />
+      <section>
+        <div className="container">
+          <div className="tt-cat-grid">
+            {window.TT_CATEGORIES.map(c => (
+              <a
+                key={c.id}
+                className="tt-cat-tile"
+                style={{ "--accent": catColor(c.id) }}
+                href={`/registry/${c.id}`}
+                onClick={(e) => { e.preventDefault(); setRoute({ name: "registry", cat: c.id }); }}
+              >
+                <span className="tt-cat-tile__count">{counts[c.id] || 0} {(counts[c.id] || 0) === 1 ? "spec" : "specs"}</span>
+                <h3>{c.name}</h3>
+                <p style={{ margin: 0 }}>{c.blurb}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
+   ABOUT
+   ============================================================ */
+function AboutPage() {
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="About"
+        title="What is a Trust Task?"
+        lede="A specification framework for the verifiable work that happens between two or more parties — self-contained, transport-agnostic, JSON-based."
+      />
+      <section>
+        <div className="container container--narrow">
+          <h2>Three properties.</h2>
+          <p className="lead">Every Trust Task definition adheres to three properties. They are non-negotiable; together they make the task portable, durable, and unambiguous.</p>
+
+          <div className="grid grid--3" style={{ marginTop: "var(--tt-space-6)" }}>
+            <article className="card card--accent card--coral">
+              <div className="card__index">01 · Self-contained</div>
+              <h4>Everything in one document.</h4>
+              <p>A Trust Task contains all relevant information needed to complete the task within the definition itself — parties, scope, criteria, schema. No hidden context.</p>
+            </article>
+            <article className="card card--accent card--teal">
+              <div className="card__index">02 · Transport-agnostic</div>
+              <h4>Indifferent to delivery.</h4>
+              <p>The definition does not assume any particular protocol or channel. DIDComm, HTTP, message queue, paper — the task is the task.</p>
+            </article>
+            <article className="card card--accent card--violet">
+              <div className="card__index">03 · JSON-based</div>
+              <h4>One canonical encoding.</h4>
+              <p>JSON is the single normative serialization. Other encodings MAY be derived; the JSON document is authoritative.</p>
+            </article>
+          </div>
+
+          <hr className="protocol-rule" aria-hidden="true" />
+
+          <h2>Why a registry?</h2>
+          <p>
+            Two parties only achieve interoperability when they agree on the shape of the task they're cooperating on.
+            A central registry of Trust Task specifications gives implementers a finite, well-known vocabulary —
+            the same way IANA registries serve the broader internet.
+          </p>
+          <p>
+            This site is the canonical reference. Each specification is editable on GitHub; the registry index here
+            is generated from the source repository.
+          </p>
+
+          <h2>Who runs this?</h2>
+          <p>
+            The Trust Tasks specification is developed under the <a href="https://trustoverip.org" target="_blank" rel="noreferrer">Trust over IP</a> Digital Trust Graph Working Group (DTGWG), as a task force.
+            Membership is open; contribution happens in the open via the GitHub repository.
+          </p>
+          <p>
+            Trust Tasks is one layer of a wider verifiable-trust stack alongside DTG Credentials, Verifiable Trust
+            Infrastructure, and OpenVTC. See the <a href="/ecosystem" onClick={(e) => { e.preventDefault(); window.history.pushState(null, "", "/ecosystem"); window.dispatchEvent(new PopStateEvent("popstate")); }}>ecosystem page</a> for how they fit together.
+          </p>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
+   ECOSYSTEM
+   ============================================================ */
+function EcosystemPage({ setRoute }) {
+  const projects = window.TT_ECOSYSTEM || [];
+  const accentColor = (a) => `var(--tt-${a})`;
+
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Ecosystem"
+        title="The verifiable-trust stack."
+        lede="Trust Tasks doesn't stand alone. It composes with a small set of related specifications and reference implementations that together let two parties exchange verifiable work — and a community of parties build a graph of trust around it."
+      />
+
+      <section>
+        <div className="container container--narrow">
+          <h2>How the layers fit.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            Each project is independently usable; together they're a complete stack.
+          </p>
+
+          <div className="grid grid--4" style={{ marginTop: "var(--tt-space-5)", gap: "var(--tt-space-4)" }}>
+            <article className="card" style={{ borderTop: `3px solid ${accentColor("violet")}` }}>
+              <div className="card__index" style={{ color: accentColor("violet") }}>Layer 01</div>
+              <h4>Vocabulary</h4>
+              <p>What two parties exchange. Typed, JSON, transport-agnostic.</p>
+              <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>Trust Tasks</div>
+            </article>
+            <article className="card" style={{ borderTop: `3px solid ${accentColor("teal")}` }}>
+              <div className="card__index" style={{ color: accentColor("teal") }}>Layer 02</div>
+              <h4>Credentials</h4>
+              <p>What participants carry. Six W3C VC types from the DTG.</p>
+              <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>DTG Credentials</div>
+            </article>
+            <article className="card" style={{ borderTop: `3px solid ${accentColor("coral")}` }}>
+              <div className="card__index" style={{ color: accentColor("coral") }}>Layer 03</div>
+              <h4>Infrastructure</h4>
+              <p>What holds keys and authorizes operations. The VTA.</p>
+              <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>Verifiable Trust Infrastructure</div>
+            </article>
+            <article className="card" style={{ borderTop: `3px solid ${accentColor("amber")}` }}>
+              <div className="card__index" style={{ color: accentColor("amber") }}>Layer 04</div>
+              <h4>Tooling</h4>
+              <p>What developers use to participate in a community.</p>
+              <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>OpenVTC</div>
+            </article>
+          </div>
+
+          <hr className="protocol-rule" aria-hidden="true" />
+
+          <h2>Projects.</h2>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-5)", marginTop: "var(--tt-space-5)" }}>
+            {projects.map(p => (
+              <article
+                key={p.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0, 1fr)",
+                  border: "1px solid var(--tt-border)",
+                  borderLeft: `3px solid ${accentColor(p.accent)}`,
+                  background: p.self ? "var(--tt-surface-elev)" : "transparent",
+                  padding: "var(--tt-space-5) var(--tt-space-6)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "var(--tt-space-3)", marginBottom: "var(--tt-space-3)" }}>
+                  <div>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentColor(p.accent), marginBottom: "var(--tt-space-1)" }}>
+                      {p.role}{p.self ? " · this site" : ""}
+                    </div>
+                    <h3 style={{ margin: 0 }}>{p.name}</h3>
+                    <div style={{ fontFamily: "var(--tt-font-serif, var(--tt-font-display))", fontStyle: "italic", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)" }}>{p.tagline}</div>
+                  </div>
+                  <span className="pill" style={{ borderColor: accentColor(p.accent), color: accentColor(p.accent), textTransform: "capitalize" }}>
+                    <span className="dot" style={{ background: accentColor(p.accent) }}></span>
+                    {p.tier}
+                  </span>
+                </div>
+
+                <p style={{ color: "var(--tt-text-muted)", marginTop: 0 }}>{p.summary}</p>
+
+                {p.bullets && p.bullets.length > 0 && (
+                  <ul style={{ margin: "var(--tt-space-3) 0 var(--tt-space-4)", paddingLeft: "1.1em", color: "var(--tt-text-muted)", lineHeight: 1.7 }}>
+                    {p.bullets.map(b => <li key={b}>{b}</li>)}
+                  </ul>
+                )}
+
+                <div style={{ display: "flex", gap: "var(--tt-space-4)", flexWrap: "wrap", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                  {p.primary && (
+                    <a href={p.primary.href} target="_blank" rel="noreferrer" style={{ color: accentColor(p.accent), borderBottom: 0 }}>
+                      {p.primary.label} →
+                    </a>
+                  )}
+                  {p.repo && (
+                    <a href={p.repo} target="_blank" rel="noreferrer" style={{ color: "var(--tt-text-muted)", borderBottom: 0 }}>
+                      {p.repo.replace("https://", "")} →
+                    </a>
+                  )}
+                  {p.spec && (
+                    <a href={p.spec.href} target="_blank" rel="noreferrer" style={{ color: "var(--tt-text-muted)", borderBottom: 0 }}>
+                      {p.spec.label} →
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <hr className="protocol-rule" aria-hidden="true" />
+
+          <h2>Adding a project.</h2>
+          <p>
+            The ecosystem grows. If you maintain a specification, library, or service that builds on
+            Trust Tasks — or that Trust Tasks builds on — open a PR against{" "}
+            <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">the registry repository</a>{" "}
+            adding your project to <code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>assets/ecosystem.js</code>.
+            Listings are reviewed by the DTGWG task force; the bar is alignment with the
+            self-contained, transport-agnostic, JSON-based principles.
+          </p>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
+   CONTRIBUTING
+   ============================================================ */
+function ContributingPage() {
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Contributing"
+        title="Propose a new Trust Task."
+        lede="The registry grows through proposal, review, and ratification — entirely in the open, on GitHub. Here's the path from idea to published spec."
+      />
+      <section>
+        <div className="container container--narrow">
+          <h2>The lifecycle.</h2>
+          <ol style={{ paddingLeft: "1.2em", lineHeight: 1.9, color: "var(--tt-text-muted)" }}>
+            <li><b style={{ color: "var(--tt-text)" }}>Propose.</b> Open an issue on the <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues" target="_blank" rel="noreferrer">repository</a> describing the task: parties, motivation, prior art. The task force triages within two weeks.</li>
+            <li><b style={{ color: "var(--tt-text)" }}>Draft.</b> Once accepted, fork the spec template and submit a pull request. The task is assigned an identifier (TT-NNNN) and lands in the registry as <i>draft</i>.</li>
+            <li><b style={{ color: "var(--tt-text)" }}>Review.</b> Public review during DTGWG meetings. Two implementations from independent parties are required before promotion.</li>
+            <li><b style={{ color: "var(--tt-text)" }}>Candidate.</b> Once implementations are demonstrated, the spec moves to <i>candidate</i> status. The schema is frozen except for clarifications.</li>
+            <li><b style={{ color: "var(--tt-text)" }}>Standard.</b> After a 90-day stability window with no breaking changes, the candidate is promoted to <i>standard</i>. Future revisions follow semver.</li>
+          </ol>
+
+          <hr className="protocol-rule" aria-hidden="true" />
+
+          <h2>What makes a good Trust Task?</h2>
+          <ul style={{ lineHeight: 1.9, color: "var(--tt-text-muted)" }}>
+            <li>Two or more identifiable parties with a clear role in the task.</li>
+            <li>A specific, finite outcome — &ldquo;the task is complete when X.&rdquo;</li>
+            <li>A JSON schema small enough to be implemented in an afternoon.</li>
+            <li>No assumptions about transport, framework, or vendor.</li>
+            <li>An obvious place in the existing taxonomy (or a strong argument for a new category).</li>
+          </ul>
+
+          <div style={{ marginTop: "var(--tt-space-7)", display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap" }}>
+            <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Open the repository →</a>
+            <a className="btn btn--ghost" href="https://trustoverip.org/get-involved/membership/" target="_blank" rel="noreferrer">Join ToIP</a>
+          </div>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
+   GLOSSARY
+   ============================================================ */
+function GlossaryPage() {
+  const terms = [
+    ["Trust Task", "A self-contained, transport-agnostic, JSON-based specification for verifiable work between two or more parties."],
+    ["Entity", "A participant in a Trust Task. Identified by a decentralized identifier (DID); may be a natural person, legal person, or autonomous agent."],
+    ["Initiator", "The entity that proposes a task. Responsible for drafting scope, criteria, and deadline."],
+    ["Counterparty", "The entity that accepts and performs a task proposed by an initiator."],
+    ["Schema", "A JSON Schema (Draft 2020-12) document that constrains the shape of a Trust Task instance. Normative."],
+    ["Conformance", "A producer or consumer of a Trust Task is conformant if it adheres to the requirements stated in §4 of the relevant specification."],
+    ["Status", "The maturity level of a specification: draft (working), candidate (frozen, two implementations), or standard (stable, 90 days unchanged)."],
+    ["Verification", "The act of confirming a task is complete. Both parties co-sign the result; the verification is itself portable evidence."],
+    ["Transport", "Any channel that conveys a Trust Task instance from one party to another. The specification is indifferent to the choice."],
+    ["Trust Registry", "A queryable directory of authorized entities and their roles within a governance framework. See TT-0005."],
+  ];
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Glossary"
+        title="Terms used across the registry."
+        lede="Working definitions of recurring concepts. Where these conflict with a specification's local definition, the local definition wins."
+      />
+      <section>
+        <div className="container container--narrow">
+          <dl className="tt-glossary">
+            {terms.map(([term, def]) => (
+              <div key={term}>
+                <dt>{term}</dt>
+                <dd>{def}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+Object.assign(window, {
+  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage
+});
