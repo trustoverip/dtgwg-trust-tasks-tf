@@ -1,6 +1,6 @@
 # Trust Tasks Specification
 
-A specification developed under the [Trust over IP Foundation](https://trustoverip.org) Digital Trust Governance Working Group (DTGWG) Task Force.
+A specification developed under the [Trust over IP Foundation](https://trustoverip.org) Decentralized Trust Graph Working Group (DTGWG) Task Force.
 
 ## About Trust Tasks
 
