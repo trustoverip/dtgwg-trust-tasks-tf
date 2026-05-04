@@ -19,14 +19,14 @@ The latest rendered version of this specification is available at:
 
 ## Contributing
 
-All Trust over IP Foundation Digital Trust Governance Working Group contributions are made under the following licenses:
+All Trust over IP Foundation Decentralized Trust Graph Working Group contributions are made under the following licenses:
 
 - [Patent and Copyright Grants](CONTRIBUTING.md)
 - [Source Code](SOURCE_CODE.md)
 
 ## Licensing
 
-All Trust over IP Foundation Digital Trust Governance Working Group deliverables are published under the following licenses:
+All Trust over IP Foundation Decentralized Trust Graph Working Group deliverables are published under the following licenses:
 
 - [Patent and Copyright Grants](LICENSE.md)
 - [Source Code](SOURCE_CODE.md)
