@@ -1,5 +1,5 @@
 # Trust Tasks Specification
-
+ruleset2
 A specification developed under the [Trust over IP Foundation](https://trustoverip.org) Decentralized Trust Graph Working Group (DTGWG) Task Force.
 
 ## About Trust Tasks
