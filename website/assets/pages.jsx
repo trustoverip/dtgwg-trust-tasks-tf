@@ -14,6 +14,39 @@ function stripFrontMatter(src) {
   return src.slice(end + 4).replace(/^\r?\n/, "");
 }
 
+/* Render an author string. The convention used in spec front matter is
+ *   "Display Name (https://url)"
+ * — when that shape matches, the name is anchored to the URL. Plain strings
+ * (no URL, or a URL-only entry) are rendered as text. */
+function renderAuthor(author, key) {
+  if (typeof author !== "string") return null;
+  const named = author.match(/^(.+?)\s*\((https?:\/\/[^\s)]+)\)\s*$/);
+  if (named) {
+    return (
+      <a key={key} href={named[2]} target="_blank" rel="noreferrer">
+        {named[1].trim()}
+      </a>
+    );
+  }
+  const bare = author.match(/^(https?:\/\/\S+)$/);
+  if (bare) {
+    return (
+      <a key={key} href={bare[1]} target="_blank" rel="noreferrer">
+        {bare[1]}
+      </a>
+    );
+  }
+  return <React.Fragment key={key}>{author}</React.Fragment>;
+}
+
+function renderAuthorList(authors) {
+  if (!Array.isArray(authors) || authors.length === 0) return null;
+  return authors.flatMap((a, i) => {
+    const node = renderAuthor(a, `author-${i}`);
+    return i === 0 ? [node] : [<React.Fragment key={`sep-${i}`}>, </React.Fragment>, node];
+  });
+}
+
 /* GitHub-style heading slug: strip HTML, strip punctuation (including `.`),
  * collapse whitespace into single hyphens. Matches the anchors that SPEC.md's
  * own cross-references use (e.g. "4.8.1 Precedence..." -> "481-precedence-..."). */
@@ -586,7 +619,7 @@ function SpecPage({ slug, version, id, setRoute }) {
           <span><b>Status</b> &nbsp; <TTStatus status={task.status} /></span>
           <span><b>Category</b> &nbsp; <a href="/categories" onClick={(e) => { e.preventDefault(); setRoute({ name: "categories" }); }} style={{ color: catColor(task.category), borderBottom: 0 }}>{cat.name}</a></span>
           <span><b>Updated</b> &nbsp; {task.updated}</span>
-          <span><b>Editors</b> &nbsp; {task.authors.join(", ")}</span>
+          <span><b>Editors</b> &nbsp; {renderAuthorList(task.authors)}</span>
         </div>
 
         <h2 id="metadata">Metadata</h2>
