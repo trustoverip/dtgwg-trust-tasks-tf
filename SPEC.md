@@ -382,7 +382,9 @@ Every versioned *Trust Task specification* **MUST** be addressable by a *Type UR
 https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>
 ```
 
-where:
+The form above is the canonical, public-registry form. *Trust Task specifications* intended only for private or internal use — and not published through the public registry — **MAY** use a different authority under the same URI shape; the requirements that apply to those are given in [§6.5](#65-private-and-unpublished-trust-task-specifications).
+
+For both forms, the path components below carry identical meaning:
 
 * `<slug>` is a lowercase, hyphen-separated short name assigned to the specification, optionally organized into one or more path segments (e.g. `kyc-handoff`, or `acl/grant`). The slug **MUST** match the regular expression `^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$`. Each `/`-delimited segment **MUST** individually satisfy the single-segment grammar (`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`); consecutive hyphens are not permitted within a segment, and consecutive slashes are not permitted between segments. Segments group related specifications under a shared namespace and are reflected in the *Type URI* path verbatim — `https://trusttasks.org/spec/acl/grant/1.0` is the *Type URI* of a specification whose slug is `acl/grant`.
 * `<MAJOR.MINOR>` is the specification version as defined in [§5.1](#51-scheme). When resolving a *Type URI*, a *consumer* identifies the version as the final path segment (which always matches the version grammar) and the slug as the segments between `/spec/` and the version.
@@ -426,6 +428,31 @@ It **MUST** specify `additionalProperties` either explicitly as `false` or with 
 ### 6.4 Stability
 
 For any value of `<slug>` and any value of `<MAJOR.MINOR>`, the representations served at the corresponding *Type URI* **MUST NOT** change in a way that alters their normative content once the specification has reached the `candidate` maturity level.
+
+This commitment is made by the public registry for *Trust Task specifications* it hosts; private specifications published under their own authority (see [§6.5](#65-private-and-unpublished-trust-task-specifications)) **SHOULD** offer their consumers an equivalent commitment, scoped to their own trust boundary.
+
+### 6.5 Private and unpublished Trust Task specifications
+
+Not every *Trust Task specification* is intended for the public registry. A *producer* and *consumer* operating within a single organization, deployment, or trust boundary **MAY** define their own *Trust Task specifications* solely for internal use — never publishing them under `https://trusttasks.org/` — and still conform fully to this framework.
+
+The following rules apply to *Trust Task specifications* that are not published through the public registry:
+
+1. **Authority.** A private specification's *Type URI* **MUST NOT** be served from, or claim to identify a resource at, the `https://trusttasks.org/` domain. That domain is reserved for *Trust Task specifications* published through the public registry process. A private specification **SHOULD** use an HTTPS authority the publisher controls — typically a project or organization domain — so the URI uniquely identifies the specification within the publisher's trust boundary. Examples:
+   ```
+   https://example.com/trust-tasks/<slug>/<MAJOR.MINOR>
+   https://internal.example/spec/<slug>/<MAJOR.MINOR>
+   ```
+   The slug grammar, version grammar, fragment conventions, and path-component meanings defined in [§6.1](#61-type-uri) apply unchanged.
+
+2. **Reservation rule.** The slug reservation rule in [§6.1](#61-type-uri) — that the slug **MUST NOT** be `trust-task` or have a first segment matching `^trust-task(-|/)?` — applies regardless of authority. A private specification **MUST NOT** use those reserved slugs even on its own domain, so that documents flowing between trust boundaries cannot be confused with framework-defined response types.
+
+3. **Framework conformance is unchanged.** All other framework requirements — the document structure ([§4](#4-trust-task-documents)), versioning rules ([§5](#5-versioning)), conformance behaviour ([§7](#7-minimum-requirements)), and error response shape ([§8](#8-error-responses)) — apply identically to private *Trust Task specifications*. Implementations consuming both private and registry-published specifications **SHOULD** use the same validation and signing pipeline for both.
+
+4. **Resolvability.** A private *Type URI* **SHOULD** resolve to the specification's representations under content negotiation ([§6.2](#62-content-negotiation)) for parties within the publisher's trust boundary, but **MAY** be unresolvable from the public internet. A *consumer* unable to dereference a private *Type URI* relies on out-of-band distribution of the specification document and schema.
+
+5. **Promotion to the registry (informative).** A private *Trust Task specification* **MAY** later be submitted for inclusion in the public registry. The submission process is governed by the registry policy referenced in [§5.3](#53-maturity-levels); a re-host typically involves a slug check, transfer of the JSON Schema document, and publication under `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>`. The original private *Type URI* and the new public *Type URI* identify distinct specifications unless and until the registry policy explicitly aliases them.
+
+Private *Trust Task specifications* are full *Trust Task specifications* for the purposes of conformance: a producer or consumer that satisfies §7 against a private spec is a *conforming producer* or *conforming consumer* of that spec, exactly as it would be for a registry-published one.
 
 ## 7. Minimum requirements
 
