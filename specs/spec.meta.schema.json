@@ -46,8 +46,8 @@
     },
     "status": {
       "type": "string",
-      "enum": ["draft", "candidate", "standard"],
-      "description": "Maturity level per SPEC §5.3."
+      "enum": ["draft", "candidate", "standard", "retired"],
+      "description": "Lifecycle status per SPEC §5.3. `retired` is terminal; a retired spec SHOULD declare `supersededBy`."
     },
     "targetFrameworkVersion": {
       "type": "string",
@@ -134,6 +134,11 @@
         "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$"
       },
       "description": "Slugs of related Trust Tasks; hierarchical slugs use `/` separators (e.g. `acl/grant`)."
+    },
+    "supersededBy": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",
+      "description": "Successor reference for a `retired` specification, per SPEC §7.3 item 11. `<slug>` form points at the latest non-retired version of that slug; `<slug>/<MAJOR.MINOR>` pins to a specific version. The build script enforces that this field is only set when `status: retired`."
     }
   }
 }

@@ -358,17 +358,36 @@ A `MAJOR` mismatch is never forward-compatible: a *consumer* at `M.N` **MUST** r
 
 ### 5.3 Maturity levels
 
-A *Trust Task specification* progresses through three maturity levels. The maturity level is independent of the version number.
+A *Trust Task specification* progresses through a defined lifecycle, captured by its `status` value. The lifecycle is normative: implementations and the registry use `status` to decide whether a specification can change underfoot, whether new documents **SHOULD** be issued against it, and how the bare-URL redirect in [§6.1](#61-type-uri) resolves. The maturity level is independent of the `MAJOR.MINOR` version number.
 
-| Level | Meaning |
-|---|---|
-| `draft` | Working draft. The schema and prose **MAY** change without notice. |
-| `candidate` | Schema is frozen except for editorial clarifications. The specification **MUST** demonstrate two independent, interoperable implementations to enter this level. |
-| `standard` | Stable. A `candidate` specification **MUST** complete a continuous 90-day stability window with no breaking changes before promotion to `standard`. |
+| Status | Meaning | Schema stability (§6.4) |
+|---|---|---|
+| `draft` | Working draft. The schema and prose **MAY** change without notice. | Not stable. |
+| `candidate` | Schema is frozen except for editorial clarifications. The specification **MUST** demonstrate two independent, interoperable implementations to enter this status. | Stable. |
+| `standard` | Stable in the long term. A `candidate` specification **MUST** complete a continuous 90-day stability window with no breaking changes before promotion to `standard`. | Stable. |
+| `retired` | Specification is no longer recommended for new use; preserved for historical reference and to keep already-issued documents verifiable. The schema and prose are frozen at the moment of retirement. | Stable. |
 
-A specification's current maturity level is recorded in the registry at <https://trusttasks.org/>. The same three-level scheme applies to this framework specification itself.
+#### Permitted transitions
 
-The process by which a slug is assigned, by which a specification enters the registry, and by which its maturity level is updated is governed by the registry policy maintained alongside the registry at <https://trusttasks.org/>. That policy is out of scope for this framework specification.
+A `status` value **MUST** change only along one of the transitions below:
+
+1. `draft` → `candidate` — once the entry criteria for `candidate` are met.
+2. `candidate` → `standard` — once the 90-day stability window has elapsed without breaking changes.
+3. `draft` → `retired` — abandoning a working draft.
+4. `candidate` → `retired` — deprecating a candidate before standardization.
+5. `standard` → `retired` — sunsetting a standard after a successor has been published.
+
+`retired` is **terminal**: a retired specification **MUST NOT** transition back to any earlier status. To revive functionality, the editor publishes a new `MAJOR.MINOR` of the slug starting at `draft` (see [§5.1](#51-scheme)).
+
+#### Behavior at each status
+
+* **Producers MAY** emit documents whose `type` resolves to a `draft`, `candidate`, or `standard` specification. Producers **SHOULD NOT** emit documents against a `retired` specification.
+* **Consumers MUST** treat `draft`, `candidate`, `standard`, and `retired` specifications identically for the purpose of schema validation (the framework rules in [§7.2](#72-consumer-requirements) apply uniformly). Consumers **SHOULD** surface a deprecation signal — in logs, audit records, or downstream interfaces — when a received document's `type` resolves to a `retired` specification, so operators can plan migration.
+* A `retired` specification **SHOULD** declare its successor via the optional `supersededBy` front-matter field (see [§7.3](#73-specification-requirements)).
+
+A specification's current status is recorded in its front matter and reflected in the registry at <https://trusttasks.org/>. The same lifecycle applies to this framework specification itself.
+
+The process by which a slug is assigned, by which a specification enters the registry, and by which its status is updated is governed by the registry policy maintained alongside the registry at <https://trusttasks.org/>. That policy is out of scope for this framework specification.
 
 ## 6. Namespace
 
@@ -398,7 +417,7 @@ The following slugs are **RESERVED** for framework-defined specifications and **
 
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
 
-A *Type URI* with the `<MAJOR.MINOR>` segment omitted (i.e. `https://trusttasks.org/spec/<slug>`) **SHOULD** redirect to the latest `standard` version of the specification, or — if no `standard` version exists — to the latest `candidate`, or — failing that — to the latest `draft`.
+A *Type URI* with the `<MAJOR.MINOR>` segment omitted (i.e. `https://trusttasks.org/spec/<slug>`) **SHOULD** redirect to the latest `standard` version of the specification, or — if no `standard` version exists — to the latest `candidate`, or — failing that — to the latest `draft`. `retired` versions **MUST NOT** be selected by the bare-URL redirect, since `retired` signals "no longer recommended for new use"; if every version of a slug is `retired`, the bare URL **SHOULD** return `410 Gone` with a body that links to the latest retired version and its declared `supersededBy` successor, if any.
 
 ### 6.2 Content negotiation
 
@@ -427,7 +446,7 @@ It **MUST** specify `additionalProperties` either explicitly as `false` or with 
 
 ### 6.4 Stability
 
-For any value of `<slug>` and any value of `<MAJOR.MINOR>`, the representations served at the corresponding *Type URI* **MUST NOT** change in a way that alters their normative content once the specification has reached the `candidate` maturity level.
+For any value of `<slug>` and any value of `<MAJOR.MINOR>`, the representations served at the corresponding *Type URI* **MUST NOT** change in a way that alters their normative content once the specification has reached the `candidate`, `standard`, or `retired` status. Once a specification is `retired`, the schema and prose are frozen at the moment of retirement; the only permitted change is correcting the `status` value itself (which is itself terminal — see [§5.3](#53-maturity-levels)) or adding the `supersededBy` declaration.
 
 This commitment is made by the public registry for *Trust Task specifications* it hosts; private specifications published under their own authority (see [§6.5](#65-private-and-unpublished-trust-task-specifications)) **SHOULD** offer their consumers an equivalent commitment, scoped to their own trust boundary.
 
@@ -491,7 +510,7 @@ A *conforming Trust Task specification* **MUST** declare each of the following. 
 1. **Slug** — the lowercase slug used in the specification's *Type URI*, satisfying the grammar and reservation rules of [§6.1](#61-type-uri).
 2. **Version** — the `MAJOR.MINOR` version of this specification, satisfying [§5.1](#51-scheme).
 3. **Target framework version** — the `MAJOR.MINOR` version of this framework specification that the *Trust Task specification* targets. A *consumer* uses this declared value to select the framework schema under which the outer document is validated (see [§7.2](#72-consumer-requirements), item 1).
-4. **Maturity level** — one of `draft`, `candidate`, or `standard`, satisfying [§5.3](#53-maturity-levels).
+4. **Maturity level** — one of `draft`, `candidate`, `standard`, or `retired`, satisfying [§5.3](#53-maturity-levels). A specification whose status is `retired` **SHOULD** also declare a `supersededBy` value (item 11) pointing at the successor.
 5. **Parties** — the role of each *party* expected in a document conforming to this specification, the *VID* schemes accepted for each, and whether each of the `issuer` and `recipient` members is **REQUIRED**, **RECOMMENDED**, or **OPTIONAL** in a document. The defaults from [§4.8](#48-the-issuer-and-recipient-members) apply if the specification is silent, but explicit declaration is **RECOMMENDED**.
 6. **Outcome** — a non-normative prose statement of what successful execution of the task achieves between the parties. This is the human-readable counterpart to the payload schema.
 7. **Payload JSON Schema** — a normative JSON Schema for the `payload` member that:
@@ -504,6 +523,7 @@ A *conforming Trust Task specification* **MUST** declare each of the following. 
 8. **Proof requirement** — an explicit statement that the `proof` member is **OPTIONAL**, **RECOMMENDED**, or **REQUIRED** for documents implementing the specification, together with a brief rationale referencing the threat model addressed (for example, tampering by intermediaries, replay, repudiation by the *producer*, or reliance by third parties beyond the original *consumer*). The declared requirement **MUST NOT** be weaker than the default applicable under [§4.7.1](#471-when-to-include-a-proof).
 9. **Task-specific error codes (where used)** — for each extended `code` defined under [§8.5](#85-extension-by-individual-trust-task-specifications), the code identifier, its meaning, its default `retryable` value, and the JSON Schema fragment describing any `details` object it carries. Where no extensions are defined, the specification **SHOULD** state so explicitly.
 10. **JSON-LD context (where used)** — if the specification publishes a canonical JSON-LD context, the context **MUST** be served at the specification's *Type URI* under content negotiation for `application/ld+json` (see [§4.6](#46-json-ld-compatibility) and [§6.2](#62-content-negotiation)). Where no context is published, the specification **SHOULD** state so explicitly.
+11. **Successor (`supersededBy`, retired specifications only)** — a `retired` specification **SHOULD** declare its successor as a string of the form `<slug>` or `<slug>/<MAJOR.MINOR>`. The bare-slug form points to "the latest non-retired version of that slug"; the explicit form pins to a specific version. The value is used by the registry's bare-URL redirect (see [§6.1](#61-type-uri)) and by consumer-side deprecation tooling to direct implementers at the recommended replacement. Specifications whose status is not `retired` **MUST NOT** declare `supersededBy`.
 
 A worked example of a *Trust Task specification* satisfying these requirements appears in [Appendix A](#appendix-a--example-trust-task-specification).
 

@@ -262,6 +262,14 @@ function main() {
       }
       continue;
     }
+    // Friendlier targeted checks the JSON-Schema if/then/else can't phrase well:
+    if (meta.supersededBy && meta.status !== 'retired') {
+      fail(`${rel}/spec.md`, `supersededBy is only permitted when status is 'retired' (got status: '${meta.status}'). See SPEC §7.3 item 11.`);
+      continue;
+    }
+    if (meta.status === 'retired' && !meta.supersededBy) {
+      warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
+    }
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
       fail(rel, `duplicate slug+version ${idKey}`);

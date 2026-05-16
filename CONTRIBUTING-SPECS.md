@@ -58,7 +58,7 @@ slug: acl/grant                    # MUST match the folder path under specs/
 version: "0.1"                     # MUST match the version-folder name
 title: ACL — Grant
 summary: One-sentence elevator pitch.
-status: draft                      # draft | candidate | standard
+status: draft                      # draft | candidate | standard | retired
 targetFrameworkVersion: "0.1"      # SPEC.md MAJOR.MINOR this spec targets
 category: permission               # must be one of the TT_CATEGORIES ids
 keywords: [acl, access-control, grant]
@@ -181,3 +181,24 @@ Status transitions follow [SPEC.md §5.3](SPEC.md#53-maturity-levels):
 - `candidate` → `standard`: change `status: standard` once your candidate has gone 90 days without a breaking change.
 
 Maturity bumps are PRs like any other. The build script enforces the values; the editors' team verifies the transition criteria.
+
+## Retiring a spec
+
+`retired` is a **terminal** status — once a spec is retired it stays retired. Retirement signals "no longer recommended for new use" while keeping the spec's prose and schema available so already-issued documents remain verifiable.
+
+Three cases trigger retirement in practice:
+
+1. **Abandoning a `draft`** — the proposed task didn't pan out; leave a tombstone rather than deleting the folder. Change `status: retired` in place.
+2. **Deprecating a `candidate`** — the schema froze but the working group chose not to standardize. Same change.
+3. **Sunsetting a `standard` after a successor lands** — the most common case. The successor is typically a new `MAJOR.MINOR` of the same slug (e.g. `acl/grant/0.1` → `acl/grant/1.0`), but it can be a different slug entirely.
+
+When you retire a spec, **strongly recommend** declaring `supersededBy` in the front matter:
+
+```yaml
+status: retired
+supersededBy: acl/grant/1.0      # or just `acl/grant` for "latest non-retired version"
+```
+
+The bare-URL redirect (`https://trusttasks.org/spec/<slug>`) skips retired versions automatically. Consumer tooling reads `supersededBy` to direct implementers at the recommended replacement.
+
+A retired spec **MUST NOT** transition back to `draft`, `candidate`, or `standard`. If you need to revive functionality, publish a fresh `MAJOR.MINOR` of the slug and let it progress through the lifecycle from `draft`.
