@@ -23,12 +23,13 @@ function TTMark({ size = 28, withWord = true }) {
 /* ---------- Top nav --------------------------------------- */
 function TTNav({ route, setRoute }) {
   const links = [
-    { id: "registry",     label: "Registry" },
-    { id: "categories",   label: "Categories" },
-    { id: "ecosystem",    label: "Ecosystem" },
-    { id: "about",        label: "About" },
-    { id: "contributing", label: "Contributing" },
-    { id: "glossary",     label: "Glossary" },
+    { id: "specification", label: "Specification" },
+    { id: "registry",      label: "Registry" },
+    { id: "categories",    label: "Categories" },
+    { id: "ecosystem",     label: "Ecosystem" },
+    { id: "about",         label: "About" },
+    { id: "contributing",  label: "Contributing" },
+    { id: "glossary",      label: "Glossary" },
   ];
   return (
     <header className="nav">

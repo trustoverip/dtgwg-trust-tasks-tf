@@ -157,6 +157,36 @@ function HomePage({ tweaks, setRoute }) {
         </div>
       </section>
 
+      {/* FRAMEWORK SPEC CTA */}
+      <section style={{ paddingBlock: "var(--tt-space-6)", borderTop: "1px solid var(--tt-line)", borderBottom: "1px solid var(--tt-line)" }}>
+        <div className="container">
+          <a
+            href="/specification"
+            onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "var(--tt-space-5)",
+              padding: "var(--tt-space-5) 0",
+              textDecoration: "none",
+              color: "inherit",
+              borderBottom: 0,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ flex: "1 1 auto", minWidth: "240px" }}>
+              <span className="eyebrow" style={{ display: "inline-flex", marginBottom: "var(--tt-space-2)" }}>v0.1 framework specification</span>
+              <h3 style={{ margin: 0, marginBottom: "var(--tt-space-2)" }}>Read the framework specification.</h3>
+              <p style={{ margin: 0, color: "var(--tt-text-muted)" }}>Document structure, version scheme, namespace, errors, and transport bindings — the contract every individual Trust Task conforms to.</p>
+            </div>
+            <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-accent, var(--tt-violet))", whiteSpace: "nowrap" }}>
+              Open SPEC.md →
+            </span>
+          </a>
+        </div>
+      </section>
+
       {/* STATS */}
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
         <div className="container">
@@ -516,9 +546,9 @@ function SpecPage({ slug, version, id, setRoute }) {
         </p>
         <ul style={{ color: "var(--tt-text-muted)", lineHeight: 1.8 }}>
           {task.parties.map(p => (
-            <li key={p}><b style={{ color: "var(--tt-text)" }}>{p}.</b> A participant in this task; identified by a decentralized identifier (DID).</li>
+            <li key={p}><b style={{ color: "var(--tt-text)" }}>{p}.</b> A participant in this task; identified by a <i>Verifiable Identifier</i> (VID) — e.g. a DID, an X.509 subject, or any identifier whose controller is verifiable under the consuming party's trust framework.</li>
           ))}
-          <li><b style={{ color: "var(--tt-text)" }}>Task Identifier.</b> A URI that uniquely identifies an instance of this task.</li>
+          <li><b style={{ color: "var(--tt-text)" }}>Document identifier.</b> A globally unique string carried in the Trust Task document's <code>id</code> member (UUIDv4 recommended).</li>
         </ul>
 
         <h2 id="schema">6. JSON Schema</h2>
@@ -852,7 +882,11 @@ function ContributingPage() {
 function GlossaryPage() {
   const terms = [
     ["Trust Task", "A self-contained, transport-agnostic, JSON-based specification for verifiable work between two or more parties."],
-    ["Entity", "A participant in a Trust Task. Identified by a decentralized identifier (DID); may be a natural person, legal person, or autonomous agent."],
+    ["Entity", "A participant in a Trust Task. Identified by a Verifiable Identifier (VID); may be a natural person, legal person, or autonomous agent."],
+    ["Verifiable Identifier (VID)", "A string identifier whose controller is verifiable under a trust framework. DIDs are one realization; others include X.509 subjects, OIDC subject identifiers, and key thumbprints. The framework does not constrain the VID scheme."],
+    ["Document identifier", "The globally unique string carried in a Trust Task document's id member. UUIDv4 is the recommended default; any unique string is permitted."],
+    ["Thread identifier", "The optional string carried in a Trust Task document's threadId member that correlates the document with others in the same logical exchange (e.g. a response back to its originating request)."],
+    ["Proof", "An optional W3C Data Integrity Proof attached to a Trust Task document via the proof member, binding the document's content to its issuer."],
     ["Initiator", "The entity that proposes a task. Responsible for drafting scope, criteria, and deadline."],
     ["Counterparty", "The entity that accepts and performs a task proposed by an initiator."],
     ["Schema", "A JSON Schema (Draft 2020-12) document that constrains the shape of a Trust Task instance. Normative."],
@@ -885,6 +919,72 @@ function GlossaryPage() {
   );
 }
 
+/* ============================================================
+   FRAMEWORK SPEC (renders SPEC.md as HTML)
+   ============================================================ */
+function FrameworkSpecPage({ setRoute }) {
+  const [html, setHtml] = useS("");
+  const [error, setError] = useS(null);
+
+  useE(() => {
+    let cancelled = false;
+    fetch("/SPEC.md", { headers: { "Accept": "text/markdown, text/plain" } })
+      .then(r => {
+        if (!r.ok) throw new Error(`Failed to load specification (${r.status})`);
+        return r.text();
+      })
+      .then(text => {
+        if (cancelled) return;
+        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
+        marked.setOptions({ gfm: true, breaks: false });
+        setHtml(marked.parse(text));
+      })
+      .catch(e => { if (!cancelled) setError(e.message); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useE(() => {
+    if (!html) return;
+    if (location.hash) {
+      const el = document.getElementById(location.hash.slice(1));
+      if (el) el.scrollIntoView();
+    }
+  }, [html]);
+
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Framework specification"
+        title="The Trust Tasks framework"
+        lede="The normative framework specification — document structure, version scheme, namespace, error responses, and transport bindings — rendered from SPEC.md in the repository."
+      >
+        <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
+          <a className="btn btn--ghost" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md" target="_blank" rel="noreferrer">View on GitHub →</a>
+          <a className="btn btn--ghost" href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }}>Browse the registry →</a>
+        </div>
+      </PageHero>
+
+      <section style={{ paddingBlock: "var(--tt-space-6)" }}>
+        <div className="container container--narrow">
+          {error && (
+            <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
+              <b>Couldn't load the specification.</b><br />
+              {error}<br />
+              <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md" target="_blank" rel="noreferrer">Read it on GitHub →</a>
+            </div>
+          )}
+          {!error && !html && (
+            <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>Loading specification…</div>
+          )}
+          {!error && html && (
+            <article className="tt-prose" dangerouslySetInnerHTML={{ __html: html }} />
+          )}
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
 Object.assign(window, {
-  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage
+  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage
 });
