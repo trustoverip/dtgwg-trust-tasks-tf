@@ -98,7 +98,7 @@ function HomePage({ tweaks, setRoute }) {
       <section className={`tt-hero ${heroLayout === "split" ? "tt-hero--split" : "tt-hero--editorial"}`}>
         <div className="container tt-hero__inner">
           <div>
-            <span className="eyebrow tt-hero__eyebrow tt-rise tt-rise-1">Trust over IP · DTGWG · v1.0 draft</span>
+            <span className="eyebrow tt-hero__eyebrow tt-rise tt-rise-1">Trust Over IP · DTGWG · v1.0 draft</span>
             <h1 className="tt-rise tt-rise-2">
               The reference registry of <em style={{ whiteSpace: "nowrap" }}>trust task</em> specifications.
             </h1>
@@ -739,7 +739,7 @@ function AboutPage() {
 
           <h2>Who runs this?</h2>
           <p>
-            The Trust Tasks specification is developed under the <a href="https://trustoverip.org" target="_blank" rel="noreferrer">Trust over IP</a> Digital Trust Graph Working Group (DTGWG), as a task force.
+            The Trust Tasks specification is developed under the <a href="https://trustoverip.org" target="_blank" rel="noreferrer">Trust Over IP</a> Digital Trust Graph Working Group (DTGWG), as a task force.
             Membership is open; contribution happens in the open via the GitHub repository.
           </p>
           <p>

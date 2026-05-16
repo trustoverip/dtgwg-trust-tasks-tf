@@ -21,7 +21,7 @@ window.TT_ECOSYSTEM = [
     bullets: [
       "Self-contained, transport-agnostic, JSON-based",
       "Major.minor versioned type URIs",
-      "Public review under Trust over IP DTGWG",
+      "Public review under Trust Over IP DTGWG",
     ],
     primary: { label: "trusttasks.org", href: "https://trusttasks.org" },
     repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf",
