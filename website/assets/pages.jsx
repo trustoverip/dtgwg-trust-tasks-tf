@@ -14,31 +14,38 @@ function stripFrontMatter(src) {
   return src.slice(end + 4).replace(/^\r?\n/, "");
 }
 
+/* GitHub-style heading slug: strip HTML, strip punctuation (including `.`),
+ * collapse whitespace into single hyphens. Matches the anchors that SPEC.md's
+ * own cross-references use (e.g. "4.8.1 Precedence..." -> "481-precedence-..."). */
 function slugifyHeading(text) {
   return text
-    .toLowerCase()
-    .replace(/&amp;/g, "")
     .replace(/<[^>]+>/g, "")
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/&amp;/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 \-]+/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
-/* Walks an already-rendered HTML string for <h2> elements, gives each an id,
- * and returns { html, toc: [{id, text}] } so the sidebar TOC can be built
- * directly from the prose without a second pass. */
+/* Walks an already-rendered HTML string, gives every <h2>–<h6> an id, and
+ * returns { html, toc: [{id, text}] }. Only <h2> elements are collected into
+ * the TOC so sidebars stay shallow; the deeper levels just become anchorable
+ * for fragment navigation. */
 function injectHeadingIds(html) {
   const toc = [];
   const seen = new Set();
-  const out = html.replace(/<h2(\s[^>]*)?>([\s\S]*?)<\/h2>/g, (match, attrs, inner) => {
-    const text = inner.replace(/<[^>]+>/g, "").trim();
+  const out = html.replace(/<h([2-6])(\s[^>]*)?>([\s\S]*?)<\/h\1>/g, (match, level, attrs, inner) => {
+    const text = inner.replace(/<[^>]+>/g, "").replace(/&amp;/g, "").trim();
+    if (!text) return match;
     let id = slugifyHeading(text);
+    if (!id) return match;
     let i = 2;
     while (seen.has(id)) { id = `${slugifyHeading(text)}-${i++}`; }
     seen.add(id);
-    toc.push({ id, text });
+    if (level === "2") toc.push({ id, text });
     if (attrs && /\bid=/.test(attrs)) return match;
-    return `<h2${attrs || ""} id="${id}">${inner}</h2>`;
+    return `<h${level}${attrs || ""} id="${id}">${inner}</h${level}>`;
   });
   return { html: out, toc };
 }
@@ -982,17 +989,21 @@ function FrameworkSpecPage({ setRoute }) {
         if (cancelled) return;
         if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
         marked.setOptions({ gfm: true, breaks: false });
-        setHtml(marked.parse(text));
+        const rawHtml = marked.parse(text);
+        const { html: withIds } = injectHeadingIds(rawHtml);
+        setHtml(withIds);
       })
       .catch(e => { if (!cancelled) setError(e.message); });
     return () => { cancelled = true; };
   }, []);
 
   useE(() => {
-    if (!html) return;
-    if (location.hash) {
-      const el = document.getElementById(location.hash.slice(1));
-      if (el) el.scrollIntoView();
+    if (!html || !location.hash) return;
+    const id = location.hash.slice(1);
+    const el = document.getElementById(id);
+    if (el) {
+      // Defer one frame so layout settles before we scroll.
+      requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
     }
   }, [html]);
 
