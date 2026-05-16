@@ -33,7 +33,7 @@
     const { useState: useStateApp, useEffect: useEffectApp } = React;
 
     /* parse pathname: /, /registry, /registry/identity, /spec/<slug...>/<version>, etc.
-       Slugs may be hierarchical (e.g. /spec/acl/grant/1.0); the version is always
+       Slugs may be hierarchical (e.g. /spec/acl/grant/0.1); the version is always
        the final segment, the slug is everything between /spec/ and the version. */
     function parsePath() {
       const path = location.pathname.replace(/^\/+|\/+$/g, "");

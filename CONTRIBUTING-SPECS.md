@@ -13,7 +13,7 @@ specs/<slug>/<version>/
 ```
 
 1. Fork the repo and create a branch.
-2. Create the folder `specs/<your-slug>/<your-version>/`. The slug may be hierarchical — `specs/acl/grant/1.0/` is a valid layout whose slug is `acl/grant`.
+2. Create the folder `specs/<your-slug>/<your-version>/`. The slug may be hierarchical — `specs/acl/grant/0.1/` is a valid layout whose slug is `acl/grant`.
 3. Add `spec.md` with the YAML front matter shape described below, prose for your specification, and at least one example Trust Task document under an `## Examples` section.
 4. Add `payload.schema.json` describing your `payload` member. Its `$id` **MUST** equal `https://trusttasks.org/spec/<your-slug>/<your-version>` — note that the slug's `/` separators appear literally in the URL.
 5. Run `npm install` then `npm run build` from the repo root to validate.
@@ -33,7 +33,7 @@ The folder structure mirrors the canonical *Type URI* (per [SPEC.md §6.1](SPEC.
 
 Slugs may be single-segment (`kyc-handoff`) or hierarchical (`acl/grant`, `members/promote-to-admin`). In either case, the on-disk path matches the slug verbatim: a slug of `acl/grant` means `specs/acl/grant/<version>/`. Use hierarchical slugs to group related specifications under a namespace and keep the top of the `specs/` tree readable.
 
-Versions live side-by-side in their own folders (`specs/acl/grant/1.0/`, `specs/acl/grant/1.1/`, …). Each version is independently editable; you never overwrite a published version.
+Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/acl/grant/1.1/`, …). Each version is independently editable; you never overwrite a published version.
 
 ## Slug rules (per SPEC §6.1)
 
@@ -55,7 +55,7 @@ Every `spec.md` begins with a YAML block delimited by `---` lines. The block is 
 ```yaml
 ---
 slug: acl/grant                    # MUST match the folder path under specs/
-version: "1.0"                     # MUST match the version-folder name
+version: "0.1"                     # MUST match the version-folder name
 title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard
@@ -85,7 +85,7 @@ After the closing `---`, write the human-readable specification: Abstract, Statu
 
 ## Request and Response sections
 
-A specification that defines both a request document and a success-response document **MUST** organize its `spec.md` body around two H2 sections — `## Request` and `## Response` — placed immediately after `## Definitions` and before `## Security & Privacy`. The framework's `#request` / `#response` fragment convention (see [SPEC.md §4.4.1](SPEC.md#441-request-and-response-variants)) maps directly to these anchor names: clicking a Trust Task `type` URL like `https://trusttasks.org/spec/acl/grant/1.0#response` lands the reader on the rendered spec page at the **Response** section.
+A specification that defines both a request document and a success-response document **MUST** organize its `spec.md` body around two H2 sections — `## Request` and `## Response` — placed immediately after `## Definitions` and before `## Security & Privacy`. The framework's `#request` / `#response` fragment convention (see [SPEC.md §4.4.1](SPEC.md#441-request-and-response-variants)) maps directly to these anchor names: clicking a Trust Task `type` URL like `https://trusttasks.org/spec/acl/grant/0.1#response` lands the reader on the rendered spec page at the **Response** section.
 
 The shape:
 
@@ -96,7 +96,7 @@ A specification that defines a fire-and-forget task (no success response documen
 
 Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
 
-See `specs/acl/grant/1.0/spec.md` for a worked example.
+See `specs/acl/grant/0.1/spec.md` for a worked example.
 
 ## `payload.schema.json`
 
@@ -115,7 +115,7 @@ Where the specification defines a success-response document, both shapes live in
 ```jsonc
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/grant/1.0",
+  "$id": "https://trusttasks.org/spec/acl/grant/0.1",
   "type": "object",
   "additionalProperties": false,
   "required": ["subject", "role", "after"],
@@ -133,7 +133,7 @@ Where the specification defines a success-response document, both shapes live in
 }
 ```
 
-A consumer that receives a document with `type: ".../acl/grant/1.0#response"` resolves `#response` against the fetched schema, lands on `$defs.Response`, and validates the response `payload` against it. The build script verifies that any `$defs.Response` you publish declares `$anchor: "response"` and that no other `$defs` entry uses that anchor.
+A consumer that receives a document with `type: ".../acl/grant/0.1#response"` resolves `#response` against the fetched schema, lands on `$defs.Response`, and validates the response `payload` against it. The build script verifies that any `$defs.Response` you publish declares `$anchor: "response"` and that no other `$defs` entry uses that anchor.
 
 For a fire-and-forget task with no success response, omit `$defs.Response` entirely — the framework still gives you `trust-task-error` for failures.
 

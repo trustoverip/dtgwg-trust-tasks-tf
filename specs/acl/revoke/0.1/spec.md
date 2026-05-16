@@ -1,6 +1,6 @@
 ---
 slug: acl/revoke
-version: "1.0"
+version: "0.1"
 title: ACL — Revoke
 summary: A revoking party records, in a verifiable form, that a subject has been removed from an access-control list, or that some of the subject's scopes have been withdrawn.
 status: draft
@@ -65,7 +65,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 
 A conforming **producer** (the revoking party) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/revoke/1.0`, with itself as `issuer` and the ACL maintainer as `recipient`.
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/revoke/0.1`, with itself as `issuer` and the ACL maintainer as `recipient`.
 2. Populate `payload.subject` with the VID of the subject being revoked, and optionally `payload.scopes` to scope-reduce rather than fully remove.
 3. Include a `proof` member per [SPEC.md §4.7](../../../../SPEC.md#47-proof).
 
@@ -86,14 +86,14 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 
 ## Request
 
-A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` with a payload that validates against the top-level schema in `payload.schema.json`.
+A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/0.1` with a payload that validates against the top-level schema in `payload.schema.json`.
 
 ### Full removal by an administrator
 
 ```json
 {
   "id": "9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/revoke/1.0",
+  "type": "https://trusttasks.org/spec/acl/revoke/0.1",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-05-20T11:00:00Z",
@@ -119,7 +119,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` 
 ```json
 {
   "id": "7a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
-  "type": "https://trusttasks.org/spec/acl/revoke/1.0",
+  "type": "https://trusttasks.org/spec/acl/revoke/0.1",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-05-21T09:30:00Z",
@@ -138,7 +138,7 @@ The maintainer removes `context:project-beta` from Alice's scopes; her entry rem
 ```json
 {
   "id": "f0b2c5a1-8d3e-4c4a-92b1-1e8d4cbe7104",
-  "type": "https://trusttasks.org/spec/acl/revoke/1.0",
+  "type": "https://trusttasks.org/spec/acl/revoke/0.1",
   "issuer": "did:web:alice.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-01T08:00:00Z",
@@ -153,7 +153,7 @@ The maintainer removes `context:project-beta` from Alice's scopes; her entry rem
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
+A success *response* document carries `type: https://trusttasks.org/spec/acl/revoke/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
 The response payload is `{ entry: AclEntry | null }`:
 
@@ -169,7 +169,7 @@ Response to the first request example:
 ```json
 {
   "id": "ae2a1c44-7b81-4d3e-9b51-7a3c89e3d1f3",
-  "type": "https://trusttasks.org/spec/acl/revoke/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/revoke/0.1#response",
   "threadId": "9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:org.example",
@@ -187,7 +187,7 @@ Response to the scope-reduction example:
 ```json
 {
   "id": "8a91c7b3-2e62-4a91-a3a4-9d61b75e2f02",
-  "type": "https://trusttasks.org/spec/acl/revoke/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/revoke/0.1#response",
   "threadId": "7a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:org.example",

@@ -1,24 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/revoke/1.0",
-  "title": "ACL Revoke — payload",
+  "$id": "https://trusttasks.org/spec/acl/change-role/0.1",
+  "title": "ACL Change Role — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subject"],
+  "required": ["subject", "fromRole", "toRole"],
   "properties": {
     "subject": {
       "type": "string",
-      "description": "VID of the party being revoked (or scope-reduced)."
+      "description": "VID of the party whose role is changing."
     },
-    "scopes": {
-      "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "minItems": 1,
-      "description": "If present, the specific scopes to remove from the subject's entry. If absent, the entire entry is removed."
+    "fromRole": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The subject's prior role. Used by the maintainer for the optimistic concurrency check."
+    },
+    "toRole": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The role to transition the subject to."
     },
     "reason": {
       "type": "string",
-      "description": "Optional human-readable rationale for the revocation."
+      "description": "Optional human-readable rationale."
     }
   },
   "$defs": {
@@ -41,18 +45,15 @@
     },
     "Response": {
       "$anchor": "response",
-      "title": "ACL Revoke — response payload",
-      "description": "The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/1.0#response.",
+      "title": "ACL Change Role — response payload",
+      "description": "The success response to an acl/change-role request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/change-role/0.1#response.",
       "type": "object",
       "additionalProperties": false,
       "required": ["entry"],
       "properties": {
         "entry": {
-          "description": "The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.",
-          "oneOf": [
-            { "type": "null" },
-            { "$ref": "#/$defs/AclEntry" }
-          ]
+          "description": "The AclEntry the maintainer now holds for the subject. entry.role MUST equal the request's payload.toRole.",
+          "$ref": "#/$defs/AclEntry"
         }
       }
     }

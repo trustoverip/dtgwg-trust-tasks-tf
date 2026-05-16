@@ -1,6 +1,6 @@
 ---
 slug: acl/show
-version: "1.0"
+version: "0.1"
 title: ACL — Show
 summary: A querying party asks an ACL maintainer for the entry corresponding to a specific subject.
 status: draft
@@ -45,7 +45,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 
 A conforming **producer** (the querying party) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/show/1.0`, with itself as `issuer` and the ACL maintainer as `recipient`.
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/show/0.1`, with itself as `issuer` and the ACL maintainer as `recipient`.
 2. Populate `payload.subject` with the VID of the entry being looked up.
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
@@ -64,14 +64,14 @@ The maintainer **SHOULD** respect a "self-lookup is always permitted" convention
 
 ## Request
 
-A *request* document carries `type: https://trusttasks.org/spec/acl/show/1.0` with a payload that validates against the top-level schema in `payload.schema.json`.
+A *request* document carries `type: https://trusttasks.org/spec/acl/show/0.1` with a payload that validates against the top-level schema in `payload.schema.json`.
 
 ### Admin looking up a member
 
 ```json
 {
   "id": "a82a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/show/1.0",
+  "type": "https://trusttasks.org/spec/acl/show/0.1",
   "issuer": "did:web:admin.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-20T08:00:00Z",
@@ -86,7 +86,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/show/1.0` wi
 ```json
 {
   "id": "b91c7b32-7a91-4a91-a3a4-9d61b75e2f01",
-  "type": "https://trusttasks.org/spec/acl/show/1.0",
+  "type": "https://trusttasks.org/spec/acl/show/0.1",
   "issuer": "did:web:alice.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-20T08:05:00Z",
@@ -100,7 +100,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/show/1.0` wi
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/acl/show/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
+A success *response* document carries `type: https://trusttasks.org/spec/acl/show/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
 The response payload carries:
 
@@ -116,7 +116,7 @@ Response to the "Admin looking up a member" request example:
 ```json
 {
   "id": "ba2a1c44-7b81-4d3e-9b51-7a3c89e3d1f3",
-  "type": "https://trusttasks.org/spec/acl/show/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/show/0.1#response",
   "threadId": "a82a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:admin.example",
@@ -141,7 +141,7 @@ Response to a lookup for a subject the maintainer doesn't have an entry for — 
 ```json
 {
   "id": "d12c7b32-7a91-4a91-a3a4-9d61b75e2f01",
-  "type": "https://trusttasks.org/spec/acl/show/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/show/0.1#response",
   "threadId": "c91c7b32-7a91-4a91-a3a4-9d61b75e2f01",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:admin.example",
@@ -159,7 +159,7 @@ A subject queries their own entry; the maintainer's policy redacts `metadata` fo
 ```json
 {
   "id": "ca1c7b32-7a91-4a91-a3a4-9d61b75e2f02",
-  "type": "https://trusttasks.org/spec/acl/show/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/show/0.1#response",
   "threadId": "b91c7b32-7a91-4a91-a3a4-9d61b75e2f01",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:alice.example",

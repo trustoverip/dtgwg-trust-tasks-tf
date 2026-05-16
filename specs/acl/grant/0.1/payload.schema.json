@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/grant/1.0",
+  "$id": "https://trusttasks.org/spec/acl/grant/0.1",
   "title": "ACL Grant — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["after"],
+  "required": ["entry"],
   "properties": {
-    "after": {
-      "description": "The AclEntry the maintainer should hold for the subject after this grant.",
+    "entry": {
+      "description": "The AclEntry the producer wants the maintainer to hold for the subject (intent). The maintainer's response carries the realized AclEntry it now holds.",
       "$ref": "#/$defs/AclEntry"
     },
     "reason": {
@@ -36,7 +36,7 @@
     "Response": {
       "$anchor": "response",
       "title": "ACL Grant — response payload",
-      "description": "The success response to an acl/grant request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/grant/1.0#response.",
+      "description": "The success response to an acl/grant request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/grant/0.1#response.",
       "type": "object",
       "additionalProperties": false,
       "required": ["entry"],

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/list/1.0",
+  "$id": "https://trusttasks.org/spec/acl/list/0.1",
   "title": "ACL List — payload",
   "type": "object",
   "additionalProperties": false,
@@ -52,19 +52,23 @@
     "Response": {
       "$anchor": "response",
       "title": "ACL List — response payload",
-      "description": "The success response to an acl/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/list/1.0#response.",
+      "description": "The success response to an acl/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/list/0.1#response.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["entries"],
+      "required": ["entries", "truncated"],
       "properties": {
         "entries": {
           "type": "array",
           "items": { "$ref": "#/$defs/AclEntry" },
           "description": "Matching AclEntry items, in maintainer-defined order. May be empty."
         },
+        "truncated": {
+          "type": "boolean",
+          "description": "true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent."
+        },
         "cursor": {
           "type": "string",
-          "description": "Opaque continuation token. Present when more entries remain; absent on the final page."
+          "description": "Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point. Consumers MUST treat the cursor as opaque and re-send it verbatim."
         },
         "redactedFields": {
           "type": "array",

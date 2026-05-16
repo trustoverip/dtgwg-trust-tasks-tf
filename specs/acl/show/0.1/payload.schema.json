@@ -1,28 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/change-role/1.0",
-  "title": "ACL Change Role — payload",
+  "$id": "https://trusttasks.org/spec/acl/show/0.1",
+  "title": "ACL Show — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subject", "fromRole", "toRole"],
+  "required": ["subject"],
   "properties": {
     "subject": {
       "type": "string",
-      "description": "VID of the party whose role is changing."
-    },
-    "fromRole": {
-      "type": "string",
       "minLength": 1,
-      "description": "The subject's prior role. Used by the maintainer for the optimistic concurrency check."
-    },
-    "toRole": {
-      "type": "string",
-      "minLength": 1,
-      "description": "The role to transition the subject to."
-    },
-    "reason": {
-      "type": "string",
-      "description": "Optional human-readable rationale."
+      "description": "VID of the party whose entry is being looked up."
     }
   },
   "$defs": {
@@ -45,15 +32,23 @@
     },
     "Response": {
       "$anchor": "response",
-      "title": "ACL Change Role — response payload",
-      "description": "The success response to an acl/change-role request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/change-role/1.0#response.",
+      "title": "ACL Show — response payload",
+      "description": "The success response to an acl/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/show/0.1#response.",
       "type": "object",
       "additionalProperties": false,
       "required": ["entry"],
       "properties": {
         "entry": {
-          "description": "The AclEntry the maintainer now holds for the subject. entry.role MUST equal the request's payload.toRole.",
-          "$ref": "#/$defs/AclEntry"
+          "description": "The looked-up AclEntry, or null if the subject is not in the ACL.",
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/AclEntry" }
+          ]
+        },
+        "redactedFields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Names of AclEntry fields the maintainer redacted (for example, ['metadata'])."
         }
       }
     }

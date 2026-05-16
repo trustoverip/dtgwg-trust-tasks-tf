@@ -1,6 +1,6 @@
 ---
 slug: acl/grant
-version: "1.0"
+version: "0.1"
 title: ACL — Grant
 summary: A granting authority records, in a verifiable form, that a subject has been added to an access-control list with a named role and optional scopes.
 status: draft
@@ -45,7 +45,7 @@ related:
 
 The **ACL — Grant** Trust Task records the addition of a subject to an access-control list. The *granting authority* declares to the *ACL maintainer* the *AclEntry* the maintainer should hold for the subject after the grant. The maintainer applies its own policy to decide whether to accept the grant; if accepted, the document is the evidentiary record of the change.
 
-The task is **idempotent**: re-emitting an identical grant against an unchanged ACL produces no state change. A grant that changes a subject's *role* **MUST NOT** use this task; use [`acl/change-role`](../../change-role/1.0/spec.md) instead. A grant that *narrows* the subject's scopes is a revocation; use [`acl/revoke`](../../revoke/1.0/spec.md).
+The task is **idempotent**: re-emitting an identical grant against an unchanged ACL produces no state change. A grant that changes a subject's *role* **MUST NOT** use this task; use [`acl/change-role`](../../change-role/0.1/spec.md) instead. A grant that *narrows* the subject's scopes is a revocation; use [`acl/revoke`](../../revoke/0.1/spec.md).
 
 The `role` vocabulary and the `scopes` semantics are opaque to the framework — each ACL maintainer defines its own.
 
@@ -59,41 +59,41 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 
 A conforming **producer** (the granting authority) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/grant/1.0`, with itself as `issuer` and the ACL maintainer as `recipient`.
-2. Populate `payload.after` with the *AclEntry* the maintainer should hold for the subject after this grant.
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/grant/0.1`, with itself as `issuer` and the ACL maintainer as `recipient`.
+2. Populate `payload.entry` with the *AclEntry* the maintainer should hold for the subject.
 3. Include a `proof` member per [SPEC.md §4.7](../../../../SPEC.md#47-proof).
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Where the role string is not recognized, respond with `acl/grant:role_not_recognized`. Where the granting authority is not permitted to assign the requested role, respond with the framework's `permission_denied` (see [SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)).
-3. Where the subject already exists in the ACL with a different role, respond with `permission_denied` and `details.reason` indicating that role changes use [`acl/change-role`](../../change-role/1.0/spec.md).
+3. Where the subject already exists in the ACL with a different role, respond with `permission_denied` and `details.reason` indicating that role changes use [`acl/change-role`](../../change-role/0.1/spec.md).
 4. On acceptance, persist the document as the evidentiary record of the change.
 
 ## Definitions
 
 * **Granting authority.** The party invoking the grant; identified by `issuer`. Typically holds an "admin" or equivalent role.
 * **ACL maintainer.** The party that holds and enforces the access-control list; identified by `recipient`.
-* **Subject.** The party being granted access; identified by `payload.after.subject`.
+* **Subject.** The party being granted access; identified by `payload.entry.subject`.
 * **AclEntry.** The canonical record of one subject's membership in the ACL.
 * **Role.** A short opaque string interpreted by the ACL maintainer (e.g. `admin`, `member`, `viewer`).
 * **Scopes.** An array of opaque strings restricting where the role applies (e.g. contexts, domains, resource prefixes).
 
 ## Request
 
-A *request* document carries `type: https://trusttasks.org/spec/acl/grant/1.0` with a payload that validates against the top-level schema in `payload.schema.json`.
+A *request* document carries `type: https://trusttasks.org/spec/acl/grant/0.1` with a payload that validates against the top-level schema in `payload.schema.json`.
 
 ### A new admin is added
 
 ```json
 {
   "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/grant/1.0",
+  "type": "https://trusttasks.org/spec/acl/grant/0.1",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-05-16T10:00:00Z",
   "payload": {
-    "after": {
+    "entry": {
       "subject": "did:web:alice.example",
       "role": "admin",
       "label": "Alice — primary admin"
@@ -117,12 +117,12 @@ The maintainer fills in `createdAt`/`createdBy` and returns the resulting entry 
 ```json
 {
   "id": "8a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
-  "type": "https://trusttasks.org/spec/acl/grant/1.0",
+  "type": "https://trusttasks.org/spec/acl/grant/0.1",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-05-16T10:05:00Z",
   "payload": {
-    "after": {
+    "entry": {
       "subject": "did:web:contractor.example",
       "role": "member",
       "scopes": ["context:project-alpha"],
@@ -137,7 +137,7 @@ The maintainer fills in `createdAt`/`createdBy` and returns the resulting entry 
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/acl/grant/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
+A success *response* document carries `type: https://trusttasks.org/spec/acl/grant/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
 The response payload is `{ entry: AclEntry }`, where `entry` is the canonical AclEntry the maintainer now holds for the subject. The granting authority **SHOULD** treat the maintainer's `entry` as the authoritative post-state, since the maintainer applies its own clock and may normalize fields.
 
@@ -150,7 +150,7 @@ Response to the first request example:
 ```json
 {
   "id": "5e3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
-  "type": "https://trusttasks.org/spec/acl/grant/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/grant/0.1#response",
   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:org.example",

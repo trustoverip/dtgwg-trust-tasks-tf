@@ -23,7 +23,7 @@ The framework that governs Trust Task documents — versioning, namespace, confo
 
 ## Submitting a new Trust Task specification
 
-The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/1.0` ↔ `specs/acl/grant/1.0/`). Each folder contains two files:
+The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/0.1` ↔ `specs/acl/grant/0.1/`). Each folder contains two files:
 
 - `spec.md` — YAML front matter (the spec's normative declarations) followed by the human-readable specification.
 - `payload.schema.json` — a JSON Schema 2020-12 document describing the `payload` member of conforming Trust Task documents.
@@ -32,7 +32,7 @@ To propose a new spec:
 
 1. **Fork** this repository and create a working branch.
 2. **Create your folder** under `specs/<slug>/<version>/`. The slug grammar (lowercase, hyphen-separated, optionally hierarchical) and reserved prefixes are defined in [SPEC.md §6.1](SPEC.md#61-type-uri).
-3. **Add `spec.md`** with the required YAML front matter (slug, version, title, summary, status, target framework version, category, keywords, authors, parties, proof requirement; optional `errorCodes`, `related`) followed by your specification prose. Include a `## Request` section with at least one complete example *Trust Task document*, and — if your spec defines a success response — a `## Response` section with paired response examples. See `specs/acl/grant/1.0/spec.md` for a worked example.
+3. **Add `spec.md`** with the required YAML front matter (slug, version, title, summary, status, target framework version, category, keywords, authors, parties, proof requirement; optional `errorCodes`, `related`) followed by your specification prose. Include a `## Request` section with at least one complete example *Trust Task document*, and — if your spec defines a success response — a `## Response` section with paired response examples. See `specs/acl/grant/0.1/spec.md` for a worked example.
 4. **Add `payload.schema.json`** — `$id` set to your spec's Type URI; `$schema` set to `https://json-schema.org/draft/2020-12/schema`. Where you define a success response, place its sub-schema under `$defs.Response` with `$anchor: "response"` so the `#response` fragment on a response document's `type` resolves to the right shape.
 5. **Validate locally:**
    ```sh

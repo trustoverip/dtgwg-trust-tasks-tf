@@ -1,15 +1,24 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/show/1.0",
-  "title": "ACL Show — payload",
+  "$id": "https://trusttasks.org/spec/acl/revoke/0.1",
+  "title": "ACL Revoke — payload",
   "type": "object",
   "additionalProperties": false,
   "required": ["subject"],
   "properties": {
     "subject": {
       "type": "string",
-      "minLength": 1,
-      "description": "VID of the party whose entry is being looked up."
+      "description": "VID of the party being revoked (or scope-reduced)."
+    },
+    "scopes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "description": "If present, the specific scopes to remove from the subject's entry. If absent, the entire entry is removed."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional human-readable rationale for the revocation."
     }
   },
   "$defs": {
@@ -32,23 +41,18 @@
     },
     "Response": {
       "$anchor": "response",
-      "title": "ACL Show — response payload",
-      "description": "The success response to an acl/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/show/1.0#response.",
+      "title": "ACL Revoke — response payload",
+      "description": "The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.",
       "type": "object",
       "additionalProperties": false,
       "required": ["entry"],
       "properties": {
         "entry": {
-          "description": "The looked-up AclEntry, or null if the subject is not in the ACL.",
+          "description": "The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.",
           "oneOf": [
             { "type": "null" },
             { "$ref": "#/$defs/AclEntry" }
           ]
-        },
-        "redactedFields": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Names of AclEntry fields the maintainer redacted (for example, ['metadata'])."
         }
       }
     }

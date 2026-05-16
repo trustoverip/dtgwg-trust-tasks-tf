@@ -1,6 +1,6 @@
 ---
 slug: acl/list
-version: "1.0"
+version: "0.1"
 title: ACL — List
 summary: A querying party asks an ACL maintainer to enumerate the entries currently in its access-control list, with optional filters and paging.
 status: draft
@@ -45,7 +45,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 
 A conforming **producer** (the querying party) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/list/1.0`, with itself as `issuer` and the ACL maintainer as `recipient`.
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/list/0.1`, with itself as `issuer` and the ACL maintainer as `recipient`.
 2. Populate `payload` with any subset of the filter and paging members defined by the schema.
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
@@ -66,14 +66,14 @@ Maintainers **MAY** redact entry fields based on the querying party's role and *
 
 ## Request
 
-A *request* document carries `type: https://trusttasks.org/spec/acl/list/1.0` with a payload that validates against the top-level schema in `payload.schema.json`. All payload members are optional; an empty payload requests the default list.
+A *request* document carries `type: https://trusttasks.org/spec/acl/list/0.1` with a payload that validates against the top-level schema in `payload.schema.json`. All payload members are optional; an empty payload requests the default list.
 
 ### List everyone
 
 ```json
 {
   "id": "2e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/list/1.0",
+  "type": "https://trusttasks.org/spec/acl/list/0.1",
   "issuer": "did:web:admin.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-15T10:00:00Z",
@@ -81,12 +81,14 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/list/1.0` wi
 }
 ```
 
+> A request with no filters is still subject to the maintainer's `pageSize` ceiling. Implementations **MUST** assume large ACLs will be truncated; check `payload.truncated` on the response (and, where present, follow `payload.cursor`) before treating the returned `entries` as the complete set.
+
 ### Filter by role, with paging
 
 ```json
 {
   "id": "5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/list/1.0",
+  "type": "https://trusttasks.org/spec/acl/list/0.1",
   "issuer": "did:web:auditor.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-15T10:05:00Z",
@@ -102,7 +104,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/list/1.0` wi
 ```json
 {
   "id": "7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/list/1.0",
+  "type": "https://trusttasks.org/spec/acl/list/0.1",
   "issuer": "did:web:auditor.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-15T10:06:00Z",
@@ -130,12 +132,13 @@ Returns entries whose role is `member`, whose `scopes` array contains `context:p
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/acl/list/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
+A success *response* document carries `type: https://trusttasks.org/spec/acl/list/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
 The response payload carries:
 
 * `entries` — an array of *AclEntry* items matching the filters, in maintainer-defined order. **MAY** be empty.
-* `cursor` — present iff more entries remain; opaque to the consumer.
+* `truncated` — **REQUIRED** boolean. `true` when more matching entries exist beyond `entries`; `false` when the response is the complete result. Consumers **MUST** check this before treating `entries` as exhaustive.
+* `cursor` — present only when `truncated` is `true` **and** the maintainer supports pagination from this point. Opaque to the consumer; re-send verbatim to fetch the next page. A response with `truncated: true` but no `cursor` means the maintainer cut the result short and cannot continue (for example, an enforced maximum total result size); the consumer **SHOULD** narrow its filter and re-query.
 * `redactedFields` — optional; lists *AclEntry* field names the maintainer redacted from every returned entry.
 
 Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
@@ -147,7 +150,7 @@ Response to the "Filter by role, with paging" request example:
 ```json
 {
   "id": "6c3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
-  "type": "https://trusttasks.org/spec/acl/list/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/list/0.1#response",
   "threadId": "5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:auditor.example",
@@ -168,12 +171,13 @@ Response to the "Filter by role, with paging" request example:
         "createdBy": "did:web:alice.example"
       }
     ],
+    "truncated": true,
     "cursor": "eyJvZmZzZXQiOjUwfQ"
   }
 }
 ```
 
-`cursor` is present, so the auditor sends a continuation request to fetch the next page.
+`truncated` is `true` and `cursor` is present, so the auditor sends a continuation request to fetch the next page.
 
 ### A page with redactions
 
@@ -182,7 +186,7 @@ A non-administrator queries; the maintainer returns entries but blanket-redacts 
 ```json
 {
   "id": "7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
-  "type": "https://trusttasks.org/spec/acl/list/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/list/0.1#response",
   "threadId": "5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:auditor.example",
@@ -196,12 +200,13 @@ A non-administrator queries; the maintainer returns entries but blanket-redacts 
         "createdBy": "did:web:org.example"
       }
     ],
+    "truncated": false,
     "redactedFields": ["metadata", "label"]
   }
 }
 ```
 
-`label` and `metadata` are absent from each entry because the maintainer's policy redacts them for this querying party.
+`truncated: false` confirms the auditor has the complete result; `label` and `metadata` are absent from each entry because the maintainer's policy redacts them for this querying party.
 
 ## Security & Privacy
 

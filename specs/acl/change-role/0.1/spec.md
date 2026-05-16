@@ -1,6 +1,6 @@
 ---
 slug: acl/change-role
-version: "1.0"
+version: "0.1"
 title: ACL — Change Role
 summary: An authorized party records the transition of a subject's role within an access-control list, with an optimistic concurrency check against the prior role.
 status: draft
@@ -50,7 +50,7 @@ related:
 
 ## Abstract
 
-The **ACL — Change Role** Trust Task records the transition of a subject's role in an access-control list. It is the dedicated operation for role transitions; grants and revocations **MUST** use [`acl/grant`](../../grant/1.0/spec.md) and [`acl/revoke`](../../revoke/1.0/spec.md) respectively.
+The **ACL — Change Role** Trust Task records the transition of a subject's role in an access-control list. It is the dedicated operation for role transitions; grants and revocations **MUST** use [`acl/grant`](../../grant/0.1/spec.md) and [`acl/revoke`](../../revoke/0.1/spec.md) respectively.
 
 The task is **state-checked**: the producer declares both the role the subject is moving *from* and the role they are moving *to*. The maintainer **MUST** reject the change with `acl/change-role:state_mismatch` if the subject's actual current role does not match `payload.fromRole` — so a race against another administrator surfaces as an error rather than a silent overwrite.
 
@@ -66,7 +66,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 
 A conforming **producer** (the changing authority) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/change-role/1.0`, with itself as `issuer` and the ACL maintainer as `recipient`.
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/change-role/0.1`, with itself as `issuer` and the ACL maintainer as `recipient`.
 2. Populate `payload.subject`, `payload.fromRole`, and `payload.toRole`.
 3. Include a `proof` member per [SPEC.md §4.7](../../../../SPEC.md#47-proof).
 
@@ -88,14 +88,14 @@ Maintainers **MAY** require stronger transport-binding-level authentication for 
 
 ## Request
 
-A *request* document carries `type: https://trusttasks.org/spec/acl/change-role/1.0` with a payload that validates against the top-level schema in `payload.schema.json`.
+A *request* document carries `type: https://trusttasks.org/spec/acl/change-role/0.1` with a payload that validates against the top-level schema in `payload.schema.json`.
 
 ### Promotion from member to moderator
 
 ```json
 {
   "id": "1b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/change-role/1.0",
+  "type": "https://trusttasks.org/spec/acl/change-role/0.1",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-10T14:00:00Z",
@@ -123,7 +123,7 @@ A changing authority emits:
 ```json
 {
   "id": "3c5e2a1b-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/acl/change-role/1.0",
+  "type": "https://trusttasks.org/spec/acl/change-role/0.1",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-06-11T09:00:00Z",
@@ -158,7 +158,7 @@ The changing authority re-reads state and retries from the new prior role.
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/acl/change-role/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
+A success *response* document carries `type: https://trusttasks.org/spec/acl/change-role/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
 The response payload is `{ entry: AclEntry }`, where `entry.role` equals `payload.toRole` of the request. The changing authority can verify in one step that the transition landed.
 
@@ -171,7 +171,7 @@ Response to the first request example:
 ```json
 {
   "id": "2c3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
-  "type": "https://trusttasks.org/spec/acl/change-role/1.0#response",
+  "type": "https://trusttasks.org/spec/acl/change-role/0.1#response",
   "threadId": "1b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:org.example",
