@@ -319,7 +319,7 @@ The framework places no constraint on the form of a `threadId` beyond requiring 
 > ```json
 > {
 >   "id": "8a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
->   "type": "https://trusttasks.org/spec/trust-task-error/1.0",
+>   "type": "https://trusttasks.org/spec/trust-task-error/0.1",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
 >   "issuer": "did:web:bank.example",
 >   "recipient": "did:web:verifier.example",
@@ -545,7 +545,7 @@ The `payload` of an *error response* has the following members. The correlation 
 > ```json
 > {
 >   "id": "9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
->   "type": "https://trusttasks.org/spec/trust-task-error/1.0",
+>   "type": "https://trusttasks.org/spec/trust-task-error/0.1",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
 >   "issuer": "did:web:bank.example",
 >   "recipient": "did:web:verifier.example",
@@ -608,7 +608,7 @@ A *consumer* that does not recognize an extended `code` **SHOULD** treat the err
 > ```json
 > {
 >   "id": "c4d2f713-9a8e-4d04-b29c-2f1b0b4cbe71",
->   "type": "https://trusttasks.org/spec/trust-task-error/1.0",
+>   "type": "https://trusttasks.org/spec/trust-task-error/0.1",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
 >   "issuer": "did:web:bank.example",
 >   "recipient": "did:web:verifier.example",

@@ -22,10 +22,11 @@
     "slug": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$",
-      "not": {
-        "pattern": "^trust-task($|-|/)"
-      },
-      "description": "Lowercase, hyphen-separated short name; may be organized into one or more `/`-delimited path segments (e.g. `acl/grant`). Each segment satisfies the single-segment grammar. The slug `trust-task` and any slug whose first segment is `trust-task` or begins with `trust-task-` are reserved per SPEC §6.1. The slug MUST match the relative folder path from `specs/` to the version directory's parent."
+      "anyOf": [
+        { "not": { "pattern": "^trust-task($|-|/)" } },
+        { "enum": ["trust-task", "trust-task-error", "trust-task-ok", "trust-task-next-step"] }
+      ],
+      "description": "Lowercase, hyphen-separated short name; may be organized into one or more `/`-delimited path segments (e.g. `acl/grant`). Each segment satisfies the single-segment grammar. The slug `trust-task` and any slug whose first segment is `trust-task` or begins with `trust-task-` are reserved per SPEC §6.1; only the framework-defined slugs `trust-task`, `trust-task-error`, `trust-task-ok`, and `trust-task-next-step` may use the reserved namespace (the registry hosts those itself). The slug MUST match the relative folder path from `specs/` to the version directory's parent."
     },
     "version": {
       "type": "string",

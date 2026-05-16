@@ -140,7 +140,7 @@ But Bob's current role in the maintainer's ACL is `moderator` (changed moments e
 ```json
 {
   "id": "9c5e2a1b-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/trust-task-error/1.0",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.1",
   "threadId": "3c5e2a1b-1b81-4d3e-9b51-7a3c89e3d1f2",
   "issuer": "did:web:maintainer.example",
   "recipient": "did:web:org.example",

@@ -41,3 +41,9 @@
 # A rule on /specs/acl/ covers every spec under that prefix
 # (acl/grant, acl/revoke, acl/change-role, acl/list, acl/show).
 /specs/acl/                        @stormer78
+
+# Framework-reserved response types: registry-published implementations
+# of the slugs reserved by SPEC §6.1. Framework editors only.
+/specs/trust-task-error/           @stormer78
+/specs/trust-task-ok/              @stormer78
+/specs/trust-task-next-step/       @stormer78

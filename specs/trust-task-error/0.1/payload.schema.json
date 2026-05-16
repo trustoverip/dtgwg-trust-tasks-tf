@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task-error/0.1",
+  "title": "Trust Task Error — payload",
+  "description": "The canonical error-response payload per SPEC.md §8.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "retryable"],
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Short identifier for the failure category. MUST be either a framework standard code (SPEC.md §8.3) or an extended code namespaced by the originating spec's slug (SPEC.md §8.5, e.g. 'acl/grant:role_not_recognized').",
+      "anyOf": [
+        {
+          "enum": [
+            "malformed_request",
+            "unsupported_type",
+            "unsupported_version",
+            "expired",
+            "proof_required",
+            "proof_invalid",
+            "permission_denied",
+            "wrong_recipient",
+            "identity_mismatch",
+            "task_failed",
+            "unavailable",
+            "internal_error"
+          ]
+        },
+        {
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-z0-9_]*$"
+        }
+      ]
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of the error. Non-normative; intended for logs and operator UI."
+    },
+    "retryable": {
+      "type": "boolean",
+      "description": "true if the producer of the original document MAY retry; false if retrying with the same document is not expected to succeed."
+    },
+    "retryAfter": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp before which the producer SHOULD NOT retry. Meaningful only when retryable is true."
+    },
+    "details": {
+      "type": "object",
+      "description": "Optional task-specific extension data. Per-spec error code declarations may pin the shape via a JSON Schema fragment."
+    }
+  }
+}

@@ -11,6 +11,13 @@
 
 window.TT_CATEGORIES = [
   {
+    id: "framework",
+    name: "Framework",
+    color: "navy",
+    blurb: "Framework-defined response and meta types that every Trust Task ecosystem reuses (e.g. trust-task-error).",
+    icon: "anchor"
+  },
+  {
     id: "permission",
     name: "Permission",
     color: "violet",
