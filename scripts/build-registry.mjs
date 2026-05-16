@@ -57,6 +57,23 @@ function lastModified(dirRel) {
   return new Date().toISOString().slice(0, 10);
 }
 
+function firstAdded(dirRel) {
+  // Oldest commit that touched the spec folder; treated as the spec's creation date.
+  // Rename-aware tracking would require --follow per file (which doesn't apply to
+  // folders) — for now the per-version folder is the unit and renames produce a
+  // new "created" date, which matches how versions are independently editable.
+  try {
+    const out = execSync(
+      `git log --reverse --format=%cI -- "${dirRel}"`,
+      { cwd: ROOT, encoding: 'utf8' }
+    ).trim();
+    if (out) return out.split('\n')[0].slice(0, 10);
+  } catch {
+    /* ignore — fall through */
+  }
+  return new Date().toISOString().slice(0, 10);
+}
+
 function discoverSpecs() {
   if (!fs.existsSync(SPECS_DIR)) return [];
   const found = [];
@@ -146,6 +163,7 @@ function buildTask(entry, meta, schema) {
     status: meta.status,
     version: meta.version,
     targetFrameworkVersion: meta.targetFrameworkVersion,
+    created: firstAdded(path.relative(ROOT, entry.dir)),
     updated: lastModified(path.relative(ROOT, entry.dir)),
     authors: meta.authors,
     parties: meta.parties.map((p) => p.role),

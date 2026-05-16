@@ -111,6 +111,22 @@ function HomePage({ tweaks, setRoute }) {
     return c;
   }, []);
 
+  // 10 newest specs (by created date, desc)
+  const newestSpecs = useM(() => {
+    return [...window.TT_TASKS]
+      .sort((a, b) => (b.created || "").localeCompare(a.created || ""))
+      .slice(0, 10);
+  }, []);
+
+  // 10 most-recently-updated specs, excluding ones that haven't been touched since
+  // creation (those belong in the "newest" list instead).
+  const recentlyUpdatedSpecs = useM(() => {
+    return [...window.TT_TASKS]
+      .filter(t => t.created && t.updated && t.updated > t.created)
+      .sort((a, b) => (b.updated || "").localeCompare(a.updated || ""))
+      .slice(0, 10);
+  }, []);
+
   // top keywords across registry
   const topKeywords = useM(() => {
     const kws = {};
@@ -287,13 +303,12 @@ function HomePage({ tweaks, setRoute }) {
               <div className="tt-stat__accent" style={{ background: "var(--tt-violet)" }}></div>
               <div className="tt-stat__num"><AnimNumber value={stats.categories} /></div>
               <div className="tt-stat__label">Categories</div>
-              <div className="tt-stat__sub">Identity, Credentials, Payments…</div>
+              <div className="tt-stat__sub">{window.TT_CATEGORIES.map(c => c.name).join(", ")}</div>
             </div>
             <div className="tt-stat">
               <div className="tt-stat__accent" style={{ background: "var(--tt-amber)" }}></div>
               <div className="tt-stat__num"><AnimNumber value={stats.orgs} /></div>
               <div className="tt-stat__label">Spec owners</div>
-              <div className="tt-stat__sub">DTGWG task forces</div>
             </div>
             <div className="tt-stat">
               <div className="tt-stat__accent" style={{ background: "var(--tt-sky)" }}></div>
@@ -307,18 +322,43 @@ function HomePage({ tweaks, setRoute }) {
 
       <hr className="protocol-rule container" aria-hidden="true" />
 
-      {/* FEATURED */}
+      {/* NEWEST + RECENTLY UPDATED */}
       <section>
         <div className="container">
           <div className="section-head">
-            <span className="eyebrow">Featured trust tasks</span>
-            <h2>Recently updated specifications.</h2>
-            <p className="lead">Six self-contained tasks across the registry, each with a JSON schema and conformance rules.</p>
+            <span className="eyebrow">What's new in the registry</span>
+            <h2>Recently added and updated.</h2>
+            <p className="lead">The latest activity across the registry. New specifications on the left; ones that have been revised since their initial publication on the right.</p>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)" }}>
-            {window.TT_TASKS.slice(0, 4).map(t => (
-              <RegistryCard key={t.id} task={t} setRoute={setRoute} />
-            ))}
+          <div className="tt-home-lists">
+            <div>
+              <h3 className="tt-home-list__heading">Newest specifications</h3>
+              {newestSpecs.length === 0 ? (
+                <p style={{ color: "var(--tt-text-muted)" }}>No specifications have been published yet.</p>
+              ) : (
+                <ul className="tt-home-list">
+                  {newestSpecs.map(t => (
+                    <li key={`new-${t.slug}-${t.version}`}>
+                      <SpecListRow task={t} dateLabel="Added" dateValue={t.created} setRoute={setRoute} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div>
+              <h3 className="tt-home-list__heading">Recently updated</h3>
+              {recentlyUpdatedSpecs.length === 0 ? (
+                <p style={{ color: "var(--tt-text-muted)" }}>No specifications have been revised since their initial publication.</p>
+              ) : (
+                <ul className="tt-home-list">
+                  {recentlyUpdatedSpecs.map(t => (
+                    <li key={`upd-${t.slug}-${t.version}`}>
+                      <SpecListRow task={t} dateLabel="Updated" dateValue={t.updated} setRoute={setRoute} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
           <div style={{ marginTop: "var(--tt-space-6)", textAlign: "right" }}>
             <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }} className="btn btn--ghost">
@@ -328,6 +368,29 @@ function HomePage({ tweaks, setRoute }) {
         </div>
       </section>
     </React.Fragment>
+  );
+}
+
+/* ============================================================
+   COMPACT SPEC ROW for HomePage's newest / updated lists
+   ============================================================ */
+function SpecListRow({ task, dateLabel, dateValue, setRoute }) {
+  const cat = window.TT_CATEGORIES.find(c => c.id === task.category);
+  return (
+    <a
+      className="tt-home-list__row"
+      href={`/spec/${task.slug}/${task.version}`}
+      onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: task.slug, version: task.version }); }}
+      style={{ "--accent": catColor(task.category) }}
+    >
+      <span className="tt-home-list__slug">
+        <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)" }}>{task.slug}</span>
+        <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginLeft: "0.4em" }}>v{task.version}</span>
+      </span>
+      <span className="tt-home-list__title">{task.title}</span>
+      <span className="tt-home-list__cat" style={{ color: catColor(task.category) }}>{cat ? cat.name : task.category}</span>
+      <span className="tt-home-list__date" title={dateLabel}>{dateValue}</span>
+    </a>
   );
 }
 
