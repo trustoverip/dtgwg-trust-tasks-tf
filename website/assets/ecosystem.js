@@ -17,10 +17,10 @@ window.TT_ECOSYSTEM = [
     accent: "violet",
     self: true,
     summary:
-      "JSON-based, transport-agnostic specifications for the verifiable work that happens between two parties — KYC handoffs, consent receipts, payment commitments, credential issuance. Each task is a typed, semver-versioned reference (https://trusttasks.org/spec/<task>/<semver>) that any implementation can target.",
+      "JSON-based, transport-agnostic specifications for the verifiable work that happens between two parties — KYC handoffs, consent receipts, payment commitments, credential issuance. Each task is a typed, major.minor-versioned reference (https://trusttasks.org/spec/<task>/<major.minor>) that any implementation can target.",
     bullets: [
       "Self-contained, transport-agnostic, JSON-based",
-      "Semver-versioned type URIs",
+      "Major.minor versioned type URIs",
       "Public review under Trust over IP DTGWG",
     ],
     primary: { label: "trusttasks.org", href: "https://trusttasks.org" },

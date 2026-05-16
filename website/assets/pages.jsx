@@ -46,7 +46,7 @@ function HomePage({ tweaks, setRoute }) {
       if (activeCat && t.category !== activeCat) return false;
       if (activeKw && !t.keywords.includes(activeKw)) return false;
       if (!ql) return true;
-      const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.number).toLowerCase();
+      const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.slug).toLowerCase();
       return hay.includes(ql);
     });
   }, [q, activeCat, activeKw]);
@@ -132,7 +132,7 @@ function HomePage({ tweaks, setRoute }) {
                         onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: t.slug, version: t.version }); }}
                         style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "var(--tt-space-3)", padding: "var(--tt-space-3) var(--tt-space-4)", background: "var(--tt-surface)", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", borderBottom: "1px solid var(--tt-border)", textDecoration: "none", color: "inherit" }}
                       >
-                        <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em" }}>{t.number}</span>
+                        <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em" }}>v{t.version}</span>
                         <span style={{ flex: 1, fontFamily: "var(--tt-font-display)", fontSize: "var(--tt-text-md)" }}><Highlight text={t.title} query={q} /></span>
                         <TTStatus status={t.status} />
                       </a>
@@ -204,7 +204,7 @@ function HomePage({ tweaks, setRoute }) {
           <div className="section-head">
             <span className="eyebrow">Featured trust tasks</span>
             <h2>Recently updated specifications.</h2>
-            <p className="lead">Six self-contained tasks across the registry, each with a JSON schema, conformance rules, and reference examples.</p>
+            <p className="lead">Six self-contained tasks across the registry, each with a JSON schema and conformance rules.</p>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)" }}>
             {window.TT_TASKS.slice(0, 4).map(t => (
@@ -233,7 +233,7 @@ function RegistryCard({ task, setRoute, query, activeKw, onKwToggle }) {
       onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: task.slug, version: task.version }); }}
       style={{ "--accent": catColor(task.category) }}
     >
-      <div className="tt-task-card__num">{task.number}<br /><span style={{ opacity: 0.7 }}>v{task.version}</span></div>
+      <div className="tt-task-card__num">{task.slug}<br /><span style={{ opacity: 0.7 }}>v{task.version}</span></div>
       <div>
         <h3 className="tt-task-card__title"><Highlight text={task.title} query={query} /></h3>
         <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -292,7 +292,7 @@ function RegistryPage({ initial, setRoute }) {
       if (activeKw && !t.keywords.includes(activeKw)) return false;
       if (activeStatus && t.status !== activeStatus) return false;
       if (!ql) return true;
-      const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.number).toLowerCase();
+      const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.slug).toLowerCase();
       return hay.includes(ql);
     });
   }, [q, activeCat, activeKw, activeStatus]);
@@ -409,7 +409,7 @@ function SpecPage({ slug, version, id, setRoute }) {
   const [activeSection, setActiveSection] = useS("abstract");
 
   useE(() => {
-    const ids = ["abstract", "status", "metadata", "conformance", "definitions", "schema", "examples", "considerations", "related"];
+    const ids = ["abstract", "status", "metadata", "conformance", "definitions", "schema", "considerations", "related"];
     const onScroll = () => {
       for (const sid of ids) {
         const el = document.getElementById(sid);
@@ -430,7 +430,7 @@ function SpecPage({ slug, version, id, setRoute }) {
     <section className="container tt-spec">
       <div>
         <div style={{ marginBottom: "var(--tt-space-4)" }}>
-          <span className="tt-spec__num">{task.number} · v{task.version}</span>
+          <span className="tt-spec__num">{task.slug} · v{task.version}</span>
         </div>
         <h1 className="tt-spec__title">{task.title}</h1>
         <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{task.summary}</p>
@@ -486,10 +486,9 @@ function SpecPage({ slug, version, id, setRoute }) {
 
         <h2 id="metadata">3. Metadata</h2>
         <dl className="tt-meta-grid">
-          <dt>Identifier</dt><dd>{task.number}</dd>
+          <dt>Slug</dt><dd>{task.slug}</dd>
           <dt>Version</dt><dd>{task.version}</dd>
           <dt>Type URI</dt><dd><code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{typeURI}</code></dd>
-          <dt>Schema URI</dt><dd>{task.schema["$id"]}</dd>
           <dt>Parties</dt><dd>{task.parties.join(" ↔ ")}</dd>
           <dt>Category</dt><dd>{cat.name}</dd>
           <dt>Keywords</dt><dd>{task.keywords.join(", ")}</dd>
@@ -523,25 +522,10 @@ function SpecPage({ slug, version, id, setRoute }) {
         </ul>
 
         <h2 id="schema">6. JSON Schema</h2>
-        <p>The normative JSON Schema for this Trust Task (Draft 2020-12):</p>
+        <p>The normative JSON Schema for this Trust Task's <code>payload</code> member (Draft 2020-12). The outer document structure (<code>id</code>, <code>type</code>, <code>issuer</code>, <code>recipient</code>, <code>issuedAt</code>, <code>expiresAt</code>, <code>proof</code>) is defined by the framework specification.</p>
         <CodeBlock json={task.schema} />
 
-        <h2 id="examples">7. Examples</h2>
-        <h3>7.1 Minimal example</h3>
-        <p>A producer-side instance demonstrating the required fields:</p>
-        <CodeBlock json={task.example} />
-
-        <h3>7.2 Wire envelope</h3>
-        <p>The same task instance carried in a transport-agnostic envelope (illustrative — non-normative):</p>
-        <CodeBlock json={{
-          type: "https://trusttasks.org/envelope/v1",
-          task: task.number,
-          version: task.version,
-          payload: task.example,
-          signature: { alg: "EdDSA", kid: "did:web:example#key-1", value: "z58D…" }
-        }} />
-
-        <h2 id="considerations">8. Security &amp; Privacy Considerations</h2>
+        <h2 id="considerations">7. Security &amp; Privacy Considerations</h2>
         <p>
           Implementers MUST consider the integrity, authenticity, and privacy of the task payload. The
           JSON document defined here carries no inherent transport security; conforming
@@ -549,7 +533,7 @@ function SpecPage({ slug, version, id, setRoute }) {
           SHOULD minimize the personal data carried in the payload to that necessary for the task.
         </p>
 
-        <h2 id="related">9. Related Trust Tasks</h2>
+        <h2 id="related">8. Related Trust Tasks</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-3)" }}>
           {(task.related || []).map(rid => {
             const r = window.TT_TASKS.find(t => t.id === rid);
@@ -557,7 +541,7 @@ function SpecPage({ slug, version, id, setRoute }) {
             return (
               <a key={rid} href={`/spec/${(window.TT_TASKS.find(x=>x.id===rid)||{}).slug}/${(window.TT_TASKS.find(x=>x.id===rid)||{}).version}`} onClick={(e) => { e.preventDefault(); (() => { const rr = window.TT_TASKS.find(x => x.id === rid); setRoute({ name: "spec", slug: rr?.slug, version: rr?.version }); })(); window.scrollTo(0, 0); }}
                  style={{ padding: "var(--tt-space-4)", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--tt-border)", textDecoration: "none", color: "inherit" }}>
-                <span><span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", marginRight: "var(--tt-space-3)" }}>{r.number}</span>{r.title}</span>
+                <span><span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", marginRight: "var(--tt-space-3)" }}>{r.slug}</span>{r.title}</span>
                 <TTStatus status={r.status} />
               </a>
             );
@@ -581,9 +565,8 @@ function SpecPage({ slug, version, id, setRoute }) {
             ["conformance", "4. Conformance"],
             ["definitions", "5. Definitions"],
             ["schema", "6. JSON Schema"],
-            ["examples", "7. Examples"],
-            ["considerations", "8. Security & Privacy"],
-            ["related", "9. Related"]
+            ["considerations", "7. Security & Privacy"],
+            ["related", "8. Related"]
           ].map(([sid, label]) => (
             <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{label}</a></li>
           ))}
@@ -836,10 +819,10 @@ function ContributingPage() {
           <h2>The lifecycle.</h2>
           <ol style={{ paddingLeft: "1.2em", lineHeight: 1.9, color: "var(--tt-text-muted)" }}>
             <li><b style={{ color: "var(--tt-text)" }}>Propose.</b> Open an issue on the <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues" target="_blank" rel="noreferrer">repository</a> describing the task: parties, motivation, prior art. The task force triages within two weeks.</li>
-            <li><b style={{ color: "var(--tt-text)" }}>Draft.</b> Once accepted, fork the spec template and submit a pull request. The task is assigned an identifier (TT-NNNN) and lands in the registry as <i>draft</i>.</li>
+            <li><b style={{ color: "var(--tt-text)" }}>Draft.</b> Once accepted, fork the spec template and submit a pull request. The task is assigned a slug (e.g. <code>kyc-handoff</code>) and lands in the registry as <i>draft</i>.</li>
             <li><b style={{ color: "var(--tt-text)" }}>Review.</b> Public review during DTGWG meetings. Two implementations from independent parties are required before promotion.</li>
             <li><b style={{ color: "var(--tt-text)" }}>Candidate.</b> Once implementations are demonstrated, the spec moves to <i>candidate</i> status. The schema is frozen except for clarifications.</li>
-            <li><b style={{ color: "var(--tt-text)" }}>Standard.</b> After a 90-day stability window with no breaking changes, the candidate is promoted to <i>standard</i>. Future revisions follow semver.</li>
+            <li><b style={{ color: "var(--tt-text)" }}>Standard.</b> After a 90-day stability window with no breaking changes, the candidate is promoted to <i>standard</i>. Future revisions follow a <code style={{ fontFamily: "var(--tt-font-mono)" }}>major.minor</code> version scheme: minor bumps are backwards-compatible additions, major bumps indicate breaking changes.</li>
           </ol>
 
           <hr className="protocol-rule" aria-hidden="true" />
@@ -877,7 +860,7 @@ function GlossaryPage() {
     ["Status", "The maturity level of a specification: draft (working), candidate (frozen, two implementations), or standard (stable, 90 days unchanged)."],
     ["Verification", "The act of confirming a task is complete. Both parties co-sign the result; the verification is itself portable evidence."],
     ["Transport", "Any channel that conveys a Trust Task instance from one party to another. The specification is indifferent to the choice."],
-    ["Trust Registry", "A queryable directory of authorized entities and their roles within a governance framework. See TT-0005."],
+    ["Trust Registry", "A queryable directory of authorized entities and their roles within a governance framework. See the trust-registry-query specification."],
   ];
   return (
     <React.Fragment>

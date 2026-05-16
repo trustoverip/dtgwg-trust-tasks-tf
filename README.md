@@ -12,9 +12,15 @@ Trust Tasks define the specifications and standards for achieving a particular t
 
 By decoupling the task definition from its delivery mechanism, Trust Tasks enable interoperability across different transport protocols and technology stacks while ensuring that every party involved has a complete, unambiguous description of what is required to fulfill the task.
 
+## Specification
+
+The framework specification — defining the Trust Task document structure, version scheme, namespace, conformance rules, and response types — is maintained in [`SPEC.md`](SPEC.md) in this repository.
+
+Individual Trust Task specifications (e.g. `kyc-handoff`, `consent-receipt`) are conforming refinements of the framework and are addressable at `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>` under HTTP content negotiation.
+
 ## Editor's Copy
 
-The latest rendered version of this specification is available at:
+The latest rendered version of the registry is available at:
 [https://trustoverip.github.io/dtgwg-trust-tasks-tf/](https://trustoverip.github.io/dtgwg-trust-tasks-tf/)
 
 ## Contributing
