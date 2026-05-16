@@ -5,7 +5,7 @@ title: ACL — Grant
 summary: A granting authority records, in a verifiable form, that a subject has been added to an access-control list with a named role and optional scopes.
 status: draft
 targetFrameworkVersion: "0.1"
-category: governance
+category: permission
 keywords:
   - acl
   - access-control
@@ -14,7 +14,7 @@ keywords:
   - grant
   - admin
 authors:
-  - DTGWG Governance TF
+  - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Granting authority
     requirement: REQUIRED

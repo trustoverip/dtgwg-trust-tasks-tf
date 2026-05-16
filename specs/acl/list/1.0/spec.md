@@ -5,7 +5,7 @@ title: ACL — List
 summary: A querying party asks an ACL maintainer to enumerate the entries currently in its access-control list, with optional filters.
 status: draft
 targetFrameworkVersion: "0.1"
-category: governance
+category: permission
 keywords:
   - acl
   - access-control
@@ -13,7 +13,7 @@ keywords:
   - enumeration
   - query
 authors:
-  - DTGWG Governance TF
+  - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Querying party
     requirement: REQUIRED

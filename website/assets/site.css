@@ -679,7 +679,8 @@ mark.tt-mark {
   font-family: var(--tt-font-mono);
   font-size: 0.92em;
   padding: 0.1em 0.35em;
-  background: var(--tt-surface-elev);
+  background: var(--tt-surface-alt);
+  color: var(--tt-text);
   border: 1px solid var(--tt-border);
   border-radius: 3px;
 }
@@ -687,7 +688,8 @@ mark.tt-mark {
   margin: var(--tt-space-4) 0;
   padding: var(--tt-space-4);
   overflow: auto;
-  background: var(--tt-surface-elev);
+  background: var(--tt-surface-alt);
+  color: var(--tt-text);
   border: 1px solid var(--tt-border);
   border-radius: var(--tt-radius);
   font-size: var(--tt-text-sm);
@@ -696,6 +698,7 @@ mark.tt-mark {
 .tt-prose pre code {
   padding: 0;
   background: transparent;
+  color: inherit;
   border: 0;
   border-radius: 0;
   font-size: inherit;
@@ -704,7 +707,7 @@ mark.tt-mark {
   margin: var(--tt-space-4) 0;
   padding: var(--tt-space-4) var(--tt-space-5);
   border-left: 3px solid var(--tt-accent, var(--tt-violet));
-  background: var(--tt-surface-elev);
+  background: var(--tt-surface-alt);
   color: var(--tt-text);
 }
 .tt-prose blockquote > :last-child { margin-bottom: 0; }

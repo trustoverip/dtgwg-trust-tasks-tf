@@ -5,7 +5,7 @@ title: ACL — Change Role
 summary: An authorized party records the transition of a subject's role within an access-control list, capturing both prior and resulting state.
 status: draft
 targetFrameworkVersion: "0.1"
-category: governance
+category: permission
 keywords:
   - acl
   - access-control
@@ -14,7 +14,7 @@ keywords:
   - promote
   - demote
 authors:
-  - DTGWG Governance TF
+  - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Changing authority
     requirement: REQUIRED

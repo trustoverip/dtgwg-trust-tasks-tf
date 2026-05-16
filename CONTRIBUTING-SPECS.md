@@ -60,10 +60,10 @@ title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard
 targetFrameworkVersion: "0.1"      # SPEC.md MAJOR.MINOR this spec targets
-category: governance               # must be one of the TT_CATEGORIES ids
+category: permission               # must be one of the TT_CATEGORIES ids
 keywords: [acl, access-control, grant]
 authors:
-  - DTGWG Governance TF
+  - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Granting authority
     requirement: REQUIRED          # REQUIRED | RECOMMENDED | OPTIONAL

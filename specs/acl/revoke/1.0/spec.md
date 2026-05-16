@@ -5,7 +5,7 @@ title: ACL — Revoke
 summary: A revoking party records, in a verifiable form, that a subject has been removed from an access-control list, or that some of the subject's scopes have been withdrawn.
 status: draft
 targetFrameworkVersion: "0.1"
-category: governance
+category: permission
 keywords:
   - acl
   - access-control
@@ -14,7 +14,7 @@ keywords:
   - remove
   - leave
 authors:
-  - DTGWG Governance TF
+  - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Revoking party
     requirement: REQUIRED

@@ -5,7 +5,7 @@ title: ACL — Show
 summary: A querying party asks an ACL maintainer for the entry corresponding to a specific subject.
 status: draft
 targetFrameworkVersion: "0.1"
-category: governance
+category: permission
 keywords:
   - acl
   - access-control
@@ -13,7 +13,7 @@ keywords:
   - query
   - show
 authors:
-  - DTGWG Governance TF
+  - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Querying party
     requirement: REQUIRED
