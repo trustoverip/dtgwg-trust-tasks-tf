@@ -65,7 +65,7 @@ function TTFooter({ setRoute }) {
       <div className="container">
         <div className="tt-footer-strip">
           <div className="tt-footer-strip__org">
-            A <b style={{ color: "var(--tt-text)" }}>Trust over IP</b> Digital Trust Graph Working Group task force
+            A <b style={{ color: "var(--tt-text)" }}>Trust Over IP</b> Digital Trust Graph Working Group task force
           </div>
           <a href="https://trustoverip.org" target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
             trustoverip.org →

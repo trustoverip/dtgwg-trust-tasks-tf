@@ -1,6 +1,6 @@
 # Trust Tasks
 
-**Trust over IP Foundation — DTGWG Task Force**
+**Trust Over IP Foundation — DTGWG Task Force**
 
 | | |
 |---|---|
@@ -24,11 +24,11 @@ This document defines the **Trust Tasks** framework: a specification for the ver
 
 This section describes the status of this document at the time of its publication. Other documents may supersede this document.
 
-This is a **Working Draft** prepared by the Trust Tasks Task Force of the Decentralized Trust Graph Working Group (DTGWG) of the [Trust over IP Foundation](https://trustoverip.org). It has been produced by the editor listed above and has not yet been reviewed or endorsed by the DTGWG as a whole. Publication as a Working Draft does not imply endorsement by the Trust over IP Foundation membership.
+This is a **Working Draft** prepared by the Trust Tasks Task Force of the Decentralized Trust Graph Working Group (DTGWG) of the [Trust Over IP Foundation](https://trustoverip.org). It has been produced by the editor listed above and has not yet been reviewed or endorsed by the DTGWG as a whole. Publication as a Working Draft does not imply endorsement by the Trust Over IP Foundation membership.
 
 Comments on this document are welcome via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues). The editor expects substantive sections — in particular [§7. Minimum requirements](#7-minimum-requirements), [§8. Error responses](#8-error-responses), [§9. Transport bindings](#9-transport-bindings), and [§10. Security and Privacy Considerations](#10-security-and-privacy-considerations) — to evolve as individual Trust Task specifications progress through [§5.3 Maturity levels](#53-maturity-levels) and surface gaps in this framework.
 
-This document is governed by the [Trust over IP Foundation Patent and Copyright Grants](CONTRIBUTING.md).
+This document is governed by the [Trust Over IP Foundation Patent and Copyright Grants](CONTRIBUTING.md).
 
 ---
 
@@ -671,7 +671,7 @@ Because *Trust Task documents* are self-contained, a captured document remains e
 
 ## 12. Acknowledgments
 
-The editor thanks the members of the Trust over IP Foundation Decentralized Trust Graph Working Group for their ongoing review and contributions to this specification.
+The editor thanks the members of the Trust Over IP Foundation Decentralized Trust Graph Working Group for their ongoing review and contributions to this specification.
 
 ## Appendix A — Example Trust Task specification
 
