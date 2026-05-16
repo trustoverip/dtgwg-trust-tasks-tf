@@ -4,45 +4,15 @@
   "title": "ACL Grant — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subject", "role", "after"],
+  "required": ["after"],
   "properties": {
-    "subject": {
-      "type": "string",
-      "description": "VID of the party being granted access."
-    },
-    "role": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Role identifier interpreted by the ACL maintainer. Opaque to the framework."
-    },
-    "scopes": {
-      "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "description": "Opaque scope identifiers (e.g. contexts, domains, resource prefixes)."
-    },
-    "label": {
-      "type": "string",
-      "description": "Optional human-readable label for the entry."
-    },
-    "expiresAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Optional time after which this grant is no longer effective. Distinct from the framework's document-level expiresAt."
-    },
-    "metadata": {
-      "type": "object",
-      "description": "Ecosystem-defined extension members. Signed alongside the rest of the payload."
-    },
-    "before": {
-      "description": "The AclEntry as it existed before this grant, or null if the subject was not present.",
-      "oneOf": [
-        { "type": "null" },
-        { "$ref": "#/$defs/AclEntry" }
-      ]
-    },
     "after": {
-      "description": "The AclEntry as it exists after the maintainer accepts this grant.",
+      "description": "The AclEntry the maintainer should hold for the subject after this grant.",
       "$ref": "#/$defs/AclEntry"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional human-readable rationale."
     }
   },
   "$defs": {
@@ -51,16 +21,16 @@
       "additionalProperties": false,
       "required": ["subject", "role"],
       "properties": {
-        "subject":    { "type": "string" },
-        "role":       { "type": "string" },
-        "scopes":     { "type": "array", "items": { "type": "string" } },
-        "label":      { "type": "string" },
+        "subject":    { "type": "string", "description": "VID of the party in the ACL." },
+        "role":       { "type": "string", "minLength": 1, "description": "Opaque role identifier interpreted by the ACL maintainer." },
+        "scopes":     { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Opaque scope identifiers (e.g. contexts, domains, resource prefixes)." },
+        "label":      { "type": "string", "description": "Optional human-readable label." },
         "createdAt":  { "type": "string", "format": "date-time" },
         "createdBy":  { "type": "string", "description": "VID of the party that originally added this entry." },
         "updatedAt":  { "type": "string", "format": "date-time" },
         "updatedBy":  { "type": "string", "description": "VID of the party that last modified this entry." },
-        "expiresAt":  { "type": "string", "format": "date-time" },
-        "metadata":   { "type": "object" }
+        "expiresAt":  { "type": "string", "format": "date-time", "description": "Optional time after which the entry is no longer effective." },
+        "metadata":   { "type": "object", "description": "Ecosystem-defined extension members." }
       }
     },
     "Response": {
@@ -72,7 +42,7 @@
       "required": ["entry"],
       "properties": {
         "entry": {
-          "description": "The AclEntry that the maintainer now holds for the subject. MUST equal the request's payload.after.",
+          "description": "The canonical AclEntry the maintainer now holds for the subject.",
           "$ref": "#/$defs/AclEntry"
         }
       }

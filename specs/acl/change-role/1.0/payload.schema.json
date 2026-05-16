@@ -4,7 +4,7 @@
   "title": "ACL Change Role — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subject", "fromRole", "toRole", "before", "after"],
+  "required": ["subject", "fromRole", "toRole"],
   "properties": {
     "subject": {
       "type": "string",
@@ -13,24 +13,16 @@
     "fromRole": {
       "type": "string",
       "minLength": 1,
-      "description": "Role the subject is moving from. MUST equal payload.before.role."
+      "description": "The subject's prior role. Used by the maintainer for the optimistic concurrency check."
     },
     "toRole": {
       "type": "string",
       "minLength": 1,
-      "description": "Role the subject is moving to. MUST equal payload.after.role."
+      "description": "The role to transition the subject to."
     },
     "reason": {
       "type": "string",
       "description": "Optional human-readable rationale."
-    },
-    "before": {
-      "description": "The AclEntry as it existed before this role change.",
-      "$ref": "#/$defs/AclEntry"
-    },
-    "after": {
-      "description": "The AclEntry as it exists after the maintainer accepts this role change. MUST differ from `before` only in `role`, `updatedAt`, and `updatedBy`.",
-      "$ref": "#/$defs/AclEntry"
     }
   },
   "$defs": {
@@ -60,7 +52,7 @@
       "required": ["entry"],
       "properties": {
         "entry": {
-          "description": "The AclEntry that the maintainer now holds for the subject. MUST equal the request's payload.after.",
+          "description": "The AclEntry the maintainer now holds for the subject. entry.role MUST equal the request's payload.toRole.",
           "$ref": "#/$defs/AclEntry"
         }
       }

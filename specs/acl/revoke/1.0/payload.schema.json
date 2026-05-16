@@ -4,7 +4,7 @@
   "title": "ACL Revoke — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subject", "before"],
+  "required": ["subject"],
   "properties": {
     "subject": {
       "type": "string",
@@ -13,22 +13,12 @@
     "scopes": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
       "description": "If present, the specific scopes to remove from the subject's entry. If absent, the entire entry is removed."
     },
     "reason": {
       "type": "string",
       "description": "Optional human-readable rationale for the revocation."
-    },
-    "before": {
-      "description": "The AclEntry as it existed before this revocation.",
-      "$ref": "#/$defs/AclEntry"
-    },
-    "after": {
-      "description": "The AclEntry as it exists after the maintainer accepts this revocation. null for a full removal; an AclEntry with reduced scopes otherwise.",
-      "oneOf": [
-        { "type": "null" },
-        { "$ref": "#/$defs/AclEntry" }
-      ]
     }
   },
   "$defs": {
@@ -58,7 +48,7 @@
       "required": ["entry"],
       "properties": {
         "entry": {
-          "description": "The AclEntry as it exists after the maintainer accepts the revocation. null for a full removal; an AclEntry with reduced scopes otherwise. MUST equal the request's payload.after.",
+          "description": "The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.",
           "oneOf": [
             { "type": "null" },
             { "$ref": "#/$defs/AclEntry" }

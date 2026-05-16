@@ -39,8 +39,11 @@
       "required": ["entry"],
       "properties": {
         "entry": {
-          "description": "The looked-up AclEntry.",
-          "$ref": "#/$defs/AclEntry"
+          "description": "The looked-up AclEntry, or null if the subject is not in the ACL.",
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/AclEntry" }
+          ]
         },
         "redactedFields": {
           "type": "array",

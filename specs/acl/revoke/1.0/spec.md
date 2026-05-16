@@ -24,9 +24,6 @@ proofRequirement:
   requirement: REQUIRED
   rationale: A revocation is the evidentiary counterpart to a grant; the maintainer, the former subject, and any downstream party that retained the grant document need to be able to verify, after the fact, that the revocation was authorized.
 errorCodes:
-  - code: acl/revoke:permission_denied
-    meaning: The revoking party is neither the subject (self-revocation) nor a party permitted to remove the subject under the maintainer's policy.
-    retryable: false
   - code: acl/revoke:subject_not_present
     meaning: The subject named in the payload is not currently in the ACL.
     retryable: false
@@ -48,50 +45,48 @@ related:
 
 ## Abstract
 
-The **ACL — Revoke** Trust Task records the removal of a subject from an access-control list, or the withdrawal of some of the subject's scopes. The *revoking party* asserts to the *ACL maintainer* that the named *subject* is no longer entitled to the access that the prior state described.
+The **ACL — Revoke** Trust Task records the removal of a subject from an access-control list, or the withdrawal of some of the subject's scopes.
 
 Three patterns share this task:
 
-1. **Full removal.** `payload.scopes` is omitted; the entry is removed entirely; `payload.after` is `null`.
-2. **Scope reduction.** `payload.scopes` lists the scopes to remove; the entry remains with the remaining scopes; `payload.after` is the resulting *AclEntry*.
-3. **Self-removal.** `issuer == payload.subject`. The transport binding maps this to a self-revoke endpoint where applicable. Maintainer policy decides whether self-revoke is permitted for the subject's current role (for example, the last admin may be protected).
+1. **Full removal.** `payload.scopes` is omitted; the entry is removed entirely.
+2. **Scope reduction.** `payload.scopes` lists the scopes to remove; the entry remains with the remaining scopes.
+3. **Self-removal.** `issuer == payload.subject`. The maintainer's policy decides whether self-revoke is permitted for the subject's current role (for example, the last admin may be protected).
+
+The maintainer constructs the canonical resulting state and returns it in its response — the producer never needs to compute or transmit a `before`/`after` pair.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* of the Trust Tasks framework, published under the maturity model defined in [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels).
-
-Comments and suggestions are welcome via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
-The keywords **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** in this document are to be interpreted as described in [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) when, and only when, they appear in all capitals.
+[[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
 
 A conforming **producer** (the revoking party) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/revoke/1.0`.
-2. Identify itself as `issuer`; identify the ACL maintainer as `recipient`.
-3. Populate `payload` with an object that validates against the JSON Schema in §JSON Schema.
-4. Include a `proof` member signed by the revoking party's key material.
-5. Populate `payload.before` with the *AclEntry* as it existed prior to this revocation, and `payload.after` with the resulting *AclEntry* (or `null` for full removal).
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/revoke/1.0`, with itself as `issuer` and the ACL maintainer as `recipient`.
+2. Populate `payload.subject` with the VID of the subject being revoked, and optionally `payload.scopes` to scope-reduce rather than fully remove.
+3. Include a `proof` member per [SPEC.md §4.7](../../../../SPEC.md#47-proof).
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
-1. Validate the outer document and `payload` per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Verify the `proof` against the revoking party's declared verification material.
-3. Apply its own policy: confirm that the revoking party is either the subject themselves (self-revoke) or a party authorized to remove the subject. If neither, respond with `acl/revoke:permission_denied`.
+1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Confirm the revoking party is either the subject themselves (self-revoke) or a party authorized to remove the subject. If neither, respond with the framework's `permission_denied` (see [SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)).
+3. If the subject is not in the ACL, respond with `acl/revoke:subject_not_present`.
 4. Reject any revocation that would leave the ACL with no holder of a privileged role required by the maintainer's policy, returning `acl/revoke:last_authority_protected`.
 5. On acceptance, persist the document as the evidentiary record of the change.
 
 ## Definitions
 
-* **Revoking party.** The party invoking the revocation; identified by `issuer`. May be a maintainer-authorized administrator or the subject themselves (self-revocation).
+* **Revoking party.** The party invoking the revocation; identified by `issuer`. May be an authorized administrator or the subject themselves.
 * **ACL maintainer.** The party that holds and enforces the access-control list; identified by `recipient`.
 * **Subject.** The party being removed (or partially de-scoped); identified by `payload.subject`.
-* **Self-revocation.** A revocation where `issuer == payload.subject`. Consumers **MUST** recognize this case explicitly and apply the maintainer's self-revoke policy (which may protect last-authority roles).
+* **Self-revocation.** A revocation where `issuer == payload.subject`. Consumers **MUST** recognize this case explicitly and apply the maintainer's self-revoke policy.
 
 ## Request
 
-A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` (or `…/1.0#request`), with a payload that validates against the top-level schema in `payload.schema.json`. The producer is the revoking party (an administrator or the subject themselves); the recipient is the ACL maintainer.
+A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` with a payload that validates against the top-level schema in `payload.schema.json`.
 
 ### Full removal by an administrator
 
@@ -104,16 +99,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` 
   "issuedAt": "2026-05-20T11:00:00Z",
   "payload": {
     "subject": "did:web:contractor.example",
-    "reason": "Engagement completed.",
-    "before": {
-      "subject": "did:web:contractor.example",
-      "role": "member",
-      "scopes": ["context:project-alpha"],
-      "createdAt": "2026-05-16T10:05:00Z",
-      "createdBy": "did:web:org.example",
-      "expiresAt": "2026-08-16T00:00:00Z"
-    },
-    "after": null
+    "reason": "Engagement completed."
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -125,6 +111,8 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` 
   }
 }
 ```
+
+`scopes` is absent, so the maintainer removes the entry entirely.
 
 ### Scope reduction
 
@@ -138,28 +126,12 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` 
   "payload": {
     "subject": "did:web:alice.example",
     "scopes": ["context:project-beta"],
-    "reason": "Project-beta access withdrawn; project-alpha access retained.",
-    "before": {
-      "subject": "did:web:alice.example",
-      "role": "member",
-      "scopes": ["context:project-alpha", "context:project-beta"],
-      "createdAt": "2026-04-01T00:00:00Z",
-      "createdBy": "did:web:org.example"
-    },
-    "after": {
-      "subject": "did:web:alice.example",
-      "role": "member",
-      "scopes": ["context:project-alpha"],
-      "createdAt": "2026-04-01T00:00:00Z",
-      "createdBy": "did:web:org.example",
-      "updatedAt": "2026-05-21T09:30:00Z",
-      "updatedBy": "did:web:org.example"
-    }
+    "reason": "Project-beta access withdrawn; project-alpha access retained."
   }
 }
 ```
 
-The entry remains in the ACL; only `context:project-beta` was removed from the subject's scope set.
+The maintainer removes `context:project-beta` from Alice's scopes; her entry remains in the ACL.
 
 ### Self-revocation
 
@@ -172,37 +144,27 @@ The entry remains in the ACL; only `context:project-beta` was removed from the s
   "issuedAt": "2026-06-01T08:00:00Z",
   "payload": {
     "subject": "did:web:alice.example",
-    "reason": "Resigning from the organization.",
-    "before": {
-      "subject": "did:web:alice.example",
-      "role": "member",
-      "scopes": ["context:project-alpha"],
-      "createdAt": "2026-04-01T00:00:00Z",
-      "createdBy": "did:web:org.example"
-    },
-    "after": null
+    "reason": "Resigning from the organization."
   }
 }
 ```
 
-`issuer == payload.subject`. The maintainer recognizes this as a self-revocation; because Alice's role is `member` (not the last `admin`), the maintainer applies its self-revoke policy and removes the entry.
+`issuer == payload.subject`; the maintainer applies its self-revoke policy.
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0#response`, with a payload that validates against the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. The producer is the ACL maintainer; the recipient is the revoking party.
+A success *response* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
-The response payload carries a single member, `entry`, whose value is:
+The response payload is `{ entry: AclEntry | null }`:
 
-* `null` when the revocation was a full removal (the subject is gone from the ACL).
-* The resulting *AclEntry* when the revocation was a scope reduction (the subject remains with fewer scopes).
+* `null` when the revocation was a full removal — the subject is gone from the ACL.
+* The resulting *AclEntry* when the revocation was a scope reduction — the subject remains with fewer scopes.
 
-The `entry` value **MUST** equal the request's `payload.after`.
-
-A failure is **not** a `#response` document; failures use `trust-task-error` — see [SPEC.md §8](../../../../SPEC.md#8-error-responses) and this spec's [Error codes](#error-codes).
+Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful full removal
 
-Response to the first request example above:
+Response to the first request example:
 
 ```json
 {
@@ -246,8 +208,8 @@ Response to the scope-reduction example:
 
 ## Security & Privacy
 
-Revocation is as security-critical as authorization: a captured `acl/revoke` document is the proof, after the fact, that a subject's access ended at a particular moment. The `proof` requirement (**REQUIRED**) ensures the revocation is non-repudiable and tamper-evident.
+A captured `acl/revoke` document proves that a subject's access ended at a particular moment. The **REQUIRED** `proof` ensures the revocation is non-repudiable and tamper-evident.
 
-Maintainers **SHOULD** preserve revocation records alongside the original grants they cancel; together they describe the full lifecycle of an ACL entry. Where retention is bounded by privacy regulation, maintainers **SHOULD** retain at least the `id`, `threadId`, `issuer`, `issuedAt`, and `payload.subject` fields, so the audit trail of grants and revocations remains intact even if `before`/`after` payloads are trimmed.
+Maintainers **SHOULD** preserve revocation records alongside the original grants they cancel. Where retention is bounded by privacy regulation, maintainers **SHOULD** retain at least `id`, `threadId`, `issuer`, `issuedAt`, and `payload.subject` so the audit trail remains intact even if other fields are trimmed.
 
-Where the subject is a natural person, `payload.before` will typically carry their `role`, `scopes`, and possibly a `label` — all of which **MAY** be sensitive. Producers **SHOULD** apply transport confidentiality appropriate to the privacy regime in force.
+Where the subject is a natural person, the response payload's `entry` (on scope reduction) carries sensitive identifying information; producers **SHOULD** apply transport confidentiality appropriate to the privacy regime.

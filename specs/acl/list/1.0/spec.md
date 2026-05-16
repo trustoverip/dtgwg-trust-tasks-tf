@@ -2,7 +2,7 @@
 slug: acl/list
 version: "1.0"
 title: ACL — List
-summary: A querying party asks an ACL maintainer to enumerate the entries currently in its access-control list, with optional filters.
+summary: A querying party asks an ACL maintainer to enumerate the entries currently in its access-control list, with optional filters and paging.
 status: draft
 targetFrameworkVersion: "0.1"
 category: permission
@@ -22,13 +22,7 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Most list queries are short-lived and consumed over an authenticated transport; a proof becomes valuable when the list is retained, replayed, or relied upon by a third party. Where the listed roles are themselves sensitive, an in-band proof is preferred.
-errorCodes:
-  - code: acl/list:permission_denied
-    meaning: The querying party is not permitted to list this ACL under the maintainer's policy.
-    retryable: false
-  - code: acl/list:scope_unknown
-    meaning: A scope filter was provided that the maintainer does not recognize.
-    retryable: false
+errorCodes: []
 related:
   - acl/show
   - acl/grant
@@ -39,44 +33,40 @@ related:
 
 The **ACL — List** Trust Task lets a *querying party* ask the *ACL maintainer* for the set of entries currently in its access-control list. The query supports optional filters by `role`, `scope`, and `subjectPrefix`, plus a paging cursor for large lists.
 
-This task is **read-only**: it never mutates the ACL. The response from the maintainer carries the entry list and (where the list spans multiple pages) a continuation cursor. The response **SHOULD** be a `trust-task-ok` *Trust Task document* once that response type is published (see [SPEC.md §8.6](../../../../SPEC.md#86-reserved-response-type-slugs)); until then, transports define how the list is conveyed back.
+This task is **read-only**: it never mutates the ACL. The response carries the entry list and (where the list spans multiple pages) a continuation cursor.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* of the Trust Tasks framework, published under the maturity model defined in [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels).
-
-Comments and suggestions are welcome via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
-The keywords **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** in this document are to be interpreted as described in [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) when, and only when, they appear in all capitals.
+[[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
 
 A conforming **producer** (the querying party) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/list/1.0`.
-2. Identify itself as `issuer`; identify the ACL maintainer as `recipient`.
-3. Populate `payload` with an object that validates against the JSON Schema in §JSON Schema.
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/list/1.0`, with itself as `issuer` and the ACL maintainer as `recipient`.
+2. Populate `payload` with any subset of the filter and paging members defined by the schema.
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
-1. Validate the outer document and `payload` per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Apply its own policy to decide whether the querying party is permitted to enumerate the ACL. Where the policy denies the query, respond with `acl/list:permission_denied`.
-3. Apply any provided filters (`role`, `scope`, `subjectPrefix`) and return only the matching entries.
-4. Honor `pageSize` (default and maximum values are at the maintainer's discretion) and return a continuation `cursor` if more entries remain.
-5. Respond with the resulting list — as a `trust-task-ok` *Trust Task document* once that type is published, or per the transport-binding convention until then.
+1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
+2. Apply its own policy to decide whether the querying party is permitted to enumerate the ACL. Where the policy denies the query, respond with the framework's `permission_denied` (see [SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)).
+3. Apply any provided filters (conjunctively) and return only the matching entries. Filter strings the maintainer does not recognize **MUST** simply produce zero matches; they are not an error.
+4. Honor `pageSize` (default and maximum at the maintainer's discretion) and return a continuation `cursor` if more entries remain.
+5. Respond via the `#response` variant defined below.
 
-Maintainers **MAY** redact entry fields based on the querying party's role (for example, omitting `metadata` to non-administrators); the response documents which fields were redacted in its own payload.
+Maintainers **MAY** redact entry fields based on the querying party's role and **SHOULD** declare any blanket redactions in `payload.redactedFields` of the response.
 
 ## Definitions
 
 * **Querying party.** The party initiating the query; identified by `issuer`.
 * **ACL maintainer.** The party answering the query; identified by `recipient`.
-* **Filter.** A constraint that narrows the returned set. The framework defines three optional filters: `role`, `scope`, `subjectPrefix`. Filters are conjunctive: an entry matches only if all provided filters match.
 * **Cursor.** An opaque string the maintainer returns to allow paging through large result sets. Consumers **MUST** treat the cursor as opaque and re-send it verbatim on the follow-up query.
 
 ## Request
 
-A *request* document carries `type: https://trusttasks.org/spec/acl/list/1.0` (or `…/1.0#request`), with a payload that validates against the top-level schema in `payload.schema.json`. All payload members are optional; an empty payload requests the default list. The producer is the querying party; the recipient is the ACL maintainer.
+A *request* document carries `type: https://trusttasks.org/spec/acl/list/1.0` with a payload that validates against the top-level schema in `payload.schema.json`. All payload members are optional; an empty payload requests the default list.
 
 ### List everyone
 
@@ -90,8 +80,6 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/list/1.0` (o
   "payload": {}
 }
 ```
-
-The maintainer returns its default page of entries (using its own default `pageSize`), optionally followed by a `cursor`.
 
 ### Filter by role, with paging
 
@@ -108,8 +96,6 @@ The maintainer returns its default page of entries (using its own default `pageS
   }
 }
 ```
-
-Returns the first 50 entries with `role == "admin"`.
 
 ### Continuation page
 
@@ -128,8 +114,6 @@ Returns the first 50 entries with `role == "admin"`.
 }
 ```
 
-The `cursor` value is opaque — the maintainer returned it verbatim with the prior page; the querying party re-sends it to fetch the next page.
-
 ### Compound filter
 
 ```json
@@ -146,15 +130,15 @@ Returns entries whose role is `member`, whose `scopes` array contains `context:p
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/acl/list/1.0#response`, with a payload that validates against the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. The producer is the ACL maintainer; the recipient is the querying party.
+A success *response* document carries `type: https://trusttasks.org/spec/acl/list/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
 The response payload carries:
 
-* `entries` — an array of *AclEntry* items matching the request's filters, in maintainer-defined order. The array **MAY** be empty when nothing matches.
-* `cursor` — present if more entries remain beyond `entries`; absent on the final page. Opaque to the consumer; re-send verbatim to fetch the next page.
-* `redactedFields` — optional; lists the *AclEntry* field names the maintainer omitted from every returned entry (for example, `["metadata"]` when the requester does not have administrator privileges).
+* `entries` — an array of *AclEntry* items matching the filters, in maintainer-defined order. **MAY** be empty.
+* `cursor` — present iff more entries remain; opaque to the consumer.
+* `redactedFields` — optional; lists *AclEntry* field names the maintainer redacted from every returned entry.
 
-A failure is **not** a `#response` document; failures use `trust-task-error` — see [SPEC.md §8](../../../../SPEC.md#8-error-responses).
+Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### A page of admin entries
 
@@ -191,9 +175,9 @@ Response to the "Filter by role, with paging" request example:
 
 `cursor` is present, so the auditor sends a continuation request to fetch the next page.
 
-### An empty page with redactions
+### A page with redactions
 
-Response to a list filtered to a scope where the auditor lacks privileges:
+A non-administrator queries; the maintainer returns entries but blanket-redacts `metadata` and `label`:
 
 ```json
 {
@@ -204,18 +188,25 @@ Response to a list filtered to a scope where the auditor lacks privileges:
   "recipient": "did:web:auditor.example",
   "issuedAt": "2026-06-15T10:06:00Z",
   "payload": {
-    "entries": [],
+    "entries": [
+      {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "createdAt": "2026-05-16T10:00:00Z",
+        "createdBy": "did:web:org.example"
+      }
+    ],
     "redactedFields": ["metadata", "label"]
   }
 }
 ```
 
-`entries` is empty (matching nothing under the requester's filter and visibility) and the maintainer notes which fields it would have redacted had any entries returned.
+`label` and `metadata` are absent from each entry because the maintainer's policy redacts them for this querying party.
 
 ## Security & Privacy
 
-An ACL listing is the directory of who has what access. Maintainers **SHOULD** apply policy that limits enumeration to parties who already have a legitimate need to see the directory — for example, administrators and auditors. Public enumeration of an ACL is rarely appropriate.
+An ACL listing is the directory of who has what access. Maintainers **SHOULD** limit enumeration to parties with a legitimate need (administrators, auditors). Public enumeration of an ACL is rarely appropriate.
 
-Where the maintainer does respond with full entries, the response inherits the same sensitivity considerations as the underlying ACL: roles, scopes, and labels **MAY** be sensitive personal or organizational data. Confidentiality **SHOULD** be enforced at the transport layer (mutually-authenticated TLS, signed DIDComm envelope, etc.), even though the request payload itself contains no PII.
+Roles, scopes, and labels in returned entries **MAY** be sensitive personal or organizational data. Confidentiality **SHOULD** be enforced at the transport layer (mutually-authenticated TLS, signed DIDComm envelope, etc.).
 
-Implementations **SHOULD** populate `issuedAt` and **SHOULD** include a `proof` member where the list will be retained or forwarded; without the proof, a retained list cannot be attributed to its maintainer after the fact.
+Implementations **SHOULD** include a `proof` member where the list will be retained or forwarded; without it, a retained list cannot be attributed to its maintainer after the fact.
