@@ -32,14 +32,21 @@
   <script type="text/babel" data-presets="react">
     const { useState: useStateApp, useEffect: useEffectApp } = React;
 
-    /* parse pathname: /, /registry, /registry/identity, /spec/<slug>/<version>, etc. */
+    /* parse pathname: /, /registry, /registry/identity, /spec/<slug...>/<version>, etc.
+       Slugs may be hierarchical (e.g. /spec/acl/grant/1.0); the version is always
+       the final segment, the slug is everything between /spec/ and the version. */
     function parsePath() {
       const path = location.pathname.replace(/^\/+|\/+$/g, "");
       if (!path) return { name: "home" };
       const [name, ...rest] = path.split("/");
       if (name === "spec") {
-        const [slug, version] = rest;
-        return { name: "spec", slug, version };
+        if (rest.length === 0) return { name: "spec" };
+        // Heuristic: if the last segment looks like MAJOR.MINOR, it's the version.
+        const last = rest[rest.length - 1];
+        const versionLike = /^\d+\.\d+$/.test(last);
+        const version = versionLike ? last : undefined;
+        const slugSegs = versionLike ? rest.slice(0, -1) : rest;
+        return { name: "spec", slug: slugSegs.join("/"), version };
       }
       if (name === "registry" && rest[0]) return { name: "registry", cat: rest[0] };
       return { name };

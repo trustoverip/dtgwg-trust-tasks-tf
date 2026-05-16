@@ -21,14 +21,11 @@
   "properties": {
     "slug": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$",
       "not": {
-        "anyOf": [
-          { "const": "trust-task" },
-          { "pattern": "^trust-task-" }
-        ]
+        "pattern": "^trust-task($|-|/)"
       },
-      "description": "Lowercase, hyphen-separated short name; matches the folder name. The slug 'trust-task' and any slug beginning with 'trust-task-' are reserved per SPEC §6.1."
+      "description": "Lowercase, hyphen-separated short name; may be organized into one or more `/`-delimited path segments (e.g. `acl/grant`). Each segment satisfies the single-segment grammar. The slug `trust-task` and any slug whose first segment is `trust-task` or begins with `trust-task-` are reserved per SPEC §6.1. The slug MUST match the relative folder path from `specs/` to the version directory's parent."
     },
     "version": {
       "type": "string",
@@ -84,15 +81,10 @@
           "requirement": {
             "type": "string",
             "enum": ["REQUIRED", "RECOMMENDED", "OPTIONAL"]
-          },
-          "vidSchemes": {
-            "type": "array",
-            "items": { "type": "string", "minLength": 1 },
-            "description": "Accepted VID schemes for this party (e.g. did:web, did:key, x509, oidc)."
           }
         }
       },
-      "description": "Roles expected in a conforming document, per SPEC §7.3 item 5."
+      "description": "Roles expected in a conforming document, per SPEC §7.3 item 5. VID scheme acceptance is a per-consumer trust-framework concern and is deliberately not constrained here."
     },
     "proofRequirement": {
       "type": "object",
@@ -116,8 +108,8 @@
         "properties": {
           "code": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*:[a-z][a-z0-9_]*$",
-            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:document_revoked'."
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-z0-9_]*$",
+            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:document_revoked' or 'acl/grant:permission_denied'. The namespace portion before the colon MUST equal the spec's slug."
           },
           "meaning": { "type": "string", "minLength": 1 },
           "retryable": { "type": "boolean" },
@@ -138,9 +130,9 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$"
       },
-      "description": "Slugs of related Trust Tasks."
+      "description": "Slugs of related Trust Tasks; hierarchical slugs use `/` separators (e.g. `acl/grant`)."
     }
   }
 }

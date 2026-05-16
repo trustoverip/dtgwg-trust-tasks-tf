@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl-grant/1.0",
+  "$id": "https://trusttasks.org/spec/acl/grant/1.0",
   "title": "ACL Grant — payload",
   "type": "object",
   "additionalProperties": false,

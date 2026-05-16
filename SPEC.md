@@ -361,13 +361,13 @@ https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>
 
 where:
 
-* `<slug>` is a lowercase, hyphen-separated short name assigned to the specification (e.g. `kyc-handoff`). The slug **MUST** match the regular expression `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`; consecutive hyphens are not permitted.
-* `<MAJOR.MINOR>` is the specification version as defined in [§5.1](#51-scheme).
+* `<slug>` is a lowercase, hyphen-separated short name assigned to the specification, optionally organized into one or more path segments (e.g. `kyc-handoff`, or `acl/grant`). The slug **MUST** match the regular expression `^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$`. Each `/`-delimited segment **MUST** individually satisfy the single-segment grammar (`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`); consecutive hyphens are not permitted within a segment, and consecutive slashes are not permitted between segments. Segments group related specifications under a shared namespace and are reflected in the *Type URI* path verbatim — `https://trusttasks.org/spec/acl/grant/1.0` is the *Type URI* of a specification whose slug is `acl/grant`.
+* `<MAJOR.MINOR>` is the specification version as defined in [§5.1](#51-scheme). When resolving a *Type URI*, a *consumer* identifies the version as the final path segment (which always matches the version grammar) and the slug as the segments between `/spec/` and the version.
 
 The following slugs are **RESERVED** for framework-defined specifications and **MUST NOT** be used by any individual *Trust Task specification*:
 
 * The exact slug `trust-task`, reserved for this framework specification itself.
-* Any slug beginning with the prefix `trust-task-`, reserved for framework-defined response-type specifications (see [§8.1](#81-the-trust-task-error-specification) and [§8.6](#86-reserved-response-type-slugs)).
+* Any slug whose first segment is `trust-task` or begins with the prefix `trust-task-`, reserved for framework-defined response-type specifications (see [§8.1](#81-the-trust-task-error-specification) and [§8.6](#86-reserved-response-type-slugs)). Equivalently, the slug **MUST NOT** match the pattern `^trust-task($|-|/)`.
 
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
 

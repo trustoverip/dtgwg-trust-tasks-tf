@@ -60,19 +60,28 @@ function lastModified(dirRel) {
 function discoverSpecs() {
   if (!fs.existsSync(SPECS_DIR)) return [];
   const found = [];
-  for (const slug of fs.readdirSync(SPECS_DIR)) {
-    const slugDir = path.join(SPECS_DIR, slug);
-    if (!fs.statSync(slugDir).isDirectory()) continue;
-    if (slug.startsWith('_') || slug.startsWith('.')) continue;
-    for (const version of fs.readdirSync(slugDir)) {
-      const versionDir = path.join(slugDir, version);
-      if (!fs.statSync(versionDir).isDirectory()) continue;
-      const specPath = path.join(versionDir, 'spec.md');
-      if (!fs.existsSync(specPath)) continue;
-      found.push({ slug, version, dir: versionDir, specPath });
+  walk(SPECS_DIR);
+  return found;
+
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name.startsWith('_') || entry.name.startsWith('.')) continue;
+      const full = path.join(dir, entry.name);
+      const specPath = path.join(full, 'spec.md');
+      if (fs.existsSync(specPath)) {
+        // `full` is a version directory (it contains spec.md). Slug is the
+        // relative path from SPECS_DIR to `full`'s parent, with `/` separators.
+        const relVersionDir = path.relative(SPECS_DIR, full);
+        const segments = relVersionDir.split(path.sep);
+        const version = segments[segments.length - 1];
+        const slug = segments.slice(0, -1).join('/');
+        found.push({ slug, version, dir: full, specPath });
+      } else {
+        walk(full);
+      }
     }
   }
-  return found;
 }
 
 function loadMetaValidator() {
