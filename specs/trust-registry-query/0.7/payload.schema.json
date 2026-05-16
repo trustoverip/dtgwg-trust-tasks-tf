@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-registry-query/0.7",
+  "title": "Trust Registry Query — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["registry", "entity", "role", "framework"],
+  "properties": {
+    "registry":  { "type": "string", "format": "uri", "description": "URI of the registry being queried." },
+    "entity":    { "type": "string", "description": "VID of the entity whose authorization is being checked." },
+    "role":      { "type": "string", "description": "Role identifier defined within the named framework." },
+    "framework": { "type": "string", "format": "uri", "description": "URI of the governance framework under which the role is defined." },
+    "asOf":      { "type": "string", "format": "date-time", "description": "Point-in-time at which to evaluate; absent means 'now'." }
+  }
+}

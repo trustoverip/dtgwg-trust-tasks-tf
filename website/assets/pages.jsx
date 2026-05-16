@@ -5,6 +5,45 @@
 const { useState: useS, useEffect: useE, useMemo: useM, useRef: useR } = React;
 
 /* ============================================================
+   Markdown helpers — used by SpecPage and (lightly) FrameworkSpecPage
+   ============================================================ */
+function stripFrontMatter(src) {
+  if (!src.startsWith("---")) return src;
+  const end = src.indexOf("\n---", 3);
+  if (end < 0) return src;
+  return src.slice(end + 4).replace(/^\r?\n/, "");
+}
+
+function slugifyHeading(text) {
+  return text
+    .toLowerCase()
+    .replace(/&amp;/g, "")
+    .replace(/<[^>]+>/g, "")
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/* Walks an already-rendered HTML string for <h2> elements, gives each an id,
+ * and returns { html, toc: [{id, text}] } so the sidebar TOC can be built
+ * directly from the prose without a second pass. */
+function injectHeadingIds(html) {
+  const toc = [];
+  const seen = new Set();
+  const out = html.replace(/<h2(\s[^>]*)?>([\s\S]*?)<\/h2>/g, (match, attrs, inner) => {
+    const text = inner.replace(/<[^>]+>/g, "").trim();
+    let id = slugifyHeading(text);
+    let i = 2;
+    while (seen.has(id)) { id = `${slugifyHeading(text)}-${i++}`; }
+    seen.add(id);
+    toc.push({ id, text });
+    if (attrs && /\bid=/.test(attrs)) return match;
+    return `<h2${attrs || ""} id="${id}">${inner}</h2>`;
+  });
+  return { html: out, toc };
+}
+
+/* ============================================================
    HOME
    ============================================================ */
 function HomePage({ tweaks, setRoute }) {
@@ -434,12 +473,48 @@ function SpecPage({ slug, version, id, setRoute }) {
   const task = (slug && window.TT_TASKS.find(t => t.slug === slug && (!version || t.version === version)))
             || (id && window.TT_TASKS.find(t => t.id === id))
             || window.TT_TASKS[0];
+  if (!task) {
+    return (
+      <section className="container">
+        <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
+          <b>No specifications are currently registered.</b><br />
+          Add one under <code>specs/&lt;slug&gt;/&lt;version&gt;/</code> and run <code>npm run build</code>.
+        </div>
+      </section>
+    );
+  }
   const typeURI = `https://trusttasks.org/spec/${task.slug}/${task.version}`;
   const [copied, setCopied] = useS(false);
-  const [activeSection, setActiveSection] = useS("abstract");
+  const [proseHtml, setProseHtml] = useS("");
+  const [proseToc, setProseToc] = useS([]);
+  const [proseError, setProseError] = useS(null);
+  const [activeSection, setActiveSection] = useS("metadata");
 
   useE(() => {
-    const ids = ["abstract", "status", "metadata", "conformance", "definitions", "schema", "considerations", "related"];
+    if (!task.prosePath) {
+      setProseError("This spec has no prosePath; was it built with the registry script?");
+      return;
+    }
+    let cancelled = false;
+    setProseHtml(""); setProseToc([]); setProseError(null);
+    fetch(task.prosePath, { headers: { "Accept": "text/markdown, text/plain" } })
+      .then(r => { if (!r.ok) throw new Error(`Failed to load spec.md (${r.status})`); return r.text(); })
+      .then(src => {
+        if (cancelled) return;
+        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
+        const body = stripFrontMatter(src);
+        marked.setOptions({ gfm: true, breaks: false });
+        const rawHtml = marked.parse(body);
+        const { html, toc } = injectHeadingIds(rawHtml);
+        setProseHtml(html);
+        setProseToc(toc);
+      })
+      .catch(e => { if (!cancelled) setProseError(e.message); });
+    return () => { cancelled = true; };
+  }, [task.prosePath]);
+
+  useE(() => {
+    const ids = ["metadata", ...proseToc.map(t => t.id), "schema", "related"];
     const onScroll = () => {
       for (const sid of ids) {
         const el = document.getElementById(sid);
@@ -452,7 +527,7 @@ function SpecPage({ slug, version, id, setRoute }) {
     window.addEventListener("scroll", onScroll);
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [task.id]);
+  }, [task.id, proseToc.length]);
 
   const cat = window.TT_CATEGORIES.find(c => c.id === task.category);
 
@@ -495,75 +570,37 @@ function SpecPage({ slug, version, id, setRoute }) {
           <span><b>Editors</b> &nbsp; {task.authors.join(", ")}</span>
         </div>
 
-        <h2 id="abstract">1. Abstract</h2>
-        <p>
-          This document defines the <b>{task.title}</b> Trust Task — a self-contained, transport-agnostic, JSON-based
-          specification for {task.summary.charAt(0).toLowerCase() + task.summary.slice(1)}
-        </p>
-        <p>
-          Trust Tasks are the unit of verifiable work between any two parties under the Trust over IP
-          ecosystem. This task does not prescribe a specific transport; conforming implementations
-          MAY exchange the JSON object defined herein over any channel that preserves message integrity.
-        </p>
-
-        <h2 id="status">2. Status of this Document</h2>
-        <p>
-          This is a <b>{task.status}</b> document of the Digital Trust Graph Working Group (DTGWG). It is
-          published under the {task.status === "standard" ? "Standard" : task.status === "candidate" ? "Candidate Recommendation" : "Working Draft"} maturity level.
-          Comments and suggestions are welcome via the&nbsp;
-          <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues" target="_blank" rel="noreferrer">project issue tracker</a>.
-        </p>
-
-        <h2 id="metadata">3. Metadata</h2>
+        <h2 id="metadata">Metadata</h2>
         <dl className="tt-meta-grid">
           <dt>Slug</dt><dd>{task.slug}</dd>
           <dt>Version</dt><dd>{task.version}</dd>
           <dt>Type URI</dt><dd><code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{typeURI}</code></dd>
+          <dt>Target framework</dt><dd>{task.targetFrameworkVersion ? `trust-task/${task.targetFrameworkVersion}` : "—"}</dd>
           <dt>Parties</dt><dd>{task.parties.join(" ↔ ")}</dd>
-          <dt>Category</dt><dd>{cat.name}</dd>
+          <dt>Proof requirement</dt><dd>{task.proofRequirement ? task.proofRequirement.requirement : "—"}</dd>
+          <dt>Category</dt><dd>{cat ? cat.name : task.category}</dd>
           <dt>Keywords</dt><dd>{task.keywords.join(", ")}</dd>
         </dl>
 
-        <h2 id="conformance">4. Conformance</h2>
-        <div className="tt-conformance">
-          <p style={{ margin: 0 }}>
-            <b>Normative.</b> The keywords <i>MUST</i>, <i>MUST NOT</i>, <i>SHOULD</i>, <i>SHOULD NOT</i>, and
-            <i> MAY</i> in this document are to be interpreted as described in <a href="https://www.rfc-editor.org/rfc/rfc2119" target="_blank" rel="noreferrer">RFC&nbsp;2119</a>
-            and <a href="https://www.rfc-editor.org/rfc/rfc8174" target="_blank" rel="noreferrer">RFC&nbsp;8174</a> when, and only when, they appear in all capitals.
-          </p>
-        </div>
-        <p>
-          A conforming <b>producer</b> MUST emit a JSON document that validates against the schema in
-          §6 below. A conforming <b>consumer</b> MUST reject documents that fail schema validation. Both
-          parties SHOULD preserve unrecognized properties to allow forward compatibility.
-        </p>
+        {proseError && (
+          <div className="tt-empty" style={{ padding: "var(--tt-space-5)", margin: "var(--tt-space-5) 0" }}>
+            <b>Couldn't load this specification's prose.</b><br />
+            {proseError}<br />
+            <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/specs/${task.slug}/${task.version}/spec.md`} target="_blank" rel="noreferrer">Read it on GitHub →</a>
+          </div>
+        )}
+        {!proseError && !proseHtml && (
+          <p style={{ color: "var(--tt-text-muted)" }}>Loading specification…</p>
+        )}
+        {!proseError && proseHtml && (
+          <article className="tt-prose" dangerouslySetInnerHTML={{ __html: proseHtml }} />
+        )}
 
-        <h2 id="definitions">5. Definitions</h2>
-        <p>
-          The following terms are used throughout this document. Where a term is also defined in the
-          <a href="/glossary" onClick={(e) => { e.preventDefault(); setRoute({ name: "glossary" }); }}> Trust Tasks glossary</a>,
-          the meaning here is consistent.
-        </p>
-        <ul style={{ color: "var(--tt-text-muted)", lineHeight: 1.8 }}>
-          {task.parties.map(p => (
-            <li key={p}><b style={{ color: "var(--tt-text)" }}>{p}.</b> A participant in this task; identified by a <i>Verifiable Identifier</i> (VID) — e.g. a DID, an X.509 subject, or any identifier whose controller is verifiable under the consuming party's trust framework.</li>
-          ))}
-          <li><b style={{ color: "var(--tt-text)" }}>Document identifier.</b> A globally unique string carried in the Trust Task document's <code>id</code> member (UUIDv4 recommended).</li>
-        </ul>
-
-        <h2 id="schema">6. JSON Schema</h2>
+        <h2 id="schema">JSON Schema</h2>
         <p>The normative JSON Schema for this Trust Task's <code>payload</code> member (Draft 2020-12). The outer document structure (<code>id</code>, <code>type</code>, <code>issuer</code>, <code>recipient</code>, <code>issuedAt</code>, <code>expiresAt</code>, <code>proof</code>) is defined by the framework specification.</p>
         <CodeBlock json={task.schema} />
 
-        <h2 id="considerations">7. Security &amp; Privacy Considerations</h2>
-        <p>
-          Implementers MUST consider the integrity, authenticity, and privacy of the task payload. The
-          JSON document defined here carries no inherent transport security; conforming
-          implementations MUST sign the task using a signature suite agreed upon by both parties, and
-          SHOULD minimize the personal data carried in the payload to that necessary for the task.
-        </p>
-
-        <h2 id="related">8. Related Trust Tasks</h2>
+        <h2 id="related">Related Trust Tasks</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-3)" }}>
           {(task.related || []).map(rid => {
             const r = window.TT_TASKS.find(t => t.id === rid);
@@ -581,7 +618,7 @@ function SpecPage({ slug, version, id, setRoute }) {
 
         <div style={{ marginTop: "var(--tt-space-8)", paddingTop: "var(--tt-space-5)", borderTop: "1px solid var(--tt-line)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--tt-space-4)" }}>
           <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }} className="btn btn--ghost">← Back to registry</a>
-          <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/specs/${task.id}.md`} target="_blank" rel="noreferrer" className="btn btn--ghost">Edit on GitHub →</a>
+          <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/specs/${task.slug}/${task.version}/spec.md`} target="_blank" rel="noreferrer" className="btn btn--ghost">Edit on GitHub →</a>
         </div>
       </div>
 
@@ -589,16 +626,12 @@ function SpecPage({ slug, version, id, setRoute }) {
         <div className="tt-toc-title">On this page</div>
         <ol className="tt-toc">
           {[
-            ["abstract", "1. Abstract"],
-            ["status", "2. Status"],
-            ["metadata", "3. Metadata"],
-            ["conformance", "4. Conformance"],
-            ["definitions", "5. Definitions"],
-            ["schema", "6. JSON Schema"],
-            ["considerations", "7. Security & Privacy"],
-            ["related", "8. Related"]
-          ].map(([sid, label]) => (
-            <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{label}</a></li>
+            { id: "metadata", text: "Metadata" },
+            ...proseToc,
+            { id: "schema", text: "JSON Schema" },
+            { id: "related", text: "Related Trust Tasks" }
+          ].map(({ id: sid, text }) => (
+            <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{text}</a></li>
           ))}
         </ol>
       </aside>

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/agent-authorization/0.3",
+  "title": "Agent Authorization — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["principal", "agent", "scope"],
+  "properties": {
+    "principal": { "type": "string", "description": "VID of the party delegating authority." },
+    "agent":     { "type": "string", "description": "VID of the agent receiving authority." },
+    "scope":     { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Opaque scope identifiers; downstream services treat this list as exhaustive." },
+    "auditLog":  { "type": "string", "format": "uri", "description": "URI where actions taken under this authorization are recorded." },
+    "revocation":{ "type": "string", "format": "uri", "description": "URI the principal can use to revoke the authorization." }
+  }
+}

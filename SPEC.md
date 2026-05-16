@@ -232,7 +232,16 @@ The framework does not constrain the VID scheme used: a DID, an X.509 subject, a
 
 Both members are **OPTIONAL**. Their purpose is to let the parties be identified in-band where the transport in use does not already convey strong, authenticated party identity — for example, an unauthenticated HTTP POST, a public message queue, or paper hand-off.
 
-Where a secure transport already conveys authenticated party identity (such as mutually-authenticated TLS or a signed DIDComm envelope), these in-band members **MAY** be omitted. Where both an in-band identity and a transport-derived identity are present for the same party, they **MUST** be consistent; a *consumer* **MUST** treat a mismatch as a validation failure.
+Where a secure transport already conveys authenticated party identity (such as mutually-authenticated TLS or a signed DIDComm envelope), these in-band members **MAY** be omitted.
+
+#### 4.8.1 Precedence of in-band over transport-derived identity
+
+The framework treats the in-band `issuer` and `recipient` members as **authoritative** for party identity. Specifically, for each party:
+
+1. **If the in-band member is present**, its value is the party identity that the *consumer* **MUST** apply for every subsequent framework rule that references that party — including, but not limited to, `proof` verification (where applicable, see [§4.7](#47-proof)), recipient enforcement (see [§7.2](#72-consumer-requirements), item 5), and *Trust Task specification* requirements that reference the party. The transport-derived identity is, in this case, **only a cross-check**: where both an in-band identity and a transport-derived identity are present for the same party, they **MUST** be consistent, and a *consumer* **MUST** treat a mismatch as a validation failure (see [§7.2](#72-consumer-requirements), item 6).
+2. **If the in-band member is absent**, a *consumer* **MAY** derive the party identity from the transport — typically via the *transport binding* in use (see [§9](#9-transport-bindings)) — and **MAY** treat the derived value as if it had been carried in-band for the purposes of subsequent rules. A *consumer* with no in-band value and no transport-derived value for a party that the *Trust Task specification* declares as **REQUIRED** **MUST** reject the document.
+
+In short: the document is the source of truth for who the parties are. The transport, when it provides authenticated identity, is used either to fill in what the document omits, or to verify what the document asserts — never to override it.
 
 An individual *Trust Task specification* **MAY** require either or both members to be present — for example, to support audit, third-party replay, or forwarding — but **MUST NOT** prohibit a *consumer* from comparing them with transport-derived identity.
 
@@ -417,6 +426,8 @@ A *conforming consumer* **MUST**:
 5. Reject any document whose `recipient` member is set and does not identify the *consumer*'s own party.
 6. Reject any document for which an in-band `issuer` or `recipient` member is inconsistent with an authenticated identity derived from the transport for the same party.
 
+For each of the rules in this section that references the `issuer` or `recipient` party, the in-band member value is authoritative when present and the transport-derived identity is a cross-check; when the in-band member is absent the *consumer* **MAY** derive the value from the transport. This precedence is defined normatively in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity).
+
 A *conforming consumer* **SHOULD** preserve, but **MUST NOT** act upon, members it does not recognize. A *consumer* that does not implement JSON-LD processing **MUST** ignore the `@context` member.
 
 When a *consumer* rejects a *Trust Task document* under any rule in this section, and the transport in use supports a response from *consumer* to *producer*, the *consumer* **SHOULD** return an *error response* conforming to [§8](#8-error-responses).
@@ -578,8 +589,8 @@ A *transport binding* defines how *Trust Task documents* are exchanged over a sp
 A *transport binding* **SHOULD** specify each of the following:
 
 * **Document carriage.** How a *Trust Task document* is placed onto and retrieved from the transport (request body, message payload, envelope field, attachment, etc.).
-* **Field population from transport context.** Which framework members the binding populates from transport-derived information — typically `issuer` (from a transport-authenticated sender), `recipient` (from a transport-authenticated addressee), and any signature metadata that lets a *consumer* verify the framework `proof` against transport-bound keys or, per [§4.7.1](#471-when-to-include-a-proof), accept the document without an in-band `proof`.
-* **Consistency enforcement.** The behavior when an in-band framework member and its transport-derived equivalent disagree. The framework requires they **MUST** be consistent (see [§4.8](#48-the-issuer-and-recipient-members) and [§7.2](#72-consumer-requirements)); the binding states how the comparison is performed for the transport in question (for example, how a DID carried in-band is matched against a transport-authenticated DID).
+* **Field population from transport context.** Which framework members the binding **derives** from transport-derived information — typically `issuer` (from a transport-authenticated sender), `recipient` (from a transport-authenticated addressee), and any signature metadata that lets a *consumer* verify the framework `proof` against transport-bound keys or, per [§4.7.1](#471-when-to-include-a-proof), accept the document without an in-band `proof`. Per [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), the binding fills these members from the transport **only when the corresponding in-band member is absent**; when the in-band member is present, the transport-derived value is used as a cross-check, not as a substitute.
+* **Consistency enforcement.** The behavior when an in-band framework member and its transport-derived equivalent disagree. The framework requires they **MUST** be consistent (see [§4.8](#48-the-issuer-and-recipient-members), [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), and [§7.2](#72-consumer-requirements)); the binding states how the comparison is performed for the transport in question (for example, how a DID carried in-band is matched against a transport-authenticated DID).
 * **Transport security profile.** The integrity, authentication, confidentiality, and freshness guarantees the transport provides, so that *consumers* can correctly evaluate the `proof` requirement under [§4.7.1](#471-when-to-include-a-proof).
 * **Error and response delivery.** How an *error response* ([§8](#8-error-responses)) is returned to the *producer* of the original document, including the behavior when the transport is fire-and-forget.
 
@@ -587,8 +598,8 @@ A *transport binding* **SHOULD** specify each of the following:
 
 An implementation that exchanges *Trust Task documents* over a given transport **SHOULD** expose its transport-binding logic as a discrete *transport handler* component:
 
-1. On the **producer** side, the handler composes an outbound *Trust Task document*, populates framework members the binding can derive from transport context, and applies the transport's signing or sealing where the binding integrates it with `proof`.
-2. On the **consumer** side, the handler extracts an inbound *Trust Task document* from the transport, populates or asserts framework members from transport-derived identity, integrity, and freshness metadata, and surfaces inconsistencies as validation failures per [§7.2](#72-consumer-requirements).
+1. On the **producer** side, the handler composes an outbound *Trust Task document*, **MAY** omit `issuer` and `recipient` where the transport will provide authenticated identity for those roles end-to-end (see [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity)), and applies the transport's signing or sealing where the binding integrates it with `proof`.
+2. On the **consumer** side, the handler extracts an inbound *Trust Task document* from the transport, applies the [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity) precedence — using in-band `issuer` and `recipient` values where present (cross-checking them against transport-derived identity) and deriving them from the transport only where the in-band member is absent — and surfaces any inconsistencies as validation failures per [§7.2](#72-consumer-requirements).
 
 The handler boundary lets the framework's validation logic remain transport-agnostic while different transports plug in their own population rules. A DIDComm handler can populate `issuer` from the verified sender DID of the surrounding DIDComm envelope; a TSP handler can do the same from the TSP message authentication; a mutual-TLS HTTPS handler can populate `issuer` from the peer certificate's subject; an unauthenticated transport handler populates nothing, and the framework falls back to the in-band `proof` per [§4.7.1](#471-when-to-include-a-proof).
 

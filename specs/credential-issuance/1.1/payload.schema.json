@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-issuance/1.1",
+  "title": "Credential Issuance — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["issuer", "holder", "credentialSchema", "format"],
+  "properties": {
+    "issuer":   { "type": "string", "description": "VID of the party committing to issue." },
+    "holder":   { "type": "string", "description": "VID of the party for whom the credential will be issued." },
+    "credentialSchema": { "type": "string", "format": "uri" },
+    "format":   { "enum": ["vc-jwt", "vc-jose-cose", "sd-jwt-vc", "mdoc"] },
+    "claims":   {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional hints about the claims to be carried in the issued credential. SHOULD NOT contain sensitive PII at commitment time."
+    },
+    "deliveryEndpoint": { "type": "string", "format": "uri" }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "trust-tasks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Build tooling for the Trust Tasks framework specification and registry website.",
+  "scripts": {
+    "build": "node scripts/build-registry.mjs",
+    "validate": "node scripts/build-registry.mjs --validate-only"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.5.1"
+  }
+}

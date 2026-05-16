@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/internal/spec-meta/1.0",
+  "title": "Trust Task specification — front matter meta-schema",
+  "description": "Shape of the YAML front matter that every specs/<slug>/<version>/spec.md must declare. Mirrors the declarations required by SPEC.md §7.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "version",
+    "title",
+    "summary",
+    "status",
+    "targetFrameworkVersion",
+    "category",
+    "keywords",
+    "authors",
+    "parties",
+    "proofRequirement"
+  ],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "not": {
+        "anyOf": [
+          { "const": "trust-task" },
+          { "pattern": "^trust-task-" }
+        ]
+      },
+      "description": "Lowercase, hyphen-separated short name; matches the folder name. The slug 'trust-task' and any slug beginning with 'trust-task-' are reserved per SPEC §6.1."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "MAJOR.MINOR per SPEC §5.1; matches the version-segment folder name."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable display name."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280,
+      "description": "One-sentence elevator pitch shown on registry cards and as the page lede."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "candidate", "standard"],
+      "description": "Maturity level per SPEC §5.3."
+    },
+    "targetFrameworkVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Framework MAJOR.MINOR this spec targets, per SPEC §7.3 item 3."
+    },
+    "category": {
+      "type": "string",
+      "description": "TT_CATEGORIES id (identity | credentials | data-exchange | governance | payments | ai-agents | reputation)."
+    },
+    "keywords": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Free-text keywords used by registry search."
+    },
+    "authors": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Editor names or working group attributions."
+    },
+    "parties": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "requirement"],
+        "properties": {
+          "role": { "type": "string", "minLength": 1 },
+          "requirement": {
+            "type": "string",
+            "enum": ["REQUIRED", "RECOMMENDED", "OPTIONAL"]
+          },
+          "vidSchemes": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "description": "Accepted VID schemes for this party (e.g. did:web, did:key, x509, oidc)."
+          }
+        }
+      },
+      "description": "Roles expected in a conforming document, per SPEC §7.3 item 5."
+    },
+    "proofRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement", "rationale"],
+      "properties": {
+        "requirement": {
+          "type": "string",
+          "enum": ["OPTIONAL", "RECOMMENDED", "REQUIRED"]
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      },
+      "description": "Proof declaration per SPEC §7.3 item 8."
+    },
+    "errorCodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "meaning", "retryable"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*:[a-z][a-z0-9_]*$",
+            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:document_revoked'."
+          },
+          "meaning": { "type": "string", "minLength": 1 },
+          "retryable": { "type": "boolean" },
+          "detailsSchema": {
+            "description": "Optional JSON Schema fragment describing the shape of the error's details object.",
+            "type": "object"
+          }
+        }
+      },
+      "description": "Task-specific error codes per SPEC §7.3 item 9. Omit or leave empty if none."
+    },
+    "jsonLdContext": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set to true if a context.jsonld file sits alongside spec.md. Per SPEC §7.3 item 10."
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      },
+      "description": "Slugs of related Trust Tasks."
+    }
+  }
+}
