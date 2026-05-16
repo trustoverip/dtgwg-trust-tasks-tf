@@ -90,7 +90,9 @@ Maintainers **MAY** require a stronger transport-binding-level authentication fo
 * **Subject.** The party whose role is changing; identified by `payload.subject`. Self-promotion (`issuer == payload.subject` with `toRole` strictly greater than `fromRole`) **SHOULD** be forbidden by maintainer policy.
 * **Transition.** A change from `payload.before.role` to `payload.after.role`. Each maintainer defines which transitions are permitted under its policy (for example, "any admin may promote a member to moderator"; "promotion to admin requires a peer admin's countersignature").
 
-## Examples
+## Request
+
+A *request* document carries `type: https://trusttasks.org/spec/acl/change-role/1.0` (or `…/1.0#request`), with a payload that validates against the top-level schema in `payload.schema.json`. The producer is the changing authority; the recipient is the ACL maintainer.
 
 ### Promotion from member to moderator
 
@@ -176,6 +178,42 @@ But Bob's current role in the maintainer's ACL is `moderator` (changed by anothe
 ```
 
 The changing authority refreshes its view of the ACL and retries from the new prior state, rather than silently overwriting another admin's recent change.
+
+## Response
+
+A success *response* document carries `type: https://trusttasks.org/spec/acl/change-role/1.0#response`, with a payload that validates against the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. The producer is the ACL maintainer; the recipient is the changing authority.
+
+The response payload carries a single member, `entry`, which is the *AclEntry* the maintainer now holds for the subject. The `entry` value **MUST** equal the request's `payload.after`, including the new `role`. The changing authority can verify in one step that the transition landed as requested.
+
+A failure (including `acl/change-role:state_mismatch`) is **not** a `#response` document; failures use `trust-task-error` — see [SPEC.md §8](../../../../SPEC.md#8-error-responses).
+
+### Successful promotion
+
+Response to the first request example above:
+
+```json
+{
+  "id": "2c3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
+  "type": "https://trusttasks.org/spec/acl/change-role/1.0#response",
+  "threadId": "1b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:org.example",
+  "issuedAt": "2026-06-10T14:00:01Z",
+  "payload": {
+    "entry": {
+      "subject": "did:web:bob.example",
+      "role": "moderator",
+      "scopes": ["context:public"],
+      "createdAt": "2026-01-01T00:00:00Z",
+      "createdBy": "did:web:org.example",
+      "updatedAt": "2026-06-10T14:00:01Z",
+      "updatedBy": "did:web:org.example"
+    }
+  }
+}
+```
+
+`entry.role` is now `moderator`, confirming the transition.
 
 ## Security & Privacy
 

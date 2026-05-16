@@ -94,7 +94,9 @@ The maintainer **MUST NOT** apply this task to change a subject's existing role;
 * **Role.** A short string interpreted by the ACL maintainer. The framework does not constrain the vocabulary; common examples include `admin`, `member`, `viewer`. Each maintainer publishes its role list as part of its ecosystem governance.
 * **Scopes.** An array of opaque strings restricting where the role applies (for example, contexts, domains, resource prefixes). Their interpretation is defined by the maintainer.
 
-## Examples
+## Request
+
+A *request* document carries `type: https://trusttasks.org/spec/acl/grant/1.0` (or the explicit form `…/1.0#request`), with a payload that validates against the top-level schema in `payload.schema.json`. The producer is the granting authority; the recipient is the ACL maintainer.
 
 ### A new admin is added
 
@@ -189,6 +191,75 @@ The maintainer **MUST NOT** apply this task to change a subject's existing role;
 ```
 
 `before` equals `after`; the maintainer recognizes this as a no-op and acknowledges without mutating state.
+
+## Response
+
+A success *response* document carries `type: https://trusttasks.org/spec/acl/grant/1.0#response`, with a payload that validates against the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. The producer is the ACL maintainer; the recipient is the granting authority.
+
+The response payload carries a single member, `entry`, which is the *AclEntry* the maintainer now holds for the subject. The `entry` value **MUST** equal the request's `payload.after`. This lets the granting authority verify, in one step, that the maintainer accepted the grant verbatim.
+
+A failure is **not** an `#response` document; failures use the framework's `trust-task-error` type — see [SPEC.md §8](../../../../SPEC.md#8-error-responses) and this spec's [Error codes](#error-codes).
+
+### Successful grant of a new admin
+
+Response to the first request example above:
+
+```json
+{
+  "id": "5e3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
+  "type": "https://trusttasks.org/spec/acl/grant/1.0#response",
+  "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:org.example",
+  "issuedAt": "2026-05-16T10:00:01Z",
+  "payload": {
+    "entry": {
+      "subject": "did:web:alice.example",
+      "role": "admin",
+      "label": "Alice — primary admin",
+      "createdAt": "2026-05-16T10:00:00Z",
+      "createdBy": "did:web:org.example"
+    }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "verificationMethod": "did:web:maintainer.example#key-1",
+    "created": "2026-05-16T10:00:01Z",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z6ab..."
+  }
+}
+```
+
+`threadId` carries the originating request's `id` so the granting authority can pair the response with its request.
+
+### Successful grant of a scoped, expiring member
+
+Response to the second request example:
+
+```json
+{
+  "id": "9b91c7b3-2e62-4a91-a3a4-9d61b75e2f02",
+  "type": "https://trusttasks.org/spec/acl/grant/1.0#response",
+  "threadId": "8a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:org.example",
+  "issuedAt": "2026-05-16T10:05:01Z",
+  "payload": {
+    "entry": {
+      "subject": "did:web:contractor.example",
+      "role": "member",
+      "scopes": ["context:project-alpha"],
+      "createdAt": "2026-05-16T10:05:01Z",
+      "createdBy": "did:web:org.example",
+      "expiresAt": "2026-08-16T00:00:00Z"
+    }
+  }
+}
+```
+
+The maintainer's `createdAt` may differ from the request's `payload.after.createdAt` because the maintainer applies its own clock; the granting authority **SHOULD** accept the maintainer's value.
 
 ## Security & Privacy
 

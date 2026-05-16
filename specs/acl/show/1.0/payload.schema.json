@@ -11,5 +11,43 @@
       "minLength": 1,
       "description": "VID of the party whose entry is being looked up."
     }
+  },
+  "$defs": {
+    "AclEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "role"],
+      "properties": {
+        "subject":    { "type": "string" },
+        "role":       { "type": "string" },
+        "scopes":     { "type": "array", "items": { "type": "string" } },
+        "label":      { "type": "string" },
+        "createdAt":  { "type": "string", "format": "date-time" },
+        "createdBy":  { "type": "string" },
+        "updatedAt":  { "type": "string", "format": "date-time" },
+        "updatedBy":  { "type": "string" },
+        "expiresAt":  { "type": "string", "format": "date-time" },
+        "metadata":   { "type": "object" }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Show — response payload",
+      "description": "The success response to an acl/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/show/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": {
+          "description": "The looked-up AclEntry.",
+          "$ref": "#/$defs/AclEntry"
+        },
+        "redactedFields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Names of AclEntry fields the maintainer redacted (for example, ['metadata'])."
+        }
+      }
+    }
   }
 }

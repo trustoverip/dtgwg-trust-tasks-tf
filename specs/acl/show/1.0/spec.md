@@ -74,7 +74,9 @@ The maintainer **SHOULD** respect a "self-lookup is always permitted" convention
 * **ACL maintainer.** The party answering the lookup; identified by `recipient`.
 * **Subject.** The party whose entry is being looked up; identified by `payload.subject`. May be the querying party itself (self-lookup).
 
-## Examples
+## Request
+
+A *request* document carries `type: https://trusttasks.org/spec/acl/show/1.0` (or `…/1.0#request`), with a payload that validates against the top-level schema in `payload.schema.json`. The producer is the querying party; the recipient is the ACL maintainer.
 
 ### Admin looking up a member
 
@@ -110,9 +112,69 @@ The maintainer applies admin-level lookup policy and either returns Alice's curr
 
 `issuer == payload.subject`. Under the "self-lookup is always permitted" convention, the maintainer returns Alice her own entry — letting her confirm her current role, scopes, and expiry without administrative privilege.
 
-### Lookup of a missing subject
+## Response
 
-A querying party asks about a subject that does not exist in the ACL:
+A success *response* document carries `type: https://trusttasks.org/spec/acl/show/1.0#response`, with a payload that validates against the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. The producer is the ACL maintainer; the recipient is the querying party.
+
+The response payload carries:
+
+* `entry` — the *AclEntry* the maintainer holds for the requested subject.
+* `redactedFields` — optional; lists *AclEntry* field names the maintainer omitted from `entry` (for example, `["metadata"]` when the requester does not have administrator privileges).
+
+A subject not being in the ACL is **not** a success: the maintainer returns an `acl/show:subject_not_present` error using `trust-task-error`, not a `#response` document.
+
+### Successful lookup
+
+Response to the "Admin looking up a member" request example:
+
+```json
+{
+  "id": "ba2a1c44-7b81-4d3e-9b51-7a3c89e3d1f3",
+  "type": "https://trusttasks.org/spec/acl/show/1.0#response",
+  "threadId": "a82a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:admin.example",
+  "issuedAt": "2026-06-20T08:00:01Z",
+  "payload": {
+    "entry": {
+      "subject": "did:web:alice.example",
+      "role": "admin",
+      "label": "Alice — primary admin",
+      "createdAt": "2026-05-16T10:00:00Z",
+      "createdBy": "did:web:org.example"
+    }
+  }
+}
+```
+
+### Successful self-lookup with redaction
+
+Response to the self-lookup request example, where the maintainer's policy redacts `metadata` for non-administrators (including the subject themselves):
+
+```json
+{
+  "id": "ca1c7b32-7a91-4a91-a3a4-9d61b75e2f02",
+  "type": "https://trusttasks.org/spec/acl/show/1.0#response",
+  "threadId": "b91c7b32-7a91-4a91-a3a4-9d61b75e2f01",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:alice.example",
+  "issuedAt": "2026-06-20T08:05:01Z",
+  "payload": {
+    "entry": {
+      "subject": "did:web:alice.example",
+      "role": "admin",
+      "label": "Alice — primary admin",
+      "createdAt": "2026-05-16T10:00:00Z",
+      "createdBy": "did:web:org.example"
+    },
+    "redactedFields": ["metadata"]
+  }
+}
+```
+
+### Failure — subject not in the ACL
+
+A querying party asks about a subject that does not exist:
 
 ```json
 {
@@ -127,7 +189,7 @@ A querying party asks about a subject that does not exist in the ACL:
 }
 ```
 
-The maintainer responds:
+The maintainer responds with a `trust-task-error` — note the distinct `type`, not the `#response` variant:
 
 ```json
 {

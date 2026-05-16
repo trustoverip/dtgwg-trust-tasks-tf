@@ -113,10 +113,29 @@ function checkPayloadSchema(slug, version, dir) {
   if (!('additionalProperties' in schema)) {
     warn(`${slug}/${version}/payload.schema.json: no additionalProperties declared (SPEC §6.3 requires explicit handling)`);
   }
+  // SPEC §7.3 item 7.6: if a response sub-schema exists, it MUST live in $defs.Response
+  // and declare $anchor: "response".
+  const respDef = schema.$defs && schema.$defs.Response;
+  if (respDef) {
+    if (respDef.$anchor !== 'response') {
+      fail(`${slug}/${version}/payload.schema.json`, `$defs.Response must declare $anchor: "response" (got ${JSON.stringify(respDef.$anchor)})`);
+    }
+    if (!('additionalProperties' in respDef)) {
+      warn(`${slug}/${version}/payload.schema.json: $defs.Response has no additionalProperties declared`);
+    }
+  }
+  // Belt-and-braces: nothing other than Response/Request/well-known $defs should declare a `response` anchor.
+  for (const [k, v] of Object.entries(schema.$defs || {})) {
+    if (k === 'Response') continue;
+    if (v && v.$anchor === 'response') {
+      fail(`${slug}/${version}/payload.schema.json`, `only $defs.Response may use $anchor: "response" (found on $defs.${k})`);
+    }
+  }
   return schema;
 }
 
 function buildTask(entry, meta, schema) {
+  const hasResponse = !!(schema && schema.$defs && schema.$defs.Response);
   return {
     id: meta.slug,
     slug: meta.slug,
@@ -134,6 +153,7 @@ function buildTask(entry, meta, schema) {
     proofRequirement: meta.proofRequirement,
     errorCodes: meta.errorCodes || [],
     jsonLdContext: !!meta.jsonLdContext,
+    hasResponse,
     schema,
     related: meta.related || [],
     prosePath: `/specs/${meta.slug}/${meta.version}/spec.md`,

@@ -83,27 +83,59 @@ Notes:
 
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
-## Examples (required)
+## Request and Response sections
 
-Every `spec.md` **MUST** include an `## Examples` section with at least one complete, non-normative *Trust Task document* showing the spec in use. Examples make the spec concrete and dramatically reduce the support load when contributors implement against it. Prefer multiple examples that cover:
+A specification that defines both a request document and a success-response document **MUST** organize its `spec.md` body around two H2 sections — `## Request` and `## Response` — placed immediately after `## Definitions` and before `## Security & Privacy`. The framework's `#request` / `#response` fragment convention (see [SPEC.md §4.4.1](SPEC.md#441-request-and-response-variants)) maps directly to these anchor names: clicking a Trust Task `type` URL like `https://trusttasks.org/spec/acl/grant/1.0#response` lands the reader on the rendered spec page at the **Response** section.
 
-- The simplest valid case.
-- Each distinct shape your payload supports (full vs. partial, with vs. without optional members).
-- A failure mode that emits one of your declared `errorCodes`.
+The shape:
 
-Each example **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use the example directly. Comment briefly before each example on what it demonstrates.
+- `## Request` — one-sentence intro that names the producer and recipient and points to the top-level schema in `payload.schema.json`. Follow with one or more `### Sub-heading` example blocks, each a complete *Trust Task document*.
+- `## Response` — one-sentence intro that names the producer (the *recipient* of the request, now responding) and points to the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. Describe each payload member and note that failures use `trust-task-error`, not a `#response` document. Follow with at least one `### Sub-heading` example response — and, where helpful, an example showing the failure path with a paired `trust-task-error` reply.
 
-See `specs/acl/grant/1.0/spec.md` for a worked example of the Examples section.
+A specification that defines a fire-and-forget task (no success response document) **MAY** omit the `## Response` section; in that case the `payload.schema.json` MUST NOT contain a `$defs.Response` sub-schema (the build script checks).
+
+Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
+
+See `specs/acl/grant/1.0/spec.md` for a worked example.
 
 ## `payload.schema.json`
 
 Must be a JSON Schema 2020-12 document. The build script enforces:
 
 - `$schema` = `https://json-schema.org/draft/2020-12/schema`
-- `$id` = `https://trusttasks.org/spec/<slug>/<version>` (the Type URI of your spec, with the slug's `/` separators preserved in the URL)
+- `$id` = `https://trusttasks.org/spec/<slug>/<version>` (the Type URI of your spec, with the slug's `/` separators preserved in the URL, and **without** a fragment)
 - `additionalProperties` declared explicitly (recommended: `false`).
 
 The schema describes **only the `payload` member**, not the outer document. The outer structure (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `proof`) is owned by the framework — see [SPEC.md §6.3](SPEC.md#63-schema-scope).
+
+### Request and response in one schema file
+
+Where the specification defines a success-response document, both shapes live in the same `payload.schema.json`. The top-level schema (or a sub-schema reachable via `$anchor: "request"`) describes the **request** payload; a sub-schema under `$defs.Response` with `$anchor: "response"` describes the **response** payload. Skeleton:
+
+```jsonc
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl/grant/1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "role", "after"],
+  "properties": { /* request fields */ },
+  "$defs": {
+    "AclEntry": { /* shared shape */ },
+    "Response": {
+      "$anchor": "response",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": { "entry": { "$ref": "#/$defs/AclEntry" } }
+    }
+  }
+}
+```
+
+A consumer that receives a document with `type: ".../acl/grant/1.0#response"` resolves `#response` against the fetched schema, lands on `$defs.Response`, and validates the response `payload` against it. The build script verifies that any `$defs.Response` you publish declares `$anchor: "response"` and that no other `$defs` entry uses that anchor.
+
+For a fire-and-forget task with no success response, omit `$defs.Response` entirely — the framework still gives you `trust-task-error` for failures.
 
 ## Task-specific error codes (optional)
 

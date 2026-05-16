@@ -168,6 +168,29 @@ The `id` is opaque to the framework. Resolvability of the `id` (the ability to d
 
 The `type` member's value **MUST** be a *Type URI* in the form defined in [§6.1](#61-type-uri). The version of the *Trust Task specification* a document conforms to is conveyed by the trailing `<MAJOR.MINOR>` segment of this URI; no separate version member is carried in the document.
 
+A `type` URI **MAY** carry a fragment identifier. The framework reserves the fragments `#request` and `#response` to disambiguate the two directions of a request/response exchange that share a single *Trust Task specification*; see [§4.4.1](#441-request-and-response-variants).
+
+#### 4.4.1 Request and response variants
+
+A single *Trust Task specification* often describes both a *request* document (the document a *producer* sends to initiate the task) and a *response* document (the document the *consumer* returns when the task completes successfully). The framework distinguishes the two via the fragment of the `type` URI:
+
+| `type` form | Meaning |
+|---|---|
+| `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>` | Request document. Implicitly equivalent to the explicit form below. |
+| `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>#request` | Request document, explicit form. |
+| `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>#response` | Success-response document for the same specification. |
+
+The rules:
+
+1. A *Trust Task document* whose `type` URI carries **no fragment** or the fragment `#request` is a *request*. The two forms are semantically equivalent; producers **MAY** emit either, consumers **MUST** accept both.
+2. A *Trust Task document* whose `type` URI carries the fragment `#response` is the *success response* of a request whose `type` is the same URI with the fragment stripped. The request and response are correlated by `threadId` per [§4.9](#49-the-threadid-member).
+3. The fragments `#request` and `#response` are **RESERVED** for this purpose. An individual *Trust Task specification* **MUST NOT** assign other fragment meanings to its `type` URI.
+4. A *failure* response is **not** a `#response`-variant document of the request's *Type URI*. Failures are reported via the framework's distinct `trust-task-error` *Type URI* per [§8](#8-error-responses).
+5. Consumers **MUST** preserve the fragment when comparing `type` URIs, when routing documents internally, and when keying hash maps on `type`. A consumer that strips the fragment before keying will conflate request and response documents.
+6. The payload JSON Schema for a request/response pair is published as a single schema document at the bare *Type URI* (no fragment). Within that schema, the request payload shape is the top-level schema (or the schema reachable via `$anchor: "request"`); the response payload shape is reachable via `$anchor: "response"`. See [§7.3](#73-specification-requirements) for the publishing requirements.
+
+A specification that defines a fire-and-forget task — one with no expected success response document — declares no response sub-schema. Its consumers signal success implicitly (by the absence of a `trust-task-error` reply) and **MUST NOT** emit a `#response`-variant document for that specification.
+
 ### 4.5 The `payload` member
 
 The `payload` member's value **MUST** be a JSON object whose internal structure is defined by the *Trust Task specification* identified by the document's `type`. This framework places no constraint on the contents of `payload` beyond requiring that it be an object.
@@ -364,6 +387,8 @@ where:
 * `<slug>` is a lowercase, hyphen-separated short name assigned to the specification, optionally organized into one or more path segments (e.g. `kyc-handoff`, or `acl/grant`). The slug **MUST** match the regular expression `^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$`. Each `/`-delimited segment **MUST** individually satisfy the single-segment grammar (`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`); consecutive hyphens are not permitted within a segment, and consecutive slashes are not permitted between segments. Segments group related specifications under a shared namespace and are reflected in the *Type URI* path verbatim — `https://trusttasks.org/spec/acl/grant/1.0` is the *Type URI* of a specification whose slug is `acl/grant`.
 * `<MAJOR.MINOR>` is the specification version as defined in [§5.1](#51-scheme). When resolving a *Type URI*, a *consumer* identifies the version as the final path segment (which always matches the version grammar) and the slug as the segments between `/spec/` and the version.
 
+A *Type URI* used as the value of a *Trust Task document*'s `type` member **MAY** additionally carry the fragment `#request` or `#response`, with the meanings defined in [§4.4.1](#441-request-and-response-variants). The fragments `#request` and `#response` are **RESERVED**; no other fragment values are defined by this framework, and individual *Trust Task specifications* **MUST NOT** define their own.
+
 The following slugs are **RESERVED** for framework-defined specifications and **MUST NOT** be used by any individual *Trust Task specification*:
 
 * The exact slug `trust-task`, reserved for this framework specification itself.
@@ -444,10 +469,11 @@ A *conforming Trust Task specification* **MUST** declare each of the following. 
 6. **Outcome** — a non-normative prose statement of what successful execution of the task achieves between the parties. This is the human-readable counterpart to the payload schema.
 7. **Payload JSON Schema** — a normative JSON Schema for the `payload` member that:
    1. Is a valid JSON Schema document under [[JSON-SCHEMA-2020-12]].
-   2. Sets `$id` to the specification's *Type URI*.
+   2. Sets `$id` to the specification's *Type URI* (without fragment).
    3. Sets `$schema` to `https://json-schema.org/draft/2020-12/schema`.
    4. Specifies `additionalProperties` either explicitly as `false` or with an accompanying prose statement of how unrecognized payload members are to be treated.
    5. Is served at its *Type URI* under content negotiation for `application/schema+json`.
+   6. Where the specification defines a success-response document (per [§4.4.1](#441-request-and-response-variants)), the schema **MUST** contain a sub-schema reachable via `$anchor: "response"` describing the response document's `payload`; the top-level schema (or the sub-schema reachable via `$anchor: "request"`) describes the request document's `payload`. A *consumer* receiving a document whose `type` carries `#response` resolves the response sub-schema by dereferencing the bare *Type URI* and following the `response` anchor. Where the specification defines no success-response document, the schema **MUST NOT** declare a `response` anchor; such tasks are fire-and-forget at the application layer (failures are still reported via `trust-task-error` per [§8](#8-error-responses)).
 8. **Proof requirement** — an explicit statement that the `proof` member is **OPTIONAL**, **RECOMMENDED**, or **REQUIRED** for documents implementing the specification, together with a brief rationale referencing the threat model addressed (for example, tampering by intermediaries, replay, repudiation by the *producer*, or reliance by third parties beyond the original *consumer*). The declared requirement **MUST NOT** be weaker than the default applicable under [§4.7.1](#471-when-to-include-a-proof).
 9. **Task-specific error codes (where used)** — for each extended `code` defined under [§8.5](#85-extension-by-individual-trust-task-specifications), the code identifier, its meaning, its default `retryable` value, and the JSON Schema fragment describing any `details` object it carries. Where no extensions are defined, the specification **SHOULD** state so explicitly.
 10. **JSON-LD context (where used)** — if the specification publishes a canonical JSON-LD context, the context **MUST** be served at the specification's *Type URI* under content negotiation for `application/ld+json` (see [§4.6](#46-json-ld-compatibility) and [§6.2](#62-content-negotiation)). Where no context is published, the specification **SHOULD** state so explicitly.
@@ -457,6 +483,13 @@ A worked example of a *Trust Task specification* satisfying these requirements a
 ## 8. Error responses
 
 A *recipient party* that cannot or will not act upon a received *Trust Task document* **MAY** return an **error response** describing why. Error responses are themselves *Trust Task documents* of a framework-defined type, so that one validation, signing, and transport pipeline serves both successful tasks and their refusals.
+
+The framework distinguishes the two reply forms cleanly:
+
+* A **success response** uses the request's *Type URI* with the fragment `#response` (see [§4.4.1](#441-request-and-response-variants)). Its payload shape is defined by the originating *Trust Task specification*.
+* An **error response** uses the framework's distinct `trust-task-error` *Type URI* (defined below). Its payload shape is defined by this framework, independent of the originating specification.
+
+A *recipient party* **MUST NOT** report failure by emitting a `#response`-variant document of the originating spec, nor success by emitting a `trust-task-error` document. The two reply types are not interchangeable.
 
 ### 8.1 The trust-task-error specification
 

@@ -48,6 +48,23 @@
         "expiresAt":  { "type": "string", "format": "date-time" },
         "metadata":   { "type": "object" }
       }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Revoke — response payload",
+      "description": "The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": {
+          "description": "The AclEntry as it exists after the maintainer accepts the revocation. null for a full removal; an AclEntry with reduced scopes otherwise. MUST equal the request's payload.after.",
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/AclEntry" }
+          ]
+        }
+      }
     }
   }
 }

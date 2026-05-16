@@ -513,6 +513,18 @@ function SpecPage({ slug, version, id, setRoute }) {
     return () => { cancelled = true; };
   }, [task.prosePath]);
 
+  // Once the prose is rendered, honor any #fragment in the URL — used by request/response
+  // navigation (e.g. /spec/acl/grant/1.0#response scrolls to the Response section).
+  useE(() => {
+    if (!proseHtml || !location.hash) return;
+    const id = location.hash.slice(1);
+    const el = document.getElementById(id);
+    if (el) {
+      // Defer one frame so the layout settles before scrollIntoView.
+      requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+    }
+  }, [proseHtml]);
+
   useE(() => {
     const ids = ["metadata", ...proseToc.map(t => t.id), "schema", "related"];
     const onScroll = () => {

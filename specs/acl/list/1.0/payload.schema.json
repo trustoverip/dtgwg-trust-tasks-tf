@@ -30,5 +30,48 @@
       "type": "string",
       "description": "Opaque continuation token returned by the maintainer in a previous response."
     }
+  },
+  "$defs": {
+    "AclEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "role"],
+      "properties": {
+        "subject":    { "type": "string" },
+        "role":       { "type": "string" },
+        "scopes":     { "type": "array", "items": { "type": "string" } },
+        "label":      { "type": "string" },
+        "createdAt":  { "type": "string", "format": "date-time" },
+        "createdBy":  { "type": "string" },
+        "updatedAt":  { "type": "string", "format": "date-time" },
+        "updatedBy":  { "type": "string" },
+        "expiresAt":  { "type": "string", "format": "date-time" },
+        "metadata":   { "type": "object" }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL List — response payload",
+      "description": "The success response to an acl/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries"],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/AclEntry" },
+          "description": "Matching AclEntry items, in maintainer-defined order. May be empty."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Opaque continuation token. Present when more entries remain; absent on the final page."
+        },
+        "redactedFields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Names of AclEntry fields the maintainer redacted from every returned entry (for example, ['metadata'])."
+        }
+      }
+    }
   }
 }

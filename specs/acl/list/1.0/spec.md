@@ -74,7 +74,9 @@ Maintainers **MAY** redact entry fields based on the querying party's role (for 
 * **Filter.** A constraint that narrows the returned set. The framework defines three optional filters: `role`, `scope`, `subjectPrefix`. Filters are conjunctive: an entry matches only if all provided filters match.
 * **Cursor.** An opaque string the maintainer returns to allow paging through large result sets. Consumers **MUST** treat the cursor as opaque and re-send it verbatim on the follow-up query.
 
-## Examples
+## Request
+
+A *request* document carries `type: https://trusttasks.org/spec/acl/list/1.0` (or `…/1.0#request`), with a payload that validates against the top-level schema in `payload.schema.json`. All payload members are optional; an empty payload requests the default list. The producer is the querying party; the recipient is the ACL maintainer.
 
 ### List everyone
 
@@ -141,6 +143,74 @@ The `cursor` value is opaque — the maintainer returned it verbatim with the pr
 ```
 
 Returns entries whose role is `member`, whose `scopes` array contains `context:project-alpha`, and whose `subject` VID begins with `did:web:`. Filters are conjunctive.
+
+## Response
+
+A success *response* document carries `type: https://trusttasks.org/spec/acl/list/1.0#response`, with a payload that validates against the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. The producer is the ACL maintainer; the recipient is the querying party.
+
+The response payload carries:
+
+* `entries` — an array of *AclEntry* items matching the request's filters, in maintainer-defined order. The array **MAY** be empty when nothing matches.
+* `cursor` — present if more entries remain beyond `entries`; absent on the final page. Opaque to the consumer; re-send verbatim to fetch the next page.
+* `redactedFields` — optional; lists the *AclEntry* field names the maintainer omitted from every returned entry (for example, `["metadata"]` when the requester does not have administrator privileges).
+
+A failure is **not** a `#response` document; failures use `trust-task-error` — see [SPEC.md §8](../../../../SPEC.md#8-error-responses).
+
+### A page of admin entries
+
+Response to the "Filter by role, with paging" request example:
+
+```json
+{
+  "id": "6c3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
+  "type": "https://trusttasks.org/spec/acl/list/1.0#response",
+  "threadId": "5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:auditor.example",
+  "issuedAt": "2026-06-15T10:05:01Z",
+  "payload": {
+    "entries": [
+      {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "label": "Alice — primary admin",
+        "createdAt": "2026-05-16T10:00:00Z",
+        "createdBy": "did:web:org.example"
+      },
+      {
+        "subject": "did:web:carol.example",
+        "role": "admin",
+        "createdAt": "2026-05-18T08:30:00Z",
+        "createdBy": "did:web:alice.example"
+      }
+    ],
+    "cursor": "eyJvZmZzZXQiOjUwfQ"
+  }
+}
+```
+
+`cursor` is present, so the auditor sends a continuation request to fetch the next page.
+
+### An empty page with redactions
+
+Response to a list filtered to a scope where the auditor lacks privileges:
+
+```json
+{
+  "id": "7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3",
+  "type": "https://trusttasks.org/spec/acl/list/1.0#response",
+  "threadId": "5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:auditor.example",
+  "issuedAt": "2026-06-15T10:06:00Z",
+  "payload": {
+    "entries": [],
+    "redactedFields": ["metadata", "label"]
+  }
+}
+```
+
+`entries` is empty (matching nothing under the requester's filter and visibility) and the maintainer notes which fields it would have redacted had any entries returned.
 
 ## Security & Privacy
 

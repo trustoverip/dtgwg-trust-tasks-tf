@@ -50,6 +50,20 @@
         "expiresAt":  { "type": "string", "format": "date-time" },
         "metadata":   { "type": "object" }
       }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Change Role — response payload",
+      "description": "The success response to an acl/change-role request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/change-role/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": {
+          "description": "The AclEntry that the maintainer now holds for the subject. MUST equal the request's payload.after.",
+          "$ref": "#/$defs/AclEntry"
+        }
+      }
     }
   }
 }

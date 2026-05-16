@@ -89,7 +89,9 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 * **Subject.** The party being removed (or partially de-scoped); identified by `payload.subject`.
 * **Self-revocation.** A revocation where `issuer == payload.subject`. Consumers **MUST** recognize this case explicitly and apply the maintainer's self-revoke policy (which may protect last-authority roles).
 
-## Examples
+## Request
+
+A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0` (or `…/1.0#request`), with a payload that validates against the top-level schema in `payload.schema.json`. The producer is the revoking party (an administrator or the subject themselves); the recipient is the ACL maintainer.
 
 ### Full removal by an administrator
 
@@ -184,6 +186,63 @@ The entry remains in the ACL; only `context:project-beta` was removed from the s
 ```
 
 `issuer == payload.subject`. The maintainer recognizes this as a self-revocation; because Alice's role is `member` (not the last `admin`), the maintainer applies its self-revoke policy and removes the entry.
+
+## Response
+
+A success *response* document carries `type: https://trusttasks.org/spec/acl/revoke/1.0#response`, with a payload that validates against the sub-schema reachable via `$anchor: "response"` in `payload.schema.json`. The producer is the ACL maintainer; the recipient is the revoking party.
+
+The response payload carries a single member, `entry`, whose value is:
+
+* `null` when the revocation was a full removal (the subject is gone from the ACL).
+* The resulting *AclEntry* when the revocation was a scope reduction (the subject remains with fewer scopes).
+
+The `entry` value **MUST** equal the request's `payload.after`.
+
+A failure is **not** a `#response` document; failures use `trust-task-error` — see [SPEC.md §8](../../../../SPEC.md#8-error-responses) and this spec's [Error codes](#error-codes).
+
+### Successful full removal
+
+Response to the first request example above:
+
+```json
+{
+  "id": "ae2a1c44-7b81-4d3e-9b51-7a3c89e3d1f3",
+  "type": "https://trusttasks.org/spec/acl/revoke/1.0#response",
+  "threadId": "9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:org.example",
+  "issuedAt": "2026-05-20T11:00:01Z",
+  "payload": {
+    "entry": null
+  }
+}
+```
+
+### Successful scope reduction
+
+Response to the scope-reduction example:
+
+```json
+{
+  "id": "8a91c7b3-2e62-4a91-a3a4-9d61b75e2f02",
+  "type": "https://trusttasks.org/spec/acl/revoke/1.0#response",
+  "threadId": "7a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:org.example",
+  "issuedAt": "2026-05-21T09:30:01Z",
+  "payload": {
+    "entry": {
+      "subject": "did:web:alice.example",
+      "role": "member",
+      "scopes": ["context:project-alpha"],
+      "createdAt": "2026-04-01T00:00:00Z",
+      "createdBy": "did:web:org.example",
+      "updatedAt": "2026-05-21T09:30:01Z",
+      "updatedBy": "did:web:org.example"
+    }
+  }
+}
+```
 
 ## Security & Privacy
 
