@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl-list/1.0",
+  "title": "ACL List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — only entries with this role are returned."
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — only entries whose scopes include this string are returned."
+    },
+    "subjectPrefix": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — only entries whose subject VID starts with this prefix are returned."
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Maximum number of entries to return. Maintainer-defined default and ceiling."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token returned by the maintainer in a previous response."
+    }
+  }
+}

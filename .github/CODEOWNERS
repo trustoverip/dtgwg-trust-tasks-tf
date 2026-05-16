@@ -42,3 +42,8 @@
 /specs/credential-issuance/        @stormer78
 /specs/trust-registry-query/       @stormer78
 /specs/agent-authorization/        @stormer78
+/specs/acl-grant/                  @stormer78
+/specs/acl-revoke/                 @stormer78
+/specs/acl-change-role/            @stormer78
+/specs/acl-list/                   @stormer78
+/specs/acl-show/                   @stormer78

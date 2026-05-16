@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl-show/1.0",
+  "title": "ACL Show — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "VID of the party whose entry is being looked up."
+    }
+  }
+}

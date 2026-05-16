@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl-change-role/1.0",
+  "title": "ACL Change Role — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "fromRole", "toRole", "before", "after"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "description": "VID of the party whose role is changing."
+    },
+    "fromRole": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Role the subject is moving from. MUST equal payload.before.role."
+    },
+    "toRole": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Role the subject is moving to. MUST equal payload.after.role."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional human-readable rationale."
+    },
+    "before": {
+      "description": "The AclEntry as it existed before this role change.",
+      "$ref": "#/$defs/AclEntry"
+    },
+    "after": {
+      "description": "The AclEntry as it exists after the maintainer accepts this role change. MUST differ from `before` only in `role`, `updatedAt`, and `updatedBy`.",
+      "$ref": "#/$defs/AclEntry"
+    }
+  },
+  "$defs": {
+    "AclEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "role"],
+      "properties": {
+        "subject":    { "type": "string" },
+        "role":       { "type": "string" },
+        "scopes":     { "type": "array", "items": { "type": "string" } },
+        "label":      { "type": "string" },
+        "createdAt":  { "type": "string", "format": "date-time" },
+        "createdBy":  { "type": "string" },
+        "updatedAt":  { "type": "string", "format": "date-time" },
+        "updatedBy":  { "type": "string" },
+        "expiresAt":  { "type": "string", "format": "date-time" },
+        "metadata":   { "type": "object" }
+      }
+    }
+  }
+}
