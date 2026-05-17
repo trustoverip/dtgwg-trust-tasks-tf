@@ -1,4 +1,5 @@
-//! [`ProofVerifier`] implementation backed by `affinidi-data-integrity`.
+//! [`Verifier`] — a [`ProofVerifier`] implementation backed by
+//! `affinidi-data-integrity`.
 //!
 //! Supports the W3C Data Integrity cryptosuites `eddsa-rdfc-2022` and
 //! `eddsa-jcs-2022` out of the box; `bbs-2023` and post-quantum variants
@@ -6,25 +7,22 @@
 //! changelog).
 //!
 //! ```rust,ignore
-//! use trust_tasks_proof_affinidi::AffinidiProofVerifier;
+//! use trust_tasks_proof::affinidi::Verifier;
 //!
 //! // For did:key — purely local, no I/O.
-//! let verifier = AffinidiProofVerifier::for_did_key();
+//! let verifier = Verifier::for_did_key();
 //! verifier.verify(&inbound_doc).await?;
 //! ```
 //!
 //! For `did:web` or other resolvers, supply a
 //! [`affinidi_data_integrity::VerificationMethodResolver`] via
-//! [`AffinidiProofVerifier::with_resolver`].
+//! [`Verifier::with_resolver`].
 //!
 //! The implementation removes the `proof` member from the document before
 //! handing it to the Affinidi `verify` call, as required by the W3C
 //! Data Integrity canonicalisation rules — the proof is over the doc
 //! *plus* the proof's own configuration (everything except `proofValue`),
 //! not over the embedded proof object itself.
-
-#![warn(missing_docs)]
-#![warn(rust_2018_idioms)]
 
 mod resolver;
 pub use resolver::CachedDidResolver;
@@ -52,12 +50,12 @@ pub use affinidi_data_integrity::DidKeyResolver as AffinidiDidKeyResolver;
 /// (no I/O, suitable for tests and self-issued documents), or with
 /// [`Self::with_resolver`] when you need to resolve `did:web` /
 /// `did:webvh` / other DID methods.
-pub struct AffinidiProofVerifier {
+pub struct Verifier {
     resolver: Arc<dyn VerificationMethodResolver>,
     options: VerifyOptions,
 }
 
-impl AffinidiProofVerifier {
+impl Verifier {
     /// Verifier that resolves `did:key:` URIs locally; rejects every other
     /// DID method.
     pub fn for_did_key() -> Self {
@@ -84,7 +82,7 @@ impl AffinidiProofVerifier {
 }
 
 #[async_trait]
-impl ProofVerifier for AffinidiProofVerifier {
+impl ProofVerifier for Verifier {
     async fn verify<P>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>
     where
         P: Serialize + Send + Sync,

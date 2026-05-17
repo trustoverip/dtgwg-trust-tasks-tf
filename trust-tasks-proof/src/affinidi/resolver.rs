@@ -1,18 +1,18 @@
 //! [`CachedDidResolver`] — bridges the Affinidi DID resolver cache SDK to
 //! the [`VerificationMethodResolver`] trait `affinidi-data-integrity`
-//! expects, so the [`AffinidiProofVerifier`](crate::AffinidiProofVerifier)
-//! can verify proofs against keys published in real DID documents
-//! (`did:web`, `did:webvh`, `did:peer`, `did:key`, `did:jwk`, …) rather
-//! than only against locally-derivable `did:key:`s.
+//! expects, so [`Verifier`](crate::affinidi::Verifier) can verify proofs
+//! against keys published in real DID documents (`did:web`, `did:webvh`,
+//! `did:peer`, `did:key`, `did:jwk`, …) rather than only against
+//! locally-derivable `did:key:`s.
 //!
 //! ```rust,ignore
 //! use std::sync::Arc;
 //! use affinidi_did_resolver_cache_sdk::{config::DIDCacheConfigBuilder, DIDCacheClient};
-//! use trust_tasks_proof_affinidi::{AffinidiProofVerifier, CachedDidResolver};
+//! use trust_tasks_proof::affinidi::{Verifier, CachedDidResolver};
 //!
 //! let client = DIDCacheClient::new(DIDCacheConfigBuilder::default().build()).await?;
 //! let resolver = Arc::new(CachedDidResolver::new(Arc::new(client)));
-//! let verifier = AffinidiProofVerifier::with_resolver(resolver);
+//! let verifier = Verifier::with_resolver(resolver);
 //! ```
 //!
 //! ## What's resolved

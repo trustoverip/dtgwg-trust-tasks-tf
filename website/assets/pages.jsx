@@ -1192,19 +1192,20 @@ function ImplementationsPage({ setRoute }) {
       repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm",
     },
     {
-      name: "trust-tasks-proof-affinidi",
+      name: "trust-tasks-proof",
       accent: "amber",
-      role: "Proof verifier",
-      tagline: "W3C Data Integrity via affinidi-data-integrity.",
+      role: "Proof verifiers",
+      tagline: "Pluggable ProofVerifier impls behind Cargo features.",
       summary:
-        "A ProofVerifier implementation backed by Affinidi's Data Integrity crate. Verifies proof members against the in-band issuer using EdDSA suites (eddsa-rdfc-2022, eddsa-jcs-2022); ships with a CachedDidResolver that bridges affinidi-did-resolver-cache-sdk so did:web / did:webvh / did:peer / did:jwk / did:key all resolve through one adapter.",
+        "Umbrella crate hosting concrete ProofVerifier implementations for the framework's seam. The default-enabled `affinidi` feature ships a W3C Data Integrity backend on top of affinidi-data-integrity (EdDSA suites: eddsa-rdfc-2022, eddsa-jcs-2022) plus a CachedDidResolver that bridges affinidi-did-resolver-cache-sdk so did:web / did:webvh / did:peer / did:jwk / did:key all resolve through one adapter. Future backends slot in as siblings under `trust_tasks_proof::<backend>::Verifier`.",
       bullets: [
-        "AffinidiProofVerifier::for_did_key() — offline, no I/O",
-        "AffinidiProofVerifier::with_resolver(...) — pluggable DID resolution",
+        "`affinidi` feature (default) — affinidi::Verifier + affinidi::CachedDidResolver",
+        "affinidi::Verifier::for_did_key() — offline, no I/O",
+        "affinidi::Verifier::with_resolver(...) — pluggable DID resolution",
         "DataIntegrityError → VerificationError → SPEC §8.3 proof_invalid",
         "Round-trip-tested against affinidi-data-integrity's sign path",
       ],
-      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-proof-affinidi",
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-proof",
     },
   ];
 
@@ -1215,8 +1216,10 @@ trust-tasks-rs = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
 trust-tasks-https   = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
 trust-tasks-didcomm = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
 
-# Optional: W3C Data Integrity proof verification
-trust-tasks-proof-affinidi = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }`;
+# Optional: W3C Data Integrity proof verification. The default feature
+# pulls in the Affinidi backend; use default-features = false for a bare
+# umbrella ready to receive other backends.
+trust-tasks-proof = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }`;
 
   const loopbackSnippet = `use chrono::Utc;
 use trust_tasks_rs::{
@@ -1323,21 +1326,21 @@ let resolved = handler.resolve_parties(&received)?;
 received.validate_basic(chrono::Utc::now(), &bob.did)?;
 received.enforce_audience_binding()?;`;
 
-  const proofSnippet = `use trust_tasks_proof_affinidi::AffinidiProofVerifier;
+  const proofSnippet = `use trust_tasks_proof::affinidi::Verifier;
 use trust_tasks_rs::ProofVerifier;
 
 // did:key only — offline, no I/O. Good for tests and self-issued documents.
-let verifier = AffinidiProofVerifier::for_did_key();
+let verifier = Verifier::for_did_key();
 verifier.verify(&inbound_doc).await?;
 
 // For did:web / did:webvh / did:peer / did:jwk, plug in the resolver cache:
 use std::sync::Arc;
 use affinidi_did_resolver_cache_sdk::{config::DIDCacheConfigBuilder, DIDCacheClient};
-use trust_tasks_proof_affinidi::CachedDidResolver;
+use trust_tasks_proof::affinidi::CachedDidResolver;
 
 let client   = DIDCacheClient::new(DIDCacheConfigBuilder::default().build()).await?;
 let resolver = Arc::new(CachedDidResolver::new(Arc::new(client)));
-let verifier = AffinidiProofVerifier::with_resolver(resolver);`;
+let verifier = Verifier::with_resolver(resolver);`;
 
   return (
     <React.Fragment>
@@ -1362,31 +1365,35 @@ let verifier = AffinidiProofVerifier::with_resolver(resolver);`;
             add the transport binding(s) and proof verifier you need.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
             {crates.map(c => (
               <article
                 key={c.name}
                 style={{
                   border: "1px solid var(--tt-border)",
                   borderLeft: `3px solid ${accent(c.accent)}`,
-                  padding: "var(--tt-space-5)",
+                  padding: "var(--tt-space-5) var(--tt-space-6)",
                   background: "var(--tt-surface-elev)",
                 }}
               >
-                <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), marginBottom: "var(--tt-space-2)" }}>
-                  {c.role}
-                </div>
-                <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{c.name}</h3>
-                <div style={{ fontFamily: "var(--tt-font-serif, var(--tt-font-display))", fontStyle: "italic", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)", marginBottom: "var(--tt-space-3)" }}>
-                  {c.tagline}
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
+                  <div>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), marginBottom: "var(--tt-space-1)" }}>
+                      {c.role}
+                    </div>
+                    <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{c.name}</h3>
+                    <div style={{ fontFamily: "var(--tt-font-serif, var(--tt-font-display))", fontStyle: "italic", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)" }}>
+                      {c.tagline}
+                    </div>
+                  </div>
+                  <a href={c.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), borderBottom: 0, whiteSpace: "nowrap" }}>
+                    Source →
+                  </a>
                 </div>
                 <p style={{ color: "var(--tt-text-muted)", marginTop: 0 }}>{c.summary}</p>
-                <ul style={{ margin: "var(--tt-space-3) 0 var(--tt-space-4)", paddingLeft: "1.1em", color: "var(--tt-text-muted)", lineHeight: 1.7 }}>
+                <ul style={{ margin: "var(--tt-space-3) 0 0", paddingLeft: "1.1em", color: "var(--tt-text-muted)", lineHeight: 1.7 }}>
                   {c.bullets.map(b => <li key={b}>{b}</li>)}
                 </ul>
-                <a href={c.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), borderBottom: 0 }}>
-                  Source →
-                </a>
               </article>
             ))}
           </div>
@@ -1403,7 +1410,7 @@ let verifier = AffinidiProofVerifier::with_resolver(resolver);`;
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
         <div className="container container--narrow">
           <span className="eyebrow">Quickstart</span>
-          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Add to your <code>Cargo.toml</code>.</h2>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Add to your Cargo.toml.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
             The crates aren't on crates.io yet — pull them as git dependencies until the first publish. MSRV is 1.94.
           </p>
@@ -1478,7 +1485,8 @@ let verifier = AffinidiProofVerifier::with_resolver(resolver);`;
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>W3C Data Integrity via Affinidi.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
             The core <code>trust-tasks-rs</code> crate intentionally ships <em>no</em> cryptosuites — verification
-            is a trait seam. <code>trust-tasks-proof-affinidi</code> is the first concrete <code>ProofVerifier</code>,
+            is a trait seam. <code>trust-tasks-proof</code> is the umbrella that hosts concrete implementations behind Cargo features;
+            its default-enabled <code>affinidi</code> feature exposes <code>trust_tasks_proof::affinidi::Verifier</code>,
             backed by <a href="https://crates.io/crates/affinidi-data-integrity" target="_blank" rel="noreferrer"><code>affinidi-data-integrity</code></a> for EdDSA cryptosuites
             (<code>eddsa-rdfc-2022</code>, <code>eddsa-jcs-2022</code>) and a <code>CachedDidResolver</code> adapter that
             covers <code>did:web</code>, <code>did:webvh</code>, <code>did:peer</code>, <code>did:jwk</code>, and <code>did:key</code>.

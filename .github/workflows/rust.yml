@@ -10,7 +10,7 @@ on:
       - "trust-tasks-codegen/**"
       - "trust-tasks-https/**"
       - "trust-tasks-didcomm/**"
-      - "trust-tasks-proof-affinidi/**"
+      - "trust-tasks-proof/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"

@@ -1,10 +1,12 @@
 //! End-to-end test for [`CachedDidResolver`]: signs a Trust Task document
 //! against a generated Ed25519 key, publishes a matching `did:key`
 //! identifier, and verifies the proof through `affinidi-did-resolver-cache-sdk`
-//! → `CachedDidResolver` → `AffinidiProofVerifier`.
+//! → `CachedDidResolver` → `affinidi::Verifier`.
 //!
 //! Runs entirely with the SDK's local mode (no network) so it stays a
 //! self-contained unit test of the wiring.
+
+#![cfg(feature = "affinidi")]
 
 use std::sync::Arc;
 
@@ -12,7 +14,7 @@ use affinidi_data_integrity::{DataIntegrityProof, SignOptions};
 use affinidi_did_resolver_cache_sdk::{config::DIDCacheConfigBuilder, DIDCacheClient};
 use affinidi_secrets_resolver::secrets::Secret;
 use serde::{Deserialize, Serialize};
-use trust_tasks_proof_affinidi::{AffinidiProofVerifier, CachedDidResolver};
+use trust_tasks_proof::affinidi::{CachedDidResolver, Verifier};
 use trust_tasks_rs::{Payload, Proof, ProofVerifier, TrustTask, VerificationError};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -56,7 +58,7 @@ fn fresh_did_key() -> (Secret, String) {
 #[tokio::test]
 async fn cached_resolver_verifies_did_key_signed_document() {
     let resolver = Arc::new(local_resolver().await);
-    let verifier = AffinidiProofVerifier::with_resolver(resolver);
+    let verifier = Verifier::with_resolver(resolver);
 
     let (secret, vm) = fresh_did_key();
     let issuer_did = vm.split('#').next().unwrap().to_string();
@@ -85,7 +87,7 @@ async fn cached_resolver_verifies_did_key_signed_document() {
 #[tokio::test]
 async fn cached_resolver_surfaces_resolver_error_for_unknown_method() {
     let resolver = Arc::new(local_resolver().await);
-    let verifier = AffinidiProofVerifier::with_resolver(resolver);
+    let verifier = Verifier::with_resolver(resolver);
 
     let (secret, _vm) = fresh_did_key();
 

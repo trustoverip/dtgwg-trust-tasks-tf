@@ -6288,7 +6288,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "trust-tasks-proof-affinidi"
+name = "trust-tasks-proof"
 version = "0.1.0"
 dependencies = [
  "affinidi-crypto",

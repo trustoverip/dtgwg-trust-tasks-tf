@@ -1,4 +1,4 @@
-//! Round-trip integration tests for [`AffinidiProofVerifier`].
+//! Round-trip integration tests for the `affinidi` backend's [`Verifier`].
 //!
 //! Each test:
 //! 1. Generates a fresh Ed25519 keypair.
@@ -6,10 +6,13 @@
 //! 3. Signs it with `affinidi-data-integrity`'s `DataIntegrityProof::sign`.
 //! 4. Attaches the resulting proof onto the framework's typed
 //!    [`Proof`](trust_tasks_rs::Proof) struct.
-//! 5. Verifies via [`AffinidiProofVerifier`] using a local `MapResolver`
-//!    (test stand-in for a real `did:web` / `did:webvh` resolver).
+//! 5. Verifies via [`trust_tasks_proof::affinidi::Verifier`] using a
+//!    local `MapResolver` (test stand-in for a real `did:web` /
+//!    `did:webvh` resolver).
 //!
 //! Covers: happy path, payload tampering, proof tampering, missing-proof.
+
+#![cfg(feature = "affinidi")]
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -21,7 +24,7 @@ use affinidi_data_integrity::{
 use affinidi_secrets_resolver::secrets::{KeyType, Secret};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use trust_tasks_proof_affinidi::AffinidiProofVerifier;
+use trust_tasks_proof::affinidi::Verifier;
 use trust_tasks_rs::{Payload, Proof, ProofVerifier, TrustTask, TypeUri, VerificationError};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -103,7 +106,7 @@ async fn happy_path_signs_and_verifies() {
     let (secret, resolver) = keypair_with_resolver(vm);
     let doc = signed_doc(vm, &secret).await;
 
-    let verifier = AffinidiProofVerifier::with_resolver(resolver);
+    let verifier = Verifier::with_resolver(resolver);
     verifier.verify(&doc).await.expect("valid proof verifies");
 }
 
@@ -116,7 +119,7 @@ async fn tampered_payload_fails_verification() {
     // Flip a payload byte — proof is now over the *old* bytes.
     doc.payload.claim = "loa3".into();
 
-    let err = AffinidiProofVerifier::with_resolver(resolver)
+    let err = Verifier::with_resolver(resolver)
         .verify(&doc)
         .await
         .unwrap_err();
@@ -133,7 +136,7 @@ async fn missing_proof_is_malformed() {
     let mut doc = signed_doc(vm, &secret).await;
     doc.proof = None;
 
-    let err = AffinidiProofVerifier::with_resolver(resolver)
+    let err = Verifier::with_resolver(resolver)
         .verify(&doc)
         .await
         .unwrap_err();
@@ -149,7 +152,7 @@ async fn unknown_verification_method_surfaces_resolver_error() {
     // Different verifier with an empty resolver — falls through to
     // DidKeyResolver, which doesn't recognise this did:web URI.
     let empty_resolver = Arc::new(MapResolver::default());
-    let err = AffinidiProofVerifier::with_resolver(empty_resolver)
+    let err = Verifier::with_resolver(empty_resolver)
         .verify(&doc)
         .await
         .unwrap_err();
