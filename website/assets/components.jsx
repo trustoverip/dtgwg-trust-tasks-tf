@@ -24,6 +24,7 @@ function TTMark({ size = 28, withWord = true }) {
 function TTNav({ route, setRoute }) {
   const links = [
     { id: "specification",   label: "Specification" },
+    { id: "bindings",        label: "Bindings" },
     { id: "implementations", label: "Implementations" },
     { id: "registry",        label: "Registry" },
     { id: "categories",      label: "Categories" },

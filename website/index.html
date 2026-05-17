@@ -22,6 +22,7 @@
   <script src="/assets/data.js"></script>
   <script src="/assets/tasks.generated.js"></script>
   <script src="/assets/ecosystem.js"></script>
+  <script src="/assets/bindings.js"></script>
 </head>
 <body data-bg="paper" data-density="default" data-type="editorial">
   <div id="root"></div>
@@ -32,21 +33,23 @@
   <script type="text/babel" data-presets="react">
     const { useState: useStateApp, useEffect: useEffectApp } = React;
 
-    /* parse pathname: /, /registry, /registry/identity, /spec/<slug...>/<version>, etc.
-       Slugs may be hierarchical (e.g. /spec/acl/grant/0.1); the version is always
-       the final segment, the slug is everything between /spec/ and the version. */
+    /* parse pathname: /, /registry, /registry/identity, /spec/<slug...>/<version>,
+       /bindings/<slug>/<version>, etc. Slugs may be hierarchical (e.g.
+       /spec/acl/grant/0.1); the version is always the final segment, the slug
+       is everything between /spec/ (or /bindings/) and the version. */
     function parsePath() {
       const path = location.pathname.replace(/^\/+|\/+$/g, "");
       if (!path) return { name: "home" };
       const [name, ...rest] = path.split("/");
-      if (name === "spec") {
-        if (rest.length === 0) return { name: "spec" };
+      if (name === "spec" || name === "bindings") {
+        const routeName = name === "spec" ? "spec" : "binding";
+        if (rest.length === 0) return { name: name === "spec" ? "spec" : "bindings" };
         // Heuristic: if the last segment looks like MAJOR.MINOR, it's the version.
         const last = rest[rest.length - 1];
         const versionLike = /^\d+\.\d+$/.test(last);
         const version = versionLike ? last : undefined;
         const slugSegs = versionLike ? rest.slice(0, -1) : rest;
-        return { name: "spec", slug: slugSegs.join("/"), version };
+        return { name: routeName, slug: slugSegs.join("/"), version };
       }
       if (name === "registry" && rest[0]) return { name: "registry", cat: rest[0] };
       return { name };
@@ -70,6 +73,9 @@
         if (r.name === "spec") {
           const v = r.version || (window.TT_TASKS.find(t => t.slug === r.slug || t.id === r.id) || {}).version || "";
           path = `/spec/${r.slug || r.id}${v ? "/" + v : ""}`;
+        } else if (r.name === "binding") {
+          const v = r.version || (window.TT_BINDINGS && (window.TT_BINDINGS.find(b => b.slug === r.slug) || {}).version) || "";
+          path = `/bindings/${r.slug}${v ? "/" + v : ""}`;
         } else if (r.name === "registry" && r.cat) {
           path = `/registry/${r.cat}`;
         } else if (r.name === "home") {
@@ -108,6 +114,8 @@
         case "registry":      view = <RegistryPage initial={{ cat: route.cat, q: route.q, kw: route.kw }} setRoute={setRoute} />; break;
         case "spec":          view = <SpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
         case "specification": view = <FrameworkSpecPage setRoute={setRoute} />; break;
+        case "bindings":      view = <BindingsPage setRoute={setRoute} />; break;
+        case "binding":       view = <BindingSpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
         case "implementations": view = <ImplementationsPage setRoute={setRoute} />; break;
         case "categories":    view = <CategoriesPage setRoute={setRoute} />; break;
         case "ecosystem":     view = <EcosystemPage setRoute={setRoute} />; break;

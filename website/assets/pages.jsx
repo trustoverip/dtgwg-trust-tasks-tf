@@ -1538,6 +1538,273 @@ git diff --exit-code trust-tasks-rs/src/specs   # CI gate: codegen is idempotent
   );
 }
 
+/* ============================================================
+   BINDINGS — transport-binding hub + per-binding detail page
+   ============================================================ */
+function BindingsPage({ setRoute }) {
+  const bindings = window.TT_BINDINGS || [];
+  const accent = (c) => `var(--tt-${c})`;
+
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Transport bindings"
+        title="How Trust Tasks travel."
+        lede="A transport binding is the integration layer between the framework's transport-agnostic semantics and a particular wire. Each binding specifies its identity-mapping rules, error mapping, and (where the transport needs one) envelope grammar — so the framework's validation pipeline stays the same regardless of the transport carrying the document."
+      >
+        <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
+          <a className="btn btn--ghost" href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>Read SPEC §9 →</a>
+          <a className="btn btn--ghost" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/bindings" target="_blank" rel="noreferrer">Source on GitHub →</a>
+        </div>
+      </PageHero>
+
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Published bindings</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>{bindings.length} {bindings.length === 1 ? "binding" : "bindings"}.</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "60ch" }}>
+            Each entry is a normative document describing how to carry a Trust Task over a specific transport. The list is open — new bindings <strong>MAY</strong> be published independently (<a href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>SPEC §9.2</a>).
+          </p>
+
+          {bindings.length === 0 ? (
+            <div className="tt-empty" style={{ padding: "var(--tt-space-6)", marginTop: "var(--tt-space-5)" }}>
+              No transport bindings are currently registered.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
+              {bindings.map(b => (
+                <a
+                  key={b.id}
+                  href={`/bindings/${b.slug}/${b.version}`}
+                  onClick={(e) => { e.preventDefault(); setRoute({ name: "binding", slug: b.slug, version: b.version }); }}
+                  style={{
+                    border: "1px solid var(--tt-border)",
+                    borderLeft: `3px solid ${accent(b.accent)}`,
+                    padding: "var(--tt-space-5) var(--tt-space-6)",
+                    background: "var(--tt-surface-elev)",
+                    textDecoration: "none",
+                    color: "inherit",
+                    borderBottom: "1px solid var(--tt-border)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
+                    <div>
+                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(b.accent), marginBottom: "var(--tt-space-1)" }}>
+                        Transport binding · v{b.version}
+                      </div>
+                      <h3 style={{ margin: 0 }}>{b.title}</h3>
+                    </div>
+                    <TTStatus status={b.status} />
+                  </div>
+
+                  <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ color: "var(--tt-text-muted)" }}>Binding URI · </span>
+                    <span style={{ color: "var(--tt-text)" }}>{b.bindingURI}</span>
+                  </div>
+                  {b.envelopeType && (
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ color: "var(--tt-text-muted)" }}>Envelope type · </span>
+                      <span style={{ color: "var(--tt-text)" }}>{b.envelopeType}</span>
+                    </div>
+                  )}
+
+                  <p style={{ color: "var(--tt-text-muted)", marginTop: 0, marginBottom: "var(--tt-space-3)" }}>{b.summary}</p>
+
+                  {b.implementations && b.implementations.length > 0 && (
+                    <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em" }}>
+                      <span style={{ textTransform: "uppercase" }}>Reference impl{b.implementations.length === 1 ? "" : "s"}:</span>
+                      {b.implementations.map(impl => (
+                        <span key={impl.name}>{impl.name} ({impl.language})</span>
+                      ))}
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
+
+          <hr className="protocol-rule" aria-hidden="true" style={{ marginTop: "var(--tt-space-7)" }} />
+
+          <h2>Publishing a new binding.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            A transport binding is published as a markdown document under <code>bindings/&lt;slug&gt;/&lt;MAJOR.MINOR&gt;/spec.md</code> in the framework repository,
+            following the requirements in <a href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>SPEC §9.1</a>. The binding identifier itself lives under
+            the <code>/binding/</code> subtree of the framework authority — see <a href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>SPEC §9.3</a> for the URI grammar
+            and the rule that nothing under <code>/binding/</code> may appear in a Trust Task document's <code>type</code> member.
+          </p>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+function BindingSpecPage({ slug, version, setRoute }) {
+  const binding = (window.TT_BINDINGS || []).find(b => b.slug === slug && (!version || b.version === version))
+              || (window.TT_BINDINGS || [])[0];
+  if (!binding) {
+    return (
+      <section className="container">
+        <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
+          <b>No transport bindings are currently registered.</b><br />
+          Add one under <code>bindings/&lt;slug&gt;/&lt;version&gt;/</code>.
+        </div>
+      </section>
+    );
+  }
+  const accent = (c) => `var(--tt-${c})`;
+  const [copied, setCopied] = useS(false);
+  const [proseHtml, setProseHtml] = useS("");
+  const [proseToc, setProseToc] = useS([]);
+  const [proseError, setProseError] = useS(null);
+  const [activeSection, setActiveSection] = useS("metadata");
+
+  useE(() => {
+    if (!binding.prosePath) {
+      setProseError("This binding has no prosePath registered in TT_BINDINGS.");
+      return;
+    }
+    let cancelled = false;
+    setProseHtml(""); setProseToc([]); setProseError(null);
+    fetch(binding.prosePath, { headers: { "Accept": "text/markdown, text/plain" } })
+      .then(r => { if (!r.ok) throw new Error(`Failed to load spec.md (${r.status})`); return r.text(); })
+      .then(src => {
+        if (cancelled) return;
+        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
+        const body = stripFrontMatter(src);
+        marked.setOptions({ gfm: true, breaks: false });
+        const rawHtml = marked.parse(body);
+        const { html, toc } = injectHeadingIds(rawHtml);
+        setProseHtml(html);
+        setProseToc(toc);
+      })
+      .catch(e => { if (!cancelled) setProseError(e.message); });
+    return () => { cancelled = true; };
+  }, [binding.prosePath]);
+
+  useE(() => {
+    if (!proseHtml || !location.hash) return;
+    const id = location.hash.slice(1);
+    const el = document.getElementById(id);
+    if (el) requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+  }, [proseHtml]);
+
+  useE(() => {
+    const ids = ["metadata", ...proseToc.map(t => t.id)];
+    const onScroll = () => {
+      for (const sid of ids) {
+        const el = document.getElementById(sid);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top > 100) { setActiveSection(sid); return; }
+      }
+      setActiveSection(ids[ids.length - 1]);
+    };
+    window.addEventListener("scroll", onScroll);
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [binding.id, proseToc.length]);
+
+  return (
+    <section className="container tt-spec">
+      <div>
+        <div style={{ marginBottom: "var(--tt-space-4)" }}>
+          <span className="tt-spec__num">binding/{binding.slug} · v{binding.version}</span>
+        </div>
+        <h1 className="tt-spec__title">{binding.title}</h1>
+        <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{binding.summary}</p>
+
+        <div
+          style={{
+            display: "flex", alignItems: "stretch",
+            border: "1px solid var(--tt-border)",
+            borderLeft: `3px solid ${accent(binding.accent)}`,
+            background: "var(--tt-surface-elev)",
+            marginBottom: "var(--tt-space-4)",
+            fontFamily: "var(--tt-font-mono)",
+            fontSize: "var(--tt-text-sm)",
+          }}
+        >
+          <div style={{ padding: "var(--tt-space-3) var(--tt-space-4)", borderRight: "1px solid var(--tt-border)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", display: "flex", alignItems: "center" }}>Binding URI</div>
+          <code style={{ flex: 1, padding: "var(--tt-space-3) var(--tt-space-4)", overflow: "auto", whiteSpace: "nowrap", color: "var(--tt-text)" }}>{binding.bindingURI}</code>
+          <button
+            type="button"
+            onClick={() => { navigator.clipboard?.writeText(binding.bindingURI); setCopied(true); setTimeout(() => setCopied(false), 1400); }}
+            style={{ borderLeft: "1px solid var(--tt-border)", background: "transparent", padding: "0 var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: copied ? accent(binding.accent) : "var(--tt-text-muted)", cursor: "pointer" }}
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+
+        {binding.envelopeType && (
+          <div
+            style={{
+              display: "flex", alignItems: "stretch",
+              border: "1px solid var(--tt-border)",
+              background: "var(--tt-surface-elev)",
+              marginBottom: "var(--tt-space-6)",
+              fontFamily: "var(--tt-font-mono)",
+              fontSize: "var(--tt-text-sm)",
+            }}
+          >
+            <div style={{ padding: "var(--tt-space-3) var(--tt-space-4)", borderRight: "1px solid var(--tt-border)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", display: "flex", alignItems: "center" }}>Envelope type</div>
+            <code style={{ flex: 1, padding: "var(--tt-space-3) var(--tt-space-4)", overflow: "auto", whiteSpace: "nowrap", color: "var(--tt-text)" }}>{binding.envelopeType}</code>
+          </div>
+        )}
+
+        <div className="tt-spec__banner">
+          <span><b>Status</b> &nbsp; <TTStatus status={binding.status} /></span>
+          <span><b>Target framework</b> &nbsp; trust-task/0.1</span>
+          {binding.implementations && binding.implementations.length > 0 && (
+            <span><b>Reference impl</b> &nbsp; {binding.implementations.map((impl, i) => (
+              <React.Fragment key={impl.name}>
+                {i > 0 && ", "}
+                <a href={impl.href} target="_blank" rel="noreferrer">{impl.name}</a>
+              </React.Fragment>
+            ))}</span>
+          )}
+        </div>
+
+        <h2 id="metadata">Metadata</h2>
+        <dl className="tt-meta-grid">
+          <dt>Slug</dt><dd>{binding.slug}</dd>
+          <dt>Version</dt><dd>{binding.version}</dd>
+          <dt>Binding URI</dt><dd><code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{binding.bindingURI}</code></dd>
+          {binding.envelopeType && (<React.Fragment><dt>Envelope type</dt><dd><code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{binding.envelopeType}</code></dd></React.Fragment>)}
+          <dt>Status</dt><dd>{binding.status}</dd>
+        </dl>
+
+        {proseError && (
+          <div className="tt-empty" style={{ padding: "var(--tt-space-5)", margin: "var(--tt-space-5) 0" }}>
+            <b>Couldn't load this binding's prose.</b><br />
+            {proseError}<br />
+            <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/bindings/${binding.slug}/${binding.version}/spec.md`} target="_blank" rel="noreferrer">Read it on GitHub →</a>
+          </div>
+        )}
+        {!proseError && !proseHtml && (
+          <p style={{ color: "var(--tt-text-muted)" }}>Loading binding specification…</p>
+        )}
+        {!proseError && proseHtml && (
+          <article className="tt-prose" dangerouslySetInnerHTML={{ __html: proseHtml }} />
+        )}
+
+        <div style={{ marginTop: "var(--tt-space-8)", paddingTop: "var(--tt-space-5)", borderTop: "1px solid var(--tt-line)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--tt-space-4)" }}>
+          <a href="/bindings" onClick={(e) => { e.preventDefault(); setRoute({ name: "bindings" }); }} className="btn btn--ghost">← Back to bindings</a>
+          <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/bindings/${binding.slug}/${binding.version}/spec.md`} target="_blank" rel="noreferrer" className="btn btn--ghost">Edit on GitHub →</a>
+        </div>
+      </div>
+
+      <aside className="tt-spec__sidebar">
+        <div className="tt-toc-title">On this page</div>
+        <ol className="tt-toc">
+          {[{ id: "metadata", text: "Metadata" }, ...proseToc].map(({ id: sid, text }) => (
+            <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{text}</a></li>
+          ))}
+        </ol>
+      </aside>
+    </section>
+  );
+}
+
 Object.assign(window, {
-  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage
+  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage, BindingsPage, BindingSpecPage
 });

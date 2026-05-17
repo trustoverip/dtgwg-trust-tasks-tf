@@ -456,6 +456,8 @@ The following slugs are **RESERVED** for framework-defined specifications and **
 
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
 
+The framework also reserves a parallel `/binding/` subtree under the same authority for *transport binding* identifiers and binding-internal resources (envelope `type` values, binding schema URIs, status mappings). The `/binding/` subtree is **structurally disjoint** from `/spec/`: no URI under `/binding/` is a *Type URI*, and a *Trust Task document* whose `type` is rooted at `/binding/...` is malformed. The grammar and rules for the `/binding/` subtree are defined in [§9.3](#93-binding-namespace).
+
 A *Type URI* with the `<MAJOR.MINOR>` segment omitted (i.e. `https://trusttasks.org/spec/<slug>`) **SHOULD** redirect to the latest `standard` version of the specification, or — if no `standard` version exists — to the latest `candidate`, or — failing that — to the latest `draft`. `retired` versions **MUST NOT** be selected by the bare-URL redirect, since `retired` signals "no longer recommended for new use"; if every version of a slug is `retired`, the bare URL **SHOULD** return `410 Gone` with a body that links to the latest retired version and its declared `supersededBy` successor, if any.
 
 ### 6.2 Content negotiation
@@ -732,6 +734,22 @@ An implementation that exchanges *Trust Task documents* over a given transport *
 The handler boundary lets the framework's validation logic remain transport-agnostic while different transports plug in their own population rules. A DIDComm handler can populate `issuer` from the verified sender DID of the surrounding DIDComm envelope; a TSP handler can do the same from the TSP message authentication; a mutual-TLS HTTPS handler can populate `issuer` from the peer certificate's subject; an unauthenticated transport handler populates nothing, and the framework falls back to the in-band `proof` per [§4.7.1](#471-when-to-include-a-proof).
 
 A *transport binding* specification **SHOULD** identify itself by a stable URI and **SHOULD** declare which version of this framework it targets. The framework does not maintain a closed registry of *transport bindings*; new bindings **MAY** be published independently.
+
+### 9.3 Binding namespace
+
+A *transport binding* published through the framework's registry is identified by a URI in the `/binding/` subtree of the framework's authority:
+
+```
+https://trusttasks.org/binding/<slug>/<MAJOR.MINOR>
+```
+
+`<slug>` follows the same lowercase, hyphenated grammar as a Trust Task slug ([§6.1](#61-type-uri)); `<MAJOR.MINOR>` follows the version grammar of [§5.1](#51-version-format). Additional path segments under a binding URI — for example `https://trusttasks.org/binding/didcomm/0.1/envelope` — identify resources internal to the binding's own vocabulary (envelope `type` values, schema URIs, status mappings, and similar). Those segments are defined by the *transport binding* specification, not by this framework.
+
+The `/binding/` subtree and the `/spec/` subtree of [§6.1](#61-type-uri) are **structurally disjoint**. A *Type URI* — the value carried in a *Trust Task document*'s `type` member ([§4.4](#44-the-type-member)) — is always rooted at `/spec/<slug>/<MAJOR.MINOR>` and **MUST NOT** be rooted at `/binding/...`. A *consumer* that receives a *Trust Task document* whose `type` is a URI under `/binding/` **MUST** reject it with `malformed_request` per [§8.3](#83-standard-error-codes). The Type URI grammar of [§6.1](#61-type-uri) already excludes the `/binding/` path; this rule is stated explicitly so implementers and reviewers can see the namespace boundary at a glance and so that documents which somehow construct a `/binding/...` `type` value have a defined disposition rather than relying on grammar mismatch alone.
+
+A *transport binding* specification published through the registry **SHOULD** live at `bindings/<slug>/<MAJOR.MINOR>/spec.md` in the framework's source tree, paralleling the `specs/<slug>/<MAJOR.MINOR>/` layout for *Trust Task specifications*. The grammar and content requirements for *transport binding* specifications are defined in [§9.1](#91-what-a-transport-binding-specifies).
+
+The reservation rule of [§6.5](#65-private-extensions) — that private specifications **MUST NOT** be served from the `https://trusttasks.org/` authority — applies to private transport bindings equivalently: a private transport binding **MUST** use an authority the publisher controls and **MUST NOT** claim to identify a resource at `https://trusttasks.org/binding/...`.
 
 ## 10. Security and Privacy Considerations
 

@@ -8,6 +8,8 @@
  *  - Computes 'updated' from the most recent git commit touching the spec folder
  *  - Emits website/assets/tasks.generated.js (window.TT_TASKS = [...])
  *  - Copies specs/ tree into website/specs/ so the SPA can fetch prose + schema
+ *  - Copies bindings/ tree into website/bindings/ so the SPA's BindingSpecPage
+ *    can fetch each binding's spec.md
  *
  * Run from the repo root: `npm run build` or `npm run validate` (no website writes).
  */
@@ -21,6 +23,7 @@ import addFormats from 'ajv-formats';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
+const BINDINGS_DIR = path.join(ROOT, 'bindings');
 const WEBSITE_DIR = path.join(ROOT, 'website');
 const META_SCHEMA_PATH = path.join(SPECS_DIR, 'spec.meta.schema.json');
 
@@ -230,6 +233,14 @@ function syncWebsiteSpecs() {
   console.log(`  synced specs/ → ${path.relative(ROOT, dst)}/`);
 }
 
+function syncWebsiteBindings() {
+  if (!fs.existsSync(BINDINGS_DIR)) return;
+  const dst = path.join(WEBSITE_DIR, 'bindings');
+  if (fs.existsSync(dst)) fs.rmSync(dst, { recursive: true, force: true });
+  copyDirSync(BINDINGS_DIR, dst);
+  console.log(`  synced bindings/ → ${path.relative(ROOT, dst)}/`);
+}
+
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
   const validate = loadMetaValidator();
@@ -304,6 +315,7 @@ function main() {
   tasks.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : a.version < b.version ? 1 : -1));
   emitTasks(tasks);
   syncWebsiteSpecs();
+  syncWebsiteBindings();
   console.log('Done.');
 }
 
