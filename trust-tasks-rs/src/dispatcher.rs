@@ -59,7 +59,7 @@ impl<R> Dispatcher<R> {
     /// Register `handler` for the Type URI declared by `P`.
     ///
     /// On dispatch, the dispatcher looks up the inbound document's `type`
-    /// against the registered URIs **in canonical form** ([`TypeUri::canonical`]),
+    /// against the registered URIs **in canonical form** ([`TypeUri::for_routing`](crate::TypeUri::for_routing)),
     /// so a producer emitting either the bare URI or the `#request`-fragmented
     /// form per SPEC.md §4.4.1 item 1 routes to the same handler.
     /// `#response`-fragmented URIs are kept distinct and route to whatever

@@ -222,15 +222,15 @@ impl<P> TrustTask<P> {
     /// response's `recipient`. Under most rejections (`Expired`,
     /// `ProofRequired`, `ProofInvalid`, `TaskFailed`, …) the in-band
     /// `issuer` is a value the consumer has reason to trust — for example,
-    /// because [`TransportHandler::resolve_parties`] already accepted it.
-    /// Under [`RejectReason::IdentityMismatch`], however, that in-band
-    /// `issuer` is by definition the contested identity and MUST NOT be
-    /// addressed as the error response's recipient
-    /// (SPEC.md §8.1, §10.4). For that case, use either
-    /// [`TrustTask::reject_with_recipient`] with an explicit
-    /// transport-authenticated recipient, or
-    /// [`TransportHandler::reject`], which applies the §8.1 routing
-    /// policy automatically.
+    /// because [`TransportHandler::resolve_parties`](crate::TransportHandler::resolve_parties)
+    /// already accepted it. Under [`RejectReason::IdentityMismatch`],
+    /// however, that in-band `issuer` is by definition the contested
+    /// identity and MUST NOT be addressed as the error response's
+    /// recipient (SPEC.md §8.1, §10.4). For that case, use either
+    /// [`Self::reject_with_recipient`] with an explicit transport-
+    /// authenticated recipient, or
+    /// [`TransportHandler::reject`](crate::TransportHandler::reject),
+    /// which applies the §8.1 routing policy automatically.
     pub fn reject_with(
         &self,
         id: impl Into<String>,
@@ -240,8 +240,8 @@ impl<P> TrustTask<P> {
     }
 
     /// Build the `trust-task-error/0.1` response document with an explicit
-    /// `recipient`. Use this when the safe default in [`reject_with`] does
-    /// not apply — most importantly under
+    /// `recipient`. Use this when the safe default in [`Self::reject_with`]
+    /// does not apply — most importantly under
     /// [`RejectReason::IdentityMismatch`], where SPEC.md §8.1 requires the
     /// response to address the transport-authenticated sender rather than
     /// the in-band (contested) issuer.

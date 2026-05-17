@@ -412,7 +412,7 @@ impl RejectReason {
     ///
     /// SPEC.md §8.1 (final paragraph) and §10.4 require error-response
     /// messages to be free of consumer-side authentication context. The
-    /// [`Display`](std::fmt::Display) implementation (and [`Self::to_string`])
+    /// [`Display`](std::fmt::Display) implementation (and `to_string()`)
     /// is intentionally chatty for *diagnostic* purposes — it names both the
     /// in-band and the transport-authenticated identities under
     /// [`Self::IdentityMismatch`] and the consumer's own VID under

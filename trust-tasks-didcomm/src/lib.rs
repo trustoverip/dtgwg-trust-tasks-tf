@@ -1,6 +1,6 @@
 //! DIDComm v2.1 transport binding for the Trust Tasks framework.
 //!
-//! Wraps [`affinidi-messaging-didcomm`] so Trust Task documents can ride
+//! Wraps `affinidi-messaging-didcomm` so Trust Task documents can ride
 //! inside a DIDComm `Message`, get authcrypt'd or anoncrypt'd in a JWE,
 //! and survive any DIDComm-aware transport (mediator pickup, raw HTTPS
 //! POST, message queue, paper handoff for that matter).

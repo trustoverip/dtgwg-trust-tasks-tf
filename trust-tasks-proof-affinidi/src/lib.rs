@@ -1,4 +1,4 @@
-//! [`ProofVerifier`] implementation backed by [`affinidi-data-integrity`].
+//! [`ProofVerifier`] implementation backed by `affinidi-data-integrity`.
 //!
 //! Supports the W3C Data Integrity cryptosuites `eddsa-rdfc-2022` and
 //! `eddsa-jcs-2022` out of the box; `bbs-2023` and post-quantum variants

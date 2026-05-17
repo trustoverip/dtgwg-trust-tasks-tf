@@ -31,6 +31,13 @@
 #![allow(clippy::clone_on_copy)]
 #![allow(clippy::redundant_closure)]
 #![allow(clippy::to_string_trait_impl)]
+// JSON-Schema `description` fields are copied verbatim into Rust doc
+// comments. Schemas embed full URIs and angle-bracketed grammar
+// placeholders (e.g. `<prefix>/*`), neither of which rustdoc parses as
+// nicely-rendered markdown. Rather than scrub every schema, we silence
+// the rustdoc warnings on the generated tree only.
+#![allow(rustdoc::bare_urls)]
+#![allow(rustdoc::invalid_html_tags)]
 
 // trust-tasks-codegen:begin
 pub mod acl;
