@@ -4,6 +4,8 @@ members = [
     "trust-tasks-rs",
     "trust-tasks-codegen",
     "trust-tasks-https",
+    "trust-tasks-proof-affinidi",
+    "trust-tasks-didcomm",
 ]
 
 [workspace.package]

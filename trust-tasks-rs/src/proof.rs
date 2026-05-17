@@ -69,15 +69,15 @@ pub struct Proof {
 /// Plug-in seam for verifying a Trust Task document's `proof` member.
 ///
 /// This crate intentionally implements **no** cryptosuites; verification
-/// lives in companion crates (one per suite, e.g. `trust-tasks-proof-eddsa`).
-/// Consumer pipelines pick a verifier and invoke it as part of their §7.2
-/// validation step, alongside [`crate::TrustTask::validate_basic`].
+/// lives in companion crates (e.g. `trust-tasks-proof-affinidi` for the
+/// Affinidi Data Integrity stack). Consumer pipelines pick a verifier and
+/// invoke it as part of their §7.2 validation step, alongside
+/// [`crate::TrustTask::validate_basic`].
 ///
-/// The trait is sync because suite verification is CPU-bound and the
-/// keys are typically resolved before the verify call (or via a separate
-/// async resolver). A future async-trait variant is anticipated when the
-/// `verificationMethod` resolution itself requires I/O — implementations
-/// will probably wrap a `ProofResolver` trait.
+/// The trait is **async** — most verifiers need to resolve a
+/// `verificationMethod` URI to verification material, which is naturally
+/// I/O (DID resolution, JWKS fetch, …). Implementations that hold all
+/// keys locally can simply `async`-no-op around their sync path.
 ///
 /// A verifier MUST:
 ///
@@ -87,9 +87,18 @@ pub struct Proof {
 ///   the document's in-band `issuer` (SPEC.md §4.7, §4.8 paragraph 1).
 /// * Validate the signature over the document with `proof` excluded per
 ///   the chosen Data Integrity suite's canonicalisation rules.
-pub trait ProofVerifier {
+#[async_trait::async_trait]
+pub trait ProofVerifier: Send + Sync {
     /// Verify `doc.proof` against `doc`'s content and `doc.issuer`.
-    fn verify<P: serde::Serialize>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>;
+    ///
+    /// Returns `Ok(())` when the proof is valid. Implementations should
+    /// match the spec's failure-mode taxonomy — see [`VerificationError`]
+    /// variants — so the consumer pipeline can map to the right
+    /// [`crate::StandardCode`] in its outbound `trust-task-error/0.1`
+    /// response.
+    async fn verify<P>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>
+    where
+        P: serde::Serialize + Send + Sync;
 }
 
 /// Reasons a [`ProofVerifier`] rejects a proof.
