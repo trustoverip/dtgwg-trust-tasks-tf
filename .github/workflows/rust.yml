@@ -1,0 +1,82 @@
+name: Rust
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - "trust-tasks-rs/**"
+      - "trust-tasks-codegen/**"
+      - "Cargo.toml"
+      - "specs/**"
+      - ".github/workflows/rust.yml"
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  test:
+    name: cargo test (${{ matrix.toolchain }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [stable, "1.75"] # 1.75 is the declared MSRV
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo test (default features)
+        run: cargo test --workspace --all-targets
+      - name: cargo test (--features validate)
+        run: cargo test -p trust-tasks-rs --features validate --all-targets
+      - name: cargo doc
+        run: cargo doc --workspace --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+
+  fmt:
+    name: cargo fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: cargo clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: clippy (default features)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: clippy (--all-features)
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+  codegen-drift:
+    name: trust-tasks-codegen drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Run codegen
+        run: cargo run -p trust-tasks-codegen
+      - name: Check for drift
+        run: |
+          if ! git diff --quiet trust-tasks-rs/src/specs; then
+            echo "::error::Codegen output is stale. Run \`cargo run -p trust-tasks-codegen\` and commit the diff."
+            git diff trust-tasks-rs/src/specs
+            exit 1
+          fi
