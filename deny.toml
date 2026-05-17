@@ -17,7 +17,13 @@ all-features = true
 [advisories]
 version = 2
 yanked = "deny"
-ignore = []
+ignore = [
+    # proc-macro-error 1.0.4 is unmaintained. It's a transitive dep
+    # (typify → serde_tokenstream → proc-macro-error) and the
+    # upstream replacement proc-macro-error2 hasn't been wired through
+    # the typify dep chain yet. No active CVE, just maintenance status.
+    "RUSTSEC-2024-0370",
+]
 
 # ─── Licenses ──────────────────────────────────────────────────────────────
 # The crate is Apache-2.0; transitive deps should be permissively licensed
@@ -38,6 +44,10 @@ allow = [
     "CC0-1.0",
     "MPL-2.0",
     "OpenSSL",
+    # CDLA-Permissive-2.0 — Linux Foundation's permissive data license,
+    # used by webpki-roots (Mozilla root CA bundle data). Permissive in
+    # the same way our other allowed licenses are.
+    "CDLA-Permissive-2.0",
 ]
 confidence-threshold = 0.93
 

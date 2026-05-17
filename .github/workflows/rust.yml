@@ -12,6 +12,7 @@ on:
       - "trust-tasks-didcomm/**"
       - "trust-tasks-proof-affinidi/**"
       - "Cargo.toml"
+      - "Cargo.lock"
       - "specs/**"
       - ".github/workflows/rust.yml"
 
@@ -28,6 +29,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      # Affinidi's TDK pulls in keyring / secret-storage crates whose
+      # build scripts probe for `libdbus-1` via pkg-config. Install the
+      # dev headers so libdbus-sys finds the system library.
+      - name: Install libdbus-1-dev
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
       - name: cargo test (default features)
         run: cargo test --workspace --all-targets
       - name: cargo test (--features validate)
@@ -38,18 +44,20 @@ jobs:
           RUSTDOCFLAGS: "-D warnings"
 
   msrv:
-    name: cargo test (MSRV 1.75 — core crates only)
+    name: cargo test (MSRV 1.85 — core crates only)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.75"
+          toolchain: "1.85"
       - uses: Swatinem/rust-cache@v2
-      # trust-tasks-rs and trust-tasks-codegen declare MSRV 1.75. The
-      # Affinidi-backed crates (trust-tasks-proof-affinidi, trust-tasks-
-      # didcomm) pull in dependencies that require Rust 1.94, so they
-      # don't participate in the MSRV job.
+      # trust-tasks-rs, trust-tasks-codegen, and trust-tasks-https declare
+      # MSRV 1.85 (constrained by the workspace's transitive deps that
+      # use `edition2024`). The Affinidi-backed crates separately
+      # require Rust 1.94 and don't participate in this job.
+      - name: Install libdbus-1-dev
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
       - name: cargo test (trust-tasks-rs, trust-tasks-codegen)
         run: cargo test -p trust-tasks-rs -p trust-tasks-codegen --all-targets
       - name: cargo test (trust-tasks-https)
@@ -74,6 +82,8 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
+      - name: Install libdbus-1-dev
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
       - name: clippy (default features)
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: clippy (--all-features)
@@ -85,13 +95,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
       - uses: Swatinem/rust-cache@v2
       - name: Run codegen
         run: cargo run -p trust-tasks-codegen
+      # Codegen emits prettyplease-canonical output; the committed
+      # source has additionally been through `cargo fmt`, so normalise
+      # here before diffing.
+      - name: Format
+        run: cargo fmt --all
       - name: Check for drift
         run: |
           if ! git diff --quiet trust-tasks-rs/src/specs; then
-            echo "::error::Codegen output is stale. Run \`cargo run -p trust-tasks-codegen\` and commit the diff."
+            echo "::error::Codegen output is stale. Run \`cargo run -p trust-tasks-codegen && cargo fmt --all\` and commit the diff."
             git diff trust-tasks-rs/src/specs
             exit 1
           fi

@@ -2,7 +2,7 @@
 name = "trust-tasks-https"
 version = "0.1.0"
 edition.workspace = true
-rust-version.workspace = true
+rust-version = "1.85"
 license.workspace = true
 repository.workspace = true
 description = "HTTPS transport binding for the Trust Tasks framework — typed client + axum-based server with bearer-auth identity, suitable for demos, mockups, and end-to-end testing."
