@@ -121,15 +121,30 @@ impl<P> TrustTask<P> {
     /// Apply the framework-level rejection rules from SPEC.md §7.2 items 4
     /// and 5:
     ///
-    /// * Item 4 — reject when `expiresAt` is set and lies in the past.
+    /// * Item 4 — reject when `expiresAt` is set and `now ≥ expiresAt`
+    ///   (inclusive bound per the post-0.2 §4.2 wording).
     /// * Item 5 — reject when `recipient` is set and does not identify
     ///   `my_vid`.
     ///
-    /// Items 1 and 2 (schema validation) are out of scope for this crate.
-    /// Items 3 (unknown type) and 6 (transport-identity mismatch) are checked
-    /// by the caller's type registry and by
-    /// [`TransportHandler::resolve_parties`](crate::TransportHandler::resolve_parties)
-    /// respectively.
+    /// # ⚠ This is *not* the full §7.2 check
+    ///
+    /// A conforming consumer pipeline runs all six (now eight) items of
+    /// §7.2. This method covers items 4 and 5 only:
+    ///
+    /// | §7.2 item | What it checks                                              | Where it lives                                      |
+    /// |-----------|-------------------------------------------------------------|-----------------------------------------------------|
+    /// | 1         | Framework schema validation                                 | caller responsibility (e.g. `serde` + feature `validate`) |
+    /// | 2         | Payload schema validation                                   | caller (typed `TrustTask<P>` + feature `validate`)  |
+    /// | 3         | Unknown `type` URI                                          | [`crate::Dispatcher`] / caller's type registry      |
+    /// | **4**     | **Expiry**                                                  | **`validate_basic`**                                |
+    /// | **5**     | **Recipient mismatch**                                      | **`validate_basic`**                                |
+    /// | 6         | In-band vs transport identity                               | [`TransportHandler::resolve_parties`](crate::TransportHandler::resolve_parties) |
+    /// | 7         | Proof verification + spec-mandated `proof: REQUIRED`        | [`ProofVerifier`](crate::ProofVerifier) (suite crate) — **not in this crate** |
+    /// | 8         | Audience binding (proof+no-recipient on non-bearer specs)   | [`enforce_audience_binding`](Self::enforce_audience_binding) |
+    ///
+    /// Treat `validate_basic(now, my_vid)?` as **stage 2** of a multi-stage
+    /// validation. Calling only this method on an inbound document
+    /// produces a non-conforming consumer.
     pub fn validate_basic(&self, now: DateTime<Utc>, my_vid: &str) -> Result<(), RejectReason> {
         if let Some(expires_at) = self.expires_at {
             if expires_at < now {
@@ -165,13 +180,46 @@ impl<P> TrustTask<P> {
     ///
     /// The caller supplies `id`; the framework does not constrain its form
     /// beyond uniqueness (SPEC.md §4.3). UUIDv4 is the recommended default.
-    /// Override any wired field on the returned document if your context
-    /// requires it — for example, when the rejecting consumer's VID was not
-    /// carried in-band on the request.
+    ///
+    /// # ⚠ Identity-mismatch safety
+    ///
+    /// This method copies `request.issuer` verbatim into the error
+    /// response's `recipient`. Under most rejections (`Expired`,
+    /// `ProofRequired`, `ProofInvalid`, `TaskFailed`, …) the in-band
+    /// `issuer` is a value the consumer has reason to trust — for example,
+    /// because [`TransportHandler::resolve_parties`] already accepted it.
+    /// Under [`RejectReason::IdentityMismatch`], however, that in-band
+    /// `issuer` is by definition the contested identity and MUST NOT be
+    /// addressed as the error response's recipient
+    /// (SPEC.md §8.1, §10.4). For that case, use either
+    /// [`TrustTask::reject_with_recipient`] with an explicit
+    /// transport-authenticated recipient, or
+    /// [`TransportHandler::reject`], which applies the §8.1 routing
+    /// policy automatically.
     pub fn reject_with(
         &self,
         id: impl Into<String>,
         payload: impl Into<ErrorPayload>,
+    ) -> ErrorResponse {
+        self.reject_with_recipient(id, payload, self.issuer.clone())
+    }
+
+    /// Build the `trust-task-error/0.1` response document with an explicit
+    /// `recipient`. Use this when the safe default in [`reject_with`] does
+    /// not apply — most importantly under
+    /// [`RejectReason::IdentityMismatch`], where SPEC.md §8.1 requires the
+    /// response to address the transport-authenticated sender rather than
+    /// the in-band (contested) issuer.
+    ///
+    /// `recipient = None` is conformant: SPEC.md §8.1 permits a consumer
+    /// faced with an `identity_mismatch` rejection and no transport-
+    /// authenticated sender to suppress the response entirely; the caller
+    /// can choose to drop the returned `ErrorResponse` in that case.
+    pub fn reject_with_recipient(
+        &self,
+        id: impl Into<String>,
+        payload: impl Into<ErrorPayload>,
+        recipient: Option<String>,
     ) -> ErrorResponse {
         let thread_id = self.thread_id.clone().or_else(|| Some(self.id.clone()));
         ErrorResponse {
@@ -179,7 +227,7 @@ impl<P> TrustTask<P> {
             thread_id,
             type_uri: trust_task_error_type_uri(),
             issuer: self.recipient.clone(),
-            recipient: self.issuer.clone(),
+            recipient,
             issued_at: Some(Utc::now()),
             expires_at: None,
             payload: payload.into(),

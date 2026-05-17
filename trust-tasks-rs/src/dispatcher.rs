@@ -59,11 +59,14 @@ impl<R> Dispatcher<R> {
     /// Register `handler` for the Type URI declared by `P`.
     ///
     /// On dispatch, the dispatcher looks up the inbound document's `type`
-    /// against the registered URIs, deserializes the payload into `P`, and
-    /// invokes `handler` with the typed `TrustTask<P>`. The handler's return
-    /// value is propagated verbatim.
+    /// against the registered URIs **in canonical form** ([`TypeUri::canonical`]),
+    /// so a producer emitting either the bare URI or the `#request`-fragmented
+    /// form per SPEC.md §4.4.1 item 1 routes to the same handler.
+    /// `#response`-fragmented URIs are kept distinct and route to whatever
+    /// (if anything) is registered for the response variant.
     ///
-    /// Registering the same Type URI twice replaces the earlier handler.
+    /// Registering the same canonical Type URI twice replaces the earlier
+    /// handler.
     pub fn on<P, F>(mut self, handler: F) -> Self
     where
         P: Payload + 'static,
@@ -74,7 +77,7 @@ impl<R> Dispatcher<R> {
             Ok(handler(typed))
         };
         self.handlers
-            .insert(P::TYPE_URI.to_string(), Box::new(wrapped));
+            .insert(canonical_key(&P::type_uri()), Box::new(wrapped));
         self
     }
 
@@ -89,21 +92,25 @@ impl<R> Dispatcher<R> {
     /// * `Err(RejectReason::MalformedRequest)` — the URI matched but the
     ///   payload failed to deserialize against `P`.
     pub fn dispatch(&self, doc: TrustTask<Value>) -> Result<R, RejectReason> {
-        let key = doc.type_uri.to_string();
+        let key = canonical_key(&doc.type_uri);
         match self.handlers.get(&key) {
             Some(handler) => handler(doc),
             None => Err(RejectReason::UnsupportedType { type_uri: key }),
         }
     }
 
-    /// The Type URIs this dispatcher currently routes for, sorted for stable
-    /// output. Handy for `unsupported_type` error responses that want to
-    /// list what the consumer *does* implement.
+    /// The Type URIs this dispatcher currently routes for, in canonical
+    /// form and sorted for stable output. Handy for `unsupported_type`
+    /// error responses that list what the consumer *does* implement.
     pub fn registered_uris(&self) -> Vec<&str> {
         let mut v: Vec<&str> = self.handlers.keys().map(String::as_str).collect();
         v.sort_unstable();
         v
     }
+}
+
+fn canonical_key(uri: &crate::type_uri::TypeUri) -> String {
+    uri.for_routing().to_string()
 }
 
 fn downcast_payload<P>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason>

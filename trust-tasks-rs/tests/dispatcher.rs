@@ -84,6 +84,26 @@ fn registered_uris_lists_what_consumer_implements() {
     assert!(uris.contains(&"https://trusttasks.org/spec/acl/revoke/0.1"));
 }
 
+/// SPEC.md §4.4.1 item 1: the bare URI and the `#request`-fragment form
+/// are semantically equivalent; consumers MUST accept both. The dispatcher
+/// canonicalises both registration and dispatch keys.
+#[test]
+fn request_fragment_routes_to_same_handler_as_bare_uri() {
+    let dispatcher = make_dispatcher();
+
+    let mut explicit_request = doc_of::<grant::v0_1::Payload>(serde_json::json!({
+        "entry": { "subject": "did:web:carol.example", "role": "admin" }
+    }));
+    explicit_request.type_uri = explicit_request.type_uri.with_request();
+    assert!(explicit_request.type_uri.to_string().ends_with("#request"));
+
+    let outcome = dispatcher.dispatch(explicit_request).unwrap();
+    assert_eq!(
+        outcome,
+        Outcome::Granted("did:web:carol.example".to_string())
+    );
+}
+
 #[test]
 fn dispatcher_returns_handler_result_verbatim() {
     // Demonstrates the common pattern: handlers return Result<Resp, Error>,

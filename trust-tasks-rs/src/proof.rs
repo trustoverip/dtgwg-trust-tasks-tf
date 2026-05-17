@@ -4,12 +4,29 @@
 //! deliberately minimal — the framework does not constrain the cryptographic
 //! suite, so unknown members are preserved via `extra` for forward
 //! compatibility with future suites.
+//!
+//! # ⚠ This module models proof *structure* only
+//!
+//! This crate **does not** implement any Data Integrity cryptosuite. A
+//! [`Proof`] that round-trips through serde tells you nothing about whether
+//! the proof is valid — both a legitimately-signed proof and a fabricated
+//! one parse to the same `Proof { … }`. Consumers that act on `proof`
+//! presence without verifying it (the [`ProofVerifier`] seam below, or an
+//! equivalent in a cryptosuite crate) are non-conforming per SPEC.md §7.2
+//! item 7 and trivially vulnerable to forged-issuer attacks.
+//!
+//! The framework's `validate_basic`, `reject_with`, and `respond_with`
+//! helpers deliberately do not touch `proof`. Verification belongs in a
+//! cryptosuite-specific companion crate that plugs in through
+//! [`ProofVerifier`].
 
 use std::collections::BTreeMap;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+use crate::document::TrustTask;
 
 /// A W3C Data Integrity proof object as required by SPEC.md §4.7.
 ///
@@ -47,4 +64,63 @@ pub struct Proof {
     /// future-spec). Preserved on round-trip.
     #[serde(flatten)]
     pub extra: BTreeMap<String, Value>,
+}
+
+/// Plug-in seam for verifying a Trust Task document's `proof` member.
+///
+/// This crate intentionally implements **no** cryptosuites; verification
+/// lives in companion crates (one per suite, e.g. `trust-tasks-proof-eddsa`).
+/// Consumer pipelines pick a verifier and invoke it as part of their §7.2
+/// validation step, alongside [`crate::TrustTask::validate_basic`].
+///
+/// The trait is sync because suite verification is CPU-bound and the
+/// keys are typically resolved before the verify call (or via a separate
+/// async resolver). A future async-trait variant is anticipated when the
+/// `verificationMethod` resolution itself requires I/O — implementations
+/// will probably wrap a `ProofResolver` trait.
+///
+/// A verifier MUST:
+///
+/// * Confirm the proof's `cryptosuite` matches an algorithm it implements;
+///   reject otherwise with [`VerificationError::UnsupportedCryptosuite`].
+/// * Resolve `verificationMethod` to verification material controlled by
+///   the document's in-band `issuer` (SPEC.md §4.7, §4.8 paragraph 1).
+/// * Validate the signature over the document with `proof` excluded per
+///   the chosen Data Integrity suite's canonicalisation rules.
+pub trait ProofVerifier {
+    /// Verify `doc.proof` against `doc`'s content and `doc.issuer`.
+    fn verify<P: serde::Serialize>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>;
+}
+
+/// Reasons a [`ProofVerifier`] rejects a proof.
+///
+/// Mapping to [`crate::StandardCode`] for the wire:
+/// `UnsupportedCryptosuite` / `MalformedProof` / `IssuerMismatch` →
+/// [`crate::StandardCode::ProofInvalid`]; the consumer composes the
+/// `trust-task-error/0.1` response with that code per SPEC.md §7.2 item 7.
+#[derive(Debug, thiserror::Error)]
+pub enum VerificationError {
+    /// The proof's `cryptosuite` is not implemented by this verifier.
+    #[error("unsupported cryptosuite: {0}")]
+    UnsupportedCryptosuite(String),
+
+    /// The proof object is structurally invalid for the declared suite
+    /// (missing required members, badly-encoded `proofValue`, etc.).
+    #[error("malformed proof: {0}")]
+    MalformedProof(String),
+
+    /// The `verificationMethod` does not resolve to material controlled
+    /// by the document's `issuer` — per SPEC.md §4.8 paragraph 1, the two
+    /// MUST identify the same entity.
+    #[error("verification method does not bind to document issuer: {0}")]
+    IssuerMismatch(String),
+
+    /// The signature did not verify over the canonicalised document.
+    #[error("signature verification failed")]
+    SignatureInvalid,
+
+    /// Any other failure surfaced by the underlying cryptosuite
+    /// implementation.
+    #[error("proof verification failed: {0}")]
+    Other(String),
 }

@@ -141,6 +141,20 @@ impl TypeUri {
         self.with_variant(None)
     }
 
+    /// Returns a copy of this URI in its **routing canonical form**, per
+    /// SPEC.md §4.4.1 item 1 ("no fragment" and `#request` are semantically
+    /// equivalent). Used by [`crate::Dispatcher`] so that producers emitting
+    /// either form route to the same handler.
+    ///
+    /// * `Variant::Request` and `None` collapse to `None`.
+    /// * `Variant::Response` is preserved.
+    pub fn for_routing(&self) -> Self {
+        match self.variant {
+            Some(Variant::Request) | None => self.with_variant(None),
+            Some(Variant::Response) => self.clone(),
+        }
+    }
+
     /// Returns a copy of this URI with the fragment set to `#response`,
     /// per SPEC.md §4.4.1. Used when minting a success-response document
     /// against a known request URI.

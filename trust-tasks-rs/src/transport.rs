@@ -19,7 +19,8 @@
 use serde::Serialize;
 use thiserror::Error;
 
-use crate::document::TrustTask;
+use crate::document::{ErrorResponse, TrustTask};
+use crate::error::RejectReason;
 
 /// The result of resolving a document's in-band party identity against the
 /// transport context.
@@ -140,5 +141,35 @@ pub trait TransportHandler {
         };
 
         Ok(ResolvedParties { issuer, recipient })
+    }
+
+    /// Build a `trust-task-error/0.1` response for `doc` that satisfies the
+    /// SPEC.md §8.1 routing rules — most importantly, the rule that under
+    /// [`RejectReason::IdentityMismatch`] the error MUST address the
+    /// transport-authenticated sender and MUST NOT address the contested
+    /// in-band issuer.
+    ///
+    /// Returns `Some(ErrorResponse)` when a routable recipient exists, and
+    /// `None` when the rejection is `identity_mismatch` and the transport
+    /// has no authenticated sender for the inbound document — per §8.1, the
+    /// consumer SHOULD NOT emit a response in that case.
+    fn reject<P>(
+        &self,
+        doc: &TrustTask<P>,
+        id: impl Into<String>,
+        reason: RejectReason,
+    ) -> Option<ErrorResponse> {
+        let recipient = match &reason {
+            RejectReason::IdentityMismatch(_) => {
+                // §8.1: transport-authenticated sender only. If the
+                // transport authenticated nothing, the consumer suppresses
+                // the response.
+                let from_transport = self.derive_parties().issuer;
+                from_transport.as_ref()?;
+                from_transport
+            }
+            _ => doc.issuer.clone(),
+        };
+        Some(doc.reject_with_recipient(id, reason, recipient))
     }
 }

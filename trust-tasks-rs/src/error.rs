@@ -407,12 +407,43 @@ impl RejectReason {
             RejectReason::InternalError { .. } => StandardCode::InternalError,
         }
     }
+
+    /// Message safe to attach to a wire-serialised [`ErrorPayload`].
+    ///
+    /// SPEC.md §8.1 (final paragraph) and §10.4 require error-response
+    /// messages to be free of consumer-side authentication context. The
+    /// [`Display`](std::fmt::Display) implementation (and [`Self::to_string`])
+    /// is intentionally chatty for *diagnostic* purposes — it names both the
+    /// in-band and the transport-authenticated identities under
+    /// [`Self::IdentityMismatch`] and the consumer's own VID under
+    /// [`Self::WrongRecipient`], which makes log lines actionable but is
+    /// exactly the identity oracle a wire-exposed message must not provide.
+    ///
+    /// Variants whose `Display` is already consumer-side-neutral
+    /// (`Expired`, `ProofInvalid`, …) return the same string the `Display`
+    /// would. The variants that *do* leak identity return a sanitised
+    /// constant.
+    pub fn wire_message(&self) -> String {
+        match self {
+            // Identity-bearing rejections: sanitised constants. The
+            // transport-derived and in-band values stay in logs only.
+            RejectReason::IdentityMismatch(_) => {
+                "in-band identity does not match transport-derived identity".to_string()
+            }
+            RejectReason::WrongRecipient { .. } => {
+                "document recipient does not identify this consumer".to_string()
+            }
+            // All other variants carry no consumer-side authentication
+            // context — their `Display` is safe for the wire.
+            other => other.to_string(),
+        }
+    }
 }
 
 impl From<RejectReason> for ErrorPayload {
     fn from(reason: RejectReason) -> Self {
         let code = reason.code();
-        let mut payload = ErrorPayload::new(code).with_message(reason.to_string());
+        let mut payload = ErrorPayload::new(code).with_message(reason.wire_message());
         match reason {
             RejectReason::Unavailable {
                 retry_after: Some(when),
