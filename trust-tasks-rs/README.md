@@ -24,7 +24,9 @@ The framework specification this crate implements is [`SPEC.md`](../SPEC.md).
 | `handlers::NoopHandler` | Transport contributes nothing; in-band members are authoritative | reference impl |
 | `handlers::InMemoryHandler` | Simulated transport with configured local+peer VIDs | reference impl |
 | `Payload`, `TrustTask::for_payload` | Ties a Rust struct to its Type URI; auto-fills `type` on construction | trait |
+| `Dispatcher<R>` | Type-URI → handler routing for consumers that implement N specs | open-set match |
 | `specs::<slug>::<version>` | Generated per-spec payload types (one module per registry entry) | generated |
+| `validate` feature | Runtime JSON Schema validation against the embedded `payload.schema.json` | opt-in |
 
 ## Quick start
 
@@ -154,11 +156,19 @@ payload is modelled by hand in `ErrorPayload` because the framework needs the
 richer `TrustTaskCode` enum (standard codes + namespaced extension codes) the
 codegen can't produce.
 
+## Cargo features
+
+| Feature | What it enables |
+|---|---|
+| _(default)_ | The framework crate (no extra deps) |
+| `validate` | Runtime JSON Schema validation. Pulls in [`jsonschema`](https://crates.io/crates/jsonschema) and exposes a `validate` module + `ValidatedPayload` impls for every generated request payload. Belt-and-suspenders over serde's structural decoding — catches `pattern`, `minItems`, and `additionalProperties` constraints that the typed structs can't always encode. |
+
 ## Status
 
 `0.1.0` — tracks `SPEC.md` version `0.1`. The framework spec is itself a
 Working Draft; this crate is a reference implementation maintained alongside
 it. Breaking changes are expected until the framework reaches `candidate`.
+See [`CHANGELOG.md`](CHANGELOG.md) for what's landed.
 
 ## License
 

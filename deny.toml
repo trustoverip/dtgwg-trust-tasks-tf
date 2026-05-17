@@ -1,0 +1,61 @@
+# cargo-deny configuration for the trust-tasks-rs workspace.
+#
+# Run locally with:
+#
+#   cargo install cargo-deny
+#   cargo deny check
+#
+# CI runs the same command in .github/workflows/rust.yml.
+
+[graph]
+all-features = true
+
+# ─── Advisories ────────────────────────────────────────────────────────────
+# Fail on any RUSTSEC advisory affecting our dep graph. `notice` is downgraded
+# to `warn` so an upstream advisory with no fix yet doesn't immediately wedge
+# main; we still see it in the log.
+[advisories]
+version = 2
+yanked = "deny"
+ignore = []
+
+# ─── Licenses ──────────────────────────────────────────────────────────────
+# The crate is Apache-2.0; transitive deps should be permissively licensed
+# and compatible with that grant. Unknown licenses fail the build so a new
+# transitive dep can't sneak a copyleft license into the graph.
+[licenses]
+version = 2
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Zlib",
+    "CC0-1.0",
+    "MPL-2.0",
+    "OpenSSL",
+]
+confidence-threshold = 0.93
+
+# ─── Bans ──────────────────────────────────────────────────────────────────
+# We don't currently ban any crates by name; this section is here so it's
+# obvious where to add one. Multiple versions of the same crate are warnings,
+# not errors, because the typify/schemars ecosystem still pulls some dual
+# copies (e.g. `syn` 1 + 2).
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+deny = []
+skip = []
+skip-tree = []
+
+# ─── Sources ───────────────────────────────────────────────────────────────
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
