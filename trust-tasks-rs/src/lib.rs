@@ -22,6 +22,7 @@ mod proof;
 mod transport;
 mod type_uri;
 
+pub mod discovery;
 pub mod handlers;
 pub mod specs;
 

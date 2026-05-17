@@ -315,7 +315,11 @@ fn is_reserved_namespace(slug: &str) -> bool {
 fn is_allowed_framework_slug(slug: &str) -> bool {
     matches!(
         slug,
-        "trust-task" | "trust-task-error" | "trust-task-ok" | "trust-task-next-step"
+        "trust-task"
+            | "trust-task-error"
+            | "trust-task-ok"
+            | "trust-task-next-step"
+            | "trust-task-discovery"
     )
 }
 
