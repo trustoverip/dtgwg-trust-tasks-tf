@@ -10,6 +10,7 @@
  *  - Copies specs/ tree into website/specs/ so the SPA can fetch prose + schema
  *  - Copies bindings/ tree into website/bindings/ so the SPA's BindingSpecPage
  *    can fetch each binding's spec.md
+ *  - Copies SPEC.md to website/SPEC.md so FrameworkSpecPage can fetch it
  *
  * Run from the repo root: `npm run build` or `npm run validate` (no website writes).
  */
@@ -241,6 +242,14 @@ function syncWebsiteBindings() {
   console.log(`  synced bindings/ → ${path.relative(ROOT, dst)}/`);
 }
 
+function syncWebsiteFrameworkSpec() {
+  const src = path.join(ROOT, 'SPEC.md');
+  if (!fs.existsSync(src)) return;
+  const dst = path.join(WEBSITE_DIR, 'SPEC.md');
+  fs.copyFileSync(src, dst);
+  console.log(`  synced SPEC.md → ${path.relative(ROOT, dst)}`);
+}
+
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
   const validate = loadMetaValidator();
@@ -316,6 +325,7 @@ function main() {
   emitTasks(tasks);
   syncWebsiteSpecs();
   syncWebsiteBindings();
+  syncWebsiteFrameworkSpec();
   console.log('Done.');
 }
 

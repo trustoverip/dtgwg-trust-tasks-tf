@@ -1390,9 +1390,9 @@ let verifier = Verifier::with_resolver(resolver);`;
                     Source →
                   </a>
                 </div>
-                <p style={{ color: "var(--tt-text-muted)", marginTop: 0 }}>{c.summary}</p>
+                <p style={{ color: "var(--tt-text-muted)", marginTop: 0 }}>{linkifySpec(c.summary, setRoute)}</p>
                 <ul style={{ margin: "var(--tt-space-3) 0 0", paddingLeft: "1.1em", color: "var(--tt-text-muted)", lineHeight: 1.7 }}>
-                  {c.bullets.map(b => <li key={b}>{b}</li>)}
+                  {c.bullets.map(b => <li key={b}>{linkifySpec(b, setRoute)}</li>)}
                 </ul>
               </article>
             ))}
@@ -1419,7 +1419,7 @@ let verifier = Verifier::with_resolver(resolver);`;
           <h2 style={{ marginTop: "var(--tt-space-7)" }}>Minimal loopback: producer ↔ consumer in-process.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
             The example below uses <code>InMemoryHandler</code> to convey transport-authenticated identity without an actual transport.
-            It exercises both branches of SPEC §4.4.1 — success and rejection — and applies the §4.8.1 / §7.2 pipeline.
+            It exercises both branches of SPEC <SpecRef section="4.4.1" setRoute={setRoute}>§4.4.1</SpecRef> — success and rejection — and applies the <SpecRef section="4.8.1" setRoute={setRoute}>§4.8.1</SpecRef> / <SpecRef section="7.2" setRoute={setRoute}>§7.2</SpecRef> pipeline.
             See <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-rs/examples/loopback.rs" target="_blank" rel="noreferrer"><code>trust-tasks-rs/examples/loopback.rs</code></a> for the full file (runs with <code>cargo run --example loopback -p trust-tasks-rs</code>).
           </p>
           <CodeBlock json={loopbackSnippet} language="rust" />
@@ -1434,9 +1434,9 @@ let verifier = Verifier::with_resolver(resolver);`;
           <span className="eyebrow">HTTPS transport</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Typed server and client.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
-            <code>HttpsServer</code> exposes a single <code>POST /trust-tasks</code> endpoint, runs the full SPEC §7.2 pipeline per request,
+            <code>HttpsServer</code> exposes a single <code>POST /trust-tasks</code> endpoint, runs the full SPEC <SpecRef section="7.2" setRoute={setRoute}>§7.2</SpecRef> pipeline per request,
             and routes by canonical Type URI. Handlers receive a typed <code>TrustTask&lt;Payload&gt;</code> and return either a typed
-            response or a <code>RejectReason</code> that maps to a <code>trust-task-error/0.1</code> document with §8.1 routing applied.
+            response or a <code>RejectReason</code> that maps to a <code>trust-task-error/0.1</code> document with <SpecRef section="8.1" setRoute={setRoute}>§8.1</SpecRef> routing applied.
           </p>
           <CodeBlock json={httpsServerSnippet} language="rust" />
 
@@ -1465,7 +1465,7 @@ let verifier = Verifier::with_resolver(resolver);`;
             <code>pack_trust_task</code> wraps a <code>TrustTask</code> in a DIDComm v2.1 authcrypt envelope.
             <code>unpack_trust_task</code> returns the document together with a <code>DidcommHandler</code> whose
             authenticated peer is the verified <code>sender_kid</code> — exactly what the framework's
-            §4.8.1 precedence rule consumes. Full mediator-routed flow is covered by the crate's
+            <SpecRef section="4.8.1" setRoute={setRoute}>§4.8.1</SpecRef> precedence rule consumes. Full mediator-routed flow is covered by the crate's
             <code>mediator_e2e.rs</code> integration test.
           </p>
           <CodeBlock json={didcommSnippet} language="rust" />
@@ -1494,7 +1494,7 @@ let verifier = Verifier::with_resolver(resolver);`;
           <CodeBlock json={proofSnippet} language="rust" />
 
           <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)" }}>
-            All <code>DataIntegrityError</code> variants map cleanly into the SPEC §8.3 <code>proof_invalid</code> standard code path.
+            All <code>DataIntegrityError</code> variants map cleanly into the SPEC <SpecRef section="8.3" setRoute={setRoute}>§8.3</SpecRef> <code>proof_invalid</code> standard code path.
           </p>
         </div>
       </section>

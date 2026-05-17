@@ -83,8 +83,15 @@
         } else {
           path = `/${r.name}`;
         }
-        if (location.pathname !== path) history.pushState(null, "", path);
-        window.scrollTo(0, 0);
+        const wantHash = r.hash ? `#${r.hash}` : "";
+        const url = path + wantHash;
+        if (location.pathname !== path || location.hash !== wantHash) {
+          history.pushState(null, "", url);
+        }
+        // When navigating with a hash, let the destination page's effect
+        // scroll to the anchor once the prose has rendered — top-of-page
+        // scrolling here would just be visual noise.
+        if (!r.hash) window.scrollTo(0, 0);
       };
 
       useEffectApp(() => {

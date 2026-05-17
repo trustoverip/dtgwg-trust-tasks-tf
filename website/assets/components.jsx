@@ -197,8 +197,102 @@ function AnimNumber({ value, duration = 1100, suffix = "" }) {
   return <span ref={ref}>{n}{suffix}</span>;
 }
 
+/* ---------- SPEC.md cross-reference ---------------------- */
+/* Map §-section to the anchor that `injectHeadingIds` produces when rendering
+ * SPEC.md prose. Keep in sync with SPEC.md heading text — the slug is the
+ * GitHub-flavoured slugify of the heading line (digits collapsed via dot
+ * removal, lowercased, hyphenated). */
+const SPEC_ANCHORS = {
+  "4":     "4-trust-task-documents",
+  "4.1":   "41-encoding",
+  "4.2":   "42-top-level-members",
+  "4.3":   "43-the-id-member",
+  "4.4":   "44-the-type-member",
+  "4.4.1": "441-request-and-response-variants",
+  "4.5":   "45-the-payload-member",
+  "4.6":   "46-jsonld-compatibility",
+  "4.7":   "47-proof",
+  "4.7.1": "471-when-to-include-a-proof",
+  "4.8":   "48-the-issuer-and-recipient-members",
+  "4.8.1": "481-precedence-of-in-band-over-transport-derived-identity",
+  "4.8.2": "482-audience-binding",
+  "4.8.3": "483-bearer-specifications",
+  "4.9":   "49-the-threadid-member",
+  "5":     "5-versioning",
+  "5.1":   "51-scheme",
+  "5.2":   "52-compatibility-rules",
+  "5.3":   "53-maturity-levels",
+  "6":     "6-namespace",
+  "6.1":   "61-type-uri",
+  "6.2":   "62-content-negotiation",
+  "6.3":   "63-schema-scope",
+  "6.4":   "64-stability",
+  "6.5":   "65-private-and-unpublished-trust-task-specifications",
+  "7":     "7-minimum-requirements",
+  "7.1":   "71-producer-requirements",
+  "7.2":   "72-consumer-requirements",
+  "7.3":   "73-specification-requirements",
+  "8":     "8-error-responses",
+  "8.1":   "81-the-trust-task-error-specification",
+  "8.2":   "82-error-payload",
+  "8.3":   "83-standard-error-codes",
+  "8.4":   "84-retry-semantics",
+  "8.5":   "85-extension-by-individual-trust-task-specifications",
+  "8.6":   "86-reserved-response-type-slugs",
+  "9":     "9-transport-bindings",
+  "9.1":   "91-what-a-transport-binding-specifies",
+  "9.2":   "92-the-transport-handler",
+  "9.3":   "93-binding-namespace",
+  "10":    "10-security-and-privacy-considerations",
+  "11":    "11-discovery-and-capability-negotiation",
+};
+
+/* A clickable cross-reference into SPEC.md, resolved through the SPA router. */
+function SpecRef({ section, setRoute, children }) {
+  const anchor = SPEC_ANCHORS[section];
+  const href = anchor ? `/specification#${anchor}` : "/specification";
+  return (
+    <a
+      href={href}
+      onClick={(e) => {
+        e.preventDefault();
+        setRoute({ name: "specification", hash: anchor });
+      }}
+    >
+      {children}
+    </a>
+  );
+}
+
+/* Turn `§X.Y[.Z]` occurrences in a plain string into clickable `SpecRef`s,
+ * leaving everything else untouched. Returns either the original string (when
+ * nothing matched) or an array of mixed strings + JSX nodes suitable for
+ * dropping into a React child. */
+function linkifySpec(text, setRoute) {
+  if (typeof text !== "string") return text;
+  const re = /§(\d+(?:\.\d+)*)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let m;
+  let key = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > lastIndex) parts.push(text.slice(lastIndex, m.index));
+    const section = m[1];
+    parts.push(
+      <SpecRef key={`s${key++}`} section={section} setRoute={setRoute}>
+        §{section}
+      </SpecRef>
+    );
+    lastIndex = re.lastIndex;
+  }
+  if (parts.length === 0) return text;
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts;
+}
+
 /* expose */
 Object.assign(window, {
   TTMark, TTNav, TTFooter, TTStatus, Highlight, CodeBlock,
-  HeroGlyph, PageHero, AnimNumber, catColor, catName
+  HeroGlyph, PageHero, AnimNumber, catColor, catName,
+  SPEC_ANCHORS, SpecRef, linkifySpec
 });
