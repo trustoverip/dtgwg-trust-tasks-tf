@@ -59,6 +59,125 @@ impl Spec {
     fn type_uri(&self) -> String {
         format!("https://trusttasks.org/spec/{}/{}", self.slug, self.version)
     }
+
+    /// Path to the adjacent `spec.md`.
+    fn spec_md_path(&self) -> PathBuf {
+        self.schema_path
+            .parent()
+            .expect("schema path has a parent")
+            .join("spec.md")
+    }
+
+    /// The `include_str!` path from the generated module file back to the
+    /// original `payload.schema.json`. Depth = number of slug segments + 3
+    /// (to climb out of `<segN>/<segN-1>/.../specs/src/trust-tasks-rs/` and
+    /// arrive at the repo root).
+    fn schema_include_path(&self) -> String {
+        let up = "../".repeat(self.module_segments().len() + 3);
+        format!(
+            "{up}specs/{}/{}/payload.schema.json",
+            self.slug, self.version
+        )
+    }
+}
+
+/// JSON code-fence examples harvested from a spec's `spec.md`. Empty Vecs
+/// mean no examples in that section.
+#[derive(Debug, Default)]
+struct SpecExamples {
+    request: Vec<String>,
+    response: Vec<String>,
+}
+
+/// Spec.md sections often embed illustrative `trust-task-error` responses
+/// next to the request/response examples. Drop any harvested example whose
+/// top-level `type` does not match this spec's URI — that way the
+/// conformance tests only deserialize documents the generated types were
+/// actually meant to accept.
+fn filter_examples_to_this_spec(spec: &Spec, examples: &mut SpecExamples) {
+    let request_uri = spec.type_uri();
+    let request_uri_with_frag = format!("{request_uri}#request");
+    let response_uri = format!("{request_uri}#response");
+
+    examples.request.retain(|json| match example_type(json) {
+        Some(t) => t == request_uri || t == request_uri_with_frag,
+        // No `type` field at all → an abbreviated payload-only illustration
+        // (e.g. "Compound filter" in acl/list). Not a conformance candidate.
+        None => false,
+    });
+    examples.response.retain(|json| match example_type(json) {
+        Some(t) => t == response_uri,
+        None => false,
+    });
+}
+
+fn example_type(json: &str) -> Option<String> {
+    let v: Value = serde_json::from_str(json).ok()?;
+    v.get("type")?.as_str().map(str::to_string)
+}
+
+/// Scan a `spec.md` for `## Request` / `## Response` headings and collect
+/// the `\`\`\`json … \`\`\`` blocks under each.
+fn extract_examples(spec_md_path: &Path) -> Result<SpecExamples> {
+    if !spec_md_path.exists() {
+        return Ok(SpecExamples::default());
+    }
+    let text = fs::read_to_string(spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+
+    #[derive(Clone, Copy, PartialEq)]
+    enum Section {
+        Outside,
+        Request,
+        Response,
+    }
+
+    let mut section = Section::Outside;
+    let mut in_fence = false;
+    let mut buf = String::new();
+    let mut out = SpecExamples::default();
+
+    for raw_line in text.lines() {
+        let trimmed = raw_line.trim_end();
+        if in_fence {
+            if trimmed.trim_start().starts_with("```") {
+                let example = std::mem::take(&mut buf);
+                match section {
+                    Section::Request => out.request.push(example),
+                    Section::Response => out.response.push(example),
+                    Section::Outside => {}
+                }
+                in_fence = false;
+            } else {
+                buf.push_str(raw_line);
+                buf.push('\n');
+            }
+            continue;
+        }
+        // Heading transitions only at level 2 (`## …`).
+        if let Some(rest) = trimmed.strip_prefix("## ") {
+            let h = rest.trim();
+            section = if h.eq_ignore_ascii_case("Request") {
+                Section::Request
+            } else if h.eq_ignore_ascii_case("Response") {
+                Section::Response
+            } else {
+                Section::Outside
+            };
+            continue;
+        }
+        // Code fence open — only JSON fences in Request/Response sections matter.
+        if section != Section::Outside {
+            let lang = trimmed.trim_start();
+            if let Some(after) = lang.strip_prefix("```") {
+                if after.trim().eq_ignore_ascii_case("json") {
+                    in_fence = true;
+                    buf.clear();
+                }
+            }
+        }
+    }
+    Ok(out)
 }
 
 fn main() -> Result<()> {
@@ -198,7 +317,9 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
         .with_context(|| format!("typify: add_root_schema for {}/{}", spec.slug, spec.version))?;
 
     let body = type_space.to_stream();
-    let module_tokens = render_module(spec, body, has_response);
+    let mut examples = extract_examples(&spec.spec_md_path())?;
+    filter_examples_to_this_spec(spec, &mut examples);
+    let module_tokens = render_module(spec, body, has_response, &examples);
 
     let parsed: syn::File = syn::parse2(module_tokens.clone()).with_context(|| {
         format!(
@@ -265,12 +386,18 @@ fn normalize_titles(schema: &mut Value) -> Result<bool> {
     Ok(has_response)
 }
 
-fn render_module(spec: &Spec, body: TokenStream, has_response: bool) -> TokenStream {
+fn render_module(
+    spec: &Spec,
+    body: TokenStream,
+    has_response: bool,
+    examples: &SpecExamples,
+) -> TokenStream {
     let type_uri = spec.type_uri();
     let response_uri = format!("{type_uri}#response");
     let slug_doc = format!(" Spec slug: `{}`. Version: `{}`.", spec.slug, spec.version);
+    let schema_path = spec.schema_include_path();
 
-    let response_impl = if has_response {
+    let response_payload_impl = if has_response {
         quote! {
             impl crate::Payload for Response {
                 const TYPE_URI: &'static str = #response_uri;
@@ -279,6 +406,15 @@ fn render_module(spec: &Spec, body: TokenStream, has_response: bool) -> TokenStr
     } else {
         quote! {}
     };
+
+    let validate_request_impl = quote! {
+        #[cfg(feature = "validate")]
+        impl crate::validate::ValidatedPayload for Payload {
+            const SCHEMA_JSON: &'static str = include_str!(#schema_path);
+        }
+    };
+
+    let conformance_mod = render_conformance_mod(examples, has_response);
 
     quote! {
         //! Generated by `trust-tasks-codegen` — do not edit by hand.
@@ -294,7 +430,76 @@ fn render_module(spec: &Spec, body: TokenStream, has_response: bool) -> TokenStr
             const TYPE_URI: &'static str = #type_uri;
         }
 
-        #response_impl
+        #response_payload_impl
+
+        #validate_request_impl
+
+        #conformance_mod
+    }
+}
+
+/// Emit `#[cfg(test)] mod conformance` with one test per harvested example.
+/// Each test deserializes the JSON into a `TrustTask<Payload>` (or `Response`)
+/// and asserts the wire form round-trips.
+fn render_conformance_mod(examples: &SpecExamples, has_response: bool) -> TokenStream {
+    let request_tests: Vec<TokenStream> = examples
+        .request
+        .iter()
+        .enumerate()
+        .map(|(i, json)| {
+            let fn_name = quote::format_ident!("request_example_{}", i + 1);
+            quote! {
+                #[test]
+                fn #fn_name() {
+                    const JSON: &str = #json;
+                    let doc: crate::TrustTask<super::Payload> =
+                        serde_json::from_str(JSON).expect("deserialize request example");
+                    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+                    let expected: serde_json::Value =
+                        serde_json::from_str(JSON).expect("re-parse expected");
+                    assert_eq!(rendered, expected, "request example failed round-trip");
+                }
+            }
+        })
+        .collect();
+
+    let response_tests: Vec<TokenStream> = if has_response {
+        examples
+            .response
+            .iter()
+            .enumerate()
+            .map(|(i, json)| {
+                let fn_name = quote::format_ident!("response_example_{}", i + 1);
+                quote! {
+                    #[test]
+                    fn #fn_name() {
+                        const JSON: &str = #json;
+                        let doc: crate::TrustTask<super::Response> =
+                            serde_json::from_str(JSON).expect("deserialize response example");
+                        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+                        let expected: serde_json::Value =
+                            serde_json::from_str(JSON).expect("re-parse expected");
+                        assert_eq!(rendered, expected, "response example failed round-trip");
+                    }
+                }
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    if request_tests.is_empty() && response_tests.is_empty() {
+        return quote! {};
+    }
+
+    quote! {
+        #[cfg(test)]
+        mod conformance {
+            //! Round-trip tests harvested from the spec's `spec.md`.
+
+            #(#request_tests)*
+            #(#response_tests)*
+        }
     }
 }
 

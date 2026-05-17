@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -186,9 +180,7 @@ impl ::std::convert::From<&AclEntryRole> for AclEntryRole {
 }
 impl ::std::str::FromStr for AclEntryRole {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -197,9 +189,7 @@ impl ::std::str::FromStr for AclEntryRole {
 }
 impl ::std::convert::TryFrom<&str> for AclEntryRole {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -263,9 +253,7 @@ impl ::std::convert::From<&AclEntryScopesItem> for AclEntryScopesItem {
 }
 impl ::std::str::FromStr for AclEntryScopesItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -274,9 +262,7 @@ impl ::std::str::FromStr for AclEntryScopesItem {
 }
 impl ::std::convert::TryFrom<&str> for AclEntryScopesItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -387,4 +373,40 @@ impl crate::Payload for Payload {
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/acl/grant/0.1#response";
+}
+#[cfg(feature = "validate")]
+impl crate::validate::ValidatedPayload for Payload {
+    const SCHEMA_JSON: &'static str =
+        include_str!("../../../../../specs/acl/grant/0.1/payload.schema.json");
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`.
+    #[test]
+    fn request_example_1() {
+        const JSON: &str = "{\n  \"id\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n  \"issuer\": \"did:web:org.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-05-16T10:00:00Z\",\n  \"payload\": {\n    \"entry\": {\n      \"subject\": \"did:web:alice.example\",\n      \"role\": \"admin\",\n      \"label\": \"Alice — primary admin\"\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:org.example#key-1\",\n    \"created\": \"2026-05-16T10:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_2() {
+        const JSON: &str = "{\n  \"id\": \"8a91c7b3-2e62-4a91-a3a4-9d61b75e2f01\",\n  \"type\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n  \"issuer\": \"did:web:org.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-05-16T10:05:00Z\",\n  \"payload\": {\n    \"entry\": {\n      \"subject\": \"did:web:contractor.example\",\n      \"role\": \"member\",\n      \"scopes\": [\"context:project-alpha\"],\n      \"expiresAt\": \"2026-08-16T00:00:00Z\"\n    },\n    \"reason\": \"Six-month contractor engagement on project-alpha.\"\n  }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn response_example_1() {
+        const JSON: &str = "{\n  \"id\": \"5e3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f3\",\n  \"type\": \"https://trusttasks.org/spec/acl/grant/0.1#response\",\n  \"threadId\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:maintainer.example\",\n  \"recipient\": \"did:web:org.example\",\n  \"issuedAt\": \"2026-05-16T10:00:01Z\",\n  \"payload\": {\n    \"entry\": {\n      \"subject\": \"did:web:alice.example\",\n      \"role\": \"admin\",\n      \"label\": \"Alice — primary admin\",\n      \"createdAt\": \"2026-05-16T10:00:01Z\",\n      \"createdBy\": \"did:web:org.example\"\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:maintainer.example#key-1\",\n    \"created\": \"2026-05-16T10:00:01Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z6ab...\"\n  }\n}\n";
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "response example failed round-trip");
+    }
 }

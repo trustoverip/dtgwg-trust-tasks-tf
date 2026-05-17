@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -251,9 +245,7 @@ impl ::std::convert::From<&PayloadRole> for PayloadRole {
 }
 impl ::std::str::FromStr for PayloadRole {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -262,9 +254,7 @@ impl ::std::str::FromStr for PayloadRole {
 }
 impl ::std::convert::TryFrom<&str> for PayloadRole {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -329,9 +319,7 @@ impl ::std::convert::From<&PayloadScope> for PayloadScope {
 }
 impl ::std::str::FromStr for PayloadScope {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -340,9 +328,7 @@ impl ::std::str::FromStr for PayloadScope {
 }
 impl ::std::convert::TryFrom<&str> for PayloadScope {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -407,9 +393,7 @@ impl ::std::convert::From<&PayloadSubjectPrefix> for PayloadSubjectPrefix {
 }
 impl ::std::str::FromStr for PayloadSubjectPrefix {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -418,9 +402,7 @@ impl ::std::str::FromStr for PayloadSubjectPrefix {
 }
 impl ::std::convert::TryFrom<&str> for PayloadSubjectPrefix {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -522,4 +504,58 @@ impl crate::Payload for Payload {
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/acl/list/0.1#response";
+}
+#[cfg(feature = "validate")]
+impl crate::validate::ValidatedPayload for Payload {
+    const SCHEMA_JSON: &'static str =
+        include_str!("../../../../../specs/acl/list/0.1/payload.schema.json");
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`.
+    #[test]
+    fn request_example_1() {
+        const JSON: &str = "{\n  \"id\": \"2e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/acl/list/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-06-15T10:00:00Z\",\n  \"payload\": {}\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_2() {
+        const JSON: &str = "{\n  \"id\": \"5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/acl/list/0.1\",\n  \"issuer\": \"did:web:auditor.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-06-15T10:05:00Z\",\n  \"payload\": {\n    \"role\": \"admin\",\n    \"pageSize\": 50\n  }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_3() {
+        const JSON: &str = "{\n  \"id\": \"7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/acl/list/0.1\",\n  \"issuer\": \"did:web:auditor.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-06-15T10:06:00Z\",\n  \"payload\": {\n    \"role\": \"admin\",\n    \"pageSize\": 50,\n    \"cursor\": \"eyJvZmZzZXQiOjUwfQ\"\n  }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn response_example_1() {
+        const JSON: &str = "{\n  \"id\": \"6c3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3\",\n  \"type\": \"https://trusttasks.org/spec/acl/list/0.1#response\",\n  \"threadId\": \"5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:maintainer.example\",\n  \"recipient\": \"did:web:auditor.example\",\n  \"issuedAt\": \"2026-06-15T10:05:01Z\",\n  \"payload\": {\n    \"entries\": [\n      {\n        \"subject\": \"did:web:alice.example\",\n        \"role\": \"admin\",\n        \"label\": \"Alice — primary admin\",\n        \"createdAt\": \"2026-05-16T10:00:00Z\",\n        \"createdBy\": \"did:web:org.example\"\n      },\n      {\n        \"subject\": \"did:web:carol.example\",\n        \"role\": \"admin\",\n        \"createdAt\": \"2026-05-18T08:30:00Z\",\n        \"createdBy\": \"did:web:alice.example\"\n      }\n    ],\n    \"truncated\": true,\n    \"cursor\": \"eyJvZmZzZXQiOjUwfQ\"\n  }\n}\n";
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "response example failed round-trip");
+    }
+    #[test]
+    fn response_example_2() {
+        const JSON: &str = "{\n  \"id\": \"7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f3\",\n  \"type\": \"https://trusttasks.org/spec/acl/list/0.1#response\",\n  \"threadId\": \"5b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:maintainer.example\",\n  \"recipient\": \"did:web:auditor.example\",\n  \"issuedAt\": \"2026-06-15T10:06:00Z\",\n  \"payload\": {\n    \"entries\": [\n      {\n        \"subject\": \"did:web:alice.example\",\n        \"role\": \"admin\",\n        \"createdAt\": \"2026-05-16T10:00:00Z\",\n        \"createdBy\": \"did:web:org.example\"\n      }\n    ],\n    \"truncated\": false,\n    \"redactedFields\": [\"metadata\", \"label\"]\n  }\n}\n";
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "response example failed round-trip");
+    }
 }
