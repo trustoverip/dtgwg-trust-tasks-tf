@@ -4,17 +4,7 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
-## [Unreleased] — tracks `trust-tasks-rs` 0.1, `SPEC.md` 0.1
-
-### Added
-
-- `HttpsServer::with_discovery(registry)` and
-  `HttpsServer::enable_discovery()` — one-line wiring of
-  `trust-task-discovery/0.1` on the server. `enable_discovery()`
-  snapshots every Type URI registered via `.on(...)` (plus discovery
-  itself) and serves the matching subset on each query.
-
-## [0.1.0] — initial pre-release
+## [0.1.0] — initial pre-release, tracks `trust-tasks-rs` 0.1, `SPEC.md` 0.1
 
 ### Added
 
@@ -27,6 +17,11 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
   `enforce_audience_binding` (item 8 / §4.8.2), dispatch by canonical
   Type URI (§4.4.1 item 1), then the user handler. Success ⇒
   `respond_with`; failure ⇒ `TransportHandler::reject` (§8.1 routing).
+- `HttpsServer::with_discovery(registry)` and
+  `HttpsServer::enable_discovery()` — one-line wiring of
+  `trust-task-discovery/0.1` on the server. `enable_discovery()`
+  snapshots every Type URI registered via `.on(...)` (plus discovery
+  itself) and serves the matching subset on each query.
 - `HttpsClient` — reqwest-based typed `send::<Req, Resp>` with bearer
   auth, automatic in-band identity defaulting, and `ClientError` that
   distinguishes transport-level failures, framework
@@ -42,14 +37,12 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
   end-to-end demo on `localhost:3000`.
 - `tests/end_to_end.rs` — full HTTP loop covering happy path,
   identity-mismatch routing + sanitised wire message,
-  unsupported-type, spec-handler rejection, plus (in the
-  `[Unreleased]` block above) discovery advertisement and pattern-
-  filtered discovery.
+  unsupported-type, spec-handler rejection, plus discovery
+  advertisement and pattern-filtered discovery.
 
 ### Cargo features
 
 - `client` (default) — `HttpsClient` + `reqwest`.
 - `server` (default) — `HttpsServer` + `axum` + `tokio` + `tower`.
 
-[Unreleased]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/v0.1.0
