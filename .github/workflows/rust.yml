@@ -8,6 +8,7 @@ on:
     paths:
       - "trust-tasks-rs/**"
       - "trust-tasks-codegen/**"
+      - "trust-tasks-https/**"
       - "Cargo.toml"
       - "specs/**"
       - ".github/workflows/rust.yml"

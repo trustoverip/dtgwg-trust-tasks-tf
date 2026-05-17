@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "trust-tasks-rs",
     "trust-tasks-codegen",
+    "trust-tasks-https",
 ]
 
 [workspace.package]
