@@ -33,4 +33,5 @@
 #![allow(clippy::to_string_trait_impl)]
 
 // trust-tasks-codegen:begin
+pub mod acl;
 // trust-tasks-codegen:end
