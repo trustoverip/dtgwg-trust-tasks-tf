@@ -43,25 +43,12 @@ jobs:
         env:
           RUSTDOCFLAGS: "-D warnings"
 
-  msrv:
-    name: cargo test (MSRV 1.85 — core crates only)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: "1.85"
-      - uses: Swatinem/rust-cache@v2
-      # trust-tasks-rs, trust-tasks-codegen, and trust-tasks-https declare
-      # MSRV 1.85 (constrained by the workspace's transitive deps that
-      # use `edition2024`). The Affinidi-backed crates separately
-      # require Rust 1.94 and don't participate in this job.
-      - name: Install libdbus-1-dev
-        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
-      - name: cargo test (trust-tasks-rs, trust-tasks-codegen)
-        run: cargo test -p trust-tasks-rs -p trust-tasks-codegen --all-targets
-      - name: cargo test (trust-tasks-https)
-        run: cargo test -p trust-tasks-https --all-targets
+  # NOTE: every crate in this workspace ends up declaring MSRV 1.94 —
+  # the Affinidi crate family requires it and the workspace resolves
+  # under a single Cargo.lock. A separate MSRV job would just retest
+  # the same toolchain as `test`. If the workspace ever splits its
+  # resolver, a `msrv` job picking a lower toolchain will be
+  # appropriate again.
 
   fmt:
     name: cargo fmt

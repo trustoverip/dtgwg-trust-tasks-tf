@@ -2,10 +2,13 @@
 name = "trust-tasks-rs"
 version = "0.1.0"
 edition = "2021"
-# Effective MSRV is constrained by the workspace's transitive deps —
-# notably `indexmap` (pulled by serde_with → schemars → ...) which
-# requires `edition2024`, stabilised in Rust 1.85.
-rust-version = "1.85"
+# Effective MSRV is constrained by the workspace's transitive deps and
+# the Affinidi crates (`affinidi-data-integrity`, `affinidi-messaging-*`)
+# pulled in by the sibling binding crates, all of which declare MSRV
+# 1.94. Aligning here keeps the workspace honest under shared
+# resolution; trust-tasks-rs itself uses no 1.94-specific features and
+# can in principle build on older toolchains outside this workspace.
+rust-version = "1.94"
 description = "Reference Rust library for the Trust Tasks framework — transport-agnostic, JSON-based descriptions of verifiable work between parties."
 license = "Apache-2.0"
 repository = "https://github.com/trustoverip/dtgwg-trust-tasks-tf"
