@@ -27,6 +27,25 @@ window.TT_ECOSYSTEM = [
     repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf",
   },
   {
+    id: "trust-tasks-rs",
+    name: "trust-tasks (Rust)",
+    tagline: "The reference implementation.",
+    role: "Reference implementation · Rust",
+    tier: "reference",
+    accent: "violet",
+    summary:
+      "A Rust workspace that turns the Trust Tasks framework into runnable code: framework primitives (envelope, TypeUri, Proof, RejectReason, TransportHandler), two transport bindings (HTTPS, DIDComm v2.1), a ProofVerifier implementation backed by Affinidi Data Integrity, and a codegen tool that materialises typed payload modules for every spec in the registry.",
+    bullets: [
+      "trust-tasks-rs — core library + generated specs::*",
+      "trust-tasks-https — typed axum server + reqwest client",
+      "trust-tasks-didcomm — pack/unpack over DIDComm v2.1",
+      "trust-tasks-proof-affinidi — W3C Data Integrity verifier",
+      "Pre-publication 0.1.0, tracking SPEC.md 0.1",
+    ],
+    primary: { label: "Implementations · trusttasks.org", href: "/implementations" },
+    repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf",
+  },
+  {
     id: "dtg-credentials",
     name: "Decentralized Trust Graph (DTG) Credentials",
     tagline: "The credential types.",

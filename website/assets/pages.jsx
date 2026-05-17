@@ -1137,6 +1137,407 @@ function FrameworkSpecPage({ setRoute }) {
   );
 }
 
+/* ============================================================
+   IMPLEMENTATIONS — reference Rust crates + quickstart
+   ============================================================ */
+function ImplementationsPage({ setRoute }) {
+  const accent = (c) => `var(--tt-${c})`;
+
+  const crates = [
+    {
+      name: "trust-tasks-rs",
+      accent: "violet",
+      role: "Core library",
+      tagline: "Framework primitives, types, dispatcher.",
+      summary:
+        "The reference implementation of SPEC.md §4–§11 — TrustTask<P> envelopes, TypeUri parser, Proof/ProofVerifier traits, the typed error pipeline, TransportHandler with §4.8.1 identity precedence baked in, a discovery module, and generated payload types for every spec in the registry.",
+      bullets: [
+        "TrustTask<P>, TypeUri, Proof, RejectReason, ErrorPayload",
+        "TransportHandler trait + NoopHandler / InMemoryHandler",
+        "Dispatcher<R> for typed multi-spec consumers",
+        "specs::* — generated payload types for every registry spec",
+        "Optional validate feature — JSON Schema check against embedded schemas",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-rs",
+    },
+    {
+      name: "trust-tasks-https",
+      accent: "teal",
+      role: "HTTPS binding",
+      tagline: "Typed server + client over HTTP.",
+      summary:
+        "An axum-based HttpsServer with a builder API and bearer-token authentication, plus a reqwest-based HttpsClient that produces typed responses or trust-task-error/0.1 documents. Runs the full SPEC §7.2 pipeline per request (resolve_parties → validate_basic → enforce_audience_binding → dispatch → handler) and applies §8.1 routing on rejection.",
+      bullets: [
+        "HttpsServer builder — .on::<Payload, Response, _>(handler)",
+        "Optional discovery wiring — .enable_discovery() snapshots the route table",
+        "HttpsClient::send::<Req, Resp>() — typed end-to-end",
+        "Bearer auth via pluggable Auth trait; BearerAuth for demos",
+        "ClientError separates transport / framework error / non-2xx fallback",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-https",
+    },
+    {
+      name: "trust-tasks-didcomm",
+      accent: "coral",
+      role: "DIDComm v2.1 binding",
+      tagline: "pack/unpack over authcrypt'd JWEs.",
+      summary:
+        "A DIDComm v2.1 binding on top of affinidi-messaging-didcomm. pack_trust_task wraps a TrustTask in an authcrypt envelope; unpack_trust_task returns the document together with a DidcommHandler whose authenticated peer is the verified sender_kid — the framework's transport-authenticated identity.",
+      bullets: [
+        "pack_trust_task / unpack_trust_task helpers",
+        "DidcommHandler maps verified sender_kid → transport peer",
+        "Envelope type: https://trusttasks.org/binding/didcomm/0.1/envelope",
+        "Mediator end-to-end test against affinidi-messaging-test-mediator",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm",
+    },
+    {
+      name: "trust-tasks-proof-affinidi",
+      accent: "amber",
+      role: "Proof verifier",
+      tagline: "W3C Data Integrity via affinidi-data-integrity.",
+      summary:
+        "A ProofVerifier implementation backed by Affinidi's Data Integrity crate. Verifies proof members against the in-band issuer using EdDSA suites (eddsa-rdfc-2022, eddsa-jcs-2022); ships with a CachedDidResolver that bridges affinidi-did-resolver-cache-sdk so did:web / did:webvh / did:peer / did:jwk / did:key all resolve through one adapter.",
+      bullets: [
+        "AffinidiProofVerifier::for_did_key() — offline, no I/O",
+        "AffinidiProofVerifier::with_resolver(...) — pluggable DID resolution",
+        "DataIntegrityError → VerificationError → SPEC §8.3 proof_invalid",
+        "Round-trip-tested against affinidi-data-integrity's sign path",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-proof-affinidi",
+    },
+  ];
+
+  const cargoToml = `[dependencies]
+trust-tasks-rs = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
+
+# Pick the transport binding(s) you need:
+trust-tasks-https   = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
+trust-tasks-didcomm = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
+
+# Optional: W3C Data Integrity proof verification
+trust-tasks-proof-affinidi = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }`;
+
+  const loopbackSnippet = `use chrono::Utc;
+use trust_tasks_rs::{
+    handlers::InMemoryHandler, RejectReason, TransportHandler, TrustTask, TypeUri,
+};
+
+const VERIFIER: &str = "did:web:verifier.example";
+const BANK: &str = "did:web:bank.example";
+
+// Both ends know who they are; the in-memory handler conveys this as
+// transport-authenticated identity.
+let producer = InMemoryHandler::new().with_local(VERIFIER).with_peer(BANK);
+let consumer = InMemoryHandler::new().with_local(BANK).with_peer(VERIFIER);
+
+// Producer issues a kyc-handoff/1.0 request.
+let mut request = TrustTask::new(
+    "req-001",
+    TypeUri::canonical("kyc-handoff", 1, 0)?,
+    KycHandoff { /* payload */ },
+);
+request.issuer    = Some(VERIFIER.into());
+request.recipient = Some(BANK.into());
+request.issued_at = Some(Utc::now());
+producer.prepare_outbound(&mut request);
+
+// Consumer applies §4.8.1 + §7.2 and either responds or rejects.
+let resolved = consumer.resolve_parties(&request)
+    .map_err(|e| request.reject_with("err-001", RejectReason::from(e)))?;
+request.validate_basic(Utc::now(), BANK)
+    .map_err(|reason| request.reject_with("err-001", reason))?;
+
+let response = request.respond_with("resp-001", KycReceipt { /* ... */ });`;
+
+  const httpsServerSnippet = `use trust_tasks_https::{BearerAuth, HttpsServer};
+use trust_tasks_rs::specs::acl::{grant, revoke};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let auth = BearerAuth::from_pairs([
+        ("alice", "did:web:alice.example"),
+        ("bob",   "did:web:bob.example"),
+    ]);
+
+    let server = HttpsServer::builder()
+        .local_vid("did:web:maintainer.example")
+        .with_auth(auth)
+        .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, ctx| {
+            // Typed payload, authenticated sender in ctx.
+            Ok(grant::v0_1::Response { entry: req.payload.entry.clone() })
+        })
+        .on::<revoke::v0_1::Payload, revoke::v0_1::Response, _>(|req, _ctx| {
+            Ok(revoke::v0_1::Response { entry: None })
+        })
+        .enable_discovery()    // serves trust-task-discovery/0.1 on the same endpoint
+        .build();
+
+    server.serve("127.0.0.1:3000").await?;
+    Ok(())
+}`;
+
+  const httpsClientSnippet = `use trust_tasks_https::{ClientError, HttpsClient};
+use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, TrustTask};
+
+let client = HttpsClient::builder()
+    .server_url("http://localhost:3000")
+    .server_vid("did:web:maintainer.example")
+    .my_vid("did:web:alice.example")
+    .my_token("alice")
+    .build()?;
+
+let request = TrustTask::for_payload(
+    format!("urn:uuid:{}", uuid::Uuid::new_v4()),
+    grant::Payload { /* ... */ },
+);
+
+match client.send::<grant::Payload, grant::Response>(request).await {
+    Ok(resp) => { /* typed response */ }
+    Err(ClientError::TrustTaskError { http_status, error }) => {
+        // Framework trust-task-error/0.1 with typed code + retryable flag.
+    }
+    Err(other) => return Err(other.into()),
+}`;
+
+  const didcommSnippet = `use affinidi_messaging_didcomm::{identity::PrivateIdentity, DIDCommAgent};
+use trust_tasks_didcomm::{pack_trust_task, unpack_trust_task};
+use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, TransportHandler, TrustTask};
+
+// 1. Two fresh peer identities; cross-register them.
+let alice = PrivateIdentity::generate("did:peer:alice");
+let bob   = PrivateIdentity::generate("did:peer:bob");
+let mut alice_agent = DIDCommAgent::new();
+alice_agent.add_identity(alice.clone());
+alice_agent.add_peer(bob.to_resolved());
+
+// 2. Alice packs an acl/grant request as an authcrypt'd JWE.
+let request = TrustTask::for_payload("urn:uuid:...", grant::Payload { /* ... */ });
+let wire = pack_trust_task(&request, &alice_agent, &alice.did, &bob.did)?;
+
+// 3. Bob unpacks; handler.peer() is the verified sender_kid.
+let (received, handler) = unpack_trust_task::<grant::Payload>(
+    &wire, &bob_agent, Some(&alice.did),
+)?;
+let resolved = handler.resolve_parties(&received)?;
+received.validate_basic(chrono::Utc::now(), &bob.did)?;
+received.enforce_audience_binding()?;`;
+
+  const proofSnippet = `use trust_tasks_proof_affinidi::AffinidiProofVerifier;
+use trust_tasks_rs::ProofVerifier;
+
+// did:key only — offline, no I/O. Good for tests and self-issued documents.
+let verifier = AffinidiProofVerifier::for_did_key();
+verifier.verify(&inbound_doc).await?;
+
+// For did:web / did:webvh / did:peer / did:jwk, plug in the resolver cache:
+use std::sync::Arc;
+use affinidi_did_resolver_cache_sdk::{config::DIDCacheConfigBuilder, DIDCacheClient};
+use trust_tasks_proof_affinidi::CachedDidResolver;
+
+let client   = DIDCacheClient::new(DIDCacheConfigBuilder::default().build()).await?;
+let resolver = Arc::new(CachedDidResolver::new(Arc::new(client)));
+let verifier = AffinidiProofVerifier::with_resolver(resolver);`;
+
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Reference implementation · Rust"
+        title="trust-tasks for Rust."
+        lede="A reference Rust implementation of the Trust Tasks framework — five crates that together cover the framework envelope, two transport bindings, a W3C Data Integrity proof verifier, and a codegen tool that turns registry specs into typed payload modules. Pre-publication 0.1.0, tracking SPEC.md 0.1."
+      >
+        <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
+          <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
+          <a className="btn btn--ghost" href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>Read the framework specification →</a>
+        </div>
+      </PageHero>
+
+      {/* CRATE OVERVIEW */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Workspace at a glance</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Four publishable crates, one codegen tool.</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "60ch" }}>
+            Each crate is independently usable. Start with <code>trust-tasks-rs</code>;
+            add the transport binding(s) and proof verifier you need.
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
+            {crates.map(c => (
+              <article
+                key={c.name}
+                style={{
+                  border: "1px solid var(--tt-border)",
+                  borderLeft: `3px solid ${accent(c.accent)}`,
+                  padding: "var(--tt-space-5)",
+                  background: "var(--tt-surface-elev)",
+                }}
+              >
+                <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), marginBottom: "var(--tt-space-2)" }}>
+                  {c.role}
+                </div>
+                <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{c.name}</h3>
+                <div style={{ fontFamily: "var(--tt-font-serif, var(--tt-font-display))", fontStyle: "italic", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)", marginBottom: "var(--tt-space-3)" }}>
+                  {c.tagline}
+                </div>
+                <p style={{ color: "var(--tt-text-muted)", marginTop: 0 }}>{c.summary}</p>
+                <ul style={{ margin: "var(--tt-space-3) 0 var(--tt-space-4)", paddingLeft: "1.1em", color: "var(--tt-text-muted)", lineHeight: 1.7 }}>
+                  {c.bullets.map(b => <li key={b}>{b}</li>)}
+                </ul>
+                <a href={c.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), borderBottom: 0 }}>
+                  Source →
+                </a>
+              </article>
+            ))}
+          </div>
+
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-5)", fontSize: "var(--tt-text-sm)" }}>
+            <b style={{ color: "var(--tt-text)" }}>trust-tasks-codegen</b> — internal-only build tool that reads <code>specs/&lt;slug&gt;/&lt;version&gt;/payload.schema.json</code>, runs each through <a href="https://crates.io/crates/typify" target="_blank" rel="noreferrer">typify</a>, and writes per-spec Rust modules into <code>trust-tasks-rs/src/specs/</code>. Output is committed; a CI gate runs the generator and <code>git diff --exit-code</code> to prevent drift. You don't depend on this crate directly — it runs to refresh the generated tree when a new spec lands in the registry.
+          </p>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* QUICKSTART */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container container--narrow">
+          <span className="eyebrow">Quickstart</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Add to your <code>Cargo.toml</code>.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            The crates aren't on crates.io yet — pull them as git dependencies until the first publish. MSRV is 1.94.
+          </p>
+          <CodeBlock json={cargoToml} language="toml" />
+
+          <h2 style={{ marginTop: "var(--tt-space-7)" }}>Minimal loopback: producer ↔ consumer in-process.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            The example below uses <code>InMemoryHandler</code> to convey transport-authenticated identity without an actual transport.
+            It exercises both branches of SPEC §4.4.1 — success and rejection — and applies the §4.8.1 / §7.2 pipeline.
+            See <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-rs/examples/loopback.rs" target="_blank" rel="noreferrer"><code>trust-tasks-rs/examples/loopback.rs</code></a> for the full file (runs with <code>cargo run --example loopback -p trust-tasks-rs</code>).
+          </p>
+          <CodeBlock json={loopbackSnippet} language="rust" />
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* HTTPS BINDING */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container container--narrow">
+          <span className="eyebrow">HTTPS transport</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Typed server and client.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            <code>HttpsServer</code> exposes a single <code>POST /trust-tasks</code> endpoint, runs the full SPEC §7.2 pipeline per request,
+            and routes by canonical Type URI. Handlers receive a typed <code>TrustTask&lt;Payload&gt;</code> and return either a typed
+            response or a <code>RejectReason</code> that maps to a <code>trust-task-error/0.1</code> document with §8.1 routing applied.
+          </p>
+          <CodeBlock json={httpsServerSnippet} language="rust" />
+
+          <h3 style={{ marginTop: "var(--tt-space-6)" }}>Client side.</h3>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            <code>HttpsClient::send::&lt;Req, Resp&gt;()</code> returns a typed response; <code>ClientError</code> distinguishes
+            transport-level failures from framework <code>trust-task-error/0.1</code> documents from untyped non-2xx fallbacks.
+          </p>
+          <CodeBlock json={httpsClientSnippet} language="rust" />
+
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)" }}>
+            Pair the two examples: <code>cargo run -p trust-tasks-https --example server_demo</code> in one terminal,
+            then <code>cargo run -p trust-tasks-https --example client_demo</code> in another.
+          </p>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* DIDCOMM BINDING */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container container--narrow">
+          <span className="eyebrow">DIDComm v2.1 transport</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Authcrypt'd over JWEs.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            <code>pack_trust_task</code> wraps a <code>TrustTask</code> in a DIDComm v2.1 authcrypt envelope.
+            <code>unpack_trust_task</code> returns the document together with a <code>DidcommHandler</code> whose
+            authenticated peer is the verified <code>sender_kid</code> — exactly what the framework's
+            §4.8.1 precedence rule consumes. Full mediator-routed flow is covered by the crate's
+            <code>mediator_e2e.rs</code> integration test.
+          </p>
+          <CodeBlock json={didcommSnippet} language="rust" />
+
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)" }}>
+            Run the full in-process example: <code>cargo run -p trust-tasks-didcomm --example local_roundtrip</code>.
+          </p>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* PROOF VERIFICATION */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container container--narrow">
+          <span className="eyebrow">Proof verification</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>W3C Data Integrity via Affinidi.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            The core <code>trust-tasks-rs</code> crate intentionally ships <em>no</em> cryptosuites — verification
+            is a trait seam. <code>trust-tasks-proof-affinidi</code> is the first concrete <code>ProofVerifier</code>,
+            backed by <a href="https://crates.io/crates/affinidi-data-integrity" target="_blank" rel="noreferrer"><code>affinidi-data-integrity</code></a> for EdDSA cryptosuites
+            (<code>eddsa-rdfc-2022</code>, <code>eddsa-jcs-2022</code>) and a <code>CachedDidResolver</code> adapter that
+            covers <code>did:web</code>, <code>did:webvh</code>, <code>did:peer</code>, <code>did:jwk</code>, and <code>did:key</code>.
+          </p>
+          <CodeBlock json={proofSnippet} language="rust" />
+
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)" }}>
+            All <code>DataIntegrityError</code> variants map cleanly into the SPEC §8.3 <code>proof_invalid</code> standard code path.
+          </p>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* ADDING A SPEC */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container container--narrow">
+          <span className="eyebrow">Extending the library</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Adding your own Trust Task spec.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            Drop a <code>specs/&lt;slug&gt;/&lt;version&gt;/payload.schema.json</code> + <code>spec.md</code> into the registry,
+            then run the codegen:
+          </p>
+          <CodeBlock
+            json={`cargo run -p trust-tasks-codegen
+git diff --exit-code trust-tasks-rs/src/specs   # CI gate: codegen is idempotent`}
+            language="bash"
+          />
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-4)" }}>
+            The generator walks <code>specs/</code>, normalises <code>$defs</code> → <code>definitions</code> for typify,
+            emits one module per <code>(slug, version)</code>, and harvests <code>## Request</code> / <code>## Response</code>
+            JSON code fences from the prose into a <code>#[cfg(test)] mod conformance</code> per module. Front matter
+            (e.g. <code>bearer: true</code>) is reflected in trait impls (<code>const IS_BEARER: bool = true;</code>).
+          </p>
+        </div>
+      </section>
+
+      {/* STATUS */}
+      <section style={{ paddingBlock: "var(--tt-space-7)", borderTop: "1px solid var(--tt-line)" }}>
+        <div className="container container--narrow">
+          <span className="eyebrow">Status</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Pre-publication.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            All four crates are at <code>0.1.0</code>, tracking <code>SPEC.md 0.1</code>. Neither the framework nor the
+            implementation has gone through external review yet — interfaces and on-the-wire behaviour are subject
+            to change. The repository ships full unit + integration suites (125 tests workspace-wide),
+            a CI matrix on stable Rust (MSRV 1.94), and runnable examples for every binding.
+          </p>
+          <div style={{ marginTop: "var(--tt-space-5)", display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap" }}>
+            <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Open the repository →</a>
+            <a className="btn btn--ghost" href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }}>Browse the registry →</a>
+            <a className="btn btn--ghost" href="/ecosystem" onClick={(e) => { e.preventDefault(); setRoute({ name: "ecosystem" }); }}>See the ecosystem →</a>
+          </div>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
 Object.assign(window, {
-  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage
+  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage
 });

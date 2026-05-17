@@ -108,6 +108,7 @@
         case "registry":      view = <RegistryPage initial={{ cat: route.cat, q: route.q, kw: route.kw }} setRoute={setRoute} />; break;
         case "spec":          view = <SpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
         case "specification": view = <FrameworkSpecPage setRoute={setRoute} />; break;
+        case "implementations": view = <ImplementationsPage setRoute={setRoute} />; break;
         case "categories":    view = <CategoriesPage setRoute={setRoute} />; break;
         case "ecosystem":     view = <EcosystemPage setRoute={setRoute} />; break;
         case "about":         view = <AboutPage />; break;
