@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task-discovery/0.1",
+  "title": "Trust Task Discovery — payload",
+  "description": "Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "patterns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'."
+      },
+      "description": "Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Trust Task Discovery — response payload",
+      "description": "List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportedTypes"],
+      "properties": {
+        "supportedTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri",
+            "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists."
+          },
+          "description": "Each Type URI in this array MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates are not permitted."
+        }
+      }
+    }
+  }
+}

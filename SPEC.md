@@ -4,8 +4,8 @@
 
 | | |
 |---|---|
-| **Document version** | 0.2 |
-| **Date** | 2026-05-17 |
+| **Document version** | 0.3 |
+| **Date** | 2026-05-18 |
 | **This version** | `https://trustoverip.github.io/dtgwg-trust-tasks-tf/SPEC.html` |
 | **Latest published version** | None — this document has not yet been published as a Working Group Deliverable. |
 | **Latest editor's draft** | <https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md> |
@@ -44,9 +44,10 @@ This document is governed by the [Trust Over IP Foundation Patent and Copyright 
 8. [Error responses](#8-error-responses)
 9. [Transport bindings](#9-transport-bindings)
 10. [Security and Privacy Considerations](#10-security-and-privacy-considerations)
-11. [References](#11-references)
-12. [Acknowledgments](#12-acknowledgments)
-13. [Appendix A — Example Trust Task specification](#appendix-a--example-trust-task-specification)
+11. [Discovery and capability negotiation](#11-discovery-and-capability-negotiation)
+12. [References](#12-references)
+13. [Acknowledgments](#13-acknowledgments)
+14. [Appendix A — Example Trust Task specification](#appendix-a--example-trust-task-specification)
 
 ---
 
@@ -444,7 +445,14 @@ A *Type URI* used as the value of a *Trust Task document*'s `type` member **MAY*
 The following slugs are **RESERVED** for framework-defined specifications and **MUST NOT** be used by any individual *Trust Task specification*:
 
 * The exact slug `trust-task`, reserved for this framework specification itself.
-* Any slug whose first segment is `trust-task` or begins with the prefix `trust-task-`, reserved for framework-defined response-type specifications (see [§8.1](#81-the-trust-task-error-specification) and [§8.6](#86-reserved-response-type-slugs)). Equivalently, the slug **MUST NOT** match the pattern `^trust-task($|-|/)`.
+* Any slug whose first segment is `trust-task` or begins with the prefix `trust-task-`, reserved for framework-defined specifications. Equivalently, the slug **MUST NOT** match the pattern `^trust-task($|-|/)`. The slugs currently published by the framework under this reservation are:
+
+  | Slug                     | Purpose                                                                 |
+  |--------------------------|-------------------------------------------------------------------------|
+  | `trust-task-error`       | Error-response payload — see [§8.1](#81-the-trust-task-error-specification). |
+  | `trust-task-ok`          | Success-response with metadata — reserved, see [§8.6](#86-reserved-response-type-slugs). |
+  | `trust-task-next-step`   | Recipient-suggested continuation — reserved, see [§8.6](#86-reserved-response-type-slugs). |
+  | `trust-task-discovery`   | Discovery and capability negotiation — see [§11](#11-discovery-and-capability-negotiation). |
 
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
 
@@ -755,9 +763,71 @@ This consideration does **not** apply when the schema is embedded with the *cons
 
 A *consumer* emitting an *error response* under [§8](#8-error-responses) **MUST** treat the error response's `payload.message` as a wire-exposed value. Free-text messages that reveal the *consumer*'s expected transport-authenticated identity, the contested in-band value of a mismatched party, or other consumer-internal state convert each error response into an identity-probing oracle for an unauthenticated *producer*. The rule for `identity_mismatch` is stated in [§8.1](#81-the-trust-task-error-specification); the same principle applies to every standard code: error messages **SHOULD** be derived from the code identifier and the *Trust Task specification*'s public vocabulary, not from consumer-side authentication context.
 
-## 11. References
+## 11. Discovery and capability negotiation
 
-### 11.1 Normative references
+Two parties about to enter a *Trust Task* exchange often need to negotiate a shared task vocabulary first: a *producer* asks "which *Trust Tasks* are you prepared to act upon?" before committing to send any particular document. The framework supports this with a reserved *Trust Task specification* of its own: `trust-task-discovery`.
+
+The slug `trust-task-discovery` is reserved by [§6.1](#61-type-uri) under the framework's `trust-task-` namespace. Its current published version lives at:
+
+```
+https://trusttasks.org/spec/trust-task-discovery/0.1
+```
+
+Its registry entry defines the full request/response payload schema and conformance requirements. This section gives the framework-level overview; for the normative definitions of `payload.patterns` semantics, response shape, and conformance, see that registry entry.
+
+### 11.1 Request
+
+A *discovery request* is a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-discovery/0.1`. Its `payload` carries an optional list of slug-glob patterns:
+
+```json
+{
+  "patterns": ["acl/*", "kyc-handoff"]
+}
+```
+
+When `patterns` is absent or empty, the *responder* treats the query as `["*"]` — return every supported *Trust Task*.
+
+### 11.2 Pattern grammar
+
+Patterns are deliberately coarse. The grammar is:
+
+* `"*"` — matches every slug.
+* `"<prefix>/*"` — matches every slug whose value starts with the literal `<prefix>/` (e.g. `"acl/*"` matches `acl/grant`, `acl/revoke`, and `acl/grant/sub`).
+* `"<slug>"` — exact match.
+
+Wildcards in positions other than as the trailing `/*` of a `<prefix>/*` pattern are **not** interpreted; they match literally. Multiple patterns combine with **OR** semantics: a slug matches the query if it matches at least one pattern.
+
+The grammar omits version filters, recursive globs (`**`), and regex on purpose. Versions are part of the *Type URI* the responder returns; a discoverer that needs to filter on version applies the constraint client-side.
+
+### 11.3 Response
+
+A *discovery response* is a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-discovery/0.1#response`. Its `payload` carries the matching subset of *Type URIs* the responder supports:
+
+```json
+{
+  "supportedTypes": [
+    "https://trusttasks.org/spec/acl/grant/0.1",
+    "https://trusttasks.org/spec/acl/revoke/0.1",
+    "https://trusttasks.org/spec/kyc-handoff/1.0"
+  ]
+}
+```
+
+Each entry is a **bare** *Type URI* — no `#request` or `#response` fragment. A *Type URI*'s presence in `supportedTypes` means the responder handles both directions of that specification's exchange.
+
+A response with `"supportedTypes": []` is conformant and means "I support nothing matching your query."
+
+### 11.4 Status of the response
+
+A *discovery response* is **advisory**. A *Type URI*'s presence is a hint that the responder will accept a *Trust Task document* of that type, not a binding commitment: the responder may have revoked support, may apply per-document permissions, or may itself receive a `proof_invalid` or `permission_denied` at the point of acting on a subsequent request. Every subsequent exchange runs the full [§7.2](#72-consumer-requirements) pipeline; discovery only narrows what the discoverer chooses to send.
+
+### 11.5 Privacy considerations
+
+A discovery response leaks information about which specifications the responder implements. Responders that consider their supported task set sensitive **SHOULD** authenticate the discoverer before responding, and **MAY** return a filtered subset of their true capabilities (or no response at all) when the discoverer is unknown or unauthenticated. See the discovery spec's "Privacy considerations" section for additional discussion.
+
+## 12. References
+
+### 12.1 Normative references
 
 * **[RFC2119]** Bradner, S. *Key words for use in RFCs to Indicate Requirement Levels*. RFC 2119, March 1997. <https://www.rfc-editor.org/rfc/rfc2119>
 * **[RFC8174]** Leiba, B. *Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words*. RFC 8174, May 2017. <https://www.rfc-editor.org/rfc/rfc8174>
@@ -771,12 +841,12 @@ A *consumer* emitting an *error response* under [§8](#8-error-responses) **MUST
 * **[JSON-SCHEMA-2020-12]** Wright, A. et al. *JSON Schema: A Media Type for Describing JSON Documents*. Draft 2020-12. <https://json-schema.org/draft/2020-12/schema>
 * **[DID-CORE]** Sporny, M., Longley, D., Sabadello, M., Reed, D., Steele, O., Allen, C. *Decentralized Identifiers (DIDs) v1.0*. W3C Recommendation. <https://www.w3.org/TR/did-core/>
 
-### 11.2 Informative references
+### 12.2 Informative references
 
 * **[VC-DATA-MODEL]** Sporny, M. et al. *Verifiable Credentials Data Model v2.0*. W3C Recommendation. <https://www.w3.org/TR/vc-data-model-2.0/>
 * **[W3C-MANUAL-OF-STYLE]** W3C. *Manual of Style*. <https://www.w3.org/guide/manual-of-style/>
 
-## 12. Acknowledgments
+## 13. Acknowledgments
 
 The editor thanks the members of the Trust Over IP Foundation Decentralized Trust Graph Working Group for their ongoing review and contributions to this specification.
 
