@@ -31,6 +31,7 @@
 //! ```
 
 use std::collections::BTreeSet;
+use std::iter::FromIterator;
 
 use crate::payload::Payload;
 use crate::specs::trust_task_discovery::v0_1 as wire;
@@ -122,6 +123,21 @@ impl DiscoveryRegistry {
         self.register(P::type_uri());
     }
 
+    /// Insert a Type URI from its string form. Caller's responsibility to
+    /// pass a well-formed bare Type URI — the registry stores it as-is
+    /// without re-parsing. Useful for integrations that already hold
+    /// canonical URI strings (e.g. server routing tables that key on
+    /// `TypeUri::for_routing().to_string()`).
+    pub fn register_str(&mut self, uri: impl Into<String>) {
+        self.type_uris.insert(uri.into());
+    }
+
+    /// Builder-flavored [`register_str`](Self::register_str).
+    pub fn with_str(mut self, uri: impl Into<String>) -> Self {
+        self.register_str(uri);
+        self
+    }
+
     /// Bare Type URIs the registry currently holds, lexicographically
     /// sorted.
     pub fn supported_types(&self) -> Vec<&str> {
@@ -145,6 +161,16 @@ impl DiscoveryRegistry {
             .cloned()
             .collect();
         wire::Response { supported_types }
+    }
+}
+
+impl<S: Into<String>> FromIterator<S> for DiscoveryRegistry {
+    fn from_iter<I: IntoIterator<Item = S>>(iter: I) -> Self {
+        let mut registry = Self::new();
+        for uri in iter {
+            registry.register_str(uri);
+        }
+        registry
     }
 }
 

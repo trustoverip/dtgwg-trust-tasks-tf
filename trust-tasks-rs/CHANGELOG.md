@@ -6,38 +6,90 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
-## [Unreleased]
+## [Unreleased] — tracks `SPEC.md` 0.3
+
+### Added — discovery (SPEC §11)
+
+- `discovery` module with `match_slug` / `query_matches` primitives and a
+  `DiscoveryRegistry` builder. `respond_to(&query)` consumes a typed
+  `trust-task-discovery/0.1` request and emits the matching subset of
+  registered Type URIs.
+- `DiscoveryRegistry` implements `FromIterator<impl Into<String>>` so
+  routing tables (e.g. `HttpsServer`'s) can `.collect()` directly into
+  a registry.
+- Generated `specs::trust_task_discovery::v0_1::{Payload, Response}`
+  via the codegen, with the spec.md request/response examples wired
+  into the standard `#[cfg(test)] mod conformance`.
+- `TypeUri` parser accepts `trust-task-discovery` as a framework-defined
+  slug per the SPEC §6.1 reserved-slug list.
+
+### Added — audience binding + identity-mismatch routing (SPEC §4.8.2, §8.1)
+
+- `TrustTask::enforce_audience_binding()` checks `proof.is_some() &&
+  recipient.is_none() && !P::IS_BEARER` and rejects with
+  `MalformedRequest` per SPEC §7.2 item 8.
+- `Payload::IS_BEARER: bool = false` — codegen emits an override when a
+  spec opts in via `bearer: true` front-matter.
+- `TrustTask::reject_with_recipient` for explicit recipient override.
+  Used by `TransportHandler::reject` to apply SPEC §8.1 routing —
+  identity-mismatch rejections go to the transport-authenticated peer,
+  never the contested in-band issuer.
+- `RejectReason::wire_message()` returns sanitised strings for
+  identity-bearing rejections; `From<RejectReason> for ErrorPayload`
+  uses it so the consumer's expected VID isn't leaked over the wire.
+
+### Added — opt-in validation, proof verification trait
+
+- `validate` Cargo feature — runtime JSON Schema validation against
+  the embedded `payload.schema.json` files via the `jsonschema` crate
+  (Draft 2020-12). `ValidatedPayload` trait emitted by the codegen on
+  every request payload.
+- `ProofVerifier` trait (async via `async-trait`) + `VerificationError`
+  enum — the seam where cryptosuite crates plug in. No suites
+  implemented in this crate; companion crates live elsewhere
+  (`trust-tasks-proof-affinidi`).
+- `Dispatcher<R>` keys its routes on `TypeUri::for_routing()` so the
+  `#request`-fragmented and bare forms route together, per SPEC
+  §4.4.1 item 1.
+
+### Changed — TypeUri / expiry / wire-error hygiene
+
+- `TypeUri` parser rejects `http://` scheme per the tightened SPEC §6.1
+  (HTTPS only).
+- `TrustTask::is_expired_at` / `validate_basic` use `now ≥ expiresAt`
+  (inclusive bound), matching SPEC §4.2 / §7.2 item 4.
+
+## [0.1.0] — initial pre-release, tracks `SPEC.md` 0.1
 
 ### Added
 
-- Initial public release tracking `SPEC.md` version `0.1`.
-- `TrustTask<P>` document envelope (SPEC §4.2) with `serde` round-trip,
+- `TrustTask<P>` document envelope (SPEC §4.2) with serde round-trip,
   forward-compatible extra members, and JSON-LD `@context` support.
-- `TypeUri` (SPEC §4.4, §6.1) — parses `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>`
-  with `#request` / `#response` fragments, accepts private-authority
-  variants from SPEC §6.5, rejects reserved-namespace slugs.
+- `TypeUri` (SPEC §4.4, §6.1) — parses
+  `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>` with `#request` /
+  `#response` fragments, accepts private-authority variants from
+  SPEC §6.5, rejects reserved-namespace slugs.
 - `Proof` data structure (SPEC §4.7) with forward-compat extras for
   future cryptosuites.
 - `ErrorPayload`, `StandardCode`, `TrustTaskCode` — the
-  `trust-task-error/0.1` payload (SPEC §8.2) with standard codes (§8.3)
-  and namespaced extension codes (§8.5).
-- `RejectReason` enum modelling the SPEC §7.2 rejection conditions; impls
-  `std::error::Error` and converts to `ErrorPayload` via `From`.
+  `trust-task-error/0.1` payload (SPEC §8.2) with standard codes
+  (§8.3) and namespaced extension codes (§8.5).
+- `RejectReason` enum modelling the SPEC §7.2 rejection conditions;
+  impls `std::error::Error` and converts to `ErrorPayload` via `From`.
 - `ErrorResponse` type alias and `impl Error for TrustTask<ErrorPayload>`
   so error responses `?`-propagate.
-- `TrustTask::reject_with` / `respond_with` / `validate_basic` — wire the
-  §4.4.1 success and failure response paths and apply §7.2 items 4 + 5.
+- `TrustTask::reject_with` / `respond_with` / `validate_basic` — wire
+  the §4.4.1 success and failure response paths and apply §7.2 items 4
+  and 5.
 - `TransportHandler` trait (SPEC §9.2) with the §4.8.1 in-band-wins
   precedence baked into a default `resolve_parties` method. Reference
   implementations: `NoopHandler`, `InMemoryHandler`.
 - `Payload` trait + `TrustTask::for_payload` for typed per-spec payloads.
-- `Dispatcher<R>` for typed multi-spec consumers — registry-friendly
-  alternative to a closed `enum`.
 - `specs::*` module tree — per-spec `Payload` / `Response` structs
-  generated by `trust-tasks-codegen` from `specs/<slug>/<version>/payload.schema.json`.
-- `#[cfg(test)] mod conformance` inside each generated module — round-trip
-  tests harvested from each spec's `spec.md`.
-- `validate` feature — opt-in runtime JSON Schema validation against the
-  embedded `payload.schema.json` files via the `jsonschema` crate.
+  generated by `trust-tasks-codegen` from
+  `specs/<slug>/<version>/payload.schema.json`.
+- `#[cfg(test)] mod conformance` inside each generated module —
+  round-trip tests harvested from each spec's `spec.md`.
 
-[Unreleased]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/commits/main/trust-tasks-rs
+[Unreleased]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/v0.1.0

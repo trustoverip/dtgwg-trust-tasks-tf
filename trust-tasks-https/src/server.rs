@@ -19,7 +19,8 @@ use axum::Router;
 use serde::Serialize;
 use serde_json::Value;
 use trust_tasks_rs::{
-    ErrorPayload, ErrorResponse, Payload, RejectReason, StandardCode, TransportHandler, TrustTask,
+    discovery::DiscoveryRegistry, specs::trust_task_discovery::v0_1 as discovery, ErrorPayload,
+    ErrorResponse, Payload, RejectReason, StandardCode, TransportHandler, TrustTask,
 };
 use uuid::Uuid;
 
@@ -113,6 +114,44 @@ impl HttpsServerBuilder {
         let key = P::type_uri().for_routing().to_string();
         self.routes.insert(key, Route { dispatch });
         self
+    }
+
+    /// Register a `trust-task-discovery/0.1` handler that responds with
+    /// the contents of `registry`. Combine with [`Self::on`] in any order;
+    /// the registry is consulted afresh on every inbound query.
+    ///
+    /// Use this when the server's discoverable set differs from its
+    /// actually-handled set — for example, when the server delegates
+    /// some types downstream but wants to advertise them as supported.
+    /// For the common "advertise exactly what I handle" case, see
+    /// [`Self::enable_discovery`].
+    pub fn with_discovery(self, registry: DiscoveryRegistry) -> Self {
+        self.on::<discovery::Payload, discovery::Response, _>(move |req, _ctx| {
+            Ok(registry.respond_to(&req.payload))
+        })
+    }
+
+    /// Snapshot every Type URI currently registered via [`Self::on`] and
+    /// install a `trust-task-discovery/0.1` handler that advertises them.
+    /// Call this **after** every other `.on(...)`; URIs registered
+    /// afterward will not be included.
+    ///
+    /// ```rust,ignore
+    /// let server = HttpsServer::builder()
+    ///     .local_vid("did:web:server.example")
+    ///     .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
+    ///     .on::<grant::Payload, grant::Response, _>(handle_grant)
+    ///     .on::<revoke::Payload, revoke::Response, _>(handle_revoke)
+    ///     .enable_discovery() // ← advertises grant + revoke
+    ///     .build();
+    /// ```
+    pub fn enable_discovery(self) -> Self {
+        let mut registry: DiscoveryRegistry = self.routes.keys().cloned().collect();
+        // Always advertise discovery itself — otherwise a discoverer who
+        // somehow guessed they could ask wouldn't see their own protocol
+        // listed back.
+        registry.register_payload::<discovery::Payload>();
+        self.with_discovery(registry)
     }
 
     /// Build the server. Run it with [`HttpsServer::serve`].

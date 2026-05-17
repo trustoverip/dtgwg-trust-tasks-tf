@@ -17,6 +17,7 @@ use tokio::net::TcpListener;
 use trust_tasks_https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks_rs::{
     specs::acl::{grant, list, revoke},
+    specs::trust_task_discovery::v0_1 as discovery,
     RejectReason, StandardCode, TrustTask, TypeUri,
 };
 
@@ -47,6 +48,9 @@ async fn spawn_server() -> SocketAddr {
             }
             Ok(revoke::v0_1::Response { entry: None })
         })
+        // Auto-advertise the two acl handlers (and discovery itself) via
+        // trust-task-discovery/0.1.
+        .enable_discovery()
         .build();
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -176,6 +180,78 @@ async fn unsupported_type_for_unregistered_uri() {
         }
         other => panic!("expected TrustTaskError, got {other:?}"),
     }
+}
+
+#[tokio::test]
+async fn discovery_advertises_registered_handlers() {
+    let addr = spawn_server().await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+
+    // Empty pattern list ⇒ "give me everything".
+    let req = TrustTask::for_payload(
+        "urn:uuid:test-discover-all",
+        discovery::Payload { patterns: vec![] },
+    );
+
+    let resp = client
+        .send::<discovery::Payload, discovery::Response>(req)
+        .await
+        .unwrap();
+
+    let mut got = resp.payload.supported_types.clone();
+    got.sort();
+    assert_eq!(
+        got,
+        vec![
+            "https://trusttasks.org/spec/acl/grant/0.1".to_string(),
+            "https://trusttasks.org/spec/acl/revoke/0.1".to_string(),
+            "https://trusttasks.org/spec/trust-task-discovery/0.1".to_string(),
+        ],
+        "enable_discovery() should advertise the registered acl/grant + acl/revoke handlers \
+         plus discovery itself"
+    );
+
+    // SPEC §4.4.1: the success response carries the #response variant
+    // of the request's Type URI.
+    assert_eq!(
+        resp.type_uri,
+        "https://trusttasks.org/spec/trust-task-discovery/0.1#response"
+            .parse::<TypeUri>()
+            .unwrap()
+    );
+    assert_eq!(
+        resp.thread_id.as_deref(),
+        Some("urn:uuid:test-discover-all")
+    );
+}
+
+#[tokio::test]
+async fn discovery_filter_returns_only_matching_slugs() {
+    let addr = spawn_server().await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+
+    let req = TrustTask::for_payload(
+        "urn:uuid:test-discover-acl",
+        discovery::Payload {
+            patterns: vec!["acl/*".parse().unwrap()],
+        },
+    );
+
+    let resp = client
+        .send::<discovery::Payload, discovery::Response>(req)
+        .await
+        .unwrap();
+
+    let mut got = resp.payload.supported_types.clone();
+    got.sort();
+    assert_eq!(
+        got,
+        vec![
+            "https://trusttasks.org/spec/acl/grant/0.1".to_string(),
+            "https://trusttasks.org/spec/acl/revoke/0.1".to_string(),
+        ],
+        "acl/* should match grant + revoke but not trust-task-discovery"
+    );
 }
 
 #[tokio::test]
