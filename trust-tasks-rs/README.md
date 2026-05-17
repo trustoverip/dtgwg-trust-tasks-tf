@@ -1,0 +1,166 @@
+# trust-tasks-rs
+
+Reference Rust library for the [Trust Tasks](https://trusttasks.org/) framework.
+
+Trust Tasks are self-contained, transport-agnostic, JSON-based descriptions of
+the verifiable work that happens between two parties — a KYC handoff, a consent
+grant, an access-control change. This crate provides the framework-level
+document type and a `TransportHandler` trait that lets concrete transports
+(REST, DIDComm, message queues, ...) plug their identity, integrity, and
+freshness semantics into a single validation pipeline.
+
+The framework specification this crate implements is [`SPEC.md`](../SPEC.md).
+
+## What's in here
+
+| Module | Purpose | SPEC.md section |
+|---|---|---|
+| `TrustTask<P>` | The framework document envelope | §4.2 |
+| `TypeUri` | Parsed `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>` + `#request`/`#response` variant | §4.4, §6.1 |
+| `Proof` | W3C Data Integrity proof attachment | §4.7 |
+| `ErrorPayload`, `StandardCode`, `TrustTaskCode` | The `trust-task-error/0.1` payload + standard codes + extension codes | §8.2, §8.3, §8.5 |
+| `RejectReason`, `ErrorResponse` | Typed rejection conditions + `TrustTask<ErrorPayload>` alias, both `?`-propagatable | §7.2, §8 |
+| `TransportHandler` | Trait for transport bindings: derive party identity, prepare outbound, cross-check inbound | §4.8.1, §9.2 |
+| `handlers::NoopHandler` | Transport contributes nothing; in-band members are authoritative | reference impl |
+| `handlers::InMemoryHandler` | Simulated transport with configured local+peer VIDs | reference impl |
+| `Payload`, `TrustTask::for_payload` | Ties a Rust struct to its Type URI; auto-fills `type` on construction | trait |
+| `specs::<slug>::<version>` | Generated per-spec payload types (one module per registry entry) | generated |
+
+## Quick start
+
+```rust
+use trust_tasks_rs::{TrustTask, TypeUri};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct KycHandoff {
+    subject: String,
+    result: String,
+    level: String,
+}
+
+let doc: TrustTask<KycHandoff> = serde_json::from_str(r#"{
+    "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
+    "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
+    "issuer": "did:web:verifier.example",
+    "recipient": "did:web:bank.example",
+    "issuedAt": "2026-04-12T09:31:00Z",
+    "payload": { "subject": "did:key:z6Mk...", "result": "passed", "level": "LOA2" }
+}"#)?;
+
+assert_eq!(doc.type_uri.slug(), "kyc-handoff");
+assert_eq!(doc.type_uri.major(), 1);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+## Plugging in a transport
+
+The `TransportHandler` trait encodes the §4.8.1 precedence rule: in-band
+`issuer` / `recipient` values are authoritative; transport-derived identity is
+used to fill in absent members or to cross-check present ones — never to
+override them.
+
+```rust,ignore
+use trust_tasks_rs::{ResolvedParties, TransportHandler, handlers::InMemoryHandler};
+
+let handler = InMemoryHandler::new()
+    .with_local("did:web:bank.example")
+    .with_peer("did:web:verifier.example");
+
+let resolved: ResolvedParties = handler.resolve_parties(&doc)?;
+// resolved.issuer / resolved.recipient now hold the values the consumer
+// MUST apply for every subsequent framework rule that references a party.
+```
+
+A REST or DIDComm binding implements the same trait — populating
+`derive_parties` from the peer certificate, the DIDComm envelope's verified
+sender, or whatever the transport authenticates — and the rest of the
+validation pipeline stays unchanged.
+
+## Request → response → error
+
+The framework's request/response model (SPEC §4.4.1) and `trust-task-error/0.1`
+response (SPEC §8) are first-class. A consumer-side handler looks the same on
+both branches:
+
+```rust,ignore
+fn handle(req: TrustTask<KycHandoff>, h: &impl TransportHandler)
+    -> Result<TrustTask<KycReceipt>, ErrorResponse>
+{
+    // §4.8.1 + §7.2 item 6 — transport ↔ in-band consistency.
+    h.resolve_parties(&req)
+        .map_err(|e| req.reject_with(new_id(), RejectReason::from(e)))?;
+
+    // §7.2 items 4 + 5 — expiry + recipient.
+    req.validate_basic(Utc::now(), MY_VID)
+        .map_err(|reason| req.reject_with(new_id(), reason))?;
+
+    // Domain logic. On failure, map into a RejectReason / ErrorPayload.
+    let receipt = run_kyc(&req.payload)
+        .map_err(|e| req.reject_with(new_id(), e.into()))?;
+
+    // Success — mints a `#response`-variant document with threadId,
+    // issuer/recipient swap, and issuedAt all wired automatically.
+    Ok(req.respond_with(new_id(), receipt))
+}
+```
+
+On the receiving side, `ErrorPayload::should_retry_at(now)` applies §8.4 retry
+semantics in one call, and `effective_code()` collapses an unrecognized
+extension code to `StandardCode::TaskFailed` per §8.5.
+
+See [`examples/loopback.rs`](examples/loopback.rs) for a full runnable
+producer/consumer loop:
+
+```sh
+cargo run --example loopback
+```
+
+## Per-spec payload types
+
+Every spec under `../specs/<slug>/<version>/payload.schema.json` has a
+corresponding Rust module under [`src/specs/`](src/specs/), produced by the
+sibling [`trust-tasks-codegen`](../trust-tasks-codegen) crate. Each module
+exposes:
+
+- A `Payload` struct (the request payload) with an `impl Payload` pinning the
+  request Type URI.
+- A `Response` struct (when the spec defines a success response, SPEC §4.4.1)
+  with a second `impl Payload` carrying the `#response` fragment.
+- Any shared `$defs` types — for example, `AclEntry` for the ACL specs.
+
+```rust,ignore
+use trust_tasks_rs::{specs::acl::grant::v0_1::*, Payload, TrustTask};
+
+let req = TrustTask::for_payload("req-1", Payload {
+    entry: AclEntry { subject: "did:web:alice.example".into(), role: "admin".parse()?, .. },
+    reason: None,
+});
+assert_eq!(req.type_uri, Payload::type_uri());
+```
+
+**Regenerate when a `payload.schema.json` changes:**
+
+```sh
+cargo run -p trust-tasks-codegen
+```
+
+The output is committed (no `OUT_DIR` magic), so PRs that change a schema
+should include the regenerated `src/specs/` diff. CI can enforce this with a
+`git diff --exit-code src/specs/` after running the generator.
+
+The framework-defined `trust-task-error/0.1` spec is the one exception — its
+payload is modelled by hand in `ErrorPayload` because the framework needs the
+richer `TrustTaskCode` enum (standard codes + namespaced extension codes) the
+codegen can't produce.
+
+## Status
+
+`0.1.0` — tracks `SPEC.md` version `0.1`. The framework spec is itself a
+Working Draft; this crate is a reference implementation maintained alongside
+it. Breaking changes are expected until the framework reaches `candidate`.
+
+## License
+
+Apache-2.0. See [`../SOURCE_CODE.md`](../SOURCE_CODE.md) for the source-code
+licensing terms of this repository.

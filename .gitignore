@@ -9,6 +9,10 @@ website/assets/tasks.generated.js
 website/specs/
 website/SPEC.md
 
+# Rust
+target/
+Cargo.lock
+
 # Editor / OS
 .DS_Store
 .idea/
