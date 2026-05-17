@@ -14,6 +14,7 @@
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
 
+mod dispatcher;
 mod document;
 mod error;
 mod payload;
@@ -24,6 +25,7 @@ mod type_uri;
 pub mod handlers;
 pub mod specs;
 
+pub use dispatcher::Dispatcher;
 pub use document::{ErrorResponse, JsonLdContext, TrustTask};
 pub use error::{ErrorPayload, ParseCodeError, RejectReason, StandardCode, TrustTaskCode};
 pub use payload::Payload;
