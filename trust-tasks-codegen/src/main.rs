@@ -89,6 +89,39 @@ struct SpecExamples {
     response: Vec<String>,
 }
 
+/// Scan a `spec.md`'s YAML front matter for `bearer: true`. Returns
+/// `false` when the field is absent, set to `false`, or the file is
+/// missing. Per SPEC.md §4.8.3 and §7.3 item 12, the default is non-bearer.
+fn read_bearer_flag(spec_md_path: &Path) -> Result<bool> {
+    if !spec_md_path.exists() {
+        return Ok(false);
+    }
+    let text = fs::read_to_string(spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+
+    // Front matter is the first `---`-delimited block at the top of the file.
+    let mut lines = text.lines();
+    let first = lines.next().unwrap_or("");
+    if first.trim() != "---" {
+        return Ok(false);
+    }
+    let mut front_matter = String::new();
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        front_matter.push_str(line);
+        front_matter.push('\n');
+    }
+
+    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
+    Ok(value
+        .get("bearer")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false))
+}
+
 /// Spec.md sections often embed illustrative `trust-task-error` responses
 /// next to the request/response examples. Drop any harvested example whose
 /// top-level `type` does not match this spec's URI — that way the
@@ -319,7 +352,8 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
     let body = type_space.to_stream();
     let mut examples = extract_examples(&spec.spec_md_path())?;
     filter_examples_to_this_spec(spec, &mut examples);
-    let module_tokens = render_module(spec, body, has_response, &examples);
+    let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
+    let module_tokens = render_module(spec, body, has_response, &examples, is_bearer);
 
     let parsed: syn::File = syn::parse2(module_tokens.clone()).with_context(|| {
         format!(
@@ -391,16 +425,26 @@ fn render_module(
     body: TokenStream,
     has_response: bool,
     examples: &SpecExamples,
+    is_bearer: bool,
 ) -> TokenStream {
     let type_uri = spec.type_uri();
     let response_uri = format!("{type_uri}#response");
     let slug_doc = format!(" Spec slug: `{}`. Version: `{}`.", spec.slug, spec.version);
     let schema_path = spec.schema_include_path();
 
+    // Per SPEC §4.8.3, only bearer specs override Payload::IS_BEARER. Non-
+    // bearer specs (the default) leave the trait's default `false` in place.
+    let bearer_const = if is_bearer {
+        quote! { const IS_BEARER: bool = true; }
+    } else {
+        quote! {}
+    };
+
     let response_payload_impl = if has_response {
         quote! {
             impl crate::Payload for Response {
                 const TYPE_URI: &'static str = #response_uri;
+                #bearer_const
             }
         }
     } else {
@@ -428,6 +472,7 @@ fn render_module(
 
         impl crate::Payload for Payload {
             const TYPE_URI: &'static str = #type_uri;
+            #bearer_const
         }
 
         #response_payload_impl

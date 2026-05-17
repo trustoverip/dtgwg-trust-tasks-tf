@@ -32,6 +32,19 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// fragment for success-response payloads (SPEC.md §4.4.1).
     const TYPE_URI: &'static str;
 
+    /// Whether the originating *Trust Task specification* is a *bearer
+    /// specification* per SPEC.md §4.8.3 — that is, opts out of the §4.8.2
+    /// audience-binding rule.
+    ///
+    /// Defaults to `false` (non-bearer). The codegen emits an explicit
+    /// `const IS_BEARER: bool = true;` override only when the spec's front
+    /// matter declares `bearer: true`.
+    ///
+    /// Consumers consult this constant via
+    /// [`crate::TrustTask::enforce_audience_binding`] to apply SPEC.md §7.2
+    /// item 8 without consulting the registry at runtime.
+    const IS_BEARER: bool = false;
+
     /// Parsed form of [`TYPE_URI`](Self::TYPE_URI).
     ///
     /// The default implementation calls [`str::parse`] and panics on a

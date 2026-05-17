@@ -112,6 +112,36 @@ impl<P> TrustTask<P> {
         Self::new(id, P::type_uri(), payload)
     }
 
+    /// Apply the SPEC.md §7.2 item 8 / §4.8.2 audience-binding rule: when
+    /// `proof` is present and `recipient` is absent in-band, reject the
+    /// document with `malformed_request` unless the originating
+    /// specification is a *bearer specification* (§4.8.3).
+    ///
+    /// This check requires the payload type implement [`Payload`] so the
+    /// codegen-emitted [`Payload::IS_BEARER`] flag is reachable; callers
+    /// holding a `TrustTask<serde_json::Value>` should downcast via
+    /// [`crate::Dispatcher`] or by hand before invoking this method.
+    ///
+    /// A non-bearer specification that signs every document with an
+    /// in-band `recipient` (which is the safe default) always passes this
+    /// check. A bearer specification opts out of audience binding at the
+    /// spec layer and always passes — bearer status is published in the
+    /// spec's front matter and codegened into the `Payload` impl, not
+    /// chosen by the consumer.
+    pub fn enforce_audience_binding(&self) -> Result<(), RejectReason>
+    where
+        P: Payload,
+    {
+        if self.proof.is_some() && self.recipient.is_none() && !P::IS_BEARER {
+            return Err(RejectReason::MalformedRequest {
+                reason: "proof present with no in-band recipient on a non-bearer specification \
+                         (SPEC §4.8.2 audience binding)"
+                    .to_string(),
+            });
+        }
+        Ok(())
+    }
+
     /// Returns `true` if `expires_at` is set and lies in the past relative to
     /// `now`. Per SPEC.md §7.2 a consumer MUST NOT act on an expired document.
     pub fn is_expired_at(&self, now: DateTime<Utc>) -> bool {
