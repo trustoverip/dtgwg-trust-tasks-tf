@@ -72,6 +72,21 @@ This is a constraint of the underlying crate's API, not the framework. A future 
 
 1.94, matching `affinidi-messaging-didcomm` 0.13.
 
+## Tests
+
+| File | What it proves | Run cost |
+|---|---|---|
+| `tests/end_to_end.rs` | Local pack/unpack roundtrip via the bare `DIDCommAgent`; happy path, forged in-band issuer, wrong envelope type, JWE-on-wire | seconds |
+| `tests/mediator_e2e.rs` | Real `affinidi-messaging-test-mediator` spawned, two `did:peer` users registered as LOCAL on the mediator, framework `ENVELOPE_TYPE` round-trips through `ATM::pack_encrypted` → `ATM::unpack`, verified sender from `UnpackMetadata` slots into `DidcommHandler::peer()` correctly, framework §4.8.1 still honored | minutes (cold compile of full mediator + SDK) |
+
+The mediator test is gated `#[ignore]` so the default `cargo test` skips it. Opt in with:
+
+```sh
+cargo test -p trust-tasks-didcomm --test mediator_e2e -- --ignored
+```
+
+Currently the test proves compatibility through the SDK's pack/unpack pipeline against a live mediator's identity store and resolver — it does not yet route the packed envelope through the mediator's message-pickup protocol. Wiring up `affinidi_messaging_sdk::protocols::message_pickup` for full mediator-routed delivery is a future PR.
+
 ## Status
 
-`0.1.0`, tracking SPEC.md `0.2`. End-to-end-tested against in-process `DIDCommAgent`s (see `tests/end_to_end.rs`); an integration test against `affinidi-messaging-test-mediator` for full mediator-routed exchange is a future PR.
+`0.1.0`, tracking SPEC.md `0.2`.

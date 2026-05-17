@@ -17,17 +17,21 @@ let verifier = AffinidiProofVerifier::for_did_key();
 verifier.verify(&inbound_doc).await?;
 ```
 
-For `did:web` / `did:webvh` / HSM bridges, plug in a custom resolver:
+For `did:web` / `did:webvh` / `did:peer` / `did:jwk` and the rest of the methods the Affinidi resolver cache handles, use [`CachedDidResolver`](src/resolver.rs):
 
 ```rust,ignore
 use std::sync::Arc;
-use affinidi_data_integrity::VerificationMethodResolver;
+use affinidi_did_resolver_cache_sdk::{config::DIDCacheConfigBuilder, DIDCacheClient};
+use trust_tasks_proof_affinidi::{AffinidiProofVerifier, CachedDidResolver};
 
-let my_resolver: Arc<dyn VerificationMethodResolver> = Arc::new(/* your impl */);
-let verifier = AffinidiProofVerifier::with_resolver(my_resolver);
+let client = DIDCacheClient::new(DIDCacheConfigBuilder::default().build()).await?;
+let resolver = Arc::new(CachedDidResolver::new(Arc::new(client)));
+let verifier = AffinidiProofVerifier::with_resolver(resolver);
 ```
 
-Pair with [`affinidi-did-resolver-cache-sdk`](https://crates.io/crates/affinidi-did-resolver-cache-sdk) for cache-backed DID resolution in production.
+The default builder runs in local mode (no network) — sufficient for `did:key`, `did:peer`, and `did:jwk`. Add `.with_network_mode(...)` to point at a running resolver cache server for `did:web`, `did:webvh`, and the rest. See [`affinidi-did-resolver-cache-sdk`](https://crates.io/crates/affinidi-did-resolver-cache-sdk) for the full configuration surface.
+
+The adapter currently extracts public keys from `Multikey`-typed verification methods (`publicKeyMultibase`); JWK-bearing methods surface a clean `Resolver` error so callers can stack a custom resolver in front.
 
 ## Error mapping
 

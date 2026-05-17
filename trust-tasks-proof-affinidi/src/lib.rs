@@ -26,6 +26,9 @@
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
 
+mod resolver;
+pub use resolver::CachedDidResolver;
+
 use std::sync::Arc;
 
 use affinidi_data_integrity::{
