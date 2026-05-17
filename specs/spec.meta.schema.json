@@ -139,6 +139,11 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",
       "description": "Successor reference for a `retired` specification, per SPEC §7.3 item 11. `<slug>` form points at the latest non-retired version of that slug; `<slug>/<MAJOR.MINOR>` pins to a specific version. The build script enforces that this field is only set when `status: retired`."
+    },
+    "bearer": {
+      "type": "boolean",
+      "default": false,
+      "description": "Opt-out from the audience-binding rule of SPEC §4.8.2. When true, documents conforming to this specification MAY omit `recipient` even when `proof` is present, because the payload's assertion is meaningful to any consumer that can verify the producer's identity (a public attestation, heartbeat, etc.). A bearer specification MUST also declare its `recipient` party as OPTIONAL. The default is false (non-bearer). See SPEC §4.8.3 and §7.3 item 12."
     }
   }
 }
