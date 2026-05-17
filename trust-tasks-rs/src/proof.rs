@@ -69,8 +69,8 @@ pub struct Proof {
 /// Plug-in seam for verifying a Trust Task document's `proof` member.
 ///
 /// This crate intentionally implements **no** cryptosuites; verification
-/// lives in companion crates (e.g. `trust-tasks-proof-affinidi` for the
-/// Affinidi Data Integrity stack). Consumer pipelines pick a verifier and
+/// lives in companion crates (e.g. `trust-tasks-proof` with its `affinidi`
+/// feature for the Affinidi Data Integrity stack). Consumer pipelines pick a verifier and
 /// invoke it as part of their §7.2 validation step, alongside
 /// [`crate::TrustTask::validate_basic`].
 ///

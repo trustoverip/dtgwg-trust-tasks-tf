@@ -39,7 +39,7 @@ window.TT_ECOSYSTEM = [
       "trust-tasks-rs — core library + generated specs::*",
       "trust-tasks-https — typed axum server + reqwest client",
       "trust-tasks-didcomm — pack/unpack over DIDComm v2.1",
-      "trust-tasks-proof-affinidi — W3C Data Integrity verifier",
+      "trust-tasks-proof — pluggable W3C Data Integrity verifiers (default `affinidi` backend)",
       "Pre-publication 0.1.0, tracking SPEC.md 0.1",
     ],
     primary: { label: "Implementations · trusttasks.org", href: "/implementations" },

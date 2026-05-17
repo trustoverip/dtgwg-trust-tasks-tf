@@ -1,0 +1,41 @@
+[package]
+name = "trust-tasks-proof"
+version = "0.1.0"
+edition.workspace = true
+rust-version = "1.94" # affinidi-data-integrity declares MSRV 1.94
+license.workspace = true
+repository.workspace = true
+description = "Pluggable ProofVerifier implementations for the Trust Tasks framework. Backends are gated by Cargo features; ships with an Affinidi Data Integrity backend (EdDSA suites) by default."
+keywords = ["trust-tasks", "data-integrity", "did", "proof"]
+categories = ["cryptography", "authentication"]
+
+[features]
+default = ["affinidi"]
+# `affinidi` — ProofVerifier backed by `affinidi-data-integrity` (the
+# `eddsa-rdfc-2022` and `eddsa-jcs-2022` cryptosuites) with a
+# `CachedDidResolver` adapter for the Affinidi DID-resolver cache SDK.
+affinidi = [
+    "dep:affinidi-data-integrity",
+    "dep:affinidi-crypto",
+    "dep:affinidi-encoding",
+    "dep:affinidi-did-resolver-cache-sdk",
+]
+
+[dependencies]
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.1" }
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+# `affinidi` backend deps — gated by the `affinidi` feature.
+affinidi-data-integrity = { version = "0.6", optional = true }
+affinidi-crypto = { version = "0.1", optional = true }
+affinidi-encoding = { version = "0.1", optional = true }
+affinidi-did-resolver-cache-sdk = { version = "0.8", optional = true }
+
+[dev-dependencies]
+affinidi-secrets-resolver = "0.5"
+affinidi-did-common = "0.3"
+tokio = { version = "1", features = ["macros", "rt"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }

@@ -64,7 +64,7 @@ the corresponding `SPEC.md` framework version.
 - `ProofVerifier` trait (async via `async-trait`) + `VerificationError`
   enum — the seam where cryptosuite crates plug in. No suites
   implemented in this crate; companion crates live elsewhere
-  (`trust-tasks-proof-affinidi`).
+  (`trust-tasks-proof` with the `affinidi` feature).
 - `Dispatcher<R>` keys its routes on `TypeUri::for_routing()` so the
   `#request`-fragmented and bare forms route together, per SPEC
   §4.4.1 item 1.
