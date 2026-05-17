@@ -53,4 +53,4 @@ A consumer pipeline that catches `VerificationError` converts it to a `trust-tas
 
 ## Status
 
-`0.1.0`, tracking SPEC.md `0.2`. Round-trip-tested against `affinidi-data-integrity`'s `sign` (see `tests/round_trip.rs`).
+`0.1.0`, tracking SPEC.md `0.1`. Round-trip-tested against `affinidi-data-integrity`'s `sign` (see `tests/round_trip.rs`).

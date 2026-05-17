@@ -89,4 +89,4 @@ Currently the test proves compatibility through the SDK's pack/unpack pipeline a
 
 ## Status
 
-`0.1.0`, tracking SPEC.md `0.2`.
+`0.1.0`, tracking SPEC.md `0.1`.
