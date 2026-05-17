@@ -142,10 +142,13 @@ impl<P> TrustTask<P> {
         Ok(())
     }
 
-    /// Returns `true` if `expires_at` is set and lies in the past relative to
-    /// `now`. Per SPEC.md §7.2 a consumer MUST NOT act on an expired document.
+    /// Returns `true` if `expires_at` is set and `now ≥ expiresAt`
+    /// (inclusive bound per SPEC.md §4.2). The instant `expiresAt` is
+    /// itself treated as expired, matching JWT-style semantics.
+    /// SPEC §4.2 permits a consumer to apply a small clock-skew tolerance
+    /// (typically ≤ 60s); apply that at the caller by adjusting `now`.
     pub fn is_expired_at(&self, now: DateTime<Utc>) -> bool {
-        matches!(self.expires_at, Some(t) if t < now)
+        matches!(self.expires_at, Some(t) if t <= now)
     }
 
     /// Apply the framework-level rejection rules from SPEC.md §7.2 items 4
@@ -177,7 +180,9 @@ impl<P> TrustTask<P> {
     /// produces a non-conforming consumer.
     pub fn validate_basic(&self, now: DateTime<Utc>, my_vid: &str) -> Result<(), RejectReason> {
         if let Some(expires_at) = self.expires_at {
-            if expires_at < now {
+            // SPEC §4.2 / §7.2 item 4: inclusive bound — `now ≥ expiresAt`
+            // is expired. Equivalent to `expires_at <= now`.
+            if expires_at <= now {
                 return Err(RejectReason::Expired { expires_at });
             }
         }
@@ -427,11 +432,14 @@ mod tests {
             TypeUri::canonical("kyc-handoff", 1, 0).unwrap(),
             serde_json::json!({}),
         );
-        doc.expires_at = Some("2026-04-12T09:31:00Z".parse().unwrap());
+        let expiry: DateTime<Utc> = "2026-04-12T09:31:00Z".parse().unwrap();
+        doc.expires_at = Some(expiry);
 
         let before: DateTime<Utc> = "2026-04-12T09:00:00Z".parse().unwrap();
         let after: DateTime<Utc> = "2026-04-12T10:00:00Z".parse().unwrap();
         assert!(!doc.is_expired_at(before));
         assert!(doc.is_expired_at(after));
+        // SPEC §4.2 — `now == expiresAt` is expired (inclusive bound).
+        assert!(doc.is_expired_at(expiry));
     }
 }

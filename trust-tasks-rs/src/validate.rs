@@ -57,6 +57,22 @@ pub trait ValidatedPayload: Payload {
 /// Compilation is performed every call. Callers in a hot path should keep a
 /// compiled schema around themselves; this helper is intended for the
 /// once-per-request pattern that consumer pipelines use.
+///
+/// # ⚠ Schema-validation DoS surface (SPEC §10.3)
+///
+/// `schema_json` MUST be trusted by the caller. The underlying
+/// `jsonschema` crate compiles `pattern` keywords through a regex engine
+/// that supports backtracking, so a malicious schema can carry a
+/// `pattern` such as `"^(a+)+$"` and validation will consume unbounded
+/// CPU on otherwise-innocuous strings.
+///
+/// The codegen-emitted [`ValidatedPayload`] impls satisfy this rule
+/// trivially because the schemas are `include_str!`-embedded from the
+/// repo and frozen at build time. If you call this function directly
+/// with a schema obtained from any other source — content-negotiating
+/// a URI over the network, accepting a private-spec submission per
+/// SPEC §6.5, etc. — you MUST authenticate the schema's source and
+/// SHOULD apply a per-validation timeout outside this call.
 pub fn against_schema(schema_json: &str, value: &Value) -> Result<(), ValidationError> {
     let schema_value: Value =
         serde_json::from_str(schema_json).map_err(ValidationError::schema_parse)?;

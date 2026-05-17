@@ -213,7 +213,11 @@ impl FromStr for TypeUri {
             .find("://")
             .ok_or_else(|| ParseTypeUriError::Scheme(s.to_string()))?;
         let scheme = &without_fragment[..scheme_split];
-        if scheme != "https" && scheme != "http" {
+        // SPEC §6.1: the scheme MUST be `https`. `http://` would normalise
+        // a transport-downgrade path for consumers that dereference the
+        // Type URI under §6.2 content negotiation, so we refuse it at the
+        // parser.
+        if scheme != "https" {
             return Err(ParseTypeUriError::Scheme(s.to_string()));
         }
 
@@ -358,6 +362,15 @@ mod tests {
             resp.bare().to_string(),
             "https://trusttasks.org/spec/acl/grant/0.1"
         );
+    }
+
+    #[test]
+    fn rejects_http_scheme() {
+        // SPEC §6.1 — only https is conformant.
+        let err = "http://trusttasks.org/spec/acl/grant/0.1"
+            .parse::<TypeUri>()
+            .unwrap_err();
+        assert!(matches!(err, ParseTypeUriError::Scheme(_)));
     }
 
     #[test]

@@ -248,16 +248,26 @@ fn main() -> Result<()> {
 }
 
 /// Locate the repo root by walking up from CWD looking for the workspace
-/// `Cargo.toml` (the one with `[workspace]`).
+/// `Cargo.toml` (the one that declares a `[workspace]` table). The
+/// previous implementation matched the literal substring `[workspace]`,
+/// which would also match a doc comment inside an unrelated `Cargo.toml`
+/// (e.g. a vendored dependency) — combined with the destructive
+/// [`clean_generated_tree`] this could produce out-of-repo writes. We
+/// parse as TOML now and check for the table proper.
 fn find_repo_root() -> Result<PathBuf> {
     let start = std::env::current_dir()?;
     for ancestor in start.ancestors() {
         let candidate = ancestor.join("Cargo.toml");
-        if candidate.is_file() {
-            let text = fs::read_to_string(&candidate)?;
-            if text.contains("[workspace]") {
-                return Ok(ancestor.to_path_buf());
-            }
+        if !candidate.is_file() {
+            continue;
+        }
+        let text = fs::read_to_string(&candidate)?;
+        let parsed: toml::Value = match text.parse() {
+            Ok(v) => v,
+            Err(_) => continue, // malformed Cargo.toml — skip, keep walking
+        };
+        if parsed.get("workspace").and_then(|w| w.as_table()).is_some() {
+            return Ok(ancestor.to_path_buf());
         }
     }
     Err(anyhow!(
@@ -309,16 +319,38 @@ fn discover_specs(specs_dir: &Path) -> Result<Vec<Spec>> {
 
 /// Remove every previously-generated module file/dir under `out_root` except
 /// the `mod.rs` and any non-generated siblings (there shouldn't be any).
+///
+/// Refuses to operate on symlinks: `fs::remove_dir_all` on a symlink would
+/// happily follow it and delete the *target*. The codegen tree is supposed
+/// to contain only regular files and dirs the codegen itself produced; if
+/// a developer's checkout has a symlink in there, we'd rather fail than
+/// nuke whatever it points at.
 fn clean_generated_tree(out_root: &Path) -> Result<()> {
     if !out_root.exists() {
         fs::create_dir_all(out_root)?;
         return Ok(());
     }
+    let root_meta = fs::symlink_metadata(out_root)?;
+    if root_meta.file_type().is_symlink() {
+        return Err(anyhow!(
+            "{} is a symlink; refusing to clean it",
+            out_root.display()
+        ));
+    }
     for entry in fs::read_dir(out_root)? {
         let entry = entry?;
         let path = entry.path();
-        if path.is_file() && path.file_name().and_then(|s| s.to_str()) == Some("mod.rs") {
+        if path.file_name().and_then(|s| s.to_str()) == Some("mod.rs")
+            && !entry.file_type()?.is_symlink()
+        {
             continue;
+        }
+        let meta = fs::symlink_metadata(&path)?;
+        if meta.file_type().is_symlink() {
+            return Err(anyhow!(
+                "{} is a symlink; refusing to remove it",
+                path.display()
+            ));
         }
         if path.is_dir() {
             fs::remove_dir_all(&path)?;
