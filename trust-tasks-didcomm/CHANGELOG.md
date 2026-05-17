@@ -4,7 +4,7 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
-## [0.1.0] — initial pre-release, tracks `SPEC.md` 0.3
+## [0.1.0] — initial pre-release, tracks `SPEC.md` 0.1
 
 ### Added
 

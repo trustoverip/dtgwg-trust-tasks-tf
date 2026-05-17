@@ -4,7 +4,7 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
-## [Unreleased] — tracks `trust-tasks-rs` 0.1, `SPEC.md` 0.3
+## [Unreleased] — tracks `trust-tasks-rs` 0.1, `SPEC.md` 0.1
 
 ### Added
 

@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
-## [Unreleased] — tracks `SPEC.md` 0.3
+## [Unreleased] — tracks `SPEC.md` 0.1
 
 ### Added — discovery (SPEC §11)
 

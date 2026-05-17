@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Document version** | 0.3 |
+| **Document version** | 0.1 |
 | **Date** | 2026-05-18 |
 | **This version** | `https://trustoverip.github.io/dtgwg-trust-tasks-tf/SPEC.html` |
 | **Latest published version** | None — this document has not yet been published as a Working Group Deliverable. |
