@@ -1,7 +1,7 @@
 //! Runtime JSON Schema validation for Trust Task payloads.
 //!
-//! Available behind the `validate` Cargo feature. The codegen embeds each
-//! spec's `payload.schema.json` via `include_str!` and emits an
+//! Available behind the `validate` Cargo feature. The codegen inlines each
+//! spec's `payload.schema.json` as a string constant and emits a
 //! [`ValidatedPayload`] impl so callers can validate any inbound value
 //! against the on-the-wire schema, not just the structural shape serde
 //! recovers.
@@ -67,8 +67,8 @@ pub trait ValidatedPayload: Payload {
 /// CPU on otherwise-innocuous strings.
 ///
 /// The codegen-emitted [`ValidatedPayload`] impls satisfy this rule
-/// trivially because the schemas are `include_str!`-embedded from the
-/// repo and frozen at build time. If you call this function directly
+/// trivially because the schemas are inlined as string constants from the
+/// repo at codegen time and frozen at build time. If you call this function directly
 /// with a schema obtained from any other source — content-negotiating
 /// a URI over the network, accepting a private-spec submission per
 /// SPEC §6.5, etc. — you MUST authenticate the schema's source and

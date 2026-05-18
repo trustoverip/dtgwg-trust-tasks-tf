@@ -6,6 +6,7 @@
 //!
 //! ```sh
 //! cargo run -p trust-tasks-codegen
+//! cargo fmt
 //! ```
 //!
 //! Each module corresponds to one (slug, version) pair from the registry and

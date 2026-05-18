@@ -4,10 +4,13 @@
 //! through `typify`, and writes one Rust module per (slug, version) into
 //! `<repo>/trust-tasks-rs/src/specs/`.
 //!
-//! Run from anywhere in the workspace:
+//! Run from anywhere in the workspace, then `cargo fmt` to align the
+//! generated output with rustfmt (prettyplease and rustfmt disagree on
+//! some line-wrap decisions, and `cargo fmt --check` is enforced in CI):
 //!
 //! ```sh
 //! cargo run -p trust-tasks-codegen
+//! cargo fmt
 //! ```
 
 use std::collections::BTreeMap;
@@ -66,18 +69,6 @@ impl Spec {
             .parent()
             .expect("schema path has a parent")
             .join("spec.md")
-    }
-
-    /// The `include_str!` path from the generated module file back to the
-    /// original `payload.schema.json`. Depth = number of slug segments + 3
-    /// (to climb out of `<segN>/<segN-1>/.../specs/src/trust-tasks-rs/` and
-    /// arrive at the repo root).
-    fn schema_include_path(&self) -> String {
-        let up = "../".repeat(self.module_segments().len() + 3);
-        format!(
-            "{up}specs/{}/{}/payload.schema.json",
-            self.slug, self.version
-        )
     }
 }
 
@@ -385,7 +376,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
     let mut examples = extract_examples(&spec.spec_md_path())?;
     filter_examples_to_this_spec(spec, &mut examples);
     let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
-    let module_tokens = render_module(spec, body, has_response, &examples, is_bearer);
+    let module_tokens = render_module(spec, body, has_response, &examples, is_bearer, &raw);
 
     let parsed: syn::File = syn::parse2(module_tokens.clone()).with_context(|| {
         format!(
@@ -458,11 +449,11 @@ fn render_module(
     has_response: bool,
     examples: &SpecExamples,
     is_bearer: bool,
+    schema_json: &str,
 ) -> TokenStream {
     let type_uri = spec.type_uri();
     let response_uri = format!("{type_uri}#response");
     let slug_doc = format!(" Spec slug: `{}`. Version: `{}`.", spec.slug, spec.version);
-    let schema_path = spec.schema_include_path();
 
     // Per SPEC §4.8.3, only bearer specs override Payload::IS_BEARER. Non-
     // bearer specs (the default) leave the trait's default `false` in place.
@@ -486,7 +477,7 @@ fn render_module(
     let validate_request_impl = quote! {
         #[cfg(feature = "validate")]
         impl crate::validate::ValidatedPayload for Payload {
-            const SCHEMA_JSON: &'static str = include_str!(#schema_path);
+            const SCHEMA_JSON: &'static str = #schema_json;
         }
     };
 
