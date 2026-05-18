@@ -353,9 +353,28 @@ fn clean_generated_tree(out_root: &Path) -> Result<()> {
 }
 
 fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
-    let raw = fs::read_to_string(&spec.schema_path)?;
-    let mut schema: Value = serde_json::from_str(&raw)
+    let mut schema: Value = serde_json::from_str(&fs::read_to_string(&spec.schema_path)?)
         .with_context(|| format!("parse {}", spec.schema_path.display()))?;
+
+    // Resolve any cross-file `$ref`s (e.g. into _shared/ or _framework/)
+    // by inlining the referenced `$def` into this schema's local `$defs`.
+    // Done before typify sees the schema, and the result becomes the
+    // SCHEMA_JSON constant so runtime ValidatedPayload::validate_value
+    // does not need a network-style resolver either.
+    let base_dir = spec
+        .schema_path
+        .parent()
+        .ok_or_else(|| anyhow!("schema path has no parent"))?
+        .to_path_buf();
+    resolve_cross_file_refs(&mut schema, &base_dir).with_context(|| {
+        format!(
+            "failed to resolve cross-file $refs for {}/{}",
+            spec.slug, spec.version
+        )
+    })?;
+
+    // The inlined, self-contained schema is now the on-the-wire SCHEMA_JSON.
+    let raw = serde_json::to_string_pretty(&schema)? + "\n";
 
     let has_response = normalize_titles(&mut schema)?;
     // typify (0.5) expects Draft-07 `definitions` rather than 2020-12 `$defs`.
@@ -394,6 +413,159 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
     let leaf = path.join(format!("{}.rs", spec.version_module()));
     fs::write(&leaf, formatted)?;
     Ok(())
+}
+
+/// Resolve `$ref` strings of the form `<relative-path>#/$defs/<name>` by
+/// loading the referenced JSON file and splicing its `$defs.<name>` into
+/// the current schema's `$defs.<name>`, then rewriting the `$ref` to the
+/// now-local form `#/$defs/<name>`.
+///
+/// Handles transitive refs (e.g. acl-entry.schema.json's AclEntry contains
+/// a $ref to framework.schema.json's Ext) by recursively resolving the
+/// spliced fragment against the directory it came from.
+///
+/// Local `#/$defs/…` and `#/…` refs are left untouched.
+fn resolve_cross_file_refs(schema: &mut Value, base_dir: &Path) -> Result<()> {
+    use std::collections::HashSet;
+
+    let mut frontier: Vec<(Value, PathBuf)> = collect_external_refs(schema, base_dir);
+    let mut seen: HashSet<String> = HashSet::new();
+    while let Some((ref_value, owner_dir)) = frontier.pop() {
+        let ref_str = ref_value
+            .as_str()
+            .ok_or_else(|| anyhow!("$ref value was not a string"))?
+            .to_string();
+        let (rel_path, def_name) = split_external_ref(&ref_str).ok_or_else(|| {
+            anyhow!("external $ref {ref_str:?} is not of the form <path>#/$defs/<name>")
+        })?;
+        let abs_path = owner_dir.join(rel_path);
+        let abs_path_canonical = fs::canonicalize(&abs_path).with_context(|| {
+            format!(
+                "$ref target {} (from {}) does not exist",
+                abs_path.display(),
+                owner_dir.display()
+            )
+        })?;
+        let dedupe_key = format!("{}#/$defs/{}", abs_path_canonical.display(), def_name);
+        if !seen.insert(dedupe_key) {
+            continue;
+        }
+        let referenced: Value = serde_json::from_str(&fs::read_to_string(&abs_path_canonical)?)
+            .with_context(|| format!("parse referenced schema {}", abs_path_canonical.display()))?;
+        let fragment = referenced
+            .get("$defs")
+            .and_then(|v| v.get(def_name))
+            .ok_or_else(|| {
+                anyhow!(
+                    "{} has no $defs/{} (referenced from {})",
+                    abs_path_canonical.display(),
+                    def_name,
+                    owner_dir.display()
+                )
+            })?
+            .clone();
+
+        // Splice the fragment into the local schema's $defs.<name>.
+        let defs = schema
+            .as_object_mut()
+            .ok_or_else(|| anyhow!("schema root must be an object"))?
+            .entry("$defs")
+            .or_insert_with(|| Value::Object(Default::default()))
+            .as_object_mut()
+            .ok_or_else(|| anyhow!("$defs must be an object"))?;
+        if let Some(existing) = defs.get(def_name) {
+            if existing != &fragment {
+                return Err(anyhow!(
+                    "schema already defines $defs/{def_name} with a different shape; \
+                     cross-file $ref splice would overwrite it"
+                ));
+            }
+        } else {
+            defs.insert(def_name.to_string(), fragment.clone());
+        }
+
+        // The fragment's own external refs (transitive) are resolved
+        // against the file it came from, not the original base_dir.
+        let referenced_dir = abs_path_canonical
+            .parent()
+            .ok_or_else(|| anyhow!("referenced file has no parent dir"))?
+            .to_path_buf();
+        frontier.extend(collect_external_refs(&fragment, &referenced_dir));
+    }
+
+    // After splicing, rewrite every external $ref string to the local form.
+    rewrite_external_refs_local(schema);
+    Ok(())
+}
+
+/// Walk `schema` and collect every `$ref` whose value is an external (non-
+/// `#`-prefixed) reference. Returns `(ref_value, base_dir_for_resolving_it)`.
+fn collect_external_refs(schema: &Value, base_dir: &Path) -> Vec<(Value, PathBuf)> {
+    let mut out = Vec::new();
+    walk_external_refs(schema, base_dir, &mut |r, dir| {
+        out.push((r.clone(), dir.to_path_buf()))
+    });
+    out
+}
+
+fn walk_external_refs(value: &Value, base_dir: &Path, sink: &mut impl FnMut(&Value, &Path)) {
+    match value {
+        Value::Object(map) => {
+            if let Some(r) = map.get("$ref") {
+                if r.as_str().map(|s| !s.starts_with('#')).unwrap_or(false) {
+                    sink(r, base_dir);
+                }
+            }
+            for v in map.values() {
+                walk_external_refs(v, base_dir, sink);
+            }
+        }
+        Value::Array(items) => {
+            for v in items {
+                walk_external_refs(v, base_dir, sink);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// After splicing, replace every external `$ref` string with its local
+/// fragment-only form so typify (and downstream validators) see a self-
+/// contained schema.
+fn rewrite_external_refs_local(value: &mut Value) {
+    match value {
+        Value::Object(map) => {
+            if let Some(Value::String(s)) = map.get_mut("$ref") {
+                if !s.starts_with('#') {
+                    if let Some((_, def_name)) = split_external_ref(s) {
+                        *s = format!("#/$defs/{def_name}");
+                    }
+                }
+            }
+            for v in map.values_mut() {
+                rewrite_external_refs_local(v);
+            }
+        }
+        Value::Array(items) => {
+            for v in items {
+                rewrite_external_refs_local(v);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Parse `"<relative-path>#/$defs/<name>"` into its two halves.
+fn split_external_ref(s: &str) -> Option<(&str, &str)> {
+    let hash = s.find('#')?;
+    let path = &s[..hash];
+    let fragment = &s[hash + 1..];
+    let prefix = "/$defs/";
+    let def_name = fragment.strip_prefix(prefix)?;
+    if path.is_empty() || def_name.is_empty() || def_name.contains('/') {
+        return None;
+    }
+    Some((path, def_name))
 }
 
 /// Rename the 2020-12 `$defs` keyword to the Draft-07 `definitions` keyword

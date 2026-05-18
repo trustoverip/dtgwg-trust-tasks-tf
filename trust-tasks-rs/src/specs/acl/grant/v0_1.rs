@@ -35,6 +35,7 @@ pub mod error {
 ///
 /// ```json
 ///{
+///  "title": "AclEntry",
 ///  "type": "object",
 ///  "required": [
 ///    "role",
@@ -54,29 +55,27 @@ pub mod error {
 ///      "type": "string",
 ///      "format": "date-time"
 ///    },
+///    "ext": {
+///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.",
+///      "$ref": "#/definitions/Ext"
+///    },
 ///    "label": {
 ///      "description": "Optional human-readable label.",
 ///      "type": "string"
 ///    },
-///    "metadata": {
-///      "description": "Ecosystem-defined extension members.",
-///      "type": "object"
-///    },
 ///    "role": {
 ///      "description": "Opaque role identifier interpreted by the ACL maintainer.",
-///      "type": "string",
-///      "minLength": 1
+///      "type": "string"
 ///    },
 ///    "scopes": {
 ///      "description": "Opaque scope identifiers (e.g. contexts, domains, resource prefixes).",
 ///      "type": "array",
 ///      "items": {
-///        "type": "string",
-///        "minLength": 1
+///        "type": "string"
 ///      }
 ///    },
 ///    "subject": {
-///      "description": "VID of the party in the ACL.",
+///      "description": "VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.",
 ///      "type": "string"
 ///    },
 ///    "updatedAt": {
@@ -115,18 +114,18 @@ pub struct AclEntry {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable label.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<::std::string::String>,
-    ///Ecosystem-defined extension members.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub metadata: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Opaque role identifier interpreted by the ACL maintainer.
-    pub role: AclEntryRole,
+    pub role: ::std::string::String,
     ///Opaque scope identifiers (e.g. contexts, domains, resource prefixes).
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub scopes: ::std::vec::Vec<AclEntryScopesItem>,
-    ///VID of the party in the ACL.
+    pub scopes: ::std::vec::Vec<::std::string::String>,
+    ///VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
     pub subject: ::std::string::String,
     #[serde(
         rename = "updatedAt",
@@ -147,53 +146,97 @@ impl ::std::convert::From<&AclEntry> for AclEntry {
         value.clone()
     }
 }
-///Opaque role identifier interpreted by the ACL maintainer.
+///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "Opaque role identifier interpreted by the ACL maintainer.",
+///  "title": "Ext",
+///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+///  "type": "object",
+///  "minProperties": 1,
+///  "additionalProperties": true,
+///  "propertyNames": {
+///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
+impl ::std::ops::Deref for Ext {
+    type Target = ::std::collections::HashMap<ExtKey, ::serde_json::Value>;
+    fn deref(&self) -> &::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+        &self.0
+    }
+}
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+    fn from(value: Ext) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<&Ext> for Ext {
+    fn from(value: &Ext) -> Self {
+        value.clone()
+    }
+}
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+    fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
+        Self(value)
+    }
+}
+///`ExtKey`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
 ///  "type": "string",
-///  "minLength": 1
+///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
 ///}
 /// ```
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct AclEntryRole(::std::string::String);
-impl ::std::ops::Deref for AclEntryRole {
+pub struct ExtKey(::std::string::String);
+impl ::std::ops::Deref for ExtKey {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<AclEntryRole> for ::std::string::String {
-    fn from(value: AclEntryRole) -> Self {
+impl ::std::convert::From<ExtKey> for ::std::string::String {
+    fn from(value: ExtKey) -> Self {
         value.0
     }
 }
-impl ::std::convert::From<&AclEntryRole> for AclEntryRole {
-    fn from(value: &AclEntryRole) -> Self {
+impl ::std::convert::From<&ExtKey> for ExtKey {
+    fn from(value: &ExtKey) -> Self {
         value.clone()
     }
 }
-impl ::std::str::FromStr for AclEntryRole {
+impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for AclEntryRole {
+impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for AclEntryRole {
+impl ::std::convert::TryFrom<&::std::string::String> for ExtKey {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -201,7 +244,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for AclEntryRole {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for AclEntryRole {
+impl ::std::convert::TryFrom<::std::string::String> for ExtKey {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -209,80 +252,7 @@ impl ::std::convert::TryFrom<::std::string::String> for AclEntryRole {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for AclEntryRole {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`AclEntryScopesItem`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AclEntryScopesItem(::std::string::String);
-impl ::std::ops::Deref for AclEntryScopesItem {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AclEntryScopesItem> for ::std::string::String {
-    fn from(value: AclEntryScopesItem) -> Self {
-        value.0
-    }
-}
-impl ::std::convert::From<&AclEntryScopesItem> for AclEntryScopesItem {
-    fn from(value: &AclEntryScopesItem) -> Self {
-        value.clone()
-    }
-}
-impl ::std::str::FromStr for AclEntryScopesItem {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AclEntryScopesItem {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AclEntryScopesItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AclEntryScopesItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AclEntryScopesItem {
+impl<'de> ::serde::Deserialize<'de> for ExtKey {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -311,6 +281,10 @@ impl<'de> ::serde::Deserialize<'de> for AclEntryScopesItem {
 ///      "description": "The AclEntry the producer wants the maintainer to hold for the subject (intent). The maintainer's response carries the realized AclEntry it now holds.",
 ///      "$ref": "#/definitions/AclEntry"
 ///    },
+///    "ext": {
+///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
+///      "$ref": "#/definitions/Ext"
+///    },
 ///    "reason": {
 ///      "description": "Optional human-readable rationale.",
 ///      "type": "string"
@@ -325,6 +299,9 @@ impl<'de> ::serde::Deserialize<'de> for AclEntryScopesItem {
 pub struct Payload {
     ///The AclEntry the producer wants the maintainer to hold for the subject (intent). The maintainer's response carries the realized AclEntry it now holds.
     pub entry: AclEntry,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable rationale.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
@@ -350,6 +327,10 @@ impl ::std::convert::From<&Payload> for Payload {
 ///    "entry": {
 ///      "description": "The canonical AclEntry the maintainer now holds for the subject.",
 ///      "$ref": "#/definitions/AclEntry"
+///    },
+///    "ext": {
+///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
+///      "$ref": "#/definitions/Ext"
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -362,6 +343,9 @@ impl ::std::convert::From<&Payload> for Payload {
 pub struct Response {
     ///The canonical AclEntry the maintainer now holds for the subject.
     pub entry: AclEntry,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::convert::From<&Response> for Response {
     fn from(value: &Response) -> Self {
@@ -376,7 +360,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"$id\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n  \"title\": \"ACL Grant — payload\",\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\"entry\"],\n  \"properties\": {\n    \"entry\": {\n      \"description\": \"The AclEntry the producer wants the maintainer to hold for the subject (intent). The maintainer's response carries the realized AclEntry it now holds.\",\n      \"$ref\": \"#/$defs/AclEntry\"\n    },\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Optional human-readable rationale.\"\n    }\n  },\n  \"$defs\": {\n    \"AclEntry\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"required\": [\"subject\", \"role\"],\n      \"properties\": {\n        \"subject\":    { \"type\": \"string\", \"description\": \"VID of the party in the ACL.\" },\n        \"role\":       { \"type\": \"string\", \"minLength\": 1, \"description\": \"Opaque role identifier interpreted by the ACL maintainer.\" },\n        \"scopes\":     { \"type\": \"array\", \"items\": { \"type\": \"string\", \"minLength\": 1 }, \"description\": \"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\" },\n        \"label\":      { \"type\": \"string\", \"description\": \"Optional human-readable label.\" },\n        \"createdAt\":  { \"type\": \"string\", \"format\": \"date-time\" },\n        \"createdBy\":  { \"type\": \"string\", \"description\": \"VID of the party that originally added this entry.\" },\n        \"updatedAt\":  { \"type\": \"string\", \"format\": \"date-time\" },\n        \"updatedBy\":  { \"type\": \"string\", \"description\": \"VID of the party that last modified this entry.\" },\n        \"expiresAt\":  { \"type\": \"string\", \"format\": \"date-time\", \"description\": \"Optional time after which the entry is no longer effective.\" },\n        \"metadata\":   { \"type\": \"object\", \"description\": \"Ecosystem-defined extension members.\" }\n      }\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"title\": \"ACL Grant — response payload\",\n      \"description\": \"The success response to an acl/grant request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/grant/0.1#response.\",\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"required\": [\"entry\"],\n      \"properties\": {\n        \"entry\": {\n          \"description\": \"The canonical AclEntry the maintainer now holds for the subject.\",\n          \"$ref\": \"#/$defs/AclEntry\"\n        }\n      }\n    }\n  }\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"AclEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the party that originally added this entry.\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional time after which the entry is no longer effective.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Opaque role identifier interpreted by the ACL maintainer.\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"subject\": {\n          \"description\": \"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the party that last modified this entry.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\"\n      ],\n      \"title\": \"AclEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to an acl/grant request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/grant/0.1#response.\",\n      \"properties\": {\n        \"entry\": {\n          \"$ref\": \"#/$defs/AclEntry\",\n          \"description\": \"The canonical AclEntry the maintainer now holds for the subject.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"ACL Grant — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"entry\": {\n      \"$ref\": \"#/$defs/AclEntry\",\n      \"description\": \"The AclEntry the producer wants the maintainer to hold for the subject (intent). The maintainer's response carries the realized AclEntry it now holds.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"entry\"\n  ],\n  \"title\": \"ACL Grant — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

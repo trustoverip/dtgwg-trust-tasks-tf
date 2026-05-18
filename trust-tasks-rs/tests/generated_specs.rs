@@ -98,9 +98,10 @@ fn for_payload_pulls_type_uri_from_trait() {
             updated_at: None,
             updated_by: None,
             expires_at: None,
-            metadata: Default::default(),
+            ext: None,
         },
         reason: None,
+        ext: None,
     };
 
     let doc = TrustTask::for_payload("req-1", payload);

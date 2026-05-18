@@ -6311,6 +6311,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "jsonschema",
+ "regress",
  "serde",
  "serde_json",
  "serde_with",

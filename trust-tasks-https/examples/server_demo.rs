@@ -40,6 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             );
             Ok(grant::v0_1::Response {
                 entry: req.payload.entry.clone(),
+                ext: None,
             })
         })
         // Handler for acl/revoke: returns null entry meaning "removed".
@@ -60,7 +61,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     reason: "revoke requires an authenticated did:web sender".into(),
                 });
             }
-            Ok(revoke::v0_1::Response { entry: None })
+            Ok(revoke::v0_1::Response {
+                entry: None,
+                ext: None,
+            })
         })
         .build();
 

@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         grant::Payload {
             entry: grant::AclEntry {
                 subject: "did:web:carol.example".into(),
-                role: "moderator".parse()?,
+                role: "moderator".into(),
                 scopes: vec![],
                 label: Some("Carol — content moderation".into()),
                 created_at: None,
@@ -49,9 +49,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 updated_at: None,
                 updated_by: None,
                 expires_at: None,
-                metadata: Default::default(),
+                ext: None,
             },
             reason: Some("onboarding".into()),
+            ext: None,
         },
     );
     request.issuer = Some(alice_did.clone());
@@ -92,6 +93,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         format!("urn:uuid:{}", uuid::Uuid::new_v4()),
         grant::Response {
             entry: received.payload.entry.clone(),
+            ext: None,
         },
     );
 

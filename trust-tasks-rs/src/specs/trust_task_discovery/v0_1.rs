@@ -160,13 +160,48 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPatternsItem {
 ///    "supportedTypes"
 ///  ],
 ///  "properties": {
+///    "frameworkVersion": {
+///      "description": "MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.",
+///      "type": "string",
+///      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+///    },
 ///    "supportedTypes": {
-///      "description": "Each Type URI in this array MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates are not permitted.",
+///      "description": "Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.",
 ///      "type": "array",
 ///      "items": {
-///        "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.",
-///        "type": "string",
-///        "format": "uri"
+///        "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`).",
+///        "oneOf": [
+///          {
+///            "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.",
+///            "type": "string",
+///            "format": "uri"
+///          },
+///          {
+///            "description": "Object form: lists a Type URI together with optional capability annotations.",
+///            "type": "object",
+///            "required": [
+///              "type"
+///            ],
+///            "properties": {
+///              "requiredExt": {
+///                "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.",
+///                "type": "array",
+///                "items": {
+///                  "type": "string",
+///                  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+///                },
+///                "minItems": 1,
+///                "uniqueItems": true
+///              },
+///              "type": {
+///                "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.",
+///                "type": "string",
+///                "format": "uri"
+///              }
+///            },
+///            "additionalProperties": false
+///          }
+///        ]
 ///      }
 ///    }
 ///  },
@@ -178,13 +213,247 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPatternsItem {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Response {
-    ///Each Type URI in this array MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates are not permitted.
+    ///MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.
+    #[serde(
+        rename = "frameworkVersion",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub framework_version: ::std::option::Option<ResponseFrameworkVersion>,
+    ///Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.
     #[serde(rename = "supportedTypes")]
-    pub supported_types: ::std::vec::Vec<::std::string::String>,
+    pub supported_types: ::std::vec::Vec<ResponseSupportedTypesItem>,
 }
 impl ::std::convert::From<&Response> for Response {
     fn from(value: &Response) -> Self {
         value.clone()
+    }
+}
+///MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.",
+///  "type": "string",
+///  "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseFrameworkVersion(::std::string::String);
+impl ::std::ops::Deref for ResponseFrameworkVersion {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseFrameworkVersion> for ::std::string::String {
+    fn from(value: ResponseFrameworkVersion) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<&ResponseFrameworkVersion> for ResponseFrameworkVersion {
+    fn from(value: &ResponseFrameworkVersion) -> Self {
+        value.clone()
+    }
+}
+impl ::std::str::FromStr for ResponseFrameworkVersion {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseFrameworkVersion {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseFrameworkVersion {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseFrameworkVersion {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseFrameworkVersion {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`).",
+///  "oneOf": [
+///    {
+///      "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.",
+///      "type": "string",
+///      "format": "uri"
+///    },
+///    {
+///      "description": "Object form: lists a Type URI together with optional capability annotations.",
+///      "type": "object",
+///      "required": [
+///        "type"
+///      ],
+///      "properties": {
+///        "requiredExt": {
+///          "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.",
+///          "type": "array",
+///          "items": {
+///            "type": "string",
+///            "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+///          },
+///          "minItems": 1,
+///          "uniqueItems": true
+///        },
+///        "type": {
+///          "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.",
+///          "type": "string",
+///          "format": "uri"
+///        }
+///      },
+///      "additionalProperties": false
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(untagged, deny_unknown_fields)]
+pub enum ResponseSupportedTypesItem {
+    Uri(::std::string::String),
+    Object {
+        ///Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.
+        #[serde(
+            rename = "requiredExt",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        required_ext: ::std::option::Option<Vec<ResponseSupportedTypesItemObjectRequiredExtItem>>,
+        ///A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.
+        #[serde(rename = "type")]
+        type_: ::std::string::String,
+    },
+}
+impl ::std::convert::From<&Self> for ResponseSupportedTypesItem {
+    fn from(value: &ResponseSupportedTypesItem) -> Self {
+        value.clone()
+    }
+}
+///`ResponseSupportedTypesItemObjectRequiredExtItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseSupportedTypesItemObjectRequiredExtItem(::std::string::String);
+impl ::std::ops::Deref for ResponseSupportedTypesItemObjectRequiredExtItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseSupportedTypesItemObjectRequiredExtItem>
+    for ::std::string::String
+{
+    fn from(value: ResponseSupportedTypesItemObjectRequiredExtItem) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<&ResponseSupportedTypesItemObjectRequiredExtItem>
+    for ResponseSupportedTypesItemObjectRequiredExtItem
+{
+    fn from(value: &ResponseSupportedTypesItemObjectRequiredExtItem) -> Self {
+        value.clone()
+    }
+}
+impl ::std::str::FromStr for ResponseSupportedTypesItemObjectRequiredExtItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseSupportedTypesItemObjectRequiredExtItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String>
+    for ResponseSupportedTypesItemObjectRequiredExtItem
+{
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String>
+    for ResponseSupportedTypesItemObjectRequiredExtItem
+{
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseSupportedTypesItemObjectRequiredExtItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 impl crate::Payload for Payload {
@@ -195,7 +464,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"$id\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"title\": \"Trust Task Discovery — payload\",\n  \"description\": \"Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.\",\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"patterns\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\",\n        \"minLength\": 1,\n        \"description\": \"Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.\"\n      },\n      \"description\": \"Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task.\"\n    }\n  },\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"title\": \"Trust Task Discovery — response payload\",\n      \"description\": \"List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.\",\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"required\": [\"supportedTypes\"],\n      \"properties\": {\n        \"supportedTypes\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\",\n            \"format\": \"uri\",\n            \"description\": \"A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.\"\n          },\n          \"description\": \"Each Type URI in this array MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates are not permitted.\"\n        }\n      }\n    }\n  }\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.\",\n      \"properties\": {\n        \"frameworkVersion\": {\n          \"description\": \"MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        },\n        \"supportedTypes\": {\n          \"description\": \"Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.\",\n          \"items\": {\n            \"description\": \"An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`).\",\n            \"oneOf\": [\n              {\n                \"description\": \"Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.\",\n                \"format\": \"uri\",\n                \"type\": \"string\"\n              },\n              {\n                \"additionalProperties\": false,\n                \"description\": \"Object form: lists a Type URI together with optional capability annotations.\",\n                \"properties\": {\n                  \"requiredExt\": {\n                    \"description\": \"Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.\",\n                    \"items\": {\n                      \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n                      \"type\": \"string\"\n                    },\n                    \"minItems\": 1,\n                    \"type\": \"array\",\n                    \"uniqueItems\": true\n                  },\n                  \"type\": {\n                    \"description\": \"A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.\",\n                    \"format\": \"uri\",\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"type\"\n                ],\n                \"type\": \"object\"\n              }\n            ]\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"supportedTypes\"\n      ],\n      \"title\": \"Trust Task Discovery — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.\",\n  \"properties\": {\n    \"patterns\": {\n      \"description\": \"Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task.\",\n      \"items\": {\n        \"description\": \"Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.\",\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"title\": \"Trust Task Discovery — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {
@@ -247,6 +516,15 @@ mod conformance {
     }
     #[test]
     fn response_example_3() {
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:ce2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1#response\",\n  \"threadId\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"frameworkVersion\": \"0.1\",\n    \"supportedTypes\": [\n      {\n        \"type\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n        \"requiredExt\": [\"vnd.affinidi.webvh\"]\n      },\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "response example failed round-trip");
+    }
+    #[test]
+    fn response_example_4() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:be2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1#response\",\n  \"threadId\": \"urn:uuid:8e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": []\n  }\n}\n";
         let doc: crate::TrustTask<super::Response> =
             serde_json::from_str(JSON).expect("deserialize response example");

@@ -30,12 +30,20 @@
 //! // registered Payload whose slug matches one of the query patterns.
 //! ```
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::iter::FromIterator;
 
 use crate::payload::Payload;
 use crate::specs::trust_task_discovery::v0_1 as wire;
 use crate::type_uri::TypeUri;
+
+/// Optional framework version this registry advertises in its discovery
+/// responses. Per SPEC §4.5.1 + §5.2 + the `trust-task-discovery/0.1` spec,
+/// the response payload's `frameworkVersion` is OPTIONAL in 0.1 and
+/// RECOMMENDED in future revisions. The default is `"0.1"` because that's
+/// the framework version this crate targets; callers MAY override or
+/// clear it.
+const DEFAULT_FRAMEWORK_VERSION: &str = "0.1";
 
 /// Match a single glob `pattern` against a `slug`, per the
 /// `trust-task-discovery/0.1` pattern grammar:
@@ -88,12 +96,79 @@ pub fn query_matches<S: AsRef<str>>(patterns: &[S], slug: &str) -> bool {
 #[derive(Debug, Clone, Default)]
 pub struct DiscoveryRegistry {
     type_uris: BTreeSet<String>,
+    /// Per-URI `ext` namespaces this responder requires on inbound
+    /// documents. Populated via [`Self::with_required_ext`] /
+    /// [`Self::require_ext`]. URIs in this map MUST also appear in
+    /// `type_uris`. When `respond_to` emits the response, URIs with an
+    /// entry here use the expanded form so producers see the requirement
+    /// before the wire trip.
+    required_ext: BTreeMap<String, BTreeSet<String>>,
+    /// MAJOR.MINOR framework version advertised in the response payload's
+    /// `frameworkVersion` field. `None` suppresses the field (caller opted
+    /// out); `Some` is emitted verbatim. Defaults to the crate's target.
+    framework_version: Option<String>,
 }
 
 impl DiscoveryRegistry {
-    /// New empty registry.
+    /// New empty registry that advertises `frameworkVersion = "0.1"` in
+    /// responses. Use [`Self::framework_version`] / [`Self::no_framework_version`]
+    /// to change or suppress the advertised value.
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            framework_version: Some(DEFAULT_FRAMEWORK_VERSION.to_string()),
+            ..Self::default()
+        }
+    }
+
+    /// Override the `frameworkVersion` advertised in the response payload.
+    /// Most consumers should leave this at the default — the registry
+    /// emits the framework version this crate targets.
+    pub fn framework_version(mut self, version: impl Into<String>) -> Self {
+        self.framework_version = Some(version.into());
+        self
+    }
+
+    /// Suppress the `frameworkVersion` field in the response payload.
+    /// The field is OPTIONAL in 0.1; callers who want to remain silent
+    /// about their framework version (e.g. for privacy reasons per
+    /// SPEC §11.5) can opt out with this.
+    pub fn no_framework_version(mut self) -> Self {
+        self.framework_version = None;
+        self
+    }
+
+    /// Advertise that inbound documents of `uri` MUST carry the given
+    /// reverse-DNS `ext` namespaces (SPEC §4.5.1, §7.2). The registry
+    /// surfaces these in `respond_to()`'s expanded `supportedTypes` entry
+    /// for `uri` so a producer sees the requirement before the wire trip.
+    ///
+    /// `uri` is also registered if not already present; calling this
+    /// method is equivalent to calling [`Self::with_type_uri`] for the
+    /// same URI plus recording the namespace requirements.
+    ///
+    /// Repeated calls for the same URI union their namespace sets.
+    pub fn with_required_ext<I, S>(mut self, uri: TypeUri, namespaces: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let bare = uri.bare().to_string();
+        self.type_uris.insert(bare.clone());
+        let entry = self.required_ext.entry(bare).or_default();
+        entry.extend(namespaces.into_iter().map(Into::into));
+        self
+    }
+
+    /// Mutating equivalent of [`Self::with_required_ext`].
+    pub fn require_ext<I, S>(&mut self, uri: TypeUri, namespaces: I)
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let bare = uri.bare().to_string();
+        self.type_uris.insert(bare.clone());
+        let entry = self.required_ext.entry(bare).or_default();
+        entry.extend(namespaces.into_iter().map(Into::into));
     }
 
     /// Register a [`Payload`] type by reading its `TYPE_URI` constant.
@@ -147,20 +222,61 @@ impl DiscoveryRegistry {
     /// Build a response to `query`, listing every registered Type URI
     /// whose slug matches at least one of the query's patterns. Absent
     /// or empty patterns produce the full list.
+    ///
+    /// URIs with no `requiredExt` policy are emitted in shorthand form
+    /// ([`wire::ResponseSupportedTypesItem::Uri`]); URIs with a policy
+    /// declared via [`Self::with_required_ext`] / [`Self::require_ext`]
+    /// are emitted in expanded form
+    /// ([`wire::ResponseSupportedTypesItem::Object`]) carrying the
+    /// `requiredExt` array.
     pub fn respond_to(&self, query: &wire::Payload) -> wire::Response {
         // Generated `Payload` wraps each pattern in a `PayloadPatternsItem`
         // newtype; deref to &str for matching.
         let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
-        let supported_types: Vec<String> = self
+        let supported_types: Vec<wire::ResponseSupportedTypesItem> = self
             .type_uris
             .iter()
             .filter(|uri| match parse_slug(uri) {
                 Some(slug) => query_matches(&patterns, slug),
                 None => false,
             })
-            .cloned()
+            .map(|uri| self.entry_for(uri))
             .collect();
-        wire::Response { supported_types }
+
+        let framework_version = self
+            .framework_version
+            .as_deref()
+            .map(|v| {
+                v.parse::<wire::ResponseFrameworkVersion>()
+                    .expect("framework_version was set to a value that does not match the spec's MAJOR.MINOR pattern")
+            });
+
+        wire::Response {
+            supported_types,
+            framework_version,
+        }
+    }
+
+    fn entry_for(&self, uri: &str) -> wire::ResponseSupportedTypesItem {
+        match self.required_ext.get(uri) {
+            Some(namespaces) if !namespaces.is_empty() => {
+                let required_ext: Vec<wire::ResponseSupportedTypesItemObjectRequiredExtItem> =
+                    namespaces
+                        .iter()
+                        .map(|ns| {
+                            ns.parse().expect(
+                                "required_ext namespace must match the reverse-DNS pattern; \
+                                 was set via with_required_ext / require_ext",
+                            )
+                        })
+                        .collect();
+                wire::ResponseSupportedTypesItem::Object {
+                    type_: uri.to_string(),
+                    required_ext: Some(required_ext),
+                }
+            }
+            _ => wire::ResponseSupportedTypesItem::Uri(uri.to_string()),
+        }
     }
 }
 
@@ -283,7 +399,7 @@ mod tests {
         };
         let response = registry.respond_to(&only_grant);
         assert_eq!(
-            response.supported_types,
+            uris_in(&response),
             vec!["https://trusttasks.org/spec/acl/grant/0.1"]
         );
 
@@ -298,5 +414,80 @@ mod tests {
         };
         let response = registry.respond_to(&nothing);
         assert!(response.supported_types.is_empty());
+
+        // frameworkVersion defaults to "0.1".
+        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        assert_eq!(
+            response.framework_version.as_ref().map(|v| v.to_string()),
+            Some("0.1".to_string())
+        );
+    }
+
+    #[test]
+    fn no_framework_version_suppresses_field() {
+        let registry = DiscoveryRegistry::new().no_framework_version();
+        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        assert!(response.framework_version.is_none());
+    }
+
+    #[test]
+    fn override_framework_version_is_emitted_verbatim() {
+        let registry = DiscoveryRegistry::new().framework_version("0.2");
+        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        assert_eq!(
+            response.framework_version.as_ref().map(|v| v.to_string()),
+            Some("0.2".to_string())
+        );
+    }
+
+    #[test]
+    fn with_required_ext_advertises_namespace_policy_in_expanded_form() {
+        let grant_uri = TypeUri::canonical("acl/grant", 0, 1).unwrap();
+        let registry = DiscoveryRegistry::new()
+            .with::<crate::specs::acl::revoke::v0_1::Payload>()
+            .with_required_ext(grant_uri, ["vnd.affinidi.webvh"]);
+
+        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+
+        // acl/grant carries the requiredExt annotation in expanded form.
+        let grant_entry = response
+            .supported_types
+            .iter()
+            .find(|e| uri_of(e) == "https://trusttasks.org/spec/acl/grant/0.1")
+            .expect("acl/grant entry present");
+        match grant_entry {
+            wire::ResponseSupportedTypesItem::Object { required_ext, .. } => {
+                let namespaces: Vec<String> = required_ext
+                    .as_ref()
+                    .expect("requiredExt populated")
+                    .iter()
+                    .map(|n| n.to_string())
+                    .collect();
+                assert_eq!(namespaces, vec!["vnd.affinidi.webvh".to_string()]);
+            }
+            other => panic!("expected expanded Object form, got {other:?}"),
+        }
+
+        // acl/revoke had no policy declared → shorthand string form.
+        let revoke_entry = response
+            .supported_types
+            .iter()
+            .find(|e| uri_of(e) == "https://trusttasks.org/spec/acl/revoke/0.1")
+            .expect("acl/revoke entry present");
+        assert!(matches!(
+            revoke_entry,
+            wire::ResponseSupportedTypesItem::Uri(_)
+        ));
+    }
+
+    fn uris_in(response: &wire::Response) -> Vec<&str> {
+        response.supported_types.iter().map(uri_of).collect()
+    }
+
+    fn uri_of(entry: &wire::ResponseSupportedTypesItem) -> &str {
+        match entry {
+            wire::ResponseSupportedTypesItem::Uri(s) => s.as_str(),
+            wire::ResponseSupportedTypesItem::Object { type_, .. } => type_.as_str(),
+        }
     }
 }

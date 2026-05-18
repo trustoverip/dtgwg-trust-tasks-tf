@@ -38,6 +38,7 @@ async fn spawn_server() -> SocketAddr {
         .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, _ctx| {
             Ok(grant::v0_1::Response {
                 entry: req.payload.entry.clone(),
+                ext: None,
             })
         })
         .on::<revoke::v0_1::Payload, revoke::v0_1::Response, _>(|_req, ctx| {
@@ -46,7 +47,10 @@ async fn spawn_server() -> SocketAddr {
                     reason: "revoke requires authentication".into(),
                 });
             }
-            Ok(revoke::v0_1::Response { entry: None })
+            Ok(revoke::v0_1::Response {
+                entry: None,
+                ext: None,
+            })
         })
         // Auto-advertise the two acl handlers (and discovery itself) via
         // trust-task-discovery/0.1.
@@ -73,7 +77,7 @@ fn entry() -> grant::v0_1::AclEntry {
         updated_at: None,
         updated_by: None,
         expires_at: None,
-        metadata: Default::default(),
+        ext: None,
     }
 }
 
@@ -98,6 +102,7 @@ async fn happy_path_acl_grant() {
         grant::v0_1::Payload {
             entry: entry(),
             reason: None,
+            ext: None,
         },
     );
 
@@ -129,6 +134,7 @@ async fn identity_mismatch_when_in_band_issuer_differs_from_token() {
         grant::v0_1::Payload {
             entry: entry(),
             reason: None,
+            ext: None,
         },
     );
 
@@ -165,6 +171,7 @@ async fn unsupported_type_for_unregistered_uri() {
             subject_prefix: None,
             page_size: None,
             cursor: None,
+            ext: None,
         },
     );
 
@@ -198,14 +205,14 @@ async fn discovery_advertises_registered_handlers() {
         .await
         .unwrap();
 
-    let mut got = resp.payload.supported_types.clone();
+    let mut got: Vec<&str> = resp.payload.supported_types.iter().map(uri_of).collect();
     got.sort();
     assert_eq!(
         got,
         vec![
-            "https://trusttasks.org/spec/acl/grant/0.1".to_string(),
-            "https://trusttasks.org/spec/acl/revoke/0.1".to_string(),
-            "https://trusttasks.org/spec/trust-task-discovery/0.1".to_string(),
+            "https://trusttasks.org/spec/acl/grant/0.1",
+            "https://trusttasks.org/spec/acl/revoke/0.1",
+            "https://trusttasks.org/spec/trust-task-discovery/0.1",
         ],
         "enable_discovery() should advertise the registered acl/grant + acl/revoke handlers \
          plus discovery itself"
@@ -242,16 +249,23 @@ async fn discovery_filter_returns_only_matching_slugs() {
         .await
         .unwrap();
 
-    let mut got = resp.payload.supported_types.clone();
+    let mut got: Vec<&str> = resp.payload.supported_types.iter().map(uri_of).collect();
     got.sort();
     assert_eq!(
         got,
         vec![
-            "https://trusttasks.org/spec/acl/grant/0.1".to_string(),
-            "https://trusttasks.org/spec/acl/revoke/0.1".to_string(),
+            "https://trusttasks.org/spec/acl/grant/0.1",
+            "https://trusttasks.org/spec/acl/revoke/0.1",
         ],
         "acl/* should match grant + revoke but not trust-task-discovery"
     );
+}
+
+fn uri_of(entry: &discovery::ResponseSupportedTypesItem) -> &str {
+    match entry {
+        discovery::ResponseSupportedTypesItem::Uri(s) => s.as_str(),
+        discovery::ResponseSupportedTypesItem::Object { type_, .. } => type_.as_str(),
+    }
 }
 
 #[tokio::test]
@@ -266,6 +280,7 @@ async fn permission_denied_from_spec_handler() {
             subject: "did:web:bob.example".into(),
             scopes: vec![],
             reason: None,
+            ext: None,
         },
     );
 

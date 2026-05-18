@@ -8,7 +8,6 @@
   "properties": {
     "subject": {
       "type": "string",
-      "minLength": 1,
       "description": "VID of the party being revoked (or scope-reduced)."
     },
     "scopes": {

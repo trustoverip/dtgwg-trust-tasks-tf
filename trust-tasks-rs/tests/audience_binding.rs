@@ -18,7 +18,7 @@ fn entry() -> grant::AclEntry {
         updated_at: None,
         updated_by: None,
         expires_at: None,
-        metadata: Default::default(),
+        ext: None,
     }
 }
 
@@ -43,6 +43,7 @@ fn proof_without_recipient_rejected_on_non_bearer_spec() {
         grant::Payload {
             entry: entry(),
             reason: None,
+            ext: None,
         },
     );
     doc.issuer = Some("did:web:org.example".into());
@@ -64,6 +65,7 @@ fn proof_with_recipient_passes() {
         grant::Payload {
             entry: entry(),
             reason: None,
+            ext: None,
         },
     );
     doc.issuer = Some("did:web:org.example".into());
@@ -82,6 +84,7 @@ fn no_proof_passes_regardless_of_recipient() {
         grant::Payload {
             entry: entry(),
             reason: None,
+            ext: None,
         },
     );
     doc.issuer = Some("did:web:org.example".into());
