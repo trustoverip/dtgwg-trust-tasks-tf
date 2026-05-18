@@ -6265,7 +6265,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "affinidi-messaging-didcomm",
  "affinidi-messaging-sdk 0.18.2",
@@ -6284,7 +6284,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-https"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "chrono",
@@ -6301,7 +6301,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-proof"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "affinidi-crypto",
  "affinidi-data-integrity",
@@ -6320,7 +6320,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async-trait",
  "chrono",
