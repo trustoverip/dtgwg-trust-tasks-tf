@@ -198,6 +198,25 @@ The `payload` member's value **MUST** be a JSON object whose internal structure 
 
 The framework separates document-level metadata (`id`, `threadId`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `proof`) from task-specific data (`payload`) so that a single framework-level schema validates the outer structure, with per-task schemas applied only to `payload`. Schema scope is defined in [§6.3](#63-schema-scope).
 
+#### 4.5.1 The `ext` extension member
+
+A *Trust Task specification* **MAY** allow an `ext` member at the top level of `payload`, at any nested object whose contents the specification controls, or both. The `ext` member is the framework's sanctioned extension point for ecosystem-defined data that the base specification does not enumerate.
+
+The framework reserves the following normative rules for any `ext` member, in any specification:
+
+1. `ext` **MUST** be a JSON object when present.
+2. Each *immediate* key of `ext` **MUST** match the reverse-DNS grammar `^[a-z][a-z0-9-]*(\.[a-z0-9-]+)+$` — lowercase, at least one dot. Examples: `vnd.affinidi.webvh`, `org.example.acl`. Bare keys without a namespace are non-conforming.
+3. The structure under each namespace is opaque to the framework. Producers MAY place any JSON value the namespace's controller chooses to define.
+4. A *producer* **MUST NOT** rely on any framework-level meaning for the contents of any `ext.*` namespace.
+5. A *consumer* **MUST** ignore namespaces it does not recognize, consistent with the unrecognized-member rule of [§7.2](#72-consumer-requirements). A *consumer* **MAY** require its own namespace as a matter of local policy and reject documents lacking that namespace with `malformed_request`.
+6. The framework reserves **no** `ext.*` namespace today. *Trust Task specifications* **MUST NOT** define cross-specification semantics for any `ext` key; ecosystem semantics belong to the namespace controller.
+
+A *Trust Task specification* opts into `ext` at a given object level by including a property named `ext` (typically a `$ref` to the framework's published `Ext` `$def`) and adjusting that level's `additionalProperties` declaration accordingly. Specifications that do not include `ext` at a given level reject the member at that level under their existing `additionalProperties: false`.
+
+The signed envelope covers `ext` in the same way it covers any other member of `payload`, so `ext` inherits the integrity guarantees of [§4.7](#47-proof) when a `proof` is present.
+
+`ext` is distinct from the task-specific `details` member of a `trust-task-error` response ([§8.5](#85-extension-by-individual-trust-task-specifications)). `details` carries structured data tied to a specific error `code` defined by the spec author; `ext` carries vendor-namespaced extension data defined by the ecosystem. Both members **MAY** appear on the same document and are not interchangeable.
+
 ### 4.6 JSON-LD compatibility
 
 A *Trust Task document* **MAY** include an `@context` member. If present, the document **MUST** be processable as JSON-LD; the framework places no further constraint on the contents of `@context` beyond requiring it to be a string, an array of strings or objects, or an object, in line with the JSON-LD specification. A *Trust Task specification* that wishes to declare a canonical JSON-LD context **MUST** publish it at its *Type URI* under content negotiation for `application/ld+json` (see [§6.2](#62-content-negotiation)).
@@ -255,6 +274,8 @@ A *Trust Task document* **MAY** identify the parties involved by including the `
 * `recipient` — a *Verifiable Identifier* identifying the *party* the *issuer* expects to act upon the document.
 
 The framework does not constrain the VID scheme used: a DID, an X.509 subject, an OIDC subject identifier, a key thumbprint, or any other identifier whose controller is verifiable under the *consumer*'s trust framework is acceptable.
+
+A *VID* is compared by exact string equality wherever this framework requires a VID-to-VID comparison (notably the in-band-vs-transport cross-check in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), the recipient-enforcement rule in [§7.2](#72-consumer-requirements) item 5, and the proof-binding rule in [§4.7](#47-proof)). *Producers* **SHOULD** emit *VID*s in their canonical form for the scheme in use — no leading or trailing whitespace, no normalization of case-sensitive segments, and (for schemes that admit equivalent forms) the form that the scheme's authority designates as canonical. A *consumer* **MAY** reject a *Trust Task document* whose `issuer`, `recipient`, or any *VID*-typed `payload` member is not in canonical form with `malformed_request`; a *consumer* that accepts non-canonical input **MUST NOT** silently normalize before applying any framework rule that compares the value — normalization changes the string, and the framework's comparisons are over the unchanged bytes.
 
 Both members are **OPTIONAL**. Their purpose is to let the parties be identified in-band where the transport in use does not already convey strong, authenticated party identity — for example, an unauthenticated HTTP POST, a public message queue, or paper hand-off.
 
@@ -527,6 +548,8 @@ A *conforming producer* **MUST**:
 
 A *conforming producer* **SHOULD** populate `issuedAt` to support freshness checks downstream, **SHOULD** populate `issuer` and `recipient` when the transport in use does not provide authenticated party identity end-to-end between *producer* and *consumer*, **SHOULD** set `threadId` when emitting a *Trust Task document* in response to another (see [§4.9](#49-the-threadid-member)), and **SHOULD** preserve any unrecognized members received from upstream parties when forwarding a *Trust Task document*.
 
+A *conforming producer* that emits an `ext` member (see [§4.5.1](#451-the-ext-extension-member)) **MUST** namespace every immediate child key of `ext` under a reverse-DNS prefix the producer controls; bare or un-namespaced child keys are non-conforming.
+
 ### 7.2 Consumer requirements
 
 A *conforming consumer* **MUST**:
@@ -543,6 +566,8 @@ A *conforming consumer* **MUST**:
 For each of the rules in this section that references the `issuer` or `recipient` party, the in-band member value is authoritative when present and the transport-derived identity is a cross-check; when the in-band member is absent the *consumer* **MAY** derive the value from the transport. This precedence is defined normatively in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity).
 
 A *conforming consumer* **SHOULD** preserve, but **MUST NOT** act upon, members it does not recognize. A *consumer* that does not implement JSON-LD processing **MUST** ignore the `@context` member.
+
+For documents that carry an `ext` member (see [§4.5.1](#451-the-ext-extension-member)), a *conforming consumer* **MUST** ignore every `ext` immediate-key namespace it does not recognize — the unrecognized-namespace rule is the same "preserve but MUST NOT act upon" rule as for unrecognized top-level members, applied at the `ext` level. A *consumer* **MAY** require one or more specific namespaces under `ext` as a matter of local policy and **MUST** reject a document missing a required namespace with `malformed_request`; *consumers* applying such a policy **SHOULD** publish the requirement via discovery ([§11](#11-discovery-and-capability-negotiation)) so *producers* can satisfy it before the wire trip.
 
 When a *consumer* rejects a *Trust Task document* under any rule in this section, and the transport in use supports a response from *consumer* to *producer*, the *consumer* **SHOULD** return an *error response* conforming to [§8](#8-error-responses).
 
@@ -672,6 +697,8 @@ An individual *Trust Task specification* **MAY** define additional error codes s
 An individual *Trust Task specification* **MAY** also define the structure of `details` for its own error responses. Where it does so, the specification **MUST** state which `code` values may carry a `details` object and **MUST** provide a JSON Schema fragment describing the `details` shape for each.
 
 A *consumer* that does not recognize an extended `code` **SHOULD** treat the error as if its code were `task_failed` and **MUST** still honor the `retryable` and `retryAfter` members.
+
+The `details` member defined here is distinct from the `ext` extension member defined in [§4.5.1](#451-the-ext-extension-member). `details` carries *task-specific structured data tied to a specific error `code`*, defined by the spec author; its shape is constrained by the JSON Schema fragment the specification publishes for each carrying code. `ext` carries *vendor-namespaced extension data at payload or nested-object level*, defined by the ecosystem; its namespace structure is opaque to the framework. Both members **MAY** appear on the same *error response* and serve different purposes — implementations **MUST NOT** treat them as interchangeable.
 
 > **Example 6 — An error response with an extended code and `details`** *(non-normative)*
 >
