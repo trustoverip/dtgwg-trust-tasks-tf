@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-https"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -36,8 +36,12 @@ tokio = { version = "1", optional = true, features = ["net", "rt", "macros", "sy
 # Client (feature-gated)
 reqwest = { version = "0.13", optional = true, default-features = false, features = ["json", "rustls"] }
 
-# JWT bearer-auth adapter (feature-gated under `jwt`)
-jsonwebtoken = { version = "9", optional = true, default-features = false }
+# JWT bearer-auth adapter (feature-gated under `jwt`).
+# jsonwebtoken 10 split crypto into provider features — at least one of
+# `rust_crypto` / `aws_lc_rs` MUST be enabled. We pick `rust_crypto` to
+# keep the opt-in jwt path pure-Rust (no C build) and decoupled from
+# rustls's transitive aws-lc-rs.
+jsonwebtoken = { version = "10", optional = true, default-features = false, features = ["rust_crypto"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
