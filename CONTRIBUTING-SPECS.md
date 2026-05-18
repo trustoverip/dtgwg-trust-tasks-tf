@@ -81,6 +81,8 @@ Notes:
 
 - **Do not declare `vidSchemes` on parties.** Which VID schemes (`did:web`, `did:key`, `x509`, OIDC, …) a maintainer accepts is an implementation/trust-framework concern, not a spec one. Leaving it out keeps specs portable across maintainers with different verification preferences.
 
+- **`bearer: true` flips off audience binding — do not set it casually.** The default for any spec is non-bearer ([SPEC §4.8.3](SPEC.md#483-bearer-specifications)). Adding `bearer: true` to your front matter does two coupled things: it declares that documents conforming to your spec are intended for unspecified consumption (any party that can verify the `proof` is a legitimate recipient), and it causes the codegen to emit `Payload::IS_BEARER = true`. That constant in turn suppresses the audience-binding rule of [SPEC §4.8.2](SPEC.md#482-audience-binding) in every conforming consumer pipeline — a `proof`-carrying document with no in-band `recipient` is accepted instead of rejected with `malformed_request`. **Only set `bearer: true` when the audience-free property is intrinsic to the assertion your spec publishes** (public attestations, heartbeats, schema-publication announcements). A spec that should have been audience-bound but is mistakenly bearer-flagged is silently exposed to cross-recipient replay (SPEC §10.1) — there is no second check downstream. If `bearer: true` is set, the spec's `parties` declaration **MUST** also list `recipient` as `OPTIONAL`, and the prose **MUST** state what assertion the document conveys and why audience binding is inappropriate for it.
+
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
 ## Request and Response sections
@@ -136,6 +138,28 @@ Where the specification defines a success-response document, both shapes live in
 A consumer that receives a document with `type: ".../acl/grant/0.1#response"` resolves `#response` against the fetched schema, lands on `$defs.Response`, and validates the response `payload` against it. The build script verifies that any `$defs.Response` you publish declares `$anchor: "response"` and that no other `$defs` entry uses that anchor.
 
 For a fire-and-forget task with no success response, omit `$defs.Response` entirely — the framework still gives you `trust-task-error` for failures.
+
+### Opting into the framework `ext` extension slot
+
+If your spec needs to accommodate ecosystem-defined fields without forking — the typical example is a maintainer that wants to require a custom policy field on every inbound document — opt into the framework's `ext` slot ([SPEC §4.5.1](SPEC.md#451-the-ext-extension-member)) rather than minting your own extension shape. Reference the framework `Ext` `$def` from your payload schema (and from any nested object that should carry per-instance ecosystem data):
+
+```jsonc
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    /* … your declared members … */
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC §4.5.1."
+    }
+  }
+}
+```
+
+The codegen resolves the cross-file `$ref` by splicing the shared `Ext` `$def` into your spec's generated schema and Rust types. The producer/consumer rules around namespacing ("reverse-DNS lowercase keys", "consumers MUST ignore unrecognized namespaces", "MAY require their own namespace") are framework-wide and apply uniformly — your spec inherits them by referencing `Ext`.
+
+Spec authors **MUST NOT** define cross-spec semantics for any `ext.*` key; ecosystem semantics belong to the namespace controller. Spec authors **MAY** include a non-normative example showing the `ext` shape an ecosystem might use, but the example should be clearly marked as illustrative.
 
 ## Task-specific error codes (optional)
 
