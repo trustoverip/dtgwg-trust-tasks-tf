@@ -29,26 +29,13 @@
     "cursor": {
       "type": "string",
       "description": "Opaque continuation token returned by the maintainer in a previous response."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
   "$defs": {
-    "AclEntry": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["subject", "role"],
-      "properties": {
-        "subject":    { "type": "string" },
-        "role":       { "type": "string" },
-        "scopes":     { "type": "array", "items": { "type": "string" } },
-        "label":      { "type": "string" },
-        "createdAt":  { "type": "string", "format": "date-time" },
-        "createdBy":  { "type": "string" },
-        "updatedAt":  { "type": "string", "format": "date-time" },
-        "updatedBy":  { "type": "string" },
-        "expiresAt":  { "type": "string", "format": "date-time" },
-        "metadata":   { "type": "object" }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "ACL List — response payload",
@@ -59,7 +46,7 @@
       "properties": {
         "entries": {
           "type": "array",
-          "items": { "$ref": "#/$defs/AclEntry" },
+          "items": { "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry" },
           "description": "Matching AclEntry items, in maintainer-defined order. May be empty."
         },
         "truncated": {
@@ -73,7 +60,11 @@
         "redactedFields": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Names of AclEntry fields the maintainer redacted from every returned entry (for example, ['metadata'])."
+          "description": "Names of AclEntry fields the maintainer redacted from every returned entry (for example, ['label'] or ['ext.vnd.example.audit'])."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     }

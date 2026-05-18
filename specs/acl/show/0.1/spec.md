@@ -128,7 +128,7 @@ Response to the "Admin looking up a member" request example:
       "label": "Alice — primary admin",
       "createdAt": "2026-05-16T10:00:00Z",
       "createdBy": "did:web:org.example",
-      "metadata": { "department": "compliance" }
+      "ext": { "vnd.example.hr": { "department": "compliance" } }
     }
   }
 }
@@ -154,7 +154,7 @@ Response to a lookup for a subject the maintainer doesn't have an entry for — 
 
 ### Self-lookup with redaction
 
-A subject queries their own entry; the maintainer's policy redacts `metadata` for non-administrators. The visible `entry` lacks `metadata`, and `redactedFields` makes the redaction explicit:
+A subject queries their own entry; the maintainer's policy redacts the `ext.vnd.example.hr` namespace for non-administrators. The visible `entry` lacks that namespace, and `redactedFields` makes the redaction explicit:
 
 ```json
 {
@@ -172,12 +172,12 @@ A subject queries their own entry; the maintainer's policy redacts `metadata` fo
       "createdAt": "2026-05-16T10:00:00Z",
       "createdBy": "did:web:org.example"
     },
-    "redactedFields": ["metadata"]
+    "redactedFields": ["ext.vnd.example.hr"]
   }
 }
 ```
 
-Compare with the admin lookup above — Alice's `metadata.department` was present there but is omitted here.
+Compare with the admin lookup above — Alice's `ext.vnd.example.hr.department` was present there but is omitted here.
 
 ## Security & Privacy
 

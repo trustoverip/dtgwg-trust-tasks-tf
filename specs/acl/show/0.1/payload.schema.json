@@ -10,26 +10,13 @@
       "type": "string",
       "minLength": 1,
       "description": "VID of the party whose entry is being looked up."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
   "$defs": {
-    "AclEntry": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["subject", "role"],
-      "properties": {
-        "subject":    { "type": "string" },
-        "role":       { "type": "string" },
-        "scopes":     { "type": "array", "items": { "type": "string" } },
-        "label":      { "type": "string" },
-        "createdAt":  { "type": "string", "format": "date-time" },
-        "createdBy":  { "type": "string" },
-        "updatedAt":  { "type": "string", "format": "date-time" },
-        "updatedBy":  { "type": "string" },
-        "expiresAt":  { "type": "string", "format": "date-time" },
-        "metadata":   { "type": "object" }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "ACL Show — response payload",
@@ -42,13 +29,17 @@
           "description": "The looked-up AclEntry, or null if the subject is not in the ACL.",
           "oneOf": [
             { "type": "null" },
-            { "$ref": "#/$defs/AclEntry" }
+            { "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry" }
           ]
         },
         "redactedFields": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Names of AclEntry fields the maintainer redacted (for example, ['metadata'])."
+          "description": "Names of AclEntry fields the maintainer redacted (for example, ['label'] or ['ext.vnd.example.audit'])."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     }

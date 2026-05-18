@@ -181,4 +181,4 @@ A grant document is evidence: a captured `acl/grant` Trust Task proves who autho
 
 Where the subject is a natural person or the role vocabulary is sensitive (for example, signalling membership in a regulated community), producers **SHOULD** apply transport confidentiality appropriate to the privacy regime.
 
-The optional `metadata` extension is signed alongside the rest of the payload; producers **MUST NOT** place data in `metadata` that they would not be comfortable signing.
+The optional `ext` extension (see [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing. The `ext` slot is available at both the payload level and on the `AclEntry` itself — the same namespacing and ignore-unknown rules apply at both levels.

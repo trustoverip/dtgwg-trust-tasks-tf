@@ -181,7 +181,7 @@ Response to the "Filter by role, with paging" request example:
 
 ### A page with redactions
 
-A non-administrator queries; the maintainer returns entries but blanket-redacts `metadata` and `label`:
+A non-administrator queries; the maintainer returns entries but blanket-redacts the `label` field and any `ext.vnd.example.hr` namespace from each entry:
 
 ```json
 {
@@ -201,12 +201,12 @@ A non-administrator queries; the maintainer returns entries but blanket-redacts 
       }
     ],
     "truncated": false,
-    "redactedFields": ["metadata", "label"]
+    "redactedFields": ["label", "ext.vnd.example.hr"]
   }
 }
 ```
 
-`truncated: false` confirms the auditor has the complete result; `label` and `metadata` are absent from each entry because the maintainer's policy redacts them for this querying party.
+`truncated: false` confirms the auditor has the complete result; `label` and any `ext.vnd.example.hr` namespace are absent from each entry because the maintainer's policy redacts them for this querying party.
 
 ## Security & Privacy
 
