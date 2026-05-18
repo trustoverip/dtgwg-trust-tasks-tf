@@ -468,7 +468,9 @@ impl crate::validate::ValidatedPayload for Payload {
 }
 #[cfg(test)]
 mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`.
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:6e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"issuer\": \"did:web:client.example\",\n  \"recipient\": \"did:web:server.example\",\n  \"issuedAt\": \"2026-06-20T10:00:00Z\",\n  \"payload\": {}\n}\n";

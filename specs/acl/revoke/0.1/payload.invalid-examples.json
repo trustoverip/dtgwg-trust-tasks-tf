@@ -1,0 +1,24 @@
+[
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "ext": {
+        "bare-key": {}
+      }
+    }
+  },
+  {
+    "note": "Missing required `subject`.",
+    "payload": {
+      "scopes": ["context:project-alpha"]
+    }
+  },
+  {
+    "note": "Empty `scopes` violates minItems: 1 — if scopes is present at all the spec requires at least one entry; otherwise the entire entry is removed.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "scopes": []
+    }
+  }
+]

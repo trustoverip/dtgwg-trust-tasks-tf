@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "ext": {
+        "bareNamespace": {}
+      }
+    }
+  },
+  {
+    "note": "Missing required `subject`.",
+    "payload": {
+      "ext": {
+        "vnd.example.audit": { "requestor": "auditor-7" }
+      }
+    }
+  },
+  {
+    "note": "Empty `subject` violates minLength: 1.",
+    "payload": {
+      "subject": ""
+    }
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule: every immediate child of ext MUST be reverse-DNS namespaced.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin"
+      },
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  },
+  {
+    "note": "AclEntry missing required `role` field.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example"
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level payload member (additionalProperties: false catches `frobnicate`).",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin"
+      },
+      "frobnicate": true
+    }
+  }
+]

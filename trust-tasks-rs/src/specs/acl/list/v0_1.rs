@@ -661,7 +661,9 @@ impl crate::validate::ValidatedPayload for Payload {
 }
 #[cfg(test)]
 mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`.
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
         const JSON: &str = "{\n  \"id\": \"2e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/acl/list/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-06-15T10:00:00Z\",\n  \"payload\": {}\n}\n";
@@ -706,5 +708,45 @@ mod conformance {
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
         let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
+    }
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[
+            (
+                "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+                "{\n  \"ext\": {\n    \"noNamespace\": {}\n  }\n}",
+            ),
+            (
+                "pageSize above the spec-imposed maximum of 1000.",
+                "{\n  \"pageSize\": 5000\n}",
+            ),
+            (
+                "Unknown top-level filter member — additionalProperties: false catches `unknownFilter`.",
+                "{\n  \"role\": \"admin\",\n  \"unknownFilter\": \"value\"\n}",
+            ),
+        ];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
     }
 }

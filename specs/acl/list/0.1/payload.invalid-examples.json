@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "ext": {
+        "noNamespace": {}
+      }
+    }
+  },
+  {
+    "note": "pageSize above the spec-imposed maximum of 1000.",
+    "payload": {
+      "pageSize": 5000
+    }
+  },
+  {
+    "note": "Unknown top-level filter member — additionalProperties: false catches `unknownFilter`.",
+    "payload": {
+      "role": "admin",
+      "unknownFilter": "value"
+    }
+  }
+]

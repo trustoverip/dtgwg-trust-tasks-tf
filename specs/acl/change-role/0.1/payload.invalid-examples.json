@@ -1,0 +1,28 @@
+[
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "fromRole": "member",
+      "toRole": "admin",
+      "ext": {
+        "no-dots": {}
+      }
+    }
+  },
+  {
+    "note": "Missing required `toRole`.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "fromRole": "member"
+    }
+  },
+  {
+    "note": "Empty `toRole` violates minLength: 1.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "fromRole": "member",
+      "toRole": ""
+    }
+  }
+]
