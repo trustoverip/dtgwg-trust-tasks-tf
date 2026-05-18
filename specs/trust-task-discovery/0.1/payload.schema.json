@@ -28,11 +28,44 @@
         "supportedTypes": {
           "type": "array",
           "items": {
-            "type": "string",
-            "format": "uri",
-            "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists."
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uri",
+                "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set."
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists."
+                  },
+                  "requiredExt": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
+                  }
+                },
+                "description": "Object form: lists a Type URI together with optional capability annotations."
+              }
+            ],
+            "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`)."
           },
-          "description": "Each Type URI in this array MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates are not permitted."
+          "description": "Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form."
+        },
+        "frameworkVersion": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "description": "MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions."
         }
       }
     }
