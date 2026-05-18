@@ -43,7 +43,7 @@ jobs:
         env:
           RUSTDOCFLAGS: "-D warnings"
 
-  # NOTE: every crate in this workspace ends up declaring MSRV 1.94 —
+  # NOTE: every crate in this workspace ends up declaring MSRV 1.95 —
   # the Affinidi crate family requires it and the workspace resolves
   # under a single Cargo.lock. A separate MSRV job would just retest
   # the same toolchain as `test`. If the workspace ever splits its
@@ -99,6 +99,30 @@ jobs:
             git diff trust-tasks-rs/src/specs
             exit 1
           fi
+
+  package:
+    name: cargo package (trust-tasks-rs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # `cargo package` builds the publish tarball and then compiles a
+      # clean copy. That second step catches the bug class where
+      # generated code references files outside the crate root via
+      # `include_str!` (those paths get excluded from the tarball and
+      # the verify compile fails). We exercise both the default feature
+      # set and the `validate` feature so anything new that gets
+      # `include_str!`-ed is checked end-to-end. Sibling crates depend
+      # on `trust-tasks-rs` by path + version and can only be packaged
+      # once `trust-tasks-rs` is on crates.io; add them here when that
+      # happens.
+      - name: Install libdbus-1-dev
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+      - name: cargo package trust-tasks-rs (default features)
+        run: cargo package -p trust-tasks-rs
+      - name: cargo package trust-tasks-rs (--features validate)
+        run: cargo package -p trust-tasks-rs --features validate
 
   deny:
     name: cargo deny
