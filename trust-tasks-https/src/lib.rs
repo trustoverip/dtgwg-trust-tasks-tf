@@ -59,6 +59,10 @@ mod client;
 mod server;
 
 pub use auth::{Auth, BearerAuth};
+
+#[cfg(feature = "jwt")]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwt")))]
+pub use auth::JwtBearerAuth;
 pub use error::TransportError;
 pub use handler::{HttpsHandler, BINDING_URI};
 pub use status::status_for_code;

@@ -301,7 +301,7 @@ dependencies = [
  "http 1.4.0",
  "humantime",
  "itertools",
- "jsonwebtoken",
+ "jsonwebtoken 10.4.0",
  "metrics",
  "metrics-exporter-prometheus",
  "num-format",
@@ -437,7 +437,7 @@ dependencies = [
  "affinidi-secrets-resolver",
  "affinidi-tdk",
  "async-trait",
- "jsonwebtoken",
+ "jsonwebtoken 10.4.0",
  "ring",
  "rustls",
  "sha256",
@@ -3251,6 +3251,19 @@ dependencies = [
  "serde_json",
  "unicode-general-category",
  "uuid-simd",
+]
+
+[[package]]
+name = "jsonwebtoken"
+version = "9.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a87cc7a48537badeae96744432de36f4be2b4a34a05a5ef32e9dd8a1c169dde"
+dependencies = [
+ "base64 0.22.1",
+ "js-sys",
+ "ring",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -6275,6 +6288,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "chrono",
+ "jsonwebtoken 9.3.1",
  "reqwest 0.13.3",
  "serde",
  "serde_json",

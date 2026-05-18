@@ -14,6 +14,11 @@ publish = true
 default = ["client", "server"]
 client = ["dep:reqwest"]
 server = ["dep:axum", "dep:tokio", "dep:tower"]
+# Opt-in: JwtBearerAuth wraps an asymmetric-key JWT verifier into the
+# Auth trait. Off by default because most callers ship an opaque-token
+# directory (see BearerAuth) and don't want to pay for the jsonwebtoken
+# crate's transitive deps.
+jwt = ["dep:jsonwebtoken"]
 
 [dependencies]
 trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.1" }
@@ -30,6 +35,9 @@ tokio = { version = "1", optional = true, features = ["net", "rt", "macros", "sy
 
 # Client (feature-gated)
 reqwest = { version = "0.13", optional = true, default-features = false, features = ["json", "rustls"] }
+
+# JWT bearer-auth adapter (feature-gated under `jwt`)
+jsonwebtoken = { version = "9", optional = true, default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
