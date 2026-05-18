@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 # Effective MSRV is constrained by the workspace's transitive deps and
 # the Affinidi crates (`affinidi-data-integrity`, `affinidi-messaging-*`)
-# pulled in by the sibling binding crates, all of which declare MSRV
-# 1.94. Aligning here keeps the workspace honest under shared
-# resolution; trust-tasks-rs itself uses no 1.94-specific features and
-# can in principle build on older toolchains outside this workspace.
-rust-version = "1.94"
+# pulled in by the sibling binding crates. Aligning here keeps the
+# workspace honest under shared resolution; trust-tasks-rs itself uses
+# no 1.95-specific features and can in principle build on older
+# toolchains outside this workspace.
+rust-version = "1.95"
 description = "Reference Rust library for the Trust Tasks framework — transport-agnostic, JSON-based descriptions of verifiable work between parties."
 license = "Apache-2.0"
 repository = "https://github.com/trustoverip/dtgwg-trust-tasks-tf"
@@ -17,6 +17,7 @@ documentation = "https://docs.rs/trust-tasks-rs"
 readme = "README.md"
 keywords = ["trust-tasks", "trustoverip", "did", "json-schema", "verifiable"]
 categories = ["data-structures", "encoding"]
+publish = true
 
 [features]
 default = []
@@ -31,7 +32,7 @@ serde_with = "3"
 chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
 thiserror = "2"
 async-trait = "0.1"
-jsonschema = { version = "0.17", default-features = false, features = ["draft202012"], optional = true }
+jsonschema = { version = "0.46", default-features = false, optional = true }
 
 [dev-dependencies]
 serde_json = "1"

@@ -2,12 +2,13 @@
 name = "trust-tasks-proof"
 version = "0.1.0"
 edition.workspace = true
-rust-version = "1.94" # affinidi-data-integrity declares MSRV 1.94
+rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "Pluggable ProofVerifier implementations for the Trust Tasks framework. Backends are gated by Cargo features; ships with an Affinidi Data Integrity backend (EdDSA suites) by default."
 keywords = ["trust-tasks", "data-integrity", "did", "proof"]
 categories = ["cryptography", "authentication"]
+publish = true
 
 [features]
 default = ["affinidi"]

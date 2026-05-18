@@ -2,12 +2,13 @@
 name = "trust-tasks-https"
 version = "0.1.0"
 edition.workspace = true
-rust-version = "1.94"
+rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "HTTPS transport binding for the Trust Tasks framework — typed client + axum-based server with bearer-auth identity, suitable for demos, mockups, and end-to-end testing."
 keywords = ["trust-tasks", "https", "axum", "reqwest", "transport"]
 categories = ["network-programming", "web-programming::http-server"]
+publish = true
 
 [features]
 default = ["client", "server"]
@@ -28,8 +29,8 @@ tower = { version = "0.5", optional = true, default-features = false }
 tokio = { version = "1", optional = true, features = ["net", "rt", "macros", "sync"] }
 
 # Client (feature-gated)
-reqwest = { version = "0.12", optional = true, default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.13", optional = true, default-features = false, features = ["json", "rustls"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }

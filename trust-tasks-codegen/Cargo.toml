@@ -2,7 +2,7 @@
 name = "trust-tasks-codegen"
 version = "0.1.0"
 edition.workspace = true
-rust-version = "1.94"
+rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "Code generator that emits Rust payload types for trust-tasks-rs from the specs/ registry."

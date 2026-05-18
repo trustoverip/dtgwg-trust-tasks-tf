@@ -76,13 +76,13 @@ pub trait ValidatedPayload: Payload {
 pub fn against_schema(schema_json: &str, value: &Value) -> Result<(), ValidationError> {
     let schema_value: Value =
         serde_json::from_str(schema_json).map_err(ValidationError::schema_parse)?;
-    let compiled = jsonschema::JSONSchema::options()
+    let compiled = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft202012)
-        .compile(&schema_value)
+        .build(&schema_value)
         .map_err(|e| ValidationError::schema_compile(e.to_string()))?;
 
-    if let Err(errors) = compiled.validate(value) {
-        let messages: Vec<String> = errors.map(|e| e.to_string()).collect();
+    let messages: Vec<String> = compiled.iter_errors(value).map(|e| e.to_string()).collect();
+    if !messages.is_empty() {
         return Err(ValidationError::instance(messages));
     }
     Ok(())

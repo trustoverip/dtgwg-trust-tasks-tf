@@ -2,12 +2,13 @@
 name = "trust-tasks-didcomm"
 version = "0.1.0"
 edition.workspace = true
-rust-version = "1.94"
+rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "DIDComm v2.1 transport binding for the Trust Tasks framework, built on affinidi-messaging-didcomm. Provides pack/unpack helpers and a TransportHandler that maps the verified envelope sender into the framework's §4.8.1 precedence."
 keywords = ["trust-tasks", "didcomm", "affinidi", "did", "transport"]
 categories = ["network-programming", "cryptography"]
+publish = true
 
 [dependencies]
 trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.1" }
