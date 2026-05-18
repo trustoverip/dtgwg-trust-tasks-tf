@@ -129,6 +129,13 @@ impl<R> Dispatcher<R> {
     /// per SPEC.md §8.1 — neither carries the `identity_mismatch`
     /// transport-routing exception, so the safe default in
     /// [`TrustTask::reject_with`] applies.
+    ///
+    /// `ErrorResponse` is intentionally large (it carries a full
+    /// `trust-task-error/0.1` document including a typed payload and
+    /// extra-member map). Boxing it in the `Err` variant would just push
+    /// the allocation onto every caller; the convenience this method
+    /// provides assumes the caller wants the value back unboxed.
+    #[allow(clippy::result_large_err)]
     pub fn dispatch_or_reject(
         &self,
         doc: TrustTask<Value>,
@@ -187,6 +194,44 @@ fn build_error_response(
 
 fn canonical_key(uri: &crate::type_uri::TypeUri) -> String {
     uri.for_routing().to_string()
+}
+
+fn downcast_payload<P>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason>
+where
+    P: Payload,
+{
+    let TrustTask {
+        id,
+        thread_id,
+        type_uri,
+        issuer,
+        recipient,
+        issued_at,
+        expires_at,
+        payload,
+        context,
+        proof,
+        extra,
+    } = doc;
+
+    let payload: P =
+        serde_json::from_value(payload).map_err(|e| RejectReason::MalformedRequest {
+            reason: format!("payload does not match {}: {e}", P::TYPE_URI),
+        })?;
+
+    Ok(TrustTask {
+        id,
+        thread_id,
+        type_uri,
+        issuer,
+        recipient,
+        issued_at,
+        expires_at,
+        payload,
+        context,
+        proof,
+        extra,
+    })
 }
 
 #[cfg(test)]
@@ -253,42 +298,4 @@ mod tests {
 
         assert_eq!(outcome, "handled");
     }
-}
-
-fn downcast_payload<P>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason>
-where
-    P: Payload,
-{
-    let TrustTask {
-        id,
-        thread_id,
-        type_uri,
-        issuer,
-        recipient,
-        issued_at,
-        expires_at,
-        payload,
-        context,
-        proof,
-        extra,
-    } = doc;
-
-    let payload: P =
-        serde_json::from_value(payload).map_err(|e| RejectReason::MalformedRequest {
-            reason: format!("payload does not match {}: {e}", P::TYPE_URI),
-        })?;
-
-    Ok(TrustTask {
-        id,
-        thread_id,
-        type_uri,
-        issuer,
-        recipient,
-        issued_at,
-        expires_at,
-        payload,
-        context,
-        proof,
-        extra,
-    })
 }

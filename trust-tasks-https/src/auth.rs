@@ -129,9 +129,14 @@ mod jwt {
     pub struct JwtBearerAuth<C: DeserializeOwned + Send + Sync + 'static> {
         key: DecodingKey,
         validation: Validation,
-        extract: Box<dyn Fn(&C) -> Option<String> + Send + Sync>,
+        extract: Box<ExtractFn<C>>,
         _phantom: PhantomData<fn() -> C>,
     }
+
+    /// Caller-supplied subject-extraction closure: given the decoded
+    /// typed claims, return the VID string (or `None` to fall back to
+    /// unauthenticated, e.g. if the claim that names the VID is empty).
+    type ExtractFn<C> = dyn Fn(&C) -> Option<String> + Send + Sync;
 
     impl<C: DeserializeOwned + Send + Sync + 'static> JwtBearerAuth<C> {
         /// Build a [`JwtBearerAuth`] over the supplied verification key,

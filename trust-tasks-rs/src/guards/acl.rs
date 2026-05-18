@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn single_admin_revocation_trips_guard() {
-        let entries = vec![
+        let entries = [
             E {
                 subject: "did:web:alice.example",
                 role: "admin",
@@ -120,7 +120,7 @@ mod tests {
 
     #[test]
     fn two_admins_revocation_does_not_trip_guard() {
-        let entries = vec![
+        let entries = [
             E {
                 subject: "did:web:alice.example",
                 role: "admin",
@@ -138,7 +138,7 @@ mod tests {
 
     #[test]
     fn revoking_non_admin_does_not_trip_guard_even_if_only_one_admin() {
-        let entries = vec![
+        let entries = [
             E {
                 subject: "did:web:alice.example",
                 role: "admin",
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn revoking_target_not_in_acl_does_not_trip_guard() {
-        let entries = vec![E {
+        let entries = [E {
             subject: "did:web:alice.example",
             role: "admin",
         }];
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn empty_acl_does_not_trip_guard() {
-        let entries: Vec<E> = vec![];
+        let entries: [E; 0] = [];
         assert_eq!(
             reject_last_authority(entries.iter(), is_admin, target_alice),
             None
@@ -211,7 +211,7 @@ mod tests {
             expires_at: None,
             ext: None,
         };
-        let entries = vec![admin, member];
+        let entries = [admin, member];
 
         assert_eq!(
             reject_last_authority(
