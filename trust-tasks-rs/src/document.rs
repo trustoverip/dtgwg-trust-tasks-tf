@@ -307,7 +307,7 @@ impl<P> TrustTask<P> {
     }
 }
 
-fn trust_task_error_type_uri() -> TypeUri {
+pub(crate) fn trust_task_error_type_uri() -> TypeUri {
     // The `trust-task-error/0.1` slug is a framework-defined reserved name,
     // so `TypeUri::canonical` accepts it.
     TypeUri::canonical("trust-task-error", 0, 1)

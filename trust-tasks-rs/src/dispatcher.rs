@@ -23,10 +23,11 @@
 
 use std::collections::HashMap;
 
+use chrono::Utc;
 use serde_json::Value;
 
-use crate::document::TrustTask;
-use crate::error::RejectReason;
+use crate::document::{trust_task_error_type_uri, ErrorResponse, TrustTask};
+use crate::error::{ErrorPayload, RejectReason};
 use crate::payload::Payload;
 
 type BoxedHandler<R> = Box<dyn Fn(TrustTask<Value>) -> Result<R, RejectReason> + Send + Sync>;
@@ -107,10 +108,151 @@ impl<R> Dispatcher<R> {
         v.sort_unstable();
         v
     }
+
+    /// Route `doc` to the registered handler, returning either the
+    /// handler's success value or an [`ErrorResponse`] already routed
+    /// per SPEC.md §8.1.
+    ///
+    /// Equivalent to calling [`Self::dispatch`] and hand-converting any
+    /// [`RejectReason`] via [`TrustTask::reject_with`] — most consumer
+    /// code today writes that conversion as a six-line `match`, so this
+    /// is the convenience form.
+    ///
+    /// `error_id` supplies the `id` for the error response; the framework
+    /// places no constraints on its form beyond uniqueness (SPEC.md §4.3).
+    /// UUIDv4 is the recommended default.
+    ///
+    /// The dispatcher only emits [`RejectReason::UnsupportedType`] (no
+    /// handler registered for this Type URI) and
+    /// [`RejectReason::MalformedRequest`] (payload failed to deserialize
+    /// into the registered `P`). Both are routed to the original producer
+    /// per SPEC.md §8.1 — neither carries the `identity_mismatch`
+    /// transport-routing exception, so the safe default in
+    /// [`TrustTask::reject_with`] applies.
+    pub fn dispatch_or_reject(
+        &self,
+        doc: TrustTask<Value>,
+        error_id: impl Into<String>,
+    ) -> Result<R, ErrorResponse> {
+        // §8.1 needs `id`, `threadId`, `issuer`, `recipient`, `type_uri`
+        // to build the error response. The handler consumes `doc`, so we
+        // capture the small bits up front.
+        let id = doc.id.clone();
+        let thread_id = doc.thread_id.clone();
+        let issuer = doc.issuer.clone();
+        let recipient = doc.recipient.clone();
+
+        match self.dispatch(doc) {
+            Ok(value) => Ok(value),
+            Err(reason) => Err(build_error_response(
+                error_id.into(),
+                id,
+                thread_id,
+                issuer,
+                recipient,
+                ErrorPayload::from(reason),
+            )),
+        }
+    }
+}
+
+/// Hand-build the §8.1-routed [`ErrorResponse`] for a routing-time
+/// failure. Mirrors [`TrustTask::reject_with`] but does not require an
+/// intact `TrustTask` — the dispatcher has already moved the inbound
+/// document into the handler by the time we know we need an error
+/// response, so we work from the metadata cloned beforehand.
+fn build_error_response(
+    error_id: String,
+    request_id: String,
+    request_thread_id: Option<String>,
+    request_issuer: Option<String>,
+    request_recipient: Option<String>,
+    payload: ErrorPayload,
+) -> ErrorResponse {
+    let thread_id = request_thread_id.or(Some(request_id));
+    ErrorResponse {
+        id: error_id,
+        thread_id,
+        type_uri: trust_task_error_type_uri(),
+        issuer: request_recipient,
+        recipient: request_issuer,
+        issued_at: Some(Utc::now()),
+        expires_at: None,
+        payload,
+        context: None,
+        proof: None,
+        extra: Default::default(),
+    }
 }
 
 fn canonical_key(uri: &crate::type_uri::TypeUri) -> String {
     uri.for_routing().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::specs::acl::grant::v0_1 as grant;
+    use crate::StandardCode;
+
+    fn payload() -> grant::Payload {
+        grant::Payload {
+            entry: grant::AclEntry {
+                subject: "did:web:alice.example".into(),
+                role: "admin".into(),
+                scopes: vec![],
+                label: None,
+                created_at: None,
+                created_by: None,
+                updated_at: None,
+                updated_by: None,
+                expires_at: None,
+                ext: None,
+            },
+            reason: None,
+            ext: None,
+        }
+    }
+
+    #[test]
+    fn dispatch_or_reject_unsupported_type_routes_back_to_original_issuer() {
+        // Dispatcher has no handler at all; any inbound doc → unsupported_type.
+        let dispatcher: Dispatcher<()> = Dispatcher::new();
+        let mut doc = TrustTask::for_payload("req-9", payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        let doc_as_value = serde_json::to_value(&doc).unwrap();
+        let doc_as_value: TrustTask<Value> = serde_json::from_value(doc_as_value).unwrap();
+
+        let err = dispatcher
+            .dispatch_or_reject(doc_as_value, "err-9")
+            .unwrap_err();
+
+        // §8.1 routing: response addresses the original producer.
+        assert_eq!(err.id, "err-9");
+        assert_eq!(err.thread_id.as_deref(), Some("req-9"));
+        assert_eq!(err.issuer.as_deref(), Some("did:web:maintainer.example"));
+        assert_eq!(err.recipient.as_deref(), Some("did:web:org.example"));
+        assert_eq!(err.payload.code, StandardCode::UnsupportedType.into());
+    }
+
+    #[test]
+    fn dispatch_or_reject_passes_handler_value_through() {
+        let dispatcher =
+            Dispatcher::<String>::new().on::<grant::Payload, _>(|_doc| "handled".to_string());
+
+        let mut doc = TrustTask::for_payload("req-10", payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        let doc_as_value: TrustTask<Value> =
+            serde_json::from_value(serde_json::to_value(&doc).unwrap()).unwrap();
+
+        let outcome = dispatcher
+            .dispatch_or_reject(doc_as_value, "err-10")
+            .unwrap();
+
+        assert_eq!(outcome, "handled");
+    }
 }
 
 fn downcast_payload<P>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason>
