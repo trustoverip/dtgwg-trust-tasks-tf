@@ -16,7 +16,7 @@ use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use trust_tasks_https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks_rs::{
-    specs::acl::{grant, list, revoke},
+    specs::acl::{grant, list, revoke, show},
     specs::trust_task_discovery::v0_1 as discovery,
     Proof, RejectReason, StandardCode, TrustTask, TypeUri,
 };
@@ -35,24 +35,41 @@ async fn spawn_server() -> SocketAddr {
     let server = HttpsServer::builder()
         .local_vid(SERVER_VID)
         .with_auth(auth)
+        // acl/grant + acl/revoke are `proofRequirement: REQUIRED` —
+        // unreachable on this binding until a verifier hook is wired
+        // in. They stay registered so discovery advertises them; the
+        // dispatch-level IS_PROOF_REQUIRED check returns
+        // `proof_required` before the handler body runs.
         .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, _ctx| {
             Ok(grant::v0_1::Response {
                 entry: req.payload.entry.clone(),
                 ext: None,
             })
         })
-        .on::<revoke::v0_1::Payload, revoke::v0_1::Response, _>(|_req, ctx| {
-            if ctx.authenticated_sender.is_none() {
-                return Err(RejectReason::PermissionDenied {
-                    reason: "revoke requires authentication".into(),
-                });
-            }
+        .on::<revoke::v0_1::Payload, revoke::v0_1::Response, _>(|_req, _ctx| {
             Ok(revoke::v0_1::Response {
                 entry: None,
                 ext: None,
             })
         })
-        // Auto-advertise the two acl handlers (and discovery itself) via
+        // acl/list is `proofRequirement: RECOMMENDED` — the binding
+        // accepts proofless requests for it, so the happy-path and
+        // permission-denied integration tests use it as their carrier.
+        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, ctx| {
+            if ctx.authenticated_sender.is_none() {
+                return Err(RejectReason::PermissionDenied {
+                    reason: "list requires authentication".into(),
+                });
+            }
+            Ok(list::v0_1::Response {
+                entries: vec![],
+                cursor: None,
+                redacted_fields: vec![],
+                truncated: false,
+                ext: None,
+            })
+        })
+        // Auto-advertise the registered handlers (and discovery itself) via
         // trust-task-discovery/0.1.
         .enable_discovery()
         .build();
@@ -92,33 +109,42 @@ fn build_client(addr: SocketAddr, my_vid: &str, my_token: Option<&str>) -> Https
     builder.build().unwrap()
 }
 
+/// Happy path via `acl/list` — a `proofRequirement: RECOMMENDED` spec
+/// that the server can process without a verifier. `acl/grant` and
+/// `acl/revoke` are `REQUIRED` and now reach `proof_required` before
+/// the handler; they will be re-enabled here once the binding grows
+/// a verifier plug-in point.
 #[tokio::test]
-async fn happy_path_acl_grant() {
+async fn happy_path_acl_list() {
     let addr = spawn_server().await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
     let req = TrustTask::for_payload(
-        "urn:uuid:test-grant-1",
-        grant::v0_1::Payload {
-            entry: entry(),
-            reason: None,
+        "urn:uuid:test-list-1",
+        list::v0_1::Payload {
+            role: None,
+            scope: None,
+            subject_prefix: None,
+            page_size: None,
+            cursor: None,
             ext: None,
         },
     );
 
     let resp = client
-        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
+        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
         .await
         .unwrap();
 
     assert_eq!(
         resp.type_uri,
-        "https://trusttasks.org/spec/acl/grant/0.1#response"
+        "https://trusttasks.org/spec/acl/list/0.1#response"
             .parse::<TypeUri>()
             .unwrap()
     );
-    assert_eq!(&*resp.payload.entry.role, "admin");
-    assert_eq!(resp.thread_id.as_deref(), Some("urn:uuid:test-grant-1"));
+    assert!(resp.payload.entries.is_empty());
+    assert!(!resp.payload.truncated);
+    assert_eq!(resp.thread_id.as_deref(), Some("urn:uuid:test-list-1"));
     // Server's response addresses the original producer.
     assert_eq!(resp.recipient.as_deref(), Some("did:web:alice.example"));
 }
@@ -161,22 +187,18 @@ async fn unsupported_type_for_unregistered_uri() {
     let addr = spawn_server().await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
-    // We send an acl/list request — the test server didn't register a
+    // We send an acl/show request — the test server didn't register a
     // handler for it, so the dispatcher returns UnsupportedType.
     let req = TrustTask::for_payload(
         "urn:uuid:test-unsupported",
-        list::v0_1::Payload {
-            role: None,
-            scope: None,
-            subject_prefix: None,
-            page_size: None,
-            cursor: None,
+        show::v0_1::Payload {
+            subject: "did:web:bob.example".parse().unwrap(),
             ext: None,
         },
     );
 
     let err = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
+        .send::<show::v0_1::Payload, show::v0_1::Response>(req)
         .await
         .unwrap_err();
 
@@ -211,11 +233,11 @@ async fn discovery_advertises_registered_handlers() {
         got,
         vec![
             "https://trusttasks.org/spec/acl/grant/0.1",
+            "https://trusttasks.org/spec/acl/list/0.1",
             "https://trusttasks.org/spec/acl/revoke/0.1",
             "https://trusttasks.org/spec/trust-task-discovery/0.1",
         ],
-        "enable_discovery() should advertise the registered acl/grant + acl/revoke handlers \
-         plus discovery itself"
+        "enable_discovery() should advertise the registered acl/* handlers plus discovery itself"
     );
 
     // SPEC §4.4.1: the success response carries the #response variant
@@ -255,9 +277,10 @@ async fn discovery_filter_returns_only_matching_slugs() {
         got,
         vec![
             "https://trusttasks.org/spec/acl/grant/0.1",
+            "https://trusttasks.org/spec/acl/list/0.1",
             "https://trusttasks.org/spec/acl/revoke/0.1",
         ],
-        "acl/* should match grant + revoke but not trust-task-discovery"
+        "acl/* should match the three acl handlers but not trust-task-discovery"
     );
 }
 
@@ -265,6 +288,92 @@ fn uri_of(entry: &discovery::ResponseSupportedTypesItem) -> &str {
     match entry {
         discovery::ResponseSupportedTypesItem::Uri(s) => s.as_str(),
         discovery::ResponseSupportedTypesItem::Object { type_, .. } => type_.as_str(),
+    }
+}
+
+/// SPEC §7.2 item 7 (REQUIRED clause). `acl/grant` has
+/// `proofRequirement.requirement: REQUIRED` in front matter, so codegen
+/// emits `IS_PROOF_REQUIRED = true`. The server MUST reject a proofless
+/// `acl/grant` request with `proof_required`, regardless of whether the
+/// binding has its own verifier.
+#[tokio::test]
+async fn proof_required_when_spec_requires_and_doc_lacks_proof() {
+    let addr = spawn_server().await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+
+    // No proof on a REQUIRED spec.
+    let req = TrustTask::for_payload(
+        "urn:uuid:test-proof-required",
+        grant::v0_1::Payload {
+            entry: entry(),
+            reason: None,
+            ext: None,
+        },
+    );
+
+    let err = client
+        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
+        .await
+        .unwrap_err();
+
+    match err {
+        ClientError::TrustTaskError { http_status, error } => {
+            // status.rs maps proof_required → 401 Unauthorized.
+            assert_eq!(http_status, 401);
+            assert_eq!(error.payload.code, StandardCode::ProofRequired.into());
+        }
+        other => panic!("expected TrustTaskError, got {other:?}"),
+    }
+}
+
+/// SPEC §8.1 — under `identity_mismatch`, the response MUST address the
+/// transport-authenticated peer, not the contested in-band issuer. The
+/// PR added a proof-bearing rejection earlier in the pipeline; this test
+/// pins that identity_mismatch still wins (it runs before proof
+/// handling), and that no identity oracle is created by the new path.
+#[tokio::test]
+async fn proof_bearing_with_identity_mismatch_routes_to_transport_peer() {
+    let addr = spawn_server().await;
+    // Send as alice (bearer = alice) but claim to be carol (in-band issuer).
+    let client = build_client(addr, "did:web:carol.example", Some("alice"));
+
+    let mut req = TrustTask::for_payload(
+        "urn:uuid:test-proof-and-mismatch",
+        grant::v0_1::Payload {
+            entry: entry(),
+            reason: None,
+            ext: None,
+        },
+    );
+    req.proof = Some(Proof {
+        proof_type: "DataIntegrityProof".into(),
+        cryptosuite: "eddsa-rdfc-2022".into(),
+        verification_method: "did:web:carol.example#key-1".into(),
+        created: chrono::Utc::now(),
+        proof_purpose: "assertionMethod".into(),
+        proof_value: "z3kg".into(),
+        extra: Default::default(),
+    });
+
+    let err = client
+        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
+        .await
+        .unwrap_err();
+
+    match err {
+        ClientError::TrustTaskError { http_status, error } => {
+            assert_eq!(http_status, 403);
+            // §8.1: identity_mismatch wins over the proof-rejection
+            // path because the in-band issuer is contested and we
+            // MUST NOT leak that "your proof was rejected" to a
+            // potential impostor.
+            assert_eq!(error.payload.code, StandardCode::IdentityMismatch.into());
+            // Wire message MUST NOT name either VID.
+            let msg = error.payload.message.as_deref().unwrap_or("");
+            assert!(!msg.contains("alice"), "wire leak: {msg}");
+            assert!(!msg.contains("carol"), "wire leak: {msg}");
+        }
+        other => panic!("expected TrustTaskError, got {other:?}"),
     }
 }
 
@@ -317,21 +426,23 @@ async fn proof_bearing_document_rejected_when_server_has_no_verifier() {
 #[tokio::test]
 async fn permission_denied_from_spec_handler() {
     let addr = spawn_server().await;
-    // No bearer token — revoke handler rejects.
+    // No bearer token — list handler rejects on unauthenticated calls.
     let client = build_client(addr, "did:web:alice.example", None);
 
     let req = TrustTask::for_payload(
-        "urn:uuid:test-revoke",
-        revoke::v0_1::Payload {
-            subject: "did:web:bob.example".into(),
-            scopes: vec![],
-            reason: None,
+        "urn:uuid:test-list-noauth",
+        list::v0_1::Payload {
+            role: None,
+            scope: None,
+            subject_prefix: None,
+            page_size: None,
+            cursor: None,
             ext: None,
         },
     );
 
     let err = client
-        .send::<revoke::v0_1::Payload, revoke::v0_1::Response>(req)
+        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
         .await
         .unwrap_err();
 

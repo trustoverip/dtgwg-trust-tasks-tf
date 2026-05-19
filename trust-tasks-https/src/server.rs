@@ -100,6 +100,19 @@ impl HttpsServerBuilder {
             // Downcast payload to P.
             let typed = downcast::<P>(doc)?;
 
+            // SPEC §7.2 item 7 — proof-required enforcement. The server
+            // has no in-band verifier, but a *spec* may still oblige
+            // every conforming consumer to refuse proofless documents
+            // (`proofRequirement.requirement: REQUIRED` in front matter
+            // ⇒ codegen-emitted `IS_PROOF_REQUIRED = true`). The
+            // proof-present case is rejected upstream in
+            // `dispatch_handler`; here we close the converse so REQUIRED
+            // specs cannot be processed without a proof simply because
+            // this binding does not verify.
+            if typed.proof.is_none() && P::IS_PROOF_REQUIRED {
+                return Err(RejectReason::ProofRequired);
+            }
+
             // SPEC §7.2 item 8 — audience binding. This is the first point
             // where we have a typed payload (and therefore P::IS_BEARER).
             typed.enforce_audience_binding()?;
