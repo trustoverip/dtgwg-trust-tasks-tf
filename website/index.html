@@ -34,16 +34,26 @@
     const { useState: useStateApp, useEffect: useEffectApp } = React;
 
     /* parse pathname: /, /registry, /registry/identity, /spec/<slug...>/<version>,
-       /bindings/<slug>/<version>, etc. Slugs may be hierarchical (e.g.
+       /binding/<slug>/<version>, etc. Slugs may be hierarchical (e.g.
        /spec/acl/grant/0.1); the version is always the final segment, the slug
-       is everything between /spec/ (or /bindings/) and the version. */
+       is everything between /spec/ (or /binding/) and the version.
+
+       Per SPEC §9.3 the canonical binding URI uses singular /binding/, which is
+       what bindingURI fields advertise. We also accept legacy plural /bindings/
+       so old in-app history entries continue to resolve. The bindings *index*
+       page (no slug) is reached via /bindings (plural) — keeping that distinct
+       from a binding URI with no version. */
     function parsePath() {
       const path = location.pathname.replace(/^\/+|\/+$/g, "");
       if (!path) return { name: "home" };
       const [name, ...rest] = path.split("/");
-      if (name === "spec" || name === "bindings") {
+      if (name === "spec" || name === "binding" || name === "bindings") {
         const routeName = name === "spec" ? "spec" : "binding";
-        if (rest.length === 0) return { name: name === "spec" ? "spec" : "bindings" };
+        if (rest.length === 0) {
+          // /spec → spec index; /bindings → bindings index; /binding (with
+          // no slug) is non-canonical but treated as the bindings index.
+          return { name: name === "spec" ? "spec" : "bindings" };
+        }
         // Heuristic: if the last segment looks like MAJOR.MINOR, it's the version.
         const last = rest[rest.length - 1];
         const versionLike = /^\d+\.\d+$/.test(last);
@@ -75,7 +85,9 @@
           path = `/spec/${r.slug || r.id}${v ? "/" + v : ""}`;
         } else if (r.name === "binding") {
           const v = r.version || (window.TT_BINDINGS && (window.TT_BINDINGS.find(b => b.slug === r.slug) || {}).version) || "";
-          path = `/bindings/${r.slug}${v ? "/" + v : ""}`;
+          // Singular /binding/ per SPEC §9.3; matches the canonical bindingURI
+          // shown on each binding's spec page.
+          path = `/binding/${r.slug}${v ? "/" + v : ""}`;
         } else if (r.name === "registry" && r.cat) {
           path = `/registry/${r.cat}`;
         } else if (r.name === "home") {

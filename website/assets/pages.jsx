@@ -1583,7 +1583,7 @@ function BindingsPage({ setRoute }) {
               {bindings.map(b => (
                 <a
                   key={b.id}
-                  href={`/bindings/${b.slug}/${b.version}`}
+                  href={`/binding/${b.slug}/${b.version}`}
                   onClick={(e) => { e.preventDefault(); setRoute({ name: "binding", slug: b.slug, version: b.version }); }}
                   style={{
                     border: "1px solid var(--tt-border)",
@@ -1647,14 +1647,29 @@ function BindingsPage({ setRoute }) {
 }
 
 function BindingSpecPage({ slug, version, setRoute }) {
-  const binding = (window.TT_BINDINGS || []).find(b => b.slug === slug && (!version || b.version === version))
-              || (window.TT_BINDINGS || [])[0];
+  const all = window.TT_BINDINGS || [];
+  // Strict lookup — no fallback to the first registered binding. The
+  // previous behavior silently rendered the wrong spec when a route
+  // arrived with no slug (e.g. when the parser failed to recognize a
+  // URL form) or with an unknown slug.
+  const binding = all.find(b => b.slug === slug && (!version || b.version === version));
   if (!binding) {
     return (
       <section className="container">
         <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
-          <b>No transport bindings are currently registered.</b><br />
-          Add one under <code>bindings/&lt;slug&gt;/&lt;version&gt;/</code>.
+          {all.length === 0 ? (
+            <>
+              <b>No transport bindings are currently registered.</b><br />
+              Add one under <code>bindings/&lt;slug&gt;/&lt;version&gt;/</code>.
+            </>
+          ) : (
+            <>
+              <b>No binding registered for <code>{slug || "(missing slug)"}{version ? `/${version}` : ""}</code>.</b><br />
+              <a href="/bindings" onClick={(e) => { e.preventDefault(); setRoute({ name: "bindings" }); }}>
+                See the binding registry →
+              </a>
+            </>
+          )}
         </div>
       </section>
     );
