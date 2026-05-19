@@ -4,7 +4,7 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
-## [Unreleased] — staged into `0.1.1`
+## [0.1.1] — 2026-05-19
 
 ### Added
 
@@ -80,4 +80,5 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 - `client` (default) — `HttpsClient` + `reqwest`.
 - `server` (default) — `HttpsServer` + `axum` + `tokio` + `tower`.
 
+[0.1.1]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-https-v0.1.1
 [0.1.0]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/v0.1.0

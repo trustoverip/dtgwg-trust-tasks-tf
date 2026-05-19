@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
-## [Unreleased] — staged into `0.1.1`
+## [0.1.1] — 2026-05-19
 
 ### Changed — consumer-pipeline hardening (SPEC §7.2 items 6 + 7)
 
@@ -131,4 +131,5 @@ the corresponding `SPEC.md` framework version.
 - `TypeUri` parser accepts `trust-task-discovery` as a framework-defined
   slug per the SPEC §6.1 reserved-slug list.
 
+[0.1.1]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-rs-v0.1.1
 [0.1.0]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/v0.1.0
