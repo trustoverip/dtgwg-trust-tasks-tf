@@ -6,6 +6,14 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
 ## [Unreleased] — staged into `0.1.1`
 
+### Added
+
+- `RequestContext.resolved: ResolvedParties` — handlers can now read
+  the SPEC §4.8.1-resolved issuer/recipient pair directly instead of
+  re-running `TransportHandler::resolve_parties` to re-derive what the
+  dispatch pipeline already computed. Matches the ergonomic improvement
+  in `trust-tasks-rs` `consume_inbound`'s handler signature.
+
 ### Fixed — security
 
 - The server previously accepted documents carrying a `proof` member
@@ -13,9 +21,11 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
   that signed its document and saw a 200 had no way to learn that the
   signature was never checked. The server now rejects proof-bearing
   documents with `malformed_request` at the framework-checks stage,
-  matching the same rule `consume_inbound` now applies. Deployments
-  that need to accept proof-bearing documents must layer in a verifier;
-  the binding does not provide one out of the box.
+  matching the same rule `consume_inbound` now applies under
+  `ProofPolicy::RejectIfPresent`. The wire-exposed reason is the
+  framework-shared `PROOF_NOT_ACCEPTED_BY_POLICY` constant — naming
+  the server's configuration would let an unauthenticated probe
+  fingerprint verifier coverage across a fleet.
 - The server previously accepted *proofless* documents on specs whose
   front matter declares `proofRequirement.requirement: REQUIRED` —
   silently violating SPEC §7.2 item 7. The dispatch closure now

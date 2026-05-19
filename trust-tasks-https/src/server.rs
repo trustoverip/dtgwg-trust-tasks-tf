@@ -20,8 +20,8 @@ use serde::Serialize;
 use serde_json::Value;
 use trust_tasks_rs::{
     discovery::DiscoveryRegistry, specs::trust_task_discovery::v0_1 as discovery, ErrorPayload,
-    ErrorResponse, Payload, RejectReason, StandardCode, TransportHandler, TrustTask,
-    PROOF_NOT_ACCEPTED_BY_POLICY,
+    ErrorResponse, Payload, RejectReason, ResolvedParties, StandardCode, TransportHandler,
+    TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 use uuid::Uuid;
 
@@ -30,14 +30,22 @@ use crate::handler::HttpsHandler;
 use crate::status::status_for_code;
 
 /// Context handed to every spec handler — the transport-authenticated
-/// peer (when present) and convenience accessors for the inbound
-/// document's metadata.
+/// peer (when present), convenience accessors for the inbound
+/// document's metadata, and the SPEC §4.8.1-resolved party identities.
 #[derive(Debug, Clone)]
 pub struct RequestContext {
-    /// VID of the transport-authenticated sender, if any.
+    /// VID of the transport-authenticated sender, if any. Equivalent to
+    /// `resolved.issuer` when the in-band `issuer` is absent and the
+    /// transport authenticated a peer; preserved separately so handlers
+    /// can audit-log the distinction between in-band and derived.
     pub authenticated_sender: Option<String>,
     /// VID of the local party serving this request.
     pub local: Option<String>,
+    /// SPEC §4.8.1-resolved party identities (in-band wins over
+    /// transport-derived; transport fills in absent in-band values).
+    /// Handlers can use this directly instead of re-running
+    /// [`TransportHandler::resolve_parties`].
+    pub resolved: ResolvedParties,
 }
 
 /// A spec-specific handler stored type-erased in the dispatch table.
@@ -239,7 +247,7 @@ async fn dispatch_handler(
 
     // ─── 3. Build the per-request HttpsHandler and resolve parties.
     let handler = HttpsHandler::new(state.local_vid.clone(), peer_vid);
-    let _resolved = match handler.resolve_parties(&doc) {
+    let resolved = match handler.resolve_parties(&doc) {
         Ok(r) => r,
         Err(consistency) => {
             let reason: RejectReason = consistency.into();
@@ -289,6 +297,7 @@ async fn dispatch_handler(
     let ctx = RequestContext {
         authenticated_sender: handler.peer().map(str::to_string),
         local: handler.local().map(str::to_string),
+        resolved,
     };
     let dispatch_result = (route.dispatch)(doc.clone(), &ctx);
 

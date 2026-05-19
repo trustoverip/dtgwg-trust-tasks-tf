@@ -61,6 +61,14 @@ async fn spawn_server() -> SocketAddr {
                     reason: "list requires authentication".into(),
                 });
             }
+            // SPEC §4.8.1 resolved parties are available to handlers
+            // without re-running resolve_parties — assert the wiring so
+            // a regression fails the happy_path_acl_list test below.
+            assert_eq!(
+                ctx.resolved.issuer.as_deref(),
+                Some("did:web:alice.example")
+            );
+            assert_eq!(ctx.resolved.recipient.as_deref(), Some(SERVER_VID));
             Ok(list::v0_1::Response {
                 entries: vec![],
                 cursor: None,
