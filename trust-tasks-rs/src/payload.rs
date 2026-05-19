@@ -105,6 +105,7 @@ mod tests {
     use super::*;
     use crate::specs::acl::change_role::v0_1 as change_role;
     use crate::specs::acl::grant::v0_1 as grant;
+    use crate::specs::trust_task_discovery::v0_1 as discovery;
 
     #[test]
     fn extended_code_sources_slug_from_type_uri() {
@@ -120,5 +121,27 @@ mod tests {
         // Hierarchical slug — drift would be especially easy to hit by hand.
         let code = change_role::Payload::extended_code("last_authority_protected");
         assert_eq!(code.to_string(), "acl/change-role:last_authority_protected");
+    }
+
+    #[test]
+    fn extended_code_works_for_single_segment_slug() {
+        // Single-segment slug — no `/` in the namespace.
+        let code = discovery::Payload::extended_code("filter_unsupported");
+        assert_eq!(code.to_string(), "trust-task-discovery:filter_unsupported");
+    }
+
+    #[test]
+    fn extended_code_strips_response_fragment_from_slug() {
+        // Response payloads carry `#response` in their TYPE_URI. The
+        // helper MUST source the slug via `TypeUri::slug()`, which
+        // drops the fragment — otherwise an error code minted from a
+        // Response handler would name the wrong namespace.
+        let code = grant::Response::extended_code("role_not_recognized");
+        match code {
+            TrustTaskCode::Extended { slug, .. } => {
+                assert_eq!(slug, "acl/grant", "response variant must yield bare slug");
+            }
+            other => panic!("expected Extended, got {other:?}"),
+        }
     }
 }

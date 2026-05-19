@@ -552,8 +552,299 @@ mod tests {
                     crate::TrustTaskCode::Extended { ref slug, ref local }
                     if slug == "acl/grant" && local == "role_not_recognized"
                 ));
+                // The handler used `reject_with`, which routes to the
+                // original issuer. Verify the §8.1 routing held.
+                assert_eq!(err.recipient.as_deref(), Some("did:web:org.example"));
+                assert_eq!(err.issuer.as_deref(), Some("did:web:maintainer.example"));
             }
             other => panic!("expected Rejected, got {other:?}"),
         }
+    }
+
+    /// SPEC §7.2 item 7 — a RECOMMENDED spec (`IS_PROOF_REQUIRED ==
+    /// false`) is accepted without a proof under `ProofPolicy::Verify`.
+    /// Locks in the per-spec discrimination: regression would force
+    /// every spec to behave like REQUIRED.
+    #[tokio::test]
+    async fn recommended_spec_accepts_proofless_under_verify_policy() {
+        use crate::specs::acl::list::v0_1 as list;
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = TrustTask::for_payload(
+            "req-rec-1",
+            list::Payload {
+                role: None,
+                scope: None,
+                subject_prefix: None,
+                page_size: None,
+                cursor: None,
+                ext: None,
+            },
+        );
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        // No proof, no IS_PROOF_REQUIRED — handler should run.
+
+        let outcome: ConsumeOutcome<list::Response> = consume_inbound(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-rec-1".to_string(),
+            |req, _parties| async move {
+                Ok(req.respond_with(
+                    "resp-rec-1",
+                    list::Response {
+                        entries: vec![],
+                        cursor: None,
+                        redacted_fields: vec![],
+                        truncated: false,
+                        ext: None,
+                    },
+                ))
+            },
+        )
+        .await;
+
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+    }
+
+    /// `ProofPolicy::AcceptUnverified` accepts a proof-bearing document
+    /// without invoking any verifier. Locks in the explicit opt-out.
+    #[tokio::test]
+    async fn accept_unverified_passes_proof_bearing_doc_through() {
+        use crate::specs::acl::list::v0_1 as list;
+        let transport = NoopHandler::new();
+        let mut doc = TrustTask::for_payload(
+            "req-au-1",
+            list::Payload {
+                role: None,
+                scope: None,
+                subject_prefix: None,
+                page_size: None,
+                cursor: None,
+                ext: None,
+            },
+        );
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.proof = Some(dummy_proof());
+
+        let outcome: ConsumeOutcome<list::Response> =
+            consume_inbound::<_, _, _, StubVerifier, _, _>(
+                &transport,
+                ProofPolicy::AcceptUnverified,
+                doc,
+                "did:web:maintainer.example",
+                Utc::now(),
+                || "err-au-1".to_string(),
+                |req, _parties| async move {
+                    Ok(req.respond_with(
+                        "resp-au-1",
+                        list::Response {
+                            entries: vec![],
+                            cursor: None,
+                            redacted_fields: vec![],
+                            truncated: false,
+                            ext: None,
+                        },
+                    ))
+                },
+            )
+            .await;
+
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+    }
+
+    /// Verifier returns `Err` → consume_inbound maps to `proof_invalid`
+    /// and surfaces the verifier's error text on the wire. Pins the
+    /// `proof_error_to_reject` mapping the prior tests left untested.
+    #[tokio::test]
+    async fn proof_invalid_rejected_with_verifier_error_message() {
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier {
+            outcome: Err(VerificationError::SignatureInvalid),
+        };
+        let mut doc = TrustTask::for_payload("req-pi-1", grant_payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.proof = Some(dummy_proof());
+
+        let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-pi-1".to_string(),
+            |_req, _parties| async move {
+                panic!("handler must not run on proof_invalid");
+                #[allow(unreachable_code)]
+                Ok::<TrustTask<grant::Response>, ErrorResponse>(unreachable!())
+            },
+        )
+        .await;
+
+        match outcome {
+            ConsumeOutcome::Rejected(err) => {
+                assert_eq!(err.payload.code, StandardCode::ProofInvalid.into());
+                let msg = err.payload.message.as_deref().unwrap_or("");
+                assert!(msg.contains("signature"), "expected signature error: {msg}");
+            }
+            other => panic!("expected Rejected, got {other:?}"),
+        }
+    }
+
+    /// Handler receives `ResolvedParties` populated by the transport
+    /// when the in-band members are absent (SPEC §4.8.1 fill-in path).
+    #[tokio::test]
+    async fn resolved_parties_filled_in_from_transport_when_in_band_absent() {
+        use crate::handlers::InMemoryHandler;
+        use crate::specs::acl::list::v0_1 as list;
+        let transport = InMemoryHandler::new()
+            .with_local("did:web:maintainer.example")
+            .with_peer("did:web:org.example");
+        let doc = TrustTask::for_payload(
+            "req-rp-1",
+            list::Payload {
+                role: None,
+                scope: None,
+                subject_prefix: None,
+                page_size: None,
+                cursor: None,
+                ext: None,
+            },
+        );
+        // Note: no doc.issuer, no doc.recipient — transport must fill in.
+
+        let outcome: ConsumeOutcome<list::Response> =
+            consume_inbound::<_, _, _, StubVerifier, _, _>(
+                &transport,
+                ProofPolicy::RejectIfPresent,
+                doc,
+                "did:web:maintainer.example",
+                Utc::now(),
+                || "err-rp-1".to_string(),
+                |req, parties| async move {
+                    assert_eq!(parties.issuer.as_deref(), Some("did:web:org.example"));
+                    assert_eq!(
+                        parties.recipient.as_deref(),
+                        Some("did:web:maintainer.example")
+                    );
+                    Ok(req.respond_with(
+                        "resp-rp-1",
+                        list::Response {
+                            entries: vec![],
+                            cursor: None,
+                            redacted_fields: vec![],
+                            truncated: false,
+                            ext: None,
+                        },
+                    ))
+                },
+            )
+            .await;
+
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+    }
+
+    /// SPEC §8.1 — `identity_mismatch` with no transport-authenticated
+    /// sender produces `ConsumeOutcome::Suppressed`, not a routed error
+    /// (an addressed error would itself be an oracle).
+    #[tokio::test]
+    async fn identity_mismatch_with_no_transport_sender_is_suppressed() {
+        use crate::handlers::InMemoryHandler;
+        // Transport authenticates a peer; in-band claims a different
+        // issuer. resolve_parties returns IssuerMismatch.
+        let transport = InMemoryHandler::new()
+            .with_local("did:web:maintainer.example")
+            .with_peer("did:web:org.example");
+        let mut doc = TrustTask::for_payload(
+            "req-im-1",
+            crate::specs::acl::list::v0_1::Payload {
+                role: None,
+                scope: None,
+                subject_prefix: None,
+                page_size: None,
+                cursor: None,
+                ext: None,
+            },
+        );
+        doc.issuer = Some("did:web:attacker.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+
+        // To suppress, the transport's derive_parties must report no
+        // sender. NoopHandler is the right fixture for that — but then
+        // resolve_parties never fires identity_mismatch (both sides
+        // empty). So we construct a custom no-sender-but-mismatch case
+        // by using InMemoryHandler with `peer = None`: the in-band
+        // claims attacker.example, the transport authenticated nobody,
+        // and the doc's in-band issuer is "consistent" with the
+        // transport (no transport-derived value).
+        //
+        // Wait — that doesn't produce IdentityMismatch either. To
+        // exercise Suppressed precisely we need a mismatch (peer set)
+        // *and* derive_parties reporting nothing. That's a
+        // contradiction. The clean test is to construct a transport
+        // that flags the mismatch on resolve but reports no sender on
+        // derive_parties. Build one inline.
+
+        struct MismatchingNoSenderTransport;
+        impl crate::TransportHandler for MismatchingNoSenderTransport {
+            fn binding_uri(&self) -> &str {
+                "urn:test:mismatching-no-sender"
+            }
+            fn derive_parties(&self) -> crate::TransportContext {
+                // No transport-authenticated sender — this is the
+                // condition §8.1 calls out: the consumer SHOULD NOT
+                // emit a response addressed to the contested in-band
+                // identity.
+                crate::TransportContext {
+                    issuer: None,
+                    recipient: None,
+                }
+            }
+            fn resolve_parties<P>(
+                &self,
+                doc: &TrustTask<P>,
+            ) -> Result<crate::ResolvedParties, crate::ConsistencyError> {
+                // Unconditionally flag a mismatch so the test exercises
+                // the Suppressed path without depending on the noop
+                // resolve_parties shortcut.
+                Err(crate::ConsistencyError::IssuerMismatch {
+                    in_band: doc
+                        .issuer
+                        .clone()
+                        .unwrap_or_else(|| "did:web:in-band.example".into()),
+                    transport: "did:web:transport.example".into(),
+                })
+            }
+        }
+
+        let outcome: ConsumeOutcome<crate::specs::acl::list::v0_1::Response> =
+            consume_inbound::<_, _, _, StubVerifier, _, _>(
+                &MismatchingNoSenderTransport,
+                ProofPolicy::RejectIfPresent,
+                doc,
+                "did:web:maintainer.example",
+                Utc::now(),
+                || "err-im-1".to_string(),
+                |_req, _parties| async move {
+                    panic!("handler must not run on identity_mismatch");
+                    #[allow(unreachable_code)]
+                    Ok::<TrustTask<_>, ErrorResponse>(unreachable!())
+                },
+            )
+            .await;
+
+        // Drop the unused transport instance; `_ = transport` keeps
+        // the earlier construction valid in case lint catches it.
+        let _ = transport;
+
+        assert!(
+            matches!(outcome, ConsumeOutcome::Suppressed),
+            "expected Suppressed under identity_mismatch with no transport-authenticated sender"
+        );
     }
 }
