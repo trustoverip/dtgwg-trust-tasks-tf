@@ -45,6 +45,20 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// item 8 without consulting the registry at runtime.
     const IS_BEARER: bool = false;
 
+    /// Whether the originating *Trust Task specification* obliges a *consumer*
+    /// to reject a document that arrives without a `proof`, per SPEC.md §7.3
+    /// item 8 (`proofRequirement.requirement == "REQUIRED"`).
+    ///
+    /// Defaults to `false` (i.e. `OPTIONAL` or `RECOMMENDED` — the consumer
+    /// is free to accept a proofless document). The codegen emits an explicit
+    /// `const IS_PROOF_REQUIRED: bool = true;` override only when the spec's
+    /// front matter declares `proofRequirement.requirement: REQUIRED`.
+    ///
+    /// Consumers consult this constant via [`crate::consume_inbound`] to
+    /// apply SPEC.md §7.2 item 7 authoritatively per-spec, rather than as a
+    /// consumer-wide policy toggle.
+    const IS_PROOF_REQUIRED: bool = false;
+
     /// Parsed form of [`TYPE_URI`](Self::TYPE_URI).
     ///
     /// The default implementation calls [`str::parse`] and panics on a

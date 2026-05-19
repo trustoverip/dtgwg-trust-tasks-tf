@@ -176,6 +176,43 @@ fn read_bearer_flag(spec_md_path: &Path) -> Result<bool> {
         .unwrap_or(false))
 }
 
+/// Scan a `spec.md`'s YAML front matter for
+/// `proofRequirement.requirement == "REQUIRED"`. Returns `false` when the
+/// field is absent, when the value is `OPTIONAL` / `RECOMMENDED`, or when
+/// the file is missing. Per SPEC.md §7.3 item 8 and `spec.meta.schema.json`,
+/// the only value that obliges the consumer to reject a missing proof is
+/// `REQUIRED`.
+fn read_proof_required_flag(spec_md_path: &Path) -> Result<bool> {
+    if !spec_md_path.exists() {
+        return Ok(false);
+    }
+    let text = fs::read_to_string(spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+
+    let mut lines = text.lines();
+    let first = lines.next().unwrap_or("");
+    if first.trim() != "---" {
+        return Ok(false);
+    }
+    let mut front_matter = String::new();
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        front_matter.push_str(line);
+        front_matter.push('\n');
+    }
+
+    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
+    Ok(value
+        .get("proofRequirement")
+        .and_then(|v| v.get("requirement"))
+        .and_then(|v| v.as_str())
+        .map(|s| s == "REQUIRED")
+        .unwrap_or(false))
+}
+
 /// Spec.md sections often embed illustrative `trust-task-error` responses
 /// next to the request/response examples. Drop any harvested example whose
 /// top-level `type` does not match this spec's URI — that way the
@@ -459,6 +496,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
     filter_examples_to_this_spec(spec, &mut examples);
     let invalid_examples = read_invalid_examples(spec)?;
     let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
+    let is_proof_required = read_proof_required_flag(&spec.spec_md_path())?;
     let module_tokens = render_module(
         spec,
         body,
@@ -466,6 +504,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
         &examples,
         &invalid_examples,
         is_bearer,
+        is_proof_required,
         &raw,
     );
 
@@ -694,6 +733,7 @@ fn render_module(
     examples: &SpecExamples,
     invalid_examples: &[InvalidExample],
     is_bearer: bool,
+    is_proof_required: bool,
     schema_json: &str,
 ) -> TokenStream {
     let type_uri = spec.type_uri();
@@ -708,11 +748,22 @@ fn render_module(
         quote! {}
     };
 
+    // Per SPEC §7.3 item 8, only specs whose front-matter
+    // `proofRequirement.requirement` is `REQUIRED` override
+    // Payload::IS_PROOF_REQUIRED. `RECOMMENDED` / `OPTIONAL` (or absent)
+    // leave the trait default `false` in place.
+    let proof_required_const = if is_proof_required {
+        quote! { const IS_PROOF_REQUIRED: bool = true; }
+    } else {
+        quote! {}
+    };
+
     let response_payload_impl = if has_response {
         quote! {
             impl crate::Payload for Response {
                 const TYPE_URI: &'static str = #response_uri;
                 #bearer_const
+                #proof_required_const
             }
         }
     } else {
@@ -741,6 +792,7 @@ fn render_module(
         impl crate::Payload for Payload {
             const TYPE_URI: &'static str = #type_uri;
             #bearer_const
+            #proof_required_const
         }
 
         #response_payload_impl
