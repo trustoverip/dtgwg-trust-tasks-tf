@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [Unreleased] — staged into `0.1.1`
+
+### Changed — consumer-pipeline hardening (SPEC §7.2 items 6 + 7)
+
+- **BREAKING**: `consume_inbound`'s handler signature changes from
+  `FnOnce(TrustTask<P>) -> Future<Result<TrustTask<R>, RejectReason>>`
+  to `FnOnce(TrustTask<P>, ResolvedParties) -> Future<Result<TrustTask<R>, ErrorResponse>>`.
+  Handlers now receive the SPEC §4.8.1-resolved parties (no need to call
+  `transport.resolve_parties` themselves) and return a fully-routed
+  `ErrorResponse` on refusal, freeing them to mint extended codes
+  (SPEC §8.5), attach task-specific `details`, and apply spec-specific
+  routing without being constrained to the framework's `RejectReason`
+  vocabulary.
+- `consume_inbound` now reads `Payload::IS_PROOF_REQUIRED`
+  authoritatively for the SPEC §7.2 item 7 proof-required check,
+  replacing the IS_BEARER-plus-verifier-set heuristic. Per-spec proof
+  contracts are enforced regardless of consumer strictness policy.
+- **SECURITY**: `consume_inbound` now rejects `(proof present, verifier
+  None)` with `malformed_request`. Silently dropping a producer-supplied
+  proof previously misled the producer about the integrity guarantees of
+  the exchange. Consumers that don't verify proofs must now reject
+  explicitly or strip the proof before invoking the helper.
+
+### Added
+
+- `Payload::IS_PROOF_REQUIRED` (default `false`). Codegen emits an
+  explicit `const IS_PROOF_REQUIRED: bool = true;` override when a spec's
+  front matter declares `proofRequirement.requirement: REQUIRED`. Mirrors
+  the existing `IS_BEARER` plumbing.
+- `Payload::extended_code(local)` convenience trait method — builds a
+  `TrustTaskCode::Extended` under the payload's own slug (sourced from
+  `Self::TYPE_URI`). Eliminates slug-literal drift in handler code and
+  makes the SPEC §8.5 namespace rule enforceable by construction.
+
 ## [0.1.0] — initial pre-release, tracks `SPEC.md` 0.1
 
 ### Added — framework primitives

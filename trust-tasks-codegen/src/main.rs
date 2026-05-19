@@ -726,6 +726,7 @@ fn normalize_titles(schema: &mut Value) -> Result<bool> {
     Ok(has_response)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn render_module(
     spec: &Spec,
     body: TokenStream,

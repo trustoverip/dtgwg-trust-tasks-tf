@@ -4,6 +4,19 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [Unreleased] — staged into `0.1.1`
+
+### Fixed — security
+
+- The server previously accepted documents carrying a `proof` member
+  without verifying it (the binding has no in-band verifier). A producer
+  that signed its document and saw a 200 had no way to learn that the
+  signature was never checked. The server now rejects proof-bearing
+  documents with `malformed_request` at the framework-checks stage,
+  matching the same rule `consume_inbound` now applies. Deployments
+  that need to accept proof-bearing documents must layer in a verifier;
+  the binding does not provide one out of the box.
+
 ## [0.1.0] — initial pre-release, tracks `trust-tasks-rs` 0.1, `SPEC.md` 0.1
 
 ### Added
