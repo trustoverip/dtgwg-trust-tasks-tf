@@ -240,6 +240,23 @@ async fn dispatch_handler(
         return reject_response(Some(&handler), Some(&doc), reason);
     }
 
+    // ─── 4a. SECURITY: this server does not verify in-band proofs. A
+    // producer-supplied proof is an integrity assertion the server
+    // cannot honour; silently dropping it would mislead the producer
+    // about the integrity guarantees of the exchange. Reject per the
+    // same rule consume_inbound applies (SPEC §7.2 item 7 + §4.7.1).
+    if doc.proof.is_some() {
+        return reject_response(
+            Some(&handler),
+            Some(&doc),
+            RejectReason::MalformedRequest {
+                reason: "document carries a proof but this server is not configured to verify \
+                         proofs; integrity assertion cannot be honoured"
+                    .to_string(),
+            },
+        );
+    }
+
     // ─── 5. Routing: look up the handler registered for this Type URI.
     let routing_key = doc.type_uri.for_routing().to_string();
     let Some(route) = state.routes.get(&routing_key) else {

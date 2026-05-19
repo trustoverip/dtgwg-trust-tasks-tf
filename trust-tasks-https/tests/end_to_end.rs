@@ -18,7 +18,7 @@ use trust_tasks_https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks_rs::{
     specs::acl::{grant, list, revoke},
     specs::trust_task_discovery::v0_1 as discovery,
-    RejectReason, StandardCode, TrustTask, TypeUri,
+    Proof, RejectReason, StandardCode, TrustTask, TypeUri,
 };
 
 const SERVER_VID: &str = "did:web:maintainer.example";
@@ -265,6 +265,52 @@ fn uri_of(entry: &discovery::ResponseSupportedTypesItem) -> &str {
     match entry {
         discovery::ResponseSupportedTypesItem::Uri(s) => s.as_str(),
         discovery::ResponseSupportedTypesItem::Object { type_, .. } => type_.as_str(),
+    }
+}
+
+/// SECURITY: the HTTPS server has no proof verifier. A producer-supplied
+/// proof represents an integrity assertion the server cannot honour;
+/// silently dropping it would mislead the producer. The server MUST
+/// reject with `malformed_request`.
+#[tokio::test]
+async fn proof_bearing_document_rejected_when_server_has_no_verifier() {
+    let addr = spawn_server().await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+
+    let mut req = TrustTask::for_payload(
+        "urn:uuid:test-proof-rejected",
+        grant::v0_1::Payload {
+            entry: entry(),
+            reason: None,
+            ext: None,
+        },
+    );
+    req.proof = Some(Proof {
+        proof_type: "DataIntegrityProof".into(),
+        cryptosuite: "eddsa-rdfc-2022".into(),
+        verification_method: "did:web:alice.example#key-1".into(),
+        created: chrono::Utc::now(),
+        proof_purpose: "assertionMethod".into(),
+        proof_value: "z3kg".into(),
+        extra: Default::default(),
+    });
+
+    let err = client
+        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
+        .await
+        .unwrap_err();
+
+    match err {
+        ClientError::TrustTaskError { http_status, error } => {
+            assert_eq!(http_status, 400);
+            assert_eq!(error.payload.code, StandardCode::MalformedRequest.into());
+            let msg = error.payload.message.as_deref().unwrap_or("");
+            assert!(
+                msg.contains("proof") && msg.contains("verify"),
+                "message should explain why the proof was rejected: {msg}"
+            );
+        }
+        other => panic!("expected TrustTaskError, got {other:?}"),
     }
 }
 
