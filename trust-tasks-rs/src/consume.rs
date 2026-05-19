@@ -466,14 +466,13 @@ mod tests {
             Utc::now(),
             || "err-5".to_string(),
             |req, _parties| async move {
-                // Handler-minted extended code with custom routing.
+                // Handler-minted extended code with custom routing. The
+                // helper sources the slug from grant::Payload::TYPE_URI so
+                // it cannot drift from the type's identity.
                 Err(req.reject_with(
                     "err-handler",
-                    crate::ErrorPayload::new(crate::TrustTaskCode::Extended {
-                        slug: "acl/grant".into(),
-                        local: "role_not_recognized".into(),
-                    })
-                    .with_message("role string not in maintainer vocabulary"),
+                    crate::ErrorPayload::new(grant::Payload::extended_code("role_not_recognized"))
+                        .with_message("role string not in maintainer vocabulary"),
                 ))
             },
         )

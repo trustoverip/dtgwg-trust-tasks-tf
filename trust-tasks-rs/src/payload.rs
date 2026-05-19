@@ -19,6 +19,7 @@
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
+use crate::error::TrustTaskCode;
 use crate::type_uri::TypeUri;
 
 /// A Rust type that corresponds to one variant (request or response) of a
@@ -69,5 +70,55 @@ pub trait Payload: Serialize + DeserializeOwned {
         Self::TYPE_URI
             .parse()
             .expect("TYPE_URI constant must be a valid Type URI")
+    }
+
+    /// Build an extended [`TrustTaskCode`] under this payload's slug, per
+    /// SPEC.md §8.5.
+    ///
+    /// Equivalent to writing:
+    ///
+    /// ```rust,ignore
+    /// TrustTaskCode::Extended {
+    ///     slug: "acl/change-role".into(),
+    ///     local: "last_authority_protected".into(),
+    /// }
+    /// ```
+    ///
+    /// but sources the slug from [`TYPE_URI`](Self::TYPE_URI) so the slug
+    /// literal cannot drift away from the type's identity. The §8.5
+    /// namespace rule ("the slug of the spec being processed") is then
+    /// enforced by construction.
+    ///
+    /// Panics under the same condition as [`type_uri`](Self::type_uri):
+    /// only when [`TYPE_URI`](Self::TYPE_URI) is not a valid Type URI,
+    /// which is a static-string bug.
+    fn extended_code(local: impl Into<String>) -> TrustTaskCode {
+        TrustTaskCode::Extended {
+            slug: Self::type_uri().slug().to_string(),
+            local: local.into(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::specs::acl::change_role::v0_1 as change_role;
+    use crate::specs::acl::grant::v0_1 as grant;
+
+    #[test]
+    fn extended_code_sources_slug_from_type_uri() {
+        let code = grant::Payload::extended_code("role_not_recognized");
+        match code {
+            TrustTaskCode::Extended { slug, local } => {
+                assert_eq!(slug, "acl/grant");
+                assert_eq!(local, "role_not_recognized");
+            }
+            other => panic!("expected Extended, got {other:?}"),
+        }
+
+        // Hierarchical slug — drift would be especially easy to hit by hand.
+        let code = change_role::Payload::extended_code("last_authority_protected");
+        assert_eq!(code.to_string(), "acl/change-role:last_authority_protected");
     }
 }
