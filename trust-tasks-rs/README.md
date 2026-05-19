@@ -82,37 +82,44 @@ validation pipeline stays unchanged.
 ## Request → response → error
 
 The framework's request/response model (SPEC §4.4.1) and `trust-task-error/0.1`
-response (SPEC §8) are first-class. A consumer-side handler looks the same on
-both branches:
+response (SPEC §8) are first-class. The recommended consumer-side pipeline is
+[`consume_inbound`], which runs the full SPEC §7.2 list (items 4–8) for you and
+hands the accepted document plus the resolved parties to your handler:
 
 ```rust,ignore
-fn handle(req: TrustTask<KycHandoff>, h: &impl TransportHandler)
-    -> Result<TrustTask<KycReceipt>, ErrorResponse>
-{
-    // §4.8.1 + §7.2 item 6 — transport ↔ in-band consistency.
-    h.resolve_parties(&req)
-        .map_err(|e| req.reject_with(new_id(), RejectReason::from(e)))?;
+use trust_tasks_rs::{consume_inbound, ConsumeOutcome, ProofPolicy};
 
-    // §7.2 items 4 + 5 — expiry + recipient.
-    req.validate_basic(Utc::now(), MY_VID)
-        .map_err(|reason| req.reject_with(new_id(), reason))?;
+let outcome = consume_inbound(
+    transport,
+    ProofPolicy::Verify(verifier),         // or RejectIfPresent / AcceptUnverified
+    inbound,                                // TrustTask<KycHandoff>
+    MY_VID,
+    Utc::now(),
+    || format!("urn:uuid:{}", Uuid::new_v4()),
+    |req, parties| async move {
+        // parties carries the SPEC §4.8.1-resolved issuer/recipient.
+        let receipt = run_kyc(&req.payload).map_err(|e| req.reject_with(new_id(), e.into()))?;
+        Ok(req.respond_with(new_id(), receipt))
+    },
+).await;
 
-    // Domain logic. On failure, map into a RejectReason / ErrorPayload.
-    let receipt = run_kyc(&req.payload)
-        .map_err(|e| req.reject_with(new_id(), e.into()))?;
-
-    // Success — mints a `#response`-variant document with threadId,
-    // issuer/recipient swap, and issuedAt all wired automatically.
-    Ok(req.respond_with(new_id(), receipt))
+match outcome {
+    ConsumeOutcome::Handled(response) => emit(response),
+    ConsumeOutcome::Rejected(error)   => emit(error),
+    ConsumeOutcome::Suppressed        => {} // identity_mismatch w/o transport sender
 }
 ```
 
-On the receiving side, `ErrorPayload::should_retry_at(now)` applies §8.4 retry
-semantics in one call, and `effective_code()` collapses an unrecognized
-extension code to `StandardCode::TaskFailed` per §8.5.
+`Payload::IS_PROOF_REQUIRED` (codegen-emitted from each spec's
+`proofRequirement.requirement: REQUIRED` front-matter) is enforced
+authoritatively; `ProofPolicy` makes the proof-handling tradeoff explicit at
+the call site rather than implicit in an `Option`. On the receiving side,
+`ErrorPayload::should_retry_at(now)` applies §8.4 retry semantics in one call,
+and `effective_code()` collapses an unrecognized extension code to
+`StandardCode::TaskFailed` per §8.5.
 
-See [`examples/loopback.rs`](examples/loopback.rs) for a full runnable
-producer/consumer loop:
+For a runnable producer/consumer loop using the framework primitives directly
+(no `consume_inbound`), see [`examples/loopback.rs`](examples/loopback.rs):
 
 ```sh
 cargo run --example loopback

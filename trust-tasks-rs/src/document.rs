@@ -172,8 +172,13 @@ impl<P> TrustTask<P> {
     /// | **4**     | **Expiry**                                                  | **`validate_basic`**                                |
     /// | **5**     | **Recipient mismatch**                                      | **`validate_basic`**                                |
     /// | 6         | In-band vs transport identity                               | [`TransportHandler::resolve_parties`](crate::TransportHandler::resolve_parties) |
-    /// | 7         | Proof verification + spec-mandated `proof: REQUIRED`        | [`ProofVerifier`](crate::ProofVerifier) (suite crate) — **not in this crate** |
+    /// | 7         | Proof handling (`IS_PROOF_REQUIRED` + verification policy)  | [`consume_inbound`](crate::consume_inbound) + [`ProofVerifier`](crate::ProofVerifier) (cryptosuite in a companion crate) |
     /// | 8         | Audience binding (proof+no-recipient on non-bearer specs)   | [`enforce_audience_binding`](Self::enforce_audience_binding) |
+    ///
+    /// The full §7.2 pipeline is bundled in
+    /// [`consume_inbound`](crate::consume_inbound) — items 4–8 in one
+    /// call. Direct use of `validate_basic` is for callers that have
+    /// their own composition.
     ///
     /// Treat `validate_basic(now, my_vid)?` as **stage 2** of a multi-stage
     /// validation. Calling only this method on an inbound document

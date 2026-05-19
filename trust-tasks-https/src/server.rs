@@ -397,12 +397,21 @@ fn build_error_response(
 }
 
 /// When `TransportHandler::reject` returns `None` (no transport-
-/// authenticated sender under identity_mismatch), we still need to
-/// produce *something* for the HTTP body — the alternative is dropping
-/// the TCP connection, which is worse for diagnostics. We synthesise a
-/// recipient-less error document; the HTTP transport's authenticated
-/// sender will see only the headers (status code + content type) and
-/// can choose to ignore the body.
+/// authenticated sender under identity_mismatch), the framework rule
+/// (SPEC §8.1) is that the consumer SHOULD NOT emit a response.
+/// HTTP, however, gives us no way to "not emit" — the TCP connection
+/// already exists and the peer is waiting for a status line. We
+/// produce a `trust-task-error/0.1` document with no `recipient`
+/// member set; the peer at the other end of the TCP socket *does*
+/// receive it (HTTP carries the bytes regardless of the in-band
+/// `recipient`), but the document itself is unaddressed and the body
+/// names no consumer-side identity. The status line + Content-Type
+/// header are unavoidable.
+///
+/// Note that this is the safer of the two HTTP-shaped options — the
+/// alternative (drop the connection) loses diagnostic value for
+/// honest peers caught by a transient identity glitch. The body
+/// stays terse and the message cites the spec.
 fn suppressed_error_response(new_id: &str, reason: RejectReason) -> ErrorResponse {
     let mut doc = TrustTask::new(
         new_id.to_string(),

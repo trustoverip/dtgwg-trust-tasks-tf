@@ -12,6 +12,18 @@
 //!      success, or `reject_with` to emit a `trust-task-error/0.1` document
 //!      on failure.
 //!
+//! ## Why this example hand-rolls the pipeline
+//!
+//! Real consumers should use [`trust_tasks_rs::consume_inbound`], which
+//! runs the full SPEC §7.2 list (items 4–8 — expiry, recipient,
+//! identity, proof, audience binding) in one call and takes a typed
+//! [`ProofPolicy`](trust_tasks_rs::ProofPolicy) for the proof-handling
+//! tradeoff. This example exercises the framework primitives directly
+//! so a reader can see what `consume_inbound` is composing under the
+//! hood; for production code the helper is shorter, applies all eight
+//! checks in the spec-prescribed order, and forces the proof policy
+//! to be an explicit choice at the call site.
+//!
 //! Run with:
 //!
 //! ```sh
