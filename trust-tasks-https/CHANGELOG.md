@@ -8,6 +8,16 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
 ### Added
 
+- `HttpsServerBuilder::with_verifier(verifier)` — plug in any
+  `trust_tasks_rs::ProofVerifier` implementation. When configured, the
+  server verifies the `proof` member of every proof-bearing inbound
+  document and rejects `proof_invalid` on failure; when absent, the
+  server rejects proof-bearing documents with `malformed_request` as
+  before. Stored internally as `Arc<DynProofVerifier>` for object-safe
+  dispatch. This lets `acl/grant` / `acl/revoke` / `acl/change-role`
+  (all `proofRequirement: REQUIRED`) flow end-to-end on the binding
+  once a verifier is configured — without one, `IS_PROOF_REQUIRED`
+  enforcement still fires per the security fix above.
 - `RequestContext.resolved: ResolvedParties` — handlers can now read
   the SPEC §4.8.1-resolved issuer/recipient pair directly instead of
   re-running `TransportHandler::resolve_parties` to re-derive what the
@@ -31,13 +41,13 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
   silently violating SPEC §7.2 item 7. The dispatch closure now
   consults `Payload::IS_PROOF_REQUIRED` after downcast and rejects with
   `proof_required` when the spec requires a proof and none is present,
-  regardless of whether the binding is configured to verify. The
-  combination of this check and the proof-bearing rejection above
-  means specs with `proofRequirement: REQUIRED` (e.g. `acl/grant`,
-  `acl/revoke`, `acl/change-role`) are *unreachable* on this binding
-  until a verifier plug-in point lands; see the test fixture in
-  `tests/end_to_end.rs` for the workaround using `acl/list`
-  (`RECOMMENDED`).
+  regardless of whether the binding is configured to verify.
+  Combined with the verifier plug-in point added under "Added" below,
+  REQUIRED specs (e.g. `acl/grant`, `acl/revoke`, `acl/change-role`)
+  now flow end-to-end on the binding when a verifier is wired in via
+  `HttpsServerBuilder::with_verifier`; without a verifier they are
+  correctly refused with `proof_required` (proofless) or
+  `malformed_request` (proof-bearing, the policy rejection above).
 
 ## [0.1.0] — initial pre-release, tracks `trust-tasks-rs` 0.1, `SPEC.md` 0.1
 

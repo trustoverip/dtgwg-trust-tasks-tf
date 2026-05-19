@@ -65,3 +65,4 @@ reqwest = { version = "0.13", default-features = false, features = [
   "json",
   "rustls",
 ] }
+async-trait = "0.1"

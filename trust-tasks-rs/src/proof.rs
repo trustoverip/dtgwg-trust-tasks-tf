@@ -133,3 +133,55 @@ pub enum VerificationError {
     #[error("proof verification failed: {0}")]
     Other(String),
 }
+
+/// Object-safe form of [`ProofVerifier`] used where a verifier must
+/// be stored behind a trait object — for example, on a transport
+/// binding's shared state (`Arc<dyn DynProofVerifier>`) — so the
+/// concrete verifier type can be chosen at builder time rather than
+/// being threaded through every generic parameter.
+///
+/// [`ProofVerifier::verify`] is generic over the payload type `P`,
+/// which makes it not object-safe. `DynProofVerifier` erases that
+/// parameter by operating on the JSON-form document
+/// [`TrustTask<serde_json::Value>`]; both typed and untyped documents
+/// canonicalise to the same bytes for signature checking, so the
+/// erasure is lossless for verification.
+///
+/// Use [`erase_verifier`] to wrap any concrete `ProofVerifier`.
+#[async_trait::async_trait]
+pub trait DynProofVerifier: Send + Sync {
+    /// Verify `doc.proof` over the JSON-form document.
+    async fn verify_json(
+        &self,
+        doc: &TrustTask<serde_json::Value>,
+    ) -> Result<(), VerificationError>;
+}
+
+/// Adapter wrapping any concrete [`ProofVerifier`] as a
+/// [`DynProofVerifier`]. Produced by [`erase_verifier`].
+pub struct ErasedVerifier<V>(pub V);
+
+#[async_trait::async_trait]
+impl<V: ProofVerifier + Send + Sync> DynProofVerifier for ErasedVerifier<V> {
+    async fn verify_json(
+        &self,
+        doc: &TrustTask<serde_json::Value>,
+    ) -> Result<(), VerificationError> {
+        <V as ProofVerifier>::verify(&self.0, doc).await
+    }
+}
+
+/// Wrap a concrete [`ProofVerifier`] in an `Arc<dyn DynProofVerifier>`
+/// so it can be stored on shared state — typically on a transport
+/// binding's server-builder. The single-line version of:
+///
+/// ```rust,ignore
+/// let verifier: Arc<dyn DynProofVerifier> =
+///     Arc::new(ErasedVerifier(my_verifier));
+/// ```
+pub fn erase_verifier<V>(verifier: V) -> std::sync::Arc<dyn DynProofVerifier>
+where
+    V: ProofVerifier + Send + Sync + 'static,
+{
+    std::sync::Arc::new(ErasedVerifier(verifier))
+}

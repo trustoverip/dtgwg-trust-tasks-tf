@@ -37,6 +37,8 @@ pub use dispatcher::Dispatcher;
 pub use document::{ErrorResponse, JsonLdContext, TrustTask};
 pub use error::{ErrorPayload, ParseCodeError, RejectReason, StandardCode, TrustTaskCode};
 pub use payload::Payload;
-pub use proof::{Proof, ProofVerifier, VerificationError};
+pub use proof::{
+    erase_verifier, DynProofVerifier, ErasedVerifier, Proof, ProofVerifier, VerificationError,
+};
 pub use transport::{ConsistencyError, ResolvedParties, TransportContext, TransportHandler};
 pub use type_uri::{ParseTypeUriError, TypeUri, Variant};

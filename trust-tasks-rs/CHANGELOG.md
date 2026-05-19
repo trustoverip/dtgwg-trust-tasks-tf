@@ -52,6 +52,17 @@ the corresponding `SPEC.md` framework version.
   `TrustTaskCode::Extended` under the payload's own slug (sourced from
   `Self::TYPE_URI`). Eliminates slug-literal drift in handler code and
   makes the SPEC §8.5 namespace rule enforceable by construction.
+  `TrustTaskCode::new_extended(slug, local) -> Result<Self, ParseCodeError>`
+  is the runtime-input-safe constructor.
+- `DynProofVerifier` trait + `ErasedVerifier<V>` adapter + `erase_verifier`
+  helper. Object-safe wrapper around [`ProofVerifier`] for transport
+  bindings that need to store a verifier behind `Arc<dyn …>` on shared
+  state (the generic method on `ProofVerifier::verify` is not
+  object-safe). Reusable across bindings (HTTPS, future DIDComm, …).
+- `PROOF_NOT_ACCEPTED_BY_POLICY` constant — the wire-safe message
+  shared by `consume_inbound` and transport bindings for the
+  proof-without-verifier rejection. Sanitised: no mention of the
+  consumer's configuration that could be used as a probe oracle.
 
 ## [0.1.0] — initial pre-release, tracks `SPEC.md` 0.1
 

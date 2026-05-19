@@ -13,33 +13,70 @@
 
 use std::net::SocketAddr;
 
+use serde::Serialize;
 use tokio::net::TcpListener;
 use trust_tasks_https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks_rs::{
     specs::acl::{grant, list, revoke, show},
     specs::trust_task_discovery::v0_1 as discovery,
-    Proof, RejectReason, StandardCode, TrustTask, TypeUri,
+    Proof, ProofVerifier, RejectReason, StandardCode, TrustTask, TypeUri, VerificationError,
 };
 
 const SERVER_VID: &str = "did:web:maintainer.example";
 
+/// Test verifier that accepts every proof. Used by fixtures that need
+/// to exercise the verifier-configured path without standing up a
+/// cryptosuite implementation.
+struct AcceptAllVerifier;
+
+#[async_trait::async_trait]
+impl ProofVerifier for AcceptAllVerifier {
+    async fn verify<P>(&self, _doc: &TrustTask<P>) -> Result<(), VerificationError>
+    where
+        P: Serialize + Send + Sync,
+    {
+        Ok(())
+    }
+}
+
+/// Test verifier that rejects every proof with `SignatureInvalid`. Used
+/// by the proof-invalid integration test.
+struct RejectAllVerifier;
+
+#[async_trait::async_trait]
+impl ProofVerifier for RejectAllVerifier {
+    async fn verify<P>(&self, _doc: &TrustTask<P>) -> Result<(), VerificationError>
+    where
+        P: Serialize + Send + Sync,
+    {
+        Err(VerificationError::SignatureInvalid)
+    }
+}
+
+/// Which proof-handling strategy the test server uses.
+enum VerifierMode {
+    /// No verifier configured — server falls back to "reject any
+    /// proof-bearing document with `malformed_request`".
+    None,
+    /// Accept every proof. Used by the happy-path tests against
+    /// REQUIRED specs (acl/grant, acl/revoke).
+    AcceptAll,
+    /// Reject every proof with `SignatureInvalid`. Used to exercise
+    /// the `proof_invalid` path.
+    RejectAll,
+}
+
 /// Build the test server's app router and bind to localhost:0 (kernel
-/// chooses a free port). Returns `(addr, JoinHandle)` so the test can
-/// connect to the URL the OS picked.
-async fn spawn_server() -> SocketAddr {
+/// chooses a free port). Returns the address the OS picked.
+async fn spawn_server_with(verifier: VerifierMode) -> SocketAddr {
     let auth = BearerAuth::from_pairs([
         ("alice", "did:web:alice.example"),
         ("eve", "did:web:eve.example"),
     ]);
 
-    let server = HttpsServer::builder()
+    let mut builder = HttpsServer::builder()
         .local_vid(SERVER_VID)
         .with_auth(auth)
-        // acl/grant + acl/revoke are `proofRequirement: REQUIRED` —
-        // unreachable on this binding until a verifier hook is wired
-        // in. They stay registered so discovery advertises them; the
-        // dispatch-level IS_PROOF_REQUIRED check returns
-        // `proof_required` before the handler body runs.
         .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, _ctx| {
             Ok(grant::v0_1::Response {
                 entry: req.payload.entry.clone(),
@@ -53,8 +90,9 @@ async fn spawn_server() -> SocketAddr {
             })
         })
         // acl/list is `proofRequirement: RECOMMENDED` — the binding
-        // accepts proofless requests for it, so the happy-path and
-        // permission-denied integration tests use it as their carrier.
+        // accepts proofless requests for it regardless of verifier
+        // configuration. The handler also exercises the
+        // PermissionDenied path for the auth-required test.
         .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, ctx| {
             if ctx.authenticated_sender.is_none() {
                 return Err(RejectReason::PermissionDenied {
@@ -79,8 +117,15 @@ async fn spawn_server() -> SocketAddr {
         })
         // Auto-advertise the registered handlers (and discovery itself) via
         // trust-task-discovery/0.1.
-        .enable_discovery()
-        .build();
+        .enable_discovery();
+
+    builder = match verifier {
+        VerifierMode::None => builder,
+        VerifierMode::AcceptAll => builder.with_verifier(AcceptAllVerifier),
+        VerifierMode::RejectAll => builder.with_verifier(RejectAllVerifier),
+    };
+
+    let server = builder.build();
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -89,6 +134,13 @@ async fn spawn_server() -> SocketAddr {
         axum::serve(listener, app).await.unwrap();
     });
     addr
+}
+
+/// Default fixture for tests that don't care about proof handling —
+/// `VerifierMode::AcceptAll` covers both proof-bearing and proofless
+/// flows on the bundled handlers.
+async fn spawn_server() -> SocketAddr {
+    spawn_server_with(VerifierMode::AcceptAll).await
 }
 
 fn entry() -> grant::v0_1::AclEntry {
@@ -118,10 +170,8 @@ fn build_client(addr: SocketAddr, my_vid: &str, my_token: Option<&str>) -> Https
 }
 
 /// Happy path via `acl/list` — a `proofRequirement: RECOMMENDED` spec
-/// that the server can process without a verifier. `acl/grant` and
-/// `acl/revoke` are `REQUIRED` and now reach `proof_required` before
-/// the handler; they will be re-enabled here once the binding grows
-/// a verifier plug-in point.
+/// the server accepts without a proof (independent of verifier
+/// configuration).
 #[tokio::test]
 async fn happy_path_acl_list() {
     let addr = spawn_server().await;
@@ -385,13 +435,15 @@ async fn proof_bearing_with_identity_mismatch_routes_to_transport_peer() {
     }
 }
 
-/// SECURITY: the HTTPS server has no proof verifier. A producer-supplied
+/// SECURITY: with no proof verifier configured, a producer-supplied
 /// proof represents an integrity assertion the server cannot honour;
 /// silently dropping it would mislead the producer. The server MUST
 /// reject with `malformed_request`.
 #[tokio::test]
 async fn proof_bearing_document_rejected_when_server_has_no_verifier() {
-    let addr = spawn_server().await;
+    // Explicitly use the no-verifier fixture — the default fixture
+    // configures an AcceptAllVerifier which would accept this proof.
+    let addr = spawn_server_with(VerifierMode::None).await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
     let mut req = TrustTask::for_payload(
@@ -431,6 +483,102 @@ async fn proof_bearing_document_rejected_when_server_has_no_verifier() {
             );
             assert!(!msg.contains("verifier"), "wire leak (config): {msg}");
             assert!(!msg.contains("configured"), "wire leak (config): {msg}");
+        }
+        other => panic!("expected TrustTaskError, got {other:?}"),
+    }
+}
+
+/// Happy path against the REQUIRED-proof spec `acl/grant`. The
+/// fixture's `AcceptAllVerifier` accepts the proof; the dispatch
+/// closure's `IS_PROOF_REQUIRED` check is satisfied because the
+/// document carries one. End-to-end re-enables the original
+/// happy-path test that the earlier IS_PROOF_REQUIRED fix had to
+/// disable (no verifier hook existed at that point).
+#[tokio::test]
+async fn happy_path_acl_grant_with_verifier() {
+    let addr = spawn_server().await; // default fixture: AcceptAll
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+
+    let mut req = TrustTask::for_payload(
+        "urn:uuid:test-grant-verified",
+        grant::v0_1::Payload {
+            entry: entry(),
+            reason: None,
+            ext: None,
+        },
+    );
+    req.proof = Some(Proof {
+        proof_type: "DataIntegrityProof".into(),
+        cryptosuite: "eddsa-rdfc-2022".into(),
+        verification_method: "did:web:alice.example#key-1".into(),
+        created: chrono::Utc::now(),
+        proof_purpose: "assertionMethod".into(),
+        proof_value: "z3kg".into(),
+        extra: Default::default(),
+    });
+
+    let resp = client
+        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
+        .await
+        .unwrap();
+
+    assert_eq!(
+        resp.type_uri,
+        "https://trusttasks.org/spec/acl/grant/0.1#response"
+            .parse::<TypeUri>()
+            .unwrap()
+    );
+    assert_eq!(&*resp.payload.entry.role, "admin");
+    assert_eq!(resp.recipient.as_deref(), Some("did:web:alice.example"));
+}
+
+/// Verifier returns `Err` → server rejects with `proof_invalid` and
+/// the failure message reaches the wire. Pins both the
+/// `RejectReason::ProofInvalid` mapping and the configured-verifier
+/// failure path on the binding.
+#[tokio::test]
+async fn proof_invalid_when_verifier_rejects() {
+    let addr = spawn_server_with(VerifierMode::RejectAll).await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+
+    // `acl/list` is RECOMMENDED, so the test isolates the verifier-
+    // rejects path from the IS_PROOF_REQUIRED path.
+    let mut req = TrustTask::for_payload(
+        "urn:uuid:test-proof-invalid",
+        list::v0_1::Payload {
+            role: None,
+            scope: None,
+            subject_prefix: None,
+            page_size: None,
+            cursor: None,
+            ext: None,
+        },
+    );
+    req.proof = Some(Proof {
+        proof_type: "DataIntegrityProof".into(),
+        cryptosuite: "eddsa-rdfc-2022".into(),
+        verification_method: "did:web:alice.example#key-1".into(),
+        created: chrono::Utc::now(),
+        proof_purpose: "assertionMethod".into(),
+        proof_value: "z3kg".into(),
+        extra: Default::default(),
+    });
+
+    let err = client
+        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
+        .await
+        .unwrap_err();
+
+    match err {
+        ClientError::TrustTaskError { http_status, error } => {
+            assert_eq!(http_status, 401);
+            assert_eq!(error.payload.code, StandardCode::ProofInvalid.into());
+            // The verifier's error description surfaces on the wire.
+            let msg = error.payload.message.as_deref().unwrap_or("");
+            assert!(
+                msg.contains("signature"),
+                "expected signature-error description: {msg}"
+            );
         }
         other => panic!("expected TrustTaskError, got {other:?}"),
     }

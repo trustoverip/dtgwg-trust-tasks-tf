@@ -19,9 +19,9 @@ use axum::Router;
 use serde::Serialize;
 use serde_json::Value;
 use trust_tasks_rs::{
-    discovery::DiscoveryRegistry, specs::trust_task_discovery::v0_1 as discovery, ErrorPayload,
-    ErrorResponse, Payload, RejectReason, ResolvedParties, StandardCode, TransportHandler,
-    TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
+    discovery::DiscoveryRegistry, erase_verifier, specs::trust_task_discovery::v0_1 as discovery,
+    DynProofVerifier, ErrorPayload, ErrorResponse, Payload, ProofVerifier, RejectReason,
+    ResolvedParties, StandardCode, TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 use uuid::Uuid;
 
@@ -66,6 +66,7 @@ struct ServerState {
     local_vid: Option<String>,
     auth: Box<dyn Auth>,
     routes: HashMap<String, Route>,
+    verifier: Option<Arc<dyn DynProofVerifier>>,
 }
 
 /// Builder for [`HttpsServer`].
@@ -73,6 +74,7 @@ pub struct HttpsServerBuilder {
     local_vid: Option<String>,
     auth: Option<Box<dyn Auth>>,
     routes: HashMap<String, Route>,
+    verifier: Option<Arc<dyn DynProofVerifier>>,
 }
 
 impl HttpsServerBuilder {
@@ -89,6 +91,32 @@ impl HttpsServerBuilder {
     /// the framework falls back entirely to in-band identity.
     pub fn with_auth(mut self, auth: impl Auth) -> Self {
         self.auth = Some(Box::new(auth));
+        self
+    }
+
+    /// Plug in an in-band [`ProofVerifier`]. When configured, the
+    /// server verifies the `proof` member of every proof-bearing
+    /// document and rejects with `proof_invalid` on failure; when
+    /// absent, the server rejects proof-bearing documents with
+    /// `malformed_request` (the
+    /// [`PROOF_NOT_ACCEPTED_BY_POLICY`](trust_tasks_rs::PROOF_NOT_ACCEPTED_BY_POLICY)
+    /// rule — matches `consume_inbound` under
+    /// [`ProofPolicy::RejectIfPresent`](trust_tasks_rs::ProofPolicy::RejectIfPresent)).
+    ///
+    /// The verifier is invoked between identity resolution (§7.2 item
+    /// 6) and the per-spec dispatch closure (`IS_PROOF_REQUIRED` check
+    /// and audience binding), so a failed signature short-circuits
+    /// before the user handler runs.
+    ///
+    /// Accepts any concrete [`ProofVerifier`] (e.g. from
+    /// `trust-tasks-proof`'s `affinidi` backend); the server stores it
+    /// behind [`trust_tasks_rs::DynProofVerifier`] for object-safe
+    /// dispatch.
+    pub fn with_verifier<V>(mut self, verifier: V) -> Self
+    where
+        V: ProofVerifier + Send + Sync + 'static,
+    {
+        self.verifier = Some(erase_verifier(verifier));
         self
     }
 
@@ -184,6 +212,7 @@ impl HttpsServerBuilder {
                 local_vid: self.local_vid,
                 auth,
                 routes: self.routes,
+                verifier: self.verifier,
             }),
         }
     }
@@ -204,6 +233,7 @@ impl HttpsServer {
             local_vid: None,
             auth: None,
             routes: HashMap::new(),
+            verifier: None,
         }
     }
 
@@ -262,23 +292,46 @@ async fn dispatch_handler(
         return reject_response(Some(&handler), Some(&doc), reason);
     }
 
-    // ─── 4a. SECURITY: this server does not verify in-band proofs. A
-    // producer-supplied proof is an integrity assertion the server
-    // cannot honour; silently dropping it would mislead the producer
-    // about the integrity guarantees of the exchange. Reject per the
-    // same rule consume_inbound applies under ProofPolicy::RejectIfPresent
-    // (SPEC §7.2 item 7 + §4.7.1). The wire-exposed reason is the
-    // shared framework constant — naming the server's configuration
-    // would let an unauthenticated probe enumerate verifier coverage
-    // across a fleet.
+    // ─── 4a. Proof handling (SPEC §7.2 item 7 + §4.7.1). The dispatch
+    // pipeline applies one of two policies based on builder
+    // configuration:
+    //
+    //   * Verifier configured (`HttpsServerBuilder::with_verifier`):
+    //     mirror `ProofPolicy::Verify` — proof-bearing documents are
+    //     verified, failure rejects `proof_invalid`. Proofless
+    //     documents proceed; the per-spec `IS_PROOF_REQUIRED` check in
+    //     the dispatch closure catches REQUIRED specs.
+    //
+    //   * No verifier (default): mirror `ProofPolicy::RejectIfPresent`
+    //     — proof-bearing documents are rejected `malformed_request`
+    //     with the framework-shared `PROOF_NOT_ACCEPTED_BY_POLICY`
+    //     wire message. Silently dropping a producer's proof would
+    //     mislead them about the exchange's integrity guarantees, and
+    //     naming the server's configuration on the wire would let a
+    //     probe enumerate verifier coverage across a fleet.
     if doc.proof.is_some() {
-        return reject_response(
-            Some(&handler),
-            Some(&doc),
-            RejectReason::MalformedRequest {
-                reason: PROOF_NOT_ACCEPTED_BY_POLICY.to_string(),
-            },
-        );
+        match &state.verifier {
+            Some(v) => {
+                if let Err(err) = v.verify_json(&doc).await {
+                    return reject_response(
+                        Some(&handler),
+                        Some(&doc),
+                        RejectReason::ProofInvalid {
+                            reason: err.to_string(),
+                        },
+                    );
+                }
+            }
+            None => {
+                return reject_response(
+                    Some(&handler),
+                    Some(&doc),
+                    RejectReason::MalformedRequest {
+                        reason: PROOF_NOT_ACCEPTED_BY_POLICY.to_string(),
+                    },
+                );
+            }
+        }
     }
 
     // ─── 5. Routing: look up the handler registered for this Type URI.
