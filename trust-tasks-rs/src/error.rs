@@ -292,6 +292,28 @@ impl From<StandardCode> for TrustTaskCode {
     }
 }
 
+impl TrustTaskCode {
+    /// Construct an extended code `<slug>:<local>` after validating both
+    /// halves against SPEC.md §8.5's grammar (slug per §6.1, local per
+    /// `spec.meta.schema.json`'s `errorCodes[].code` pattern after the
+    /// colon). Returns [`ParseCodeError`] when either is malformed.
+    ///
+    /// Round-trips cleanly through [`Display`](fmt::Display) and
+    /// [`FromStr`](std::str::FromStr) — a guarantee the hand-rolled
+    /// struct-literal form (`TrustTaskCode::Extended { slug, local }`)
+    /// does not enforce.
+    pub fn new_extended(
+        slug: impl Into<String>,
+        local: impl Into<String>,
+    ) -> Result<Self, ParseCodeError> {
+        let slug = slug.into();
+        let local = local.into();
+        validate_slug(&slug).map_err(|_| ParseCodeError::InvalidNamespace(slug.clone()))?;
+        validate_local(&local).map_err(|_| ParseCodeError::InvalidLocal(local.clone()))?;
+        Ok(TrustTaskCode::Extended { slug, local })
+    }
+}
+
 /// Typed rejection conditions a conforming consumer raises while applying
 /// SPEC.md §7.2.
 ///

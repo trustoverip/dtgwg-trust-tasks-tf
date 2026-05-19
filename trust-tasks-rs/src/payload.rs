@@ -44,6 +44,13 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// Consumers consult this constant via
     /// [`crate::TrustTask::enforce_audience_binding`] to apply SPEC.md §7.2
     /// item 8 without consulting the registry at runtime.
+    ///
+    /// The codegen emits this constant on both the request `Payload`
+    /// impl and the response `Response` impl (when the spec defines
+    /// one). The audience-binding check fires on request-side documents
+    /// only, so the constant on the response impl is informational —
+    /// downstream tooling that walks generated modules generically can
+    /// read it without special-casing variants.
     const IS_BEARER: bool = false;
 
     /// Whether the originating *Trust Task specification* obliges a *consumer*
@@ -58,6 +65,12 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// Consumers consult this constant via [`crate::consume_inbound`] to
     /// apply SPEC.md §7.2 item 7 authoritatively per-spec, rather than as a
     /// consumer-wide policy toggle.
+    ///
+    /// Like [`IS_BEARER`](Self::IS_BEARER), this constant is emitted on
+    /// both the request `Payload` impl and the response `Response` impl.
+    /// `consume_inbound` consults it on the request side; a producer
+    /// consuming a response would do the same check against the response
+    /// impl if its trust posture requires it.
     const IS_PROOF_REQUIRED: bool = false;
 
     /// Parsed form of [`TYPE_URI`](Self::TYPE_URI).
@@ -78,10 +91,7 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// Equivalent to writing:
     ///
     /// ```rust,ignore
-    /// TrustTaskCode::Extended {
-    ///     slug: "acl/change-role".into(),
-    ///     local: "last_authority_protected".into(),
-    /// }
+    /// TrustTaskCode::new_extended("acl/change-role", "last_authority_protected").unwrap()
     /// ```
     ///
     /// but sources the slug from [`TYPE_URI`](Self::TYPE_URI) so the slug
@@ -89,14 +99,25 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// namespace rule ("the slug of the spec being processed") is then
     /// enforced by construction.
     ///
-    /// Panics under the same condition as [`type_uri`](Self::type_uri):
-    /// only when [`TYPE_URI`](Self::TYPE_URI) is not a valid Type URI,
-    /// which is a static-string bug.
+    /// `local` is validated against `spec.meta.schema.json`'s
+    /// `errorCodes[].code` grammar (the part after the colon: lowercase
+    /// letter, then lowercase letters / digits / underscores). Panics on
+    /// an invalid `local` — this method is for static call-site usage;
+    /// callers handling runtime input should use
+    /// [`TrustTaskCode::new_extended`] and propagate the `Result`.
+    ///
+    /// Also panics under the same condition as
+    /// [`type_uri`](Self::type_uri): when [`TYPE_URI`](Self::TYPE_URI)
+    /// is not a valid Type URI, i.e. a static-string bug.
     fn extended_code(local: impl Into<String>) -> TrustTaskCode {
-        TrustTaskCode::Extended {
-            slug: Self::type_uri().slug().to_string(),
-            local: local.into(),
-        }
+        let slug = Self::type_uri().slug().to_string();
+        let local = local.into();
+        TrustTaskCode::new_extended(&slug, &local).unwrap_or_else(|e| {
+            panic!(
+                "Payload::extended_code({:?}) on slug {:?} failed validation: {e}",
+                local, slug
+            )
+        })
     }
 }
 
@@ -128,6 +149,16 @@ mod tests {
         // Single-segment slug — no `/` in the namespace.
         let code = discovery::Payload::extended_code("filter_unsupported");
         assert_eq!(code.to_string(), "trust-task-discovery:filter_unsupported");
+    }
+
+    #[test]
+    #[should_panic(expected = "failed validation")]
+    fn extended_code_panics_on_invalid_local() {
+        // Capital letters violate the `errorCodes[].code` grammar — the
+        // resulting Extended would fail to round-trip through FromStr.
+        // The trait method panics so a static-string bug fails loudly
+        // instead of silently producing a code that fails parsing later.
+        let _ = grant::Payload::extended_code("BadLocal");
     }
 
     #[test]
