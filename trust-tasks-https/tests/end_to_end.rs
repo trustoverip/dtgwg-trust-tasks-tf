@@ -414,10 +414,15 @@ async fn proof_bearing_document_rejected_when_server_has_no_verifier() {
             assert_eq!(http_status, 400);
             assert_eq!(error.payload.code, StandardCode::MalformedRequest.into());
             let msg = error.payload.message.as_deref().unwrap_or("");
+            // Message MUST cite spec + policy but MUST NOT name the
+            // server's configuration (no "verifier", no "configured" —
+            // those would let a probe fingerprint the deployment).
             assert!(
-                msg.contains("proof") && msg.contains("verify"),
-                "message should explain why the proof was rejected: {msg}"
+                msg.contains("policy") && msg.contains("§7.2"),
+                "message should cite the spec rule, not internals: {msg}"
             );
+            assert!(!msg.contains("verifier"), "wire leak (config): {msg}");
+            assert!(!msg.contains("configured"), "wire leak (config): {msg}");
         }
         other => panic!("expected TrustTaskError, got {other:?}"),
     }

@@ -18,16 +18,29 @@ the corresponding `SPEC.md` framework version.
   `ErrorResponse` on refusal, freeing them to mint extended codes
   (SPEC §8.5), attach task-specific `details`, and apply spec-specific
   routing without being constrained to the framework's `RejectReason`
-  vocabulary.
+  vocabulary. The docstring spells out that handler-built errors are
+  passed through verbatim — handlers that reject for identity-style
+  reasons MUST use `reject_with_recipient` or `TransportHandler::reject`
+  to preserve §8.1 routing.
+- **BREAKING**: `consume_inbound`'s `verifier: Option<&V>` parameter is
+  replaced by `policy: ProofPolicy<'_, V>` with three explicit variants:
+  `Verify(&V)`, `RejectIfPresent`, and `AcceptUnverified`. Forces the
+  security tradeoff to be a deliberate, audit-able choice at the call
+  site instead of an `Option::None` whose meaning was ambiguous. The
+  `AcceptUnverified` variant is the documented opt-out for transports
+  whose integrity guarantees live outside the in-band proof (signed
+  DIDComm envelopes, mTLS-bound HTTPS).
 - `consume_inbound` now reads `Payload::IS_PROOF_REQUIRED`
   authoritatively for the SPEC §7.2 item 7 proof-required check,
-  replacing the IS_BEARER-plus-verifier-set heuristic. Per-spec proof
-  contracts are enforced regardless of consumer strictness policy.
-- **SECURITY**: `consume_inbound` now rejects `(proof present, verifier
-  None)` with `malformed_request`. Silently dropping a producer-supplied
-  proof previously misled the producer about the integrity guarantees of
-  the exchange. Consumers that don't verify proofs must now reject
-  explicitly or strip the proof before invoking the helper.
+  replacing the `verifier.is_some() && !P::IS_BEARER` heuristic. Per-
+  spec proof contracts are enforced regardless of the chosen policy.
+- **SECURITY**: under `ProofPolicy::RejectIfPresent`, `consume_inbound`
+  rejects documents carrying an in-band proof with `malformed_request`.
+  Silently dropping a producer-supplied proof previously misled the
+  producer about the integrity guarantees of the exchange. The wire-
+  exposed `message` is a neutral constant — it cites the spec section
+  but does not name the consumer's configuration, so an unauthenticated
+  probe cannot fingerprint deployments by verifier coverage.
 
 ### Added
 

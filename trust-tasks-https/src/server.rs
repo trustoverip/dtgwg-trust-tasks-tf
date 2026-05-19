@@ -21,6 +21,7 @@ use serde_json::Value;
 use trust_tasks_rs::{
     discovery::DiscoveryRegistry, specs::trust_task_discovery::v0_1 as discovery, ErrorPayload,
     ErrorResponse, Payload, RejectReason, StandardCode, TransportHandler, TrustTask,
+    PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 use uuid::Uuid;
 
@@ -257,15 +258,17 @@ async fn dispatch_handler(
     // producer-supplied proof is an integrity assertion the server
     // cannot honour; silently dropping it would mislead the producer
     // about the integrity guarantees of the exchange. Reject per the
-    // same rule consume_inbound applies (SPEC §7.2 item 7 + §4.7.1).
+    // same rule consume_inbound applies under ProofPolicy::RejectIfPresent
+    // (SPEC §7.2 item 7 + §4.7.1). The wire-exposed reason is the
+    // shared framework constant — naming the server's configuration
+    // would let an unauthenticated probe enumerate verifier coverage
+    // across a fleet.
     if doc.proof.is_some() {
         return reject_response(
             Some(&handler),
             Some(&doc),
             RejectReason::MalformedRequest {
-                reason: "document carries a proof but this server is not configured to verify \
-                         proofs; integrity assertion cannot be honoured"
-                    .to_string(),
+                reason: PROOF_NOT_ACCEPTED_BY_POLICY.to_string(),
             },
         );
     }
