@@ -181,6 +181,15 @@ errorCodes:
           items: { type: string }
 ```
 
+### Extension authority: spec authors vs. consumer maintainers
+
+Two parties may need to mint codes under `<slug>:<local>`:
+
+- **Spec authors** declare canonical codes in `errorCodes` front matter when publishing or revising the spec. These are the codes every conforming consumer can rely on.
+- **Consumer maintainers** **MAY** mint additional codes for invariants the spec did not enumerate (for example, a maintainer-specific authorization guard). The slug **MUST** be the slug of the spec **being processed** — never that of a related spec. A consumer handling `acl/change-role` that needs to surface a "last authority protected" rejection emits `acl/change-role:last_authority_protected`, **not** `acl/revoke:last_authority_protected` even though the related rule is canonically declared on `acl/revoke`. A client dispatching on `payload.code` expects the slug to identify the request's own type; cross-slug codes break that contract.
+
+Per [SPEC.md §8.5](SPEC.md#85-extension-by-individual-trust-task-specifications), a consumer that does not recognize an extended `code` treats the error as `task_failed`, so maintainer-minted codes degrade gracefully for clients that only know the canonical set.
+
 ## Build and validate locally
 
 ```sh

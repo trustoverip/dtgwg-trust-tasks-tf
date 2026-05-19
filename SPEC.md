@@ -692,7 +692,9 @@ A `false` value of `retryable` represents a hard failure for that specific docum
 
 ### 8.5 Extension by individual Trust Task specifications
 
-An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` separated from the local code by a colon, e.g. `kyc-handoff:document_revoked`. Extended codes **MUST NOT** shadow any code listed in [§8.3](#83-standard-error-codes).
+An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` separated from the local code by a colon, e.g. `kyc-handoff:document_revoked`. The `<slug>` **MUST** be the slug of the specification under which the *error response* is emitted — that is, the slug of the *request* the *error response* refers to — never that of a related or referenced specification. A *consumer* of `acl/change-role` that needs to surface a rejection borrowed conceptually from `acl/revoke` therefore emits `acl/change-role:<local>`, not `acl/revoke:<local>`. Extended codes **MUST NOT** shadow any code listed in [§8.3](#83-standard-error-codes).
+
+A *consumer* (not only the spec author) **MAY** mint additional slug-namespaced codes for invariants the specification did not enumerate, provided the namespacing rule above is honoured. The framework's fallback-to-`task_failed` rule for unrecognized extended codes (see the third paragraph below) keeps these consumer-minted codes interoperable with clients that only implement the canonical set.
 
 An individual *Trust Task specification* **MAY** also define the structure of `details` for its own error responses. Where it does so, the specification **MUST** state which `code` values may carry a `details` object and **MUST** provide a JSON Schema fragment describing the `details` shape for each.
 
