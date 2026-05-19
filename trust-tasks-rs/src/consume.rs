@@ -25,9 +25,14 @@
 //!         "did:web:maintainer.example",
 //!         chrono::Utc::now(),
 //!         || format!("urn:uuid:{}", uuid::Uuid::new_v4()),
-//!         |accepted| async move {
-//!             // ... business logic, returning Ok(TrustTask<Response>) on
-//!             // success or Err(RejectReason::*) on a spec-handler refusal
+//!         |accepted, parties| async move {
+//!             // `parties` carries the SPEC §4.8.1-resolved issuer/recipient;
+//!             // handlers can use it without re-running resolve_parties.
+//!             //
+//!             // On refusal, build an ErrorResponse with whatever code /
+//!             // details the spec calls for — `TrustTask::reject_with` or
+//!             // `reject_with_recipient` are the routing-safe builders.
+//!             Ok(accepted.respond_with("resp-1", build_response(&parties)))
 //!         },
 //!     )
 //!     .await;
@@ -52,10 +57,10 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 use crate::document::{ErrorResponse, TrustTask};
-use crate::error::{ErrorPayload, RejectReason};
+use crate::error::RejectReason;
 use crate::payload::Payload;
 use crate::proof::{ProofVerifier, VerificationError};
-use crate::transport::TransportHandler;
+use crate::transport::{ResolvedParties, TransportHandler};
 
 /// Possible outcomes of [`consume_inbound`].
 #[derive(Debug)]
@@ -64,10 +69,11 @@ pub enum ConsumeOutcome<R> {
     /// handler produced a success response. The caller emits the
     /// response over the same transport that delivered the request.
     Handled(TrustTask<R>),
-    /// A framework check failed, or the caller's handler rejected the
-    /// document, and the rejection has a routable recipient. The
-    /// returned [`ErrorResponse`] is already addressed per SPEC.md §8.1
-    /// — the caller emits it over the transport.
+    /// A framework check failed and the rejection has a routable
+    /// recipient, OR the caller's handler returned an
+    /// [`ErrorResponse`] of its own. Either way the document is
+    /// already addressed per SPEC.md §8.1 — the caller emits it over
+    /// the transport.
     Rejected(ErrorResponse),
     /// SPEC.md §8.1 routing rule for `identity_mismatch`: the in-band
     /// `issuer` is by definition the contested identity, and the
@@ -90,23 +96,30 @@ pub enum ConsumeOutcome<R> {
 /// cross-check (item 6) and the §8.1 routing exception for
 /// `identity_mismatch`.
 ///
-/// `verifier` is consulted only when `doc.proof` is present. When the
-/// spec declares `proof: REQUIRED` (i.e. `P::IS_BEARER == false` and
-/// callers wish to enforce — see the inline note below) and no proof is
-/// present, the function emits `proof_required`. Verification failures
-/// (cryptosuite unknown, signature invalid, …) map to `proof_invalid`.
+/// `verifier` governs `proof` handling (item 7):
+///
+/// * `Some(v)` and `doc.proof` present → `v.verify(&doc)` is called;
+///   verification failure rejects with `proof_invalid`.
+/// * `Some(v)` and `doc.proof` absent → if `P::IS_PROOF_REQUIRED` is
+///   `true`, reject with `proof_required`; otherwise accept.
+/// * `None` and `doc.proof` present → reject with `malformed_request`
+///   (the producer signaled a security contract the consumer cannot
+///   honour; silently dropping the proof would mislead the producer
+///   about the integrity guarantees of the exchange).
+/// * `None` and `doc.proof` absent → if `P::IS_PROOF_REQUIRED` is
+///   `true`, reject with `proof_required`; otherwise accept.
 ///
 /// `error_id_factory` is invoked at most once, only when a rejection
 /// path needs an `id` for the error response.
 ///
-/// # Note on `proof: REQUIRED`
-///
-/// `Payload::IS_BEARER` declares the §4.8.3 bearer status of the spec.
-/// The framework does NOT carry a `IS_PROOF_REQUIRED` constant today, so
-/// this helper applies the conservative default: if `verifier` is `Some`
-/// and `doc.proof` is `None` on a non-bearer spec, the document is
-/// rejected with `proof_required`. Callers that opt out of strict proof
-/// enforcement pass `verifier: None`.
+/// `handler` receives the accepted document and the SPEC §4.8.1-resolved
+/// parties (so it can rely on `parties.issuer` / `parties.recipient`
+/// without re-running [`TransportHandler::resolve_parties`]). On refusal
+/// it builds and returns an [`ErrorResponse`] — typically via
+/// [`TrustTask::reject_with`] or [`TrustTask::reject_with_recipient`] —
+/// so handlers can mint extended codes (SPEC §8.5), attach
+/// task-specific `details`, or apply spec-specific routing without
+/// being constrained to the framework's [`RejectReason`] vocabulary.
 #[allow(clippy::too_many_arguments)]
 pub async fn consume_inbound<P, R, T, V, F, Fut>(
     transport: &T,
@@ -121,8 +134,8 @@ where
     P: Payload + Serialize + Send + Sync,
     T: TransportHandler + Sync + ?Sized,
     V: ProofVerifier + ?Sized,
-    F: FnOnce(TrustTask<P>) -> Fut,
-    Fut: Future<Output = Result<TrustTask<R>, RejectReason>>,
+    F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
+    Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
     // §7.2 items 4 + 5 — expiry and recipient enforcement.
     if let Err(reason) = doc.validate_basic(now, my_vid) {
@@ -130,21 +143,23 @@ where
     }
 
     // §7.2 item 6 — in-band vs transport-derived identity cross-check.
-    if let Err(mismatch) = transport.resolve_parties(&doc) {
-        return route_rejection(
-            transport,
-            &doc,
-            RejectReason::IdentityMismatch(mismatch),
-            error_id_factory,
-        );
-    }
+    let parties = match transport.resolve_parties(&doc) {
+        Ok(p) => p,
+        Err(mismatch) => {
+            return route_rejection(
+                transport,
+                &doc,
+                RejectReason::IdentityMismatch(mismatch),
+                error_id_factory,
+            );
+        }
+    };
 
-    // §7.2 item 7 — proof verification (when present) and proof-required
-    // enforcement (when a verifier was supplied for a non-bearer spec).
+    // §7.2 item 7 — proof handling. The combinations are enumerated in
+    // the function docstring; the table here mirrors that.
     match (doc.proof.as_ref(), verifier) {
-        (Some(_), Some(v)) => match v.verify(&doc).await {
-            Ok(()) => {}
-            Err(err) => {
+        (Some(_), Some(v)) => {
+            if let Err(err) = v.verify(&doc).await {
                 return route_rejection(
                     transport,
                     &doc,
@@ -152,8 +167,24 @@ where
                     error_id_factory,
                 );
             }
-        },
-        (None, Some(_)) if !P::IS_BEARER => {
+        }
+        (Some(_), None) => {
+            // SECURITY: a producer-supplied proof is an integrity
+            // assertion the consumer would otherwise silently drop.
+            // SPEC §4.7.1 + the proof-verification contract require
+            // the consumer to honour or reject — never ignore.
+            return route_rejection(
+                transport,
+                &doc,
+                RejectReason::MalformedRequest {
+                    reason: "document carries a proof but no verifier is configured; \
+                             consumer cannot honour the producer's integrity assertion"
+                        .to_string(),
+                },
+                error_id_factory,
+            );
+        }
+        (None, _) if P::IS_PROOF_REQUIRED => {
             return route_rejection(
                 transport,
                 &doc,
@@ -161,7 +192,7 @@ where
                 error_id_factory,
             );
         }
-        _ => {}
+        (None, _) => {}
     }
 
     // §7.2 item 8 — audience binding (proof + no recipient on a non-
@@ -171,25 +202,9 @@ where
     }
 
     // All §7.2 checks passed. Hand to the caller's business handler.
-    match handler(doc).await {
+    match handler(doc, parties).await {
         Ok(response) => ConsumeOutcome::Handled(response),
-        Err(reason) => {
-            // We no longer hold `doc` (the handler consumed it). The
-            // handler's RejectReason is a spec-handler-level refusal,
-            // never `identity_mismatch` (that was already handled
-            // upstream). The caller can build the error response with
-            // the request metadata they preserved on the way in — but
-            // since we can't reach back into the consumed `doc`, we
-            // surface the reason and let the caller route. This is the
-            // one path where `consume_inbound`'s ergonomic win is
-            // partial; in practice handlers are expected to use
-            // `TrustTask::respond_with` for success and call
-            // `TrustTask::reject_with` themselves (returning an
-            // ErrorResponse, not a RejectReason) for refusal. The
-            // RejectReason path here is for handlers that defer routing
-            // to the framework; they get an unrouted error.
-            ConsumeOutcome::Rejected(hand_built_unrouted_error(error_id_factory(), reason))
-        }
+        Err(error_response) => ConsumeOutcome::Rejected(error_response),
     }
 }
 
@@ -217,31 +232,13 @@ fn proof_error_to_reject(err: VerificationError) -> RejectReason {
     }
 }
 
-/// Build an unrouted error response — used only for the spec-handler-
-/// refused path, where `consume_inbound` has consumed the inbound `doc`
-/// and cannot reach back into it for routing metadata.
-fn hand_built_unrouted_error(error_id: String, reason: RejectReason) -> ErrorResponse {
-    use crate::document::trust_task_error_type_uri;
-    ErrorResponse {
-        id: error_id,
-        thread_id: None,
-        type_uri: trust_task_error_type_uri(),
-        issuer: None,
-        recipient: None,
-        issued_at: Some(Utc::now()),
-        expires_at: None,
-        payload: ErrorPayload::from(reason),
-        context: None,
-        proof: None,
-        extra: Default::default(),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::handlers::NoopHandler;
+    use crate::proof::Proof;
     use crate::specs::acl::grant::v0_1 as grant;
+    use crate::StandardCode;
 
     fn entry() -> grant::AclEntry {
         grant::AclEntry {
@@ -263,6 +260,18 @@ mod tests {
             entry: entry(),
             reason: None,
             ext: None,
+        }
+    }
+
+    fn dummy_proof() -> Proof {
+        Proof {
+            proof_type: "DataIntegrityProof".into(),
+            cryptosuite: "eddsa-rdfc-2022".into(),
+            verification_method: "did:web:org.example#key-1".into(),
+            created: Utc::now(),
+            proof_purpose: "assertionMethod".into(),
+            proof_value: "z3kg".into(),
+            extra: Default::default(),
         }
     }
 
@@ -290,20 +299,29 @@ mod tests {
 
     #[tokio::test]
     async fn handler_runs_when_all_checks_pass() {
+        // acl/grant is IS_PROOF_REQUIRED=true, so the document MUST
+        // carry a proof and we MUST supply a verifier.
         let transport = NoopHandler::new();
-        let verifier: Option<&StubVerifier> = None;
+        let verifier = StubVerifier { outcome: Ok(()) };
         let mut doc = TrustTask::for_payload("req-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
-            verifier,
+            Some(&verifier),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
             || "err-1".to_string(),
-            |req| async move {
+            |req, parties| async move {
+                // Handler sees the resolved parties without re-deriving.
+                assert_eq!(parties.issuer.as_deref(), Some("did:web:org.example"));
+                assert_eq!(
+                    parties.recipient.as_deref(),
+                    Some("did:web:maintainer.example")
+                );
                 let resp_payload = grant::Response {
                     entry: req.payload.entry.clone(),
                     ext: None,
@@ -337,13 +355,10 @@ mod tests {
             "did:web:maintainer.example",
             Utc::now(),
             || "err-2".to_string(),
-            |_req| async move {
+            |_req, _parties| async move {
                 panic!("handler must not run when validate_basic rejects");
                 #[allow(unreachable_code)]
-                Err::<TrustTask<grant::Response>, _>(RejectReason::TaskFailed {
-                    reason: "unreachable".into(),
-                    details: None,
-                })
+                Ok::<TrustTask<grant::Response>, ErrorResponse>(unreachable!())
             },
         )
         .await;
@@ -351,14 +366,17 @@ mod tests {
         match outcome {
             ConsumeOutcome::Rejected(err) => {
                 assert_eq!(err.recipient.as_deref(), Some("did:web:org.example"));
-                assert_eq!(err.payload.code, crate::StandardCode::WrongRecipient.into());
+                assert_eq!(err.payload.code, StandardCode::WrongRecipient.into());
             }
             other => panic!("expected Rejected, got {other:?}"),
         }
     }
 
+    /// SPEC §7.2 item 7 — IS_PROOF_REQUIRED is authoritative; the
+    /// `verifier=Some` / `non-bearer` heuristic is gone. acl::grant is
+    /// REQUIRED in front matter, so codegen set IS_PROOF_REQUIRED=true.
     #[tokio::test]
-    async fn proof_required_when_verifier_set_but_proof_absent_on_non_bearer_spec() {
+    async fn proof_required_fires_for_spec_with_required_proof() {
         let transport = NoopHandler::new();
         let verifier = StubVerifier { outcome: Ok(()) };
         let mut doc = TrustTask::for_payload("req-3", grant_payload());
@@ -373,20 +391,102 @@ mod tests {
             "did:web:maintainer.example",
             Utc::now(),
             || "err-3".to_string(),
-            |_req| async move {
+            |_req, _parties| async move {
                 panic!("handler must not run when proof_required fires");
                 #[allow(unreachable_code)]
-                Err::<TrustTask<grant::Response>, _>(RejectReason::TaskFailed {
-                    reason: "unreachable".into(),
-                    details: None,
-                })
+                Ok::<TrustTask<grant::Response>, ErrorResponse>(unreachable!())
             },
         )
         .await;
 
         match outcome {
             ConsumeOutcome::Rejected(err) => {
-                assert_eq!(err.payload.code, crate::StandardCode::ProofRequired.into());
+                assert_eq!(err.payload.code, StandardCode::ProofRequired.into());
+            }
+            other => panic!("expected Rejected, got {other:?}"),
+        }
+    }
+
+    /// SECURITY: a producer-supplied proof MUST NOT be silently
+    /// dropped when no verifier is configured.
+    #[tokio::test]
+    async fn proof_present_with_no_verifier_rejected_as_malformed_request() {
+        let transport = NoopHandler::new();
+        let verifier: Option<&StubVerifier> = None;
+        let mut doc = TrustTask::for_payload("req-4", grant_payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.proof = Some(dummy_proof());
+
+        let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
+            &transport,
+            verifier,
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-4".to_string(),
+            |_req, _parties| async move {
+                panic!("handler must not run when proof-without-verifier rejection fires");
+                #[allow(unreachable_code)]
+                Ok::<TrustTask<grant::Response>, ErrorResponse>(unreachable!())
+            },
+        )
+        .await;
+
+        match outcome {
+            ConsumeOutcome::Rejected(err) => {
+                assert_eq!(err.payload.code, StandardCode::MalformedRequest.into());
+                assert!(err
+                    .payload
+                    .message
+                    .as_deref()
+                    .unwrap_or("")
+                    .contains("no verifier"));
+            }
+            other => panic!("expected Rejected, got {other:?}"),
+        }
+    }
+
+    /// Handler-returned ErrorResponse is passed through verbatim — the
+    /// handler owns routing for spec-specific refusals.
+    #[tokio::test]
+    async fn handler_error_response_is_passed_through() {
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = TrustTask::for_payload("req-5", grant_payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.proof = Some(dummy_proof());
+
+        let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
+            &transport,
+            Some(&verifier),
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-5".to_string(),
+            |req, _parties| async move {
+                // Handler-minted extended code with custom routing.
+                Err(req.reject_with(
+                    "err-handler",
+                    crate::ErrorPayload::new(crate::TrustTaskCode::Extended {
+                        slug: "acl/grant".into(),
+                        local: "role_not_recognized".into(),
+                    })
+                    .with_message("role string not in maintainer vocabulary"),
+                ))
+            },
+        )
+        .await;
+
+        match outcome {
+            ConsumeOutcome::Rejected(err) => {
+                assert_eq!(err.id, "err-handler");
+                assert!(matches!(
+                    err.payload.code,
+                    crate::TrustTaskCode::Extended { ref slug, ref local }
+                    if slug == "acl/grant" && local == "role_not_recognized"
+                ));
             }
             other => panic!("expected Rejected, got {other:?}"),
         }
