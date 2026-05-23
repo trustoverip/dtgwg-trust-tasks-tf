@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Missing required subject.",
+    "payload": {
+      "role": "admin"
+    }
+  },
+  {
+    "note": "ttl below minimum.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "ttl": 0
+    }
+  },
+  {
+    "note": "Unknown top-level payload member.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "frobnicate": true
+    }
+  }
+]

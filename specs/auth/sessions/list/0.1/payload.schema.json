@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/sessions/list/0.1",
+  "title": "Auth — Sessions List",
+  "description": "Enumerate every active session the auth service holds for the producer's subject. Companion to auth/whoami (single-session introspection) for users managing multi-device sign-ins.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Sessions List — response payload",
+      "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/sessions/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessions"],
+      "properties": {
+        "sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/session.schema.json#/$defs/Session"
+          },
+          "description": "Every active session the consumer holds for the producer's subject. Sorted MAY be by issuedAt descending; the framework imposes no ordering."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

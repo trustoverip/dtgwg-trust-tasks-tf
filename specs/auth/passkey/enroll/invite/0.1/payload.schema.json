@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1",
+  "title": "Auth — Passkey Enroll (invite)",
+  "description": "An administrator issues a single-use invite link an unenrolled subject can redeem to bind their first passkey, without first holding an authenticated session.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee actually controls a passkey but does NOT independently verify the subject — trust flows from the admin."
+    },
+    "role": {
+      "type": "string",
+      "description": "Role the invitee receives on successful enrollment. Consumer-defined vocabulary; if absent the consumer applies its default role."
+    },
+    "scopes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional scopes to attach on enrollment."
+    },
+    "deviceLabel": {
+      "type": "string",
+      "description": "Suggested label for the credential. Used as a default; the invitee MAY override during redemption."
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Seconds the invite remains valid. Consumers SHOULD pick 1 h – 7 d; longer windows widen the attack surface."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Enroll Invite — response payload",
+      "description": "The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invite", "subject", "expiresAt"],
+      "properties": {
+        "invite": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["token", "url"],
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 16,
+              "description": "Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy."
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter."
+            }
+          }
+        },
+        "subject": {
+          "type": "string",
+          "description": "Echo of the invitee's VID."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Missing required reason — wallet MUST display the reason verbatim.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ"
+    }
+  },
+  {
+    "note": "Challenge too short.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "short",
+      "reason": "Approve transfer"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Approve transfer",
+      "frobnicate": true
+    }
+  }
+]

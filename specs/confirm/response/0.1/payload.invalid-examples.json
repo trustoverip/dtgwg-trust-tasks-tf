@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Missing required challenge.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "decision": "approved"
+    }
+  },
+  {
+    "note": "Decision value not in enum.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "decision": "maybe"
+    }
+  },
+  {
+    "note": "Challenge below minimum length.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "short",
+      "decision": "approved"
+    }
+  }
+]

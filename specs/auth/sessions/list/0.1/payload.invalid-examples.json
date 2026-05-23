@@ -1,0 +1,16 @@
+[
+  {
+    "note": "Unknown top-level payload member — the empty `{}` is the only valid shape.",
+    "payload": {
+      "subject": "did:web:alice.example"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]
