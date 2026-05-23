@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/authenticate/0.1",
+  "title": "Auth — Authenticate",
+  "description": "The subject presents a previously-issued challenge along with the framework `proof` that binds the document to their VID. The proof IS the authentication.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["challenge", "sessionId"],
+  "properties": {
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges."
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding."
+    },
+    "scope": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional capability tags the subject is requesting on the issued tokens. The consumer's authorization layer decides which are granted; the issued TokenBundle's `scope` MAY be a subset."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Authenticate — response payload",
+      "description": "Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session", "tokens"],
+      "properties": {
+        "session": {
+          "$ref": "../../_shared/0.1/session.schema.json#/$defs/Session",
+          "description": "The session the consumer has just created or refreshed for this subject."
+        },
+        "tokens": {
+          "$ref": "../../_shared/0.1/tokens.schema.json#/$defs/TokenBundle",
+          "description": "Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

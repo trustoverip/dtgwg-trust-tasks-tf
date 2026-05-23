@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approve-response/0.1",
+  "title": "Auth — Step-up Approve Response",
+  "description": "The approver's signed ratification of a step-up: subject + sessionId + challenge are echoed inside a proof-bearing document so the relying party can elevate the session.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "sessionId", "challenge", "decision"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Echoed from the matching approve-request. The relying party verifies it equals the session's subject."
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Echoed from the matching approve-request. The relying party uses it to locate the session to elevate."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Echoed from the matching approve-request. The relying party verifies it equals the bound challenge."
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["approved", "denied"],
+      "description": "`approved` elevates the session per the relying party's policy. `denied` is a signed refusal — useful for audit even though it elevates nothing."
+    },
+    "deniedReason": {
+      "type": "string",
+      "description": "Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred)."
+    },
+    "grantedAcr": {
+      "type": "string",
+      "description": "The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Step-up Approve Response — relying party ack",
+      "description": "Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["elevated", "rejected"]
+        },
+        "session": {
+          "$ref": "../../../_shared/0.1/session.schema.json#/$defs/Session",
+          "description": "Present when status is `elevated`. The session's updated amr/acr after the approval was applied."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Present when status is `rejected` (e.g. \"challenge expired\", \"session not found\", \"acr ceiling exceeded\")."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

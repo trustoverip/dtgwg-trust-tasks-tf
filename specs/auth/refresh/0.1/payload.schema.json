@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/refresh/0.1",
+  "title": "Auth — Refresh",
+  "description": "Exchange a refresh token for a new access token (and optionally a new refresh token).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["refreshToken"],
+  "properties": {
+    "refreshToken": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The refresh token previously issued in a TokenBundle. Consumers verify it server-side; producers treat it as opaque."
+    },
+    "scope": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional capability tags requested on the new access token. MAY be narrower than the original session's scope; consumers MUST NOT widen scope on refresh."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Refresh — response payload",
+      "description": "Issued by the auth service when the presented refresh token is valid. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/refresh/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tokens"],
+      "properties": {
+        "session": {
+          "$ref": "../../_shared/0.1/session.schema.json#/$defs/Session",
+          "description": "Optional session snapshot. Consumers SHOULD include it so the producer can refresh client-side state (acr changes after step-up, scope changes after policy edits) without a separate whoami call."
+        },
+        "tokens": {
+          "$ref": "../../_shared/0.1/tokens.schema.json#/$defs/TokenBundle",
+          "description": "New access token. If the consumer's policy rotates refresh tokens on each use, a new refreshToken is included; otherwise the producer continues using the previously-issued one."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

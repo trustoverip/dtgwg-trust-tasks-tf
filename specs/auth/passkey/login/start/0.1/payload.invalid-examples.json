@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown purpose value — the enum is `login` or `step-up`.",
+    "payload": {
+      "purpose": "register"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member.",
+    "payload": {
+      "userHandle": "abc"
+    }
+  }
+]

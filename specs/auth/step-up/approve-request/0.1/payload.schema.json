@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approve-request/0.1",
+  "title": "Auth — Step-up Approve Request",
+  "description": "A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "sessionId", "challenge", "reason"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID whose session is being elevated. The approver MUST verify this is a VID it can speak for."
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The session the relying party wants elevated. Opaque to the approver."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable explanation of WHY the relying party is asking (e.g. \"confirm transfer of 1000 USD to bob.example\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently."
+    },
+    "targetAcr": {
+      "type": "string",
+      "description": "The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level."
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Step-up Approve Request — response payload",
+      "description": "Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["accepted", "refused"],
+          "description": "`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `refused`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

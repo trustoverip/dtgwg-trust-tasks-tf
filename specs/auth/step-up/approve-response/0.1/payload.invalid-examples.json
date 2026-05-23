@@ -1,0 +1,28 @@
+[
+  {
+    "note": "Missing required challenge.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "decision": "approved"
+    }
+  },
+  {
+    "note": "Decision value not in enum.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "decision": "maybe"
+    }
+  },
+  {
+    "note": "Challenge below minimum length.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "short",
+      "decision": "approved"
+    }
+  }
+]

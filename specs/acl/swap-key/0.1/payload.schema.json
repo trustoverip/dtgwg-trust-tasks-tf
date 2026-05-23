@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl/swap-key/0.1",
+  "title": "ACL — Swap Key",
+  "description": "An ACL holder atomically replaces the VID bound to one of their own AclEntries with a new VID — typically a different DID under their control. The maintainer applies the swap as a single transaction: there is no window where both VIDs have access or neither does.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["currentSubject", "newSubject"],
+  "properties": {
+    "currentSubject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID currently bound in the ACL. MUST equal the document's `issuer` (per the conformance section: the holder swaps THEIR OWN entry)."
+    },
+    "newSubject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID to bind in place of `currentSubject`. The maintainer's policy decides admissibility (e.g. acceptable DID method, required attestations); the wire spec only requires `newSubject !== currentSubject`."
+    },
+    "linkProof": {
+      "description": "Cryptographic evidence — required by some maintainers — that the new VID consents to taking over. Format is consumer-defined; a typical shape is a Trust Task or VP/VC signed by `newSubject` carrying a fresh nonce from the maintainer or the holder. Producers omit this when the consumer's policy doesn't require it. Format described in the spec body.",
+      "type": ["object", "string"]
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional human-readable rationale (e.g. \"key-rotation\", \"hardware-token-replacement\", \"account-recovery\")."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Swap Key — response payload",
+      "description": "The post-swap AclEntry. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/swap-key/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry", "previousSubject"],
+      "properties": {
+        "entry": {
+          "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry",
+          "description": "The AclEntry the maintainer now holds. `subject` equals the request's `newSubject`."
+        },
+        "previousSubject": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echo of the swapped-out VID. The maintainer has removed every artifact bound to this subject (refresh tokens, persistent sessions); the holder MUST NOT attempt to reuse it."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

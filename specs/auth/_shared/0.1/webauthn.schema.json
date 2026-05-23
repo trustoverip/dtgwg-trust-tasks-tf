@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/_shared/0.1/webauthn",
+  "title": "Auth — shared WebAuthn definitions",
+  "description": "Reusable JSON Schema fragments for the WebAuthn (Level 2) options and credential responses exchanged during passkey enrollment and login. Field names follow the WebAuthn / WHATWG dictionaries verbatim so existing client-side libraries (`@simplewebauthn/browser`, `navigator.credentials.*`) can pass-through their inputs and outputs.",
+  "$defs": {
+    "CredentialCreationOptions": {
+      "$anchor": "credentialCreationOptions",
+      "title": "PublicKeyCredentialCreationOptions",
+      "description": "Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["challenge", "rp", "user", "pubKeyCredParams"],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "rp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "name"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "name": { "type": "string", "minLength": 1 }
+          }
+        },
+        "user": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "name", "displayName"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here."
+            },
+            "name": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string" }
+          }
+        },
+        "pubKeyCredParams": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "alg"],
+            "properties": {
+              "type": { "const": "public-key" },
+              "alg": { "type": "integer", "description": "COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256)." }
+            }
+          }
+        },
+        "timeout": { "type": "integer", "minimum": 1 },
+        "excludeCredentials": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CredentialDescriptor" }
+        },
+        "authenticatorSelection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "authenticatorAttachment": { "enum": ["platform", "cross-platform"] },
+            "requireResidentKey": { "type": "boolean" },
+            "residentKey": { "enum": ["discouraged", "preferred", "required"] },
+            "userVerification": { "enum": ["discouraged", "preferred", "required"] }
+          }
+        },
+        "attestation": { "enum": ["none", "indirect", "direct", "enterprise"] }
+      }
+    },
+    "CredentialRequestOptions": {
+      "$anchor": "credentialRequestOptions",
+      "title": "PublicKeyCredentialRequestOptions",
+      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["challenge"],
+      "properties": {
+        "challenge": { "type": "string", "description": "base64url-encoded one-time nonce." },
+        "timeout": { "type": "integer", "minimum": 1 },
+        "rpId": { "type": "string", "minLength": 1 },
+        "allowCredentials": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CredentialDescriptor" }
+        },
+        "userVerification": { "enum": ["discouraged", "preferred", "required"] }
+      }
+    },
+    "CredentialDescriptor": {
+      "$anchor": "credentialDescriptor",
+      "title": "PublicKeyCredentialDescriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": { "const": "public-key" },
+        "id": { "type": "string", "description": "base64url-encoded credential id." },
+        "transports": {
+          "type": "array",
+          "items": { "enum": ["usb", "nfc", "ble", "internal", "hybrid"] }
+        }
+      }
+    },
+    "AttestationResponse": {
+      "$anchor": "attestationResponse",
+      "title": "AuthenticatorAttestationResponse (registration)",
+      "description": "The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "rawId", "type", "response"],
+      "properties": {
+        "id": { "type": "string" },
+        "rawId": { "type": "string" },
+        "type": { "const": "public-key" },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["clientDataJSON", "attestationObject"],
+          "properties": {
+            "clientDataJSON": { "type": "string" },
+            "attestationObject": { "type": "string" },
+            "transports": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "authenticatorAttachment": { "enum": ["platform", "cross-platform"] },
+        "clientExtensionResults": { "type": "object" }
+      }
+    },
+    "AssertionResponse": {
+      "$anchor": "assertionResponse",
+      "title": "AuthenticatorAssertionResponse (login)",
+      "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "rawId", "type", "response"],
+      "properties": {
+        "id": { "type": "string" },
+        "rawId": { "type": "string" },
+        "type": { "const": "public-key" },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["clientDataJSON", "authenticatorData", "signature"],
+          "properties": {
+            "clientDataJSON": { "type": "string" },
+            "authenticatorData": { "type": "string" },
+            "signature": { "type": "string" },
+            "userHandle": { "type": ["string", "null"] }
+          }
+        },
+        "authenticatorAttachment": { "enum": ["platform", "cross-platform"] },
+        "clientExtensionResults": { "type": "object" }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/challenge/0.1",
+  "title": "Auth — Challenge",
+  "description": "Request a one-time challenge nonce that the subject will sign to prove control of their VID.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID the producer intends to authenticate as. Optional — when omitted, the issuer MAY return a subject-agnostic challenge whose binding is established at authenticate time. When present, the issuer SHOULD bind the challenge to this subject so a successful authenticate proves control of THIS VID, not any VID."
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Producer-declared intent (e.g. \"login\", \"step-up\", \"sign-out\"). Consumers MAY surface this in audit logs or use it to scope the issued nonce. Free-form; ecosystems define the vocabulary."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Challenge — response payload",
+      "description": "Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["challenge", "sessionId", "expiresAt"],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "minLength": 16,
+          "description": "base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign."
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

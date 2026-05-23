@@ -1,0 +1,32 @@
+[
+  {
+    "note": "Missing required currentSubject.",
+    "payload": {
+      "newSubject": "did:web:alice-v2.example"
+    }
+  },
+  {
+    "note": "Missing required newSubject.",
+    "payload": {
+      "currentSubject": "did:web:alice.example"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member (additionalProperties: false catches `extras`).",
+    "payload": {
+      "currentSubject": "did:web:alice.example",
+      "newSubject": "did:web:alice-v2.example",
+      "extras": { "anything": "here" }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "currentSubject": "did:web:alice.example",
+      "newSubject": "did:web:alice-v2.example",
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/_shared/0.1/tokens",
+  "title": "Auth — shared Token definitions",
+  "description": "Reusable JSON Schema fragments for the access + refresh token bundle returned by authentication and refresh flows.",
+  "$defs": {
+    "TokenBundle": {
+      "$anchor": "tokenBundle",
+      "title": "TokenBundle",
+      "description": "An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accessToken", "tokenType", "expiresIn"],
+      "properties": {
+        "accessToken": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid."
+        },
+        "refreshToken": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh."
+        },
+        "tokenType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Token presentation scheme. Almost always \"Bearer\"; reserved for future schemes."
+        },
+        "expiresIn": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Seconds from issuance until the access token expires."
+        },
+        "refreshExpiresIn": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Seconds from issuance until the refresh token expires, when one was issued."
+        },
+        "scope": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

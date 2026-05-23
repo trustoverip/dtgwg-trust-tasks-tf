@@ -1,0 +1,21 @@
+[
+  {
+    "note": "Missing required enrollmentId.",
+    "payload": {
+      "credential": { "id": "x", "rawId": "x", "type": "public-key", "response": { "clientDataJSON": "x", "attestationObject": "x" } }
+    }
+  },
+  {
+    "note": "Missing required credential.",
+    "payload": {
+      "enrollmentId": "enr_1a2b3c4d5e6f7890"
+    }
+  },
+  {
+    "note": "credential.type is not the WebAuthn-required const.",
+    "payload": {
+      "enrollmentId": "enr_1a2b3c4d5e6f7890",
+      "credential": { "id": "x", "rawId": "x", "type": "totp", "response": { "clientDataJSON": "x", "attestationObject": "x" } }
+    }
+  }
+]

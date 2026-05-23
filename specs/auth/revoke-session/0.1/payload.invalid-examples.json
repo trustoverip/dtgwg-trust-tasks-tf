@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Neither `sessionId` nor `all` provided — the oneOf requires exactly one.",
+    "payload": {
+      "reason": "logout"
+    }
+  },
+  {
+    "note": "Both `sessionId` and `all` provided — mutually exclusive.",
+    "payload": {
+      "sessionId": "ec5d3c89-3f49-49b2-9d7d-2a8c0a8a7b9b",
+      "all": true
+    }
+  },
+  {
+    "note": "Unknown top-level payload member.",
+    "payload": {
+      "sessionId": "ec5d3c89-3f49-49b2-9d7d-2a8c0a8a7b9b",
+      "frobnicate": true
+    }
+  }
+]

@@ -1,0 +1,19 @@
+[
+  {
+    "note": "Missing required `refreshToken` field.",
+    "payload": {}
+  },
+  {
+    "note": "Empty refreshToken.",
+    "payload": {
+      "refreshToken": ""
+    }
+  },
+  {
+    "note": "Unknown top-level payload member.",
+    "payload": {
+      "refreshToken": "rt_8f2c1d4e9a7b3056",
+      "extra": "nope"
+    }
+  }
+]

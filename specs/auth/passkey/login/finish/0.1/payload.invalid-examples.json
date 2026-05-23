@@ -1,0 +1,21 @@
+[
+  {
+    "note": "Missing required authId.",
+    "payload": {
+      "credential": { "id": "x", "rawId": "x", "type": "public-key", "response": { "clientDataJSON": "x", "authenticatorData": "x", "signature": "x" } }
+    }
+  },
+  {
+    "note": "Missing required credential.",
+    "payload": {
+      "authId": "auth_3c4d5e6f7890abcd"
+    }
+  },
+  {
+    "note": "credential.response missing required signature.",
+    "payload": {
+      "authId": "auth_3c4d5e6f7890abcd",
+      "credential": { "id": "x", "rawId": "x", "type": "public-key", "response": { "clientDataJSON": "x", "authenticatorData": "x" } }
+    }
+  }
+]

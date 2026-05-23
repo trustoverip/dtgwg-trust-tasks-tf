@@ -1,0 +1,17 @@
+[
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false rejects 'extra'.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "extra": "not-allowed"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — every immediate child of ext MUST be reverse-DNS namespaced (SPEC §4.5.1).",
+    "payload": {
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]
