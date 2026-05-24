@@ -17,7 +17,7 @@
       "description": "Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly."
     },
     "ext": {
-      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
       "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
@@ -36,11 +36,11 @@
           "description": "Opaque server handle correlating this start with the matching finish."
         },
         "options": {
-          "$ref": "../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialRequestOptions",
+          "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialRequestOptions",
           "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get."
         },
         "ext": {
-          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
           "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }

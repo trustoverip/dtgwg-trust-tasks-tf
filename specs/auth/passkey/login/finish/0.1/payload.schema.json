@@ -13,11 +13,11 @@
       "description": "The authId issued by the matching login/start response. Echoed verbatim."
     },
     "credential": {
-      "$ref": "../../../_shared/0.1/webauthn.schema.json#/$defs/AssertionResponse",
+      "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/AssertionResponse",
       "description": "AuthenticatorAssertionResponse as returned by `navigator.credentials.get`. Binary fields base64url-encoded."
     },
     "ext": {
-      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
       "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
@@ -31,18 +31,18 @@
       "required": ["session", "purpose"],
       "properties": {
         "session": {
-          "$ref": "../../../_shared/0.1/session.schema.json#/$defs/Session"
+          "$ref": "../../../../_shared/0.1/session.schema.json#/$defs/Session"
         },
         "purpose": {
           "type": "string",
           "enum": ["login", "step-up"]
         },
         "tokens": {
-          "$ref": "../../../_shared/0.1/tokens.schema.json#/$defs/TokenBundle",
+          "$ref": "../../../../_shared/0.1/tokens.schema.json#/$defs/TokenBundle",
           "description": "Present when `purpose: login` (a new session). Absent for `step-up` — the producer's existing tokens remain valid and now carry the elevated acr."
         },
         "ext": {
-          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }
       }
     }

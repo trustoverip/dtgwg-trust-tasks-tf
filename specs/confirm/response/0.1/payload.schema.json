@@ -26,7 +26,7 @@
       "description": "Required when decision is `denied`. Human-readable rationale."
     },
     "ext": {
-      "$ref": "../../_framework/0.1/framework.schema.json#/$defs/Ext"
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
     }
   },
   "$defs": {
@@ -47,7 +47,7 @@
           "description": "Present when status is `rejected` (e.g. \"challenge expired\")."
         },
         "ext": {
-          "$ref": "../../_framework/0.1/framework.schema.json#/$defs/Ext"
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }
       }
     }

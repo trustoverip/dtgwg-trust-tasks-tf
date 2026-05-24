@@ -602,6 +602,21 @@ fn resolve_cross_file_refs(schema: &mut Value, base_dir: &Path) -> Result<()> {
             .ok_or_else(|| anyhow!("referenced file has no parent dir"))?
             .to_path_buf();
         frontier.extend(collect_external_refs(&fragment, &referenced_dir));
+
+        // The fragment may also contain *internal* refs (`#/$defs/X`)
+        // pointing at sibling defs in the source file. Without
+        // splicing those too, typify panics with `$ref
+        // #/definitions/X is missing` after `migrate_defs_to_definitions`
+        // rewrites the references. Reformulate each internal ref as a
+        // synthetic external ref against the same source file so the
+        // splice path treats them uniformly.
+        let synthetic_external: Vec<Value> = collect_internal_refs(&fragment)
+            .into_iter()
+            .map(|local| Value::String(format!("{}{}", rel_path, local)))
+            .collect();
+        for synth in synthetic_external {
+            frontier.push((synth, owner_dir.clone()));
+        }
     }
 
     // After splicing, rewrite every external $ref string to the local form.
@@ -617,6 +632,38 @@ fn collect_external_refs(schema: &Value, base_dir: &Path) -> Vec<(Value, PathBuf
         out.push((r.clone(), dir.to_path_buf()))
     });
     out
+}
+
+/// Walk `schema` and collect every internal `$ref` value (those that
+/// start with `#`). Returns the raw fragment strings so the caller
+/// can rewrite them into synthetic external refs.
+fn collect_internal_refs(schema: &Value) -> Vec<String> {
+    let mut out = Vec::new();
+    walk_internal_refs(schema, &mut |s| out.push(s.to_string()));
+    out
+}
+
+fn walk_internal_refs(value: &Value, sink: &mut impl FnMut(&str)) {
+    match value {
+        Value::Object(map) => {
+            if let Some(r) = map.get("$ref") {
+                if let Some(s) = r.as_str() {
+                    if s.starts_with('#') {
+                        sink(s);
+                    }
+                }
+            }
+            for v in map.values() {
+                walk_internal_refs(v, sink);
+            }
+        }
+        Value::Array(items) => {
+            for v in items {
+                walk_internal_refs(v, sink);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn walk_external_refs(value: &Value, base_dir: &Path, sink: &mut impl FnMut(&Value, &Path)) {

@@ -31,7 +31,7 @@
       "description": "Seconds the invite remains valid. Consumers SHOULD pick 1 h – 7 d; longer windows widen the attack surface."
     },
     "ext": {
-      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
     }
   },
   "$defs": {
@@ -69,7 +69,7 @@
           "format": "date-time"
         },
         "ext": {
-          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }
       }
     }

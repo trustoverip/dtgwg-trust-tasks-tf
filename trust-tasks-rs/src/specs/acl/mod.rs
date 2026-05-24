@@ -5,3 +5,4 @@ pub mod grant;
 pub mod list;
 pub mod revoke;
 pub mod show;
+pub mod swap_key;

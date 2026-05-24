@@ -13,7 +13,7 @@
       "description": "The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim."
     },
     "credential": {
-      "$ref": "../../../_shared/0.1/webauthn.schema.json#/$defs/AttestationResponse",
+      "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/AttestationResponse",
       "description": "AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded."
     },
     "deviceLabel": {
@@ -21,7 +21,7 @@
       "description": "Final operator-facing label for the credential. Overrides any label passed at start."
     },
     "ext": {
-      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
       "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
@@ -51,7 +51,7 @@
           "format": "date-time"
         },
         "ext": {
-          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
           "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }

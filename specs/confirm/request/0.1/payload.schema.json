@@ -36,7 +36,7 @@
       "description": "Seconds within which the relying party expects a response. The wallet SHOULD treat as advisory."
     },
     "ext": {
-      "$ref": "../../_framework/0.1/framework.schema.json#/$defs/Ext"
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
     }
   },
   "$defs": {
@@ -57,7 +57,7 @@
           "description": "Required when status is `refused`."
         },
         "ext": {
-          "$ref": "../../_framework/0.1/framework.schema.json#/$defs/Ext"
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }
       }
     }
