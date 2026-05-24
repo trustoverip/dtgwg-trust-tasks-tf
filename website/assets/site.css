@@ -143,7 +143,7 @@
 /* ---------- Task card (registry) -------------------------- */
 .tt-task-card {
   display: grid;
-  grid-template-columns: 80px 1fr auto;
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr) auto;
   gap: var(--tt-space-5);
   align-items: start;
   padding: var(--tt-space-6);
@@ -179,6 +179,9 @@
   letter-spacing: 0.06em;
   color: var(--tt-text-muted);
   padding-top: 0.3em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .tt-task-card__title {
   font-family: var(--tt-font-display);
