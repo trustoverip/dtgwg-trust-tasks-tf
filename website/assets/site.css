@@ -143,7 +143,7 @@
 /* ---------- Task card (registry) -------------------------- */
 .tt-task-card {
   display: grid;
-  grid-template-columns: minmax(0, 140px) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--tt-space-5);
   align-items: start;
   padding: var(--tt-space-6);
@@ -173,16 +173,6 @@
   transition: opacity var(--tt-duration-2) var(--tt-ease);
 }
 .tt-task-card:hover::before { opacity: 1; }
-.tt-task-card__num {
-  font-family: var(--tt-font-mono);
-  font-size: var(--tt-text-xs);
-  letter-spacing: 0.06em;
-  color: var(--tt-text-muted);
-  padding-top: 0.3em;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
 .tt-task-card__title {
   font-family: var(--tt-font-display);
   font-size: var(--tt-text-xl);

@@ -405,7 +405,6 @@ function RegistryCard({ task, setRoute, query, activeKw, onKwToggle }) {
       onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: task.slug, version: task.version }); }}
       style={{ "--accent": catColor(task.category) }}
     >
-      <div className="tt-task-card__num">{task.slug}<br /><span style={{ opacity: 0.7 }}>v{task.version}</span></div>
       <div>
         <h3 className="tt-task-card__title"><Highlight text={task.title} query={query} /></h3>
         <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
