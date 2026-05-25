@@ -135,6 +135,33 @@
       },
       "description": "Slugs of related Trust Tasks; hierarchical slugs use `/` separators (e.g. `acl/grant`)."
     },
+    "methodExtensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["method", "schema"],
+        "properties": {
+          "method": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Value of a method-discriminator field in the payload (e.g. `payload.method`) that activates this extension. For did-management/* specs, this is the DID method identifier (e.g. `webvh`, `web`)."
+          },
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Slug of the shared schema that documents the extension shape. Must match a discovered shared schema (file under an `_`-prefixed directory). The build script validates this resolves."
+          },
+          "requirement": {
+            "type": "string",
+            "enum": ["OPTIONAL", "RECOMMENDED", "REQUIRED"],
+            "default": "OPTIONAL",
+            "description": "How strongly producers should populate this extension when their `method` matches. Default OPTIONAL — extension is purely advisory metadata."
+          }
+        }
+      },
+      "description": "Method-discriminated extensions a producer MAY (or SHOULD/MUST per `requirement`) include in `ext` when their payload selects the named `method`. Each entry pins a shared schema by slug; the registry build surfaces it in the spec's Uses panel and links the schema page. Unlike $ref-resolved dependencies, method extensions aren't structurally required by the payload schema — they're an out-of-band convention for vendor-namespaced ext data."
+    },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",

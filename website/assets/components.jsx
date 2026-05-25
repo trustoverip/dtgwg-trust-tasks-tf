@@ -27,6 +27,7 @@ function TTNav({ route, setRoute }) {
     { id: "bindings",        label: "Bindings" },
     { id: "implementations", label: "Implementations" },
     { id: "registry",        label: "Registry" },
+    { id: "schemas",         label: "Schemas", path: "schema" },
     { id: "categories",      label: "Categories" },
     { id: "ecosystem",       label: "Ecosystem" },
     { id: "about",           label: "About" },
@@ -44,7 +45,7 @@ function TTNav({ route, setRoute }) {
             {links.map(l => (
               <li key={l.id}>
                 <a
-                  href={l.id === "home" ? "/" : `/${l.id}`}
+                  href={l.id === "home" ? "/" : `/${l.path || l.id}`}
                   className={route.name === l.id ? "active" : ""}
                   onClick={(e) => { e.preventDefault(); setRoute({ name: l.id }); }}
                 >{l.label}</a>

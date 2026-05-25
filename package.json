@@ -6,7 +6,8 @@
   "description": "Build tooling for the Trust Tasks framework specification and registry website.",
   "scripts": {
     "build": "node scripts/build-registry.mjs",
-    "validate": "node scripts/build-registry.mjs --validate-only"
+    "validate": "node scripts/build-registry.mjs --validate-only",
+    "serve": "node scripts/serve-website.mjs"
   },
   "engines": {
     "node": ">=20"

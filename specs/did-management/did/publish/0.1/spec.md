@@ -45,6 +45,10 @@ errorCodes:
 related:
   - did-management/did/register
   - did-management/did/check-name
+methodExtensions:
+  - method: webvh
+    schema: did-management/_shared/0.1/did-method-extensions/webvh
+    requirement: OPTIONAL
 ---
 
 ## Abstract
