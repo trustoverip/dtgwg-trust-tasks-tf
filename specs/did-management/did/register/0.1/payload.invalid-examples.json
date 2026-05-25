@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Missing required `didData`.",
+    "payload": {
+      "path": "alice",
+      "method": "webvh"
+    }
+  },
+  {
+    "note": "Empty path.",
+    "payload": {
+      "path": "",
+      "method": "webvh",
+      "didData": "{...}"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "path": "alice",
+      "method": "webvh",
+      "didData": "{...}",
+      "ext": { "bare-key": {} }
+    }
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/_shared/0.1/service-instance",
+  "title": "ServiceInstance — shared definition for the did-management/registry/* spec family",
+  "$defs": {
+    "ServiceInstance": {
+      "title": "ServiceInstance",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instanceId", "did"],
+      "properties": {
+        "instanceId": {
+          "type": "string",
+          "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts."
+        },
+        "did": {
+          "type": "string",
+          "description": "VID identifying the registered service."
+        },
+        "label": {
+          "type": "string"
+        },
+        "publicUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "servedDomains": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow."
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

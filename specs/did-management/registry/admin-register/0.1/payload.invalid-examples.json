@@ -1,0 +1,4 @@
+[
+  { "note": "Missing publicUrl.", "payload": { "instanceId": "i", "did": "d" } },
+  { "note": "Missing did.", "payload": { "instanceId": "i", "publicUrl": "https://x" } }
+]

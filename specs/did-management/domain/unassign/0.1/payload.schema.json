@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/domain/unassign/0.1",
+  "title": "Domain Unassign — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instanceId", "domain"],
+  "properties": {
+    "instanceId": { "type": "string", "minLength": 1 },
+    "domain": { "type": "string", "minLength": 1 },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Domain Unassign — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instanceId", "domain", "status"],
+      "properties": {
+        "instanceId": { "type": "string" },
+        "domain": { "type": "string" },
+        "status": { "type": "string", "enum": ["queued"] },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

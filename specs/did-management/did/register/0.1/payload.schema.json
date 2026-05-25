@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/register/0.1",
+  "title": "DID Management Register — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path", "method", "didData"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Local path under which the DID is to be hosted (e.g. `alice`, `tenant/staff/alice`). `.well-known` reserves the root slot — restricted to admin callers."
+    },
+    "method": {
+      "type": "string",
+      "minLength": 1,
+      "description": "DID method identifier (e.g. `webvh`, `web`). The shape of `didData` is method-specific."
+    },
+    "didData": {
+      "description": "Method-specific log content. For `webvh`, a JSONL string containing one or more signed log entries. For `web`, the DID document JSON.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "object" }
+      ]
+    },
+    "domain": {
+      "type": "string",
+      "description": "Optional explicit hosting domain. When omitted, the host resolves via caller ACL default → system default."
+    },
+    "force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin-takeover flag. When `true`, an existing slot owned by another party is replaced; requires administrative authority on the slot's hosting domain. Ignored when the slot is free or the caller is already the owner."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Register — response payload",
+      "description": "The success response carries the canonical DidRecord the hosting service now holds for the slot.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record"],
+      "properties": {
+        "record": {
+          "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/change-owner/0.1",
+  "title": "DID Management Change Owner — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic", "newOwner"],
+  "properties": {
+    "mnemonic": { "type": "string", "minLength": 1 },
+    "newOwner": { "type": "string", "minLength": 1 },
+    "domain": { "type": "string" },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Change Owner — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record"],
+      "properties": {
+        "record": { "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord" },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

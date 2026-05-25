@@ -1,0 +1,4 @@
+[
+  { "note": "Missing perMnemonic.", "payload": { "instanceId": "i" } },
+  { "note": "Negative count.", "payload": { "instanceId": "i", "perMnemonic": [ { "mnemonic": "a", "resolves": -1, "updates": 0 } ] } }
+]

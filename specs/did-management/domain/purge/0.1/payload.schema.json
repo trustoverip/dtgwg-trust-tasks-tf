@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/domain/purge/0.1",
+  "title": "Domain Purge — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "purgeServers": { "type": "boolean", "default": false },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Domain Purge — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "purgedAt"],
+      "properties": {
+        "name": { "type": "string" },
+        "purgedAt": { "type": "string", "format": "date-time" },
+        "fanout": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["instanceId", "status"],
+            "properties": {
+              "instanceId": { "type": "string" },
+              "status": { "type": "string", "enum": ["queued", "failed"] }
+            }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

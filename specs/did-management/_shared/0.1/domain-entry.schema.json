@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/_shared/0.1/domain-entry",
+  "title": "DomainEntry — shared definition for the did-management/domain/* spec family",
+  "description": "Canonical DomainEntry $def referenced by every did-management/domain/* specification. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "DomainEntry": {
+      "title": "DomainEntry",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "createdAt"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Hosting domain name (e.g. `did.example.com`). Compared case-insensitively; producers SHOULD emit lowercase canonical form."
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional human-readable label."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "disabled"],
+          "description": "Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible."
+        },
+        "defaultDomain": {
+          "type": "boolean",
+          "description": "When `true`, this domain is the host's default — new DIDs created without an explicit domain are hosted here. Exactly one entry SHOULD carry `defaultDomain: true`."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "disabledAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present iff `status === \"disabled\"`."
+        },
+        "purgeAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Earliest RFC3339 timestamp at which the host's background sweep is allowed to purge content for a disabled domain. Operators with administrative authority MAY override the wait via `domain/purge`."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

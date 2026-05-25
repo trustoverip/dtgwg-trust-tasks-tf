@@ -1,0 +1,4 @@
+[
+  { "note": "Missing didData.", "payload": { "mnemonic": "alice", "method": "webvh" } },
+  { "note": "Empty mnemonic.", "payload": { "mnemonic": "", "method": "webvh", "didData": "{}" } }
+]

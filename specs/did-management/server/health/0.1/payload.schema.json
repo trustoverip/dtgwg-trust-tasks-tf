@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/server/health/0.1",
+  "title": "Server Health — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instanceId"],
+  "properties": {
+    "instanceId": { "type": "string", "minLength": 1 },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Server Health — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instanceId", "ok", "observedAt"],
+      "properties": {
+        "instanceId": { "type": "string" },
+        "ok": { "type": "boolean" },
+        "observedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

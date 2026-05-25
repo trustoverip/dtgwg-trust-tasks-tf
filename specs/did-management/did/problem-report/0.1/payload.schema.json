@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/problem-report/0.1",
+  "title": "DID Management Problem Report — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic", "code", "message"],
+  "properties": {
+    "mnemonic": { "type": "string", "minLength": 1 },
+    "code": { "type": "string", "minLength": 1 },
+    "message": { "type": "string", "minLength": 1 },
+    "domain": { "type": "string" },
+    "ctx": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Free-form structured context. Hosts SHOULD avoid leaking other tenants' data here."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  }
+}

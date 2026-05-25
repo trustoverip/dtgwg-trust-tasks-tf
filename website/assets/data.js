@@ -23,5 +23,12 @@ window.TT_CATEGORIES = [
     color: "violet",
     blurb: "Granting, revoking, and managing access-control privileges between parties.",
     icon: "key"
+  },
+  {
+    id: "did-management",
+    name: "DID Management",
+    color: "teal",
+    blurb: "Lifecycle, hosting, and registry operations for DIDs hosted on a Trust-Tasks-aware service: claim a path, publish a signed log, disable or rotate a DID, manage hosting domains and the server registry.",
+    icon: "id-card"
   }
 ];

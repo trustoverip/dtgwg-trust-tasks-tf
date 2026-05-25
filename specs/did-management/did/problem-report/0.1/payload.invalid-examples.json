@@ -1,0 +1,4 @@
+[
+  { "note": "Missing message.", "payload": { "mnemonic": "alice", "code": "x" } },
+  { "note": "Empty mnemonic.", "payload": { "mnemonic": "", "code": "x", "message": "y" } }
+]

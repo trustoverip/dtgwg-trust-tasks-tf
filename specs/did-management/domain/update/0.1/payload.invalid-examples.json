@@ -1,0 +1,4 @@
+[
+  { "note": "Missing name.", "payload": { "label": "x" } },
+  { "note": "Empty name.", "payload": { "name": "" } }
+]

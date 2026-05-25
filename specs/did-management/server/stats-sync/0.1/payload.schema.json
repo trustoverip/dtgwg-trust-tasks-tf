@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/server/stats-sync/0.1",
+  "title": "Server Stats Sync — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instanceId", "perMnemonic"],
+  "properties": {
+    "instanceId": { "type": "string", "minLength": 1 },
+    "perMnemonic": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["mnemonic", "resolves", "updates"],
+        "properties": {
+          "mnemonic": { "type": "string", "minLength": 1 },
+          "resolves": { "type": "integer", "minimum": 0 },
+          "updates": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "buckets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["mnemonic", "epoch", "r", "u"],
+        "properties": {
+          "mnemonic": { "type": "string", "minLength": 1 },
+          "epoch": { "type": "integer", "minimum": 0 },
+          "r": { "type": "integer", "minimum": 0 },
+          "u": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Server Stats Sync — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instanceId", "accepted"],
+      "properties": {
+        "instanceId": { "type": "string" },
+        "accepted": { "type": "integer", "minimum": 0 },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

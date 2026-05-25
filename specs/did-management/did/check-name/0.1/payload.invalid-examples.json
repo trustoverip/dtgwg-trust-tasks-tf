@@ -1,0 +1,10 @@
+[
+  {
+    "note": "Missing required `path`.",
+    "payload": {}
+  },
+  {
+    "note": "Empty path.",
+    "payload": { "path": "" }
+  }
+]

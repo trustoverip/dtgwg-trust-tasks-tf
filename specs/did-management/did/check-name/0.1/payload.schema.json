@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/check-name/0.1",
+  "title": "DID Management Check Name — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reserve": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true and the path is available, atomically reserve it under the caller and return the resulting DidRecord."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Optional explicit hosting domain for the reservation. Honored only when `reserve: true`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Check Name — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "reserved"],
+      "properties": {
+        "available": {
+          "type": "boolean",
+          "description": "True iff the path is currently free to register."
+        },
+        "reserved": {
+          "type": "boolean",
+          "description": "True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available."
+        },
+        "record": {
+          "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord",
+          "description": "Present iff `reserved === true`. Carries the newly-committed DidRecord with `versionCount: 0`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

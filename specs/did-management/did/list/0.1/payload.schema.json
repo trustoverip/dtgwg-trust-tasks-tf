@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/list/0.1",
+  "title": "DID Management List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "owner": { "type": "string", "description": "Admin-only filter — list slots owned by this VID." },
+    "domain": { "type": "string" },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 1000 },
+    "offset": { "type": "integer", "minimum": 0 },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["records", "total"],
+      "properties": {
+        "records": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord" }
+        },
+        "total": { "type": "integer", "minimum": 0 },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

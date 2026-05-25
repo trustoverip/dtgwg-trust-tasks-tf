@@ -1,0 +1,4 @@
+[
+  { "note": "Missing instanceId.", "payload": {} },
+  { "note": "Empty instanceId.", "payload": { "instanceId": "" } }
+]

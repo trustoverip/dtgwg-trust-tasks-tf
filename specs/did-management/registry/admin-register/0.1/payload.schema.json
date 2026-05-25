@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/registry/admin-register/0.1",
+  "title": "Registry Admin Register — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instanceId", "did", "publicUrl"],
+  "properties": {
+    "instanceId": { "type": "string", "minLength": 1 },
+    "did": { "type": "string", "minLength": 1 },
+    "publicUrl": { "type": "string", "format": "uri" },
+    "servedDomains": { "type": "array", "items": { "type": "string" } },
+    "label": { "type": "string" },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Admin Register — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": { "$ref": "../../../_shared/0.1/service-instance.schema.json#/$defs/ServiceInstance" },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

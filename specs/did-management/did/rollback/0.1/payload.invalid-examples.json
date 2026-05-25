@@ -1,0 +1,4 @@
+[
+  { "note": "Missing targetVersion.", "payload": { "mnemonic": "alice" } },
+  { "note": "Non-positive targetVersion.", "payload": { "mnemonic": "alice", "targetVersion": 0 } }
+]

@@ -1,0 +1,4 @@
+[
+  { "note": "Negative limit.", "payload": { "limit": -1 } },
+  { "note": "limit above max.", "payload": { "limit": 5000 } }
+]

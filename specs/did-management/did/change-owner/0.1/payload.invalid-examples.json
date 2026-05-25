@@ -1,0 +1,4 @@
+[
+  { "note": "Missing newOwner.", "payload": { "mnemonic": "alice" } },
+  { "note": "Empty newOwner.", "payload": { "mnemonic": "alice", "newOwner": "" } }
+]

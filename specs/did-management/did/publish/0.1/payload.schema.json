@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/publish/0.1",
+  "title": "DID Management Publish — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic", "method", "didData"],
+  "properties": {
+    "mnemonic": { "type": "string", "minLength": 1 },
+    "method": { "type": "string", "minLength": 1 },
+    "didData": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "object" }
+      ]
+    },
+    "domain": {
+      "type": "string",
+      "description": "Optional explicit hosting domain. Permits 3rd-party callers (e.g. a VTA managing slots across multiple domains on one shared backplane) to disambiguate the target. Resolution chain: explicit → caller ACL default → system default. See [category conventions §1](../../../_shared/0.1/CONVENTIONS.md#1-domain-resolution). Unknown domains return `did-management:unknown_domain`."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Publish — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record"],
+      "properties": {
+        "record": { "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord" },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
