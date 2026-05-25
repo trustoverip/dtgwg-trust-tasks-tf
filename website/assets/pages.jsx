@@ -479,7 +479,7 @@ function RegistryPage({ initial, setRoute }) {
       />
 
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
-        <div className="container">
+        <div className="container container--wide">
           <label className="tt-search" htmlFor="tt-reg-search" style={{ marginBottom: "var(--tt-space-5)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="7" />
@@ -646,7 +646,7 @@ function SpecPage({ slug, version, id, setRoute }) {
   const cat = window.TT_CATEGORIES.find(c => c.id === task.category);
 
   return (
-    <section className="container tt-spec">
+    <section className="container container--wide tt-spec">
       <div>
         <div style={{ marginBottom: "var(--tt-space-4)" }}>
           <span className="tt-spec__num">{task.slug} · v{task.version}</span>
@@ -1727,7 +1727,7 @@ function BindingSpecPage({ slug, version, setRoute }) {
   }, [binding.id, proseToc.length]);
 
   return (
-    <section className="container tt-spec">
+    <section className="container container--wide tt-spec">
       <div>
         <div style={{ marginBottom: "var(--tt-space-4)" }}>
           <span className="tt-spec__num">binding/{binding.slug} · v{binding.version}</span>

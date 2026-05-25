@@ -77,6 +77,7 @@
   /* -- Layout ----------------------------------------------- */
   --tt-container:    72rem;     /* 1152px */
   --tt-container-sm: 48rem;
+  --tt-container-wide: 96rem;   /* 1536px — registry/spec long-form layouts */
   --tt-gutter:       max(1.25rem, 4vw);
 
   /* -- Radii ------------------------------------------------ */

@@ -133,6 +133,7 @@ pre code {
   padding-inline: var(--tt-gutter);
 }
 .container--narrow { max-width: var(--tt-container-sm); }
+.container--wide   { max-width: var(--tt-container-wide); }
 
 section {
   padding-block: clamp(var(--tt-space-8), 8vw, var(--tt-space-10));

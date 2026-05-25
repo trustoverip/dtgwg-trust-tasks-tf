@@ -657,7 +657,7 @@ mark.tt-mark {
 }
 .tt-prose h3 { font-size: var(--tt-text-xl); margin-top: var(--tt-space-6); margin-bottom: var(--tt-space-3); }
 .tt-prose h4 { font-size: var(--tt-text-lg); margin-top: var(--tt-space-5); margin-bottom: var(--tt-space-2); }
-.tt-prose p { font-size: var(--tt-text-base); color: var(--tt-text); max-width: none; }
+.tt-prose p { font-size: var(--tt-text-base); color: var(--tt-text); max-width: 75ch; }
 .tt-prose ul, .tt-prose ol { padding-left: 1.3em; margin: 0 0 var(--tt-space-4); color: var(--tt-text); }
 .tt-prose li { margin-bottom: var(--tt-space-2); }
 .tt-prose li > p { margin-bottom: var(--tt-space-2); }
