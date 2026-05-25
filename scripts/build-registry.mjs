@@ -105,6 +105,160 @@ function discoverSpecs() {
   }
 }
 
+/* ---------- Shared schemas: discovery, slug, ref-walk ----------
+ *
+ * "Shared schemas" are the reusable JSON Schema documents that individual
+ * payload schemas reference via $ref — the framework primitives in
+ * specs/_framework/, the per-family shared $defs in specs/<family>/_shared/,
+ * and the method-extension schemas under specs/<family>/_shared/.../did-method-extensions/.
+ *
+ * The discovery rule is simple: any `*.schema.json` file living anywhere
+ * under a directory whose name starts with `_` is a shared schema. We index
+ * them by absolute filesystem path so we can resolve $refs deterministically
+ * (the relative path inside a $ref is what JSON Schema considers canonical).
+ */
+const SHARED_SCHEMA_ID_PREFIX = 'https://trusttasks.org/spec/';
+
+function discoverSharedSchemas() {
+  if (!fs.existsSync(SPECS_DIR)) return [];
+  const found = [];
+  walk(SPECS_DIR);
+  return found;
+
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!entry.name.endsWith('.schema.json')) continue;
+      // skip the meta-schema and per-task payload schemas (those are owned by tasks)
+      if (entry.name === 'spec.meta.schema.json') continue;
+      if (entry.name === 'payload.schema.json') continue;
+      // shared schemas live somewhere under an `_`-prefixed directory
+      const rel = path.relative(SPECS_DIR, full);
+      const segs = rel.split(path.sep);
+      const underInternal = segs.slice(0, -1).some((s) => s.startsWith('_'));
+      if (!underInternal) continue;
+      try {
+        const schema = readJson(full);
+        found.push({ filePath: full, rel, schema });
+      } catch (e) {
+        fail(rel, `invalid JSON: ${e.message}`);
+      }
+    }
+  }
+}
+
+/* Slug used for the website's /schema/<slug> route. Derived from the schema's
+ * canonical $id (preferred — that's what cross-references resolve against) and
+ * falling back to the on-disk path with `.schema.json` stripped. */
+function sharedSchemaSlug({ filePath, schema }) {
+  if (typeof schema.$id === 'string' && schema.$id.startsWith(SHARED_SCHEMA_ID_PREFIX)) {
+    return schema.$id.slice(SHARED_SCHEMA_ID_PREFIX.length);
+  }
+  const rel = path.relative(SPECS_DIR, filePath).replace(/\\/g, '/');
+  return rel.replace(/\.schema\.json$/, '');
+}
+
+function sharedSchemaKind(rel) {
+  const segs = rel.split('/');
+  if (segs[0] === '_framework') return 'framework';
+  // anything sitting in or under a did-method-extensions/ folder is a method extension
+  if (segs.includes('did-method-extensions')) return 'method-extension';
+  return 'shared';
+}
+
+function sharedSchemaFamily(rel) {
+  const segs = rel.split('/');
+  if (segs[0] === '_framework') return 'framework';
+  return segs[0];
+}
+
+function buildSharedRecord(entry) {
+  const { filePath, rel, schema } = entry;
+  const relWeb = rel.replace(/\\/g, '/');
+  const slug = sharedSchemaSlug(entry);
+  const defs = schema.$defs && typeof schema.$defs === 'object'
+    ? Object.keys(schema.$defs)
+    : [];
+  return {
+    slug,
+    schemaId: schema.$id || null,
+    title: schema.title || slug.split('/').slice(-1)[0],
+    description: schema.description || null,
+    kind: sharedSchemaKind(relWeb),
+    family: sharedSchemaFamily(relWeb),
+    sourcePath: `/specs/${relWeb}`,
+    defs,
+    schema
+  };
+}
+
+/* Walks a payload schema and yields every external $ref it contains.
+ * Internal refs (no file part, e.g. "#/$defs/Response") are skipped — those
+ * are the spec's own response sub-schema and don't represent a dependency. */
+function* iterRefs(node) {
+  if (!node || typeof node !== 'object') return;
+  if (Array.isArray(node)) {
+    for (const item of node) yield* iterRefs(item);
+    return;
+  }
+  for (const [k, v] of Object.entries(node)) {
+    if (k === '$ref' && typeof v === 'string') {
+      yield v;
+      continue;
+    }
+    yield* iterRefs(v);
+  }
+}
+
+/* Resolve a $ref relative to the payload schema's directory to (filePath, fragment).
+ * Returns null when the ref is purely internal (no file part). */
+function resolveRef(ref, baseDir) {
+  const hashIdx = ref.indexOf('#');
+  const filePart = hashIdx === -1 ? ref : ref.slice(0, hashIdx);
+  const frag = hashIdx === -1 ? '' : ref.slice(hashIdx + 1);
+  if (!filePart) return null; // internal ref — same document
+  // Only resolve relative file paths; absolute URLs would need a registry lookup
+  // and we don't currently use any in spec schemas.
+  if (/^[a-z]+:\/\//i.test(filePart)) return { external: filePart, frag };
+  const absPath = path.resolve(baseDir, filePart);
+  return { filePath: absPath, frag };
+}
+
+/* Build the per-task `uses` list from a payload schema + a map from absolute
+ * shared-schema filepath → shared record. Dedupes by (schemaSlug, def) so
+ * `Ext` referenced from five places shows as one entry with occurrences: 5. */
+function computeUses(schema, schemaPath, sharedByPath) {
+  const baseDir = path.dirname(schemaPath);
+  const seen = new Map(); // key → { schemaSlug, def, occurrences }
+  const unresolved = []; // refs we couldn't match — surfaced for the build log
+  for (const ref of iterRefs(schema)) {
+    const resolved = resolveRef(ref, baseDir);
+    if (!resolved) continue;                  // internal $ref
+    if (resolved.external) continue;          // not a tracked dependency
+    const target = sharedByPath.get(resolved.filePath);
+    if (!target) {
+      unresolved.push(ref);
+      continue;
+    }
+    // Pull the def name from a `#/$defs/<Name>` fragment when present.
+    const defMatch = resolved.frag.match(/^\/\$defs\/([^/]+)$/);
+    const def = defMatch ? decodeURIComponent(defMatch[1]) : null;
+    const key = `${target.slug}::${def || ''}`;
+    const existing = seen.get(key);
+    if (existing) {
+      existing.occurrences += 1;
+    } else {
+      seen.set(key, { schemaSlug: target.slug, def, occurrences: 1, via: 'ref' });
+    }
+  }
+  return { uses: [...seen.values()], unresolved };
+}
+
 function loadMetaValidator() {
   const ajv = new Ajv({ allErrors: true, strict: false });
   addFormats(ajv);
@@ -155,7 +309,35 @@ function checkPayloadSchema(slug, version, dir) {
   return schema;
 }
 
-function buildTask(entry, meta, schema) {
+/* Merge frontmatter `methodExtensions` declarations into the task's `uses`
+ * list. These are out-of-band — they don't appear as $refs in the payload
+ * schema, but they're how producers learn which method-specific shapes belong
+ * inside `ext` when the payload's method discriminator matches. */
+function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
+  const decls = meta.methodExtensions || [];
+  const out = uses.slice();
+  for (const decl of decls) {
+    const target = sharedBySlug.get(decl.schema);
+    if (!target) {
+      fail(`${slug}/${version}/spec.md`, `methodExtensions[].schema '${decl.schema}' does not resolve to a discovered shared schema`);
+      continue;
+    }
+    // Method extensions are tracked with `via: "methodExtension"` so the
+    // website can render them in their own group rather than mixed with
+    // payload-schema $ref dependencies.
+    out.push({
+      schemaSlug: target.slug,
+      def: null,
+      occurrences: 1,
+      via: 'methodExtension',
+      method: decl.method,
+      requirement: decl.requirement || 'OPTIONAL'
+    });
+  }
+  return out;
+}
+
+function buildTask(entry, meta, schema, uses) {
   const hasResponse = !!(schema && schema.$defs && schema.$defs.Response);
   return {
     id: meta.slug,
@@ -178,6 +360,7 @@ function buildTask(entry, meta, schema) {
     hasResponse,
     schema,
     related: meta.related || [],
+    uses: uses || [],
     prosePath: `/specs/${meta.slug}/${meta.version}/spec.md`,
     schemaPath: `/specs/${meta.slug}/${meta.version}/payload.schema.json`
   };
@@ -193,7 +376,7 @@ function copyDirSync(src, dst) {
   }
 }
 
-function emitTasks(tasks) {
+function emitTasks(tasks, shared) {
   const out = path.join(WEBSITE_DIR, 'assets', 'tasks.generated.js');
   const header = [
     '/* AUTO-GENERATED by scripts/build-registry.mjs — do not edit by hand.',
@@ -202,6 +385,7 @@ function emitTasks(tasks) {
     ' */',
     'window.TT_TASKS = '
   ].join('\n');
+  const mid = ';\n\nwindow.TT_SHARED = ';
   const footer = ';\n\n/* derived counts */\n' + `
 window.TT_STATS = (function () {
   const tasks = window.TT_TASKS;
@@ -218,9 +402,32 @@ window.TT_STATS = (function () {
     latestTitle: latest ? latest.title : null
   };
 })();
+
+/* reverse index: for each shared schema, which tasks reference it.
+ * Carries the same via/method metadata as the forward uses entries so
+ * the schema page can show whether each usage is a structural $ref or a
+ * frontmatter-declared method extension. */
+window.TT_SHARED_USED_BY = (function () {
+  const idx = {};
+  for (const t of window.TT_TASKS) {
+    for (const u of (t.uses || [])) {
+      const list = idx[u.schemaSlug] = idx[u.schemaSlug] || [];
+      list.push({
+        slug: t.slug, version: t.version, title: t.title, status: t.status,
+        def: u.def, via: u.via || 'ref', method: u.method || null, requirement: u.requirement || null
+      });
+    }
+  }
+  return idx;
+})();
 `;
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, header + JSON.stringify(tasks, null, 2) + footer);
+  fs.writeFileSync(
+    out,
+    header + JSON.stringify(tasks, null, 2)
+      + mid + JSON.stringify(shared, null, 2)
+      + footer
+  );
   console.log(`  wrote ${path.relative(ROOT, out)}`);
 }
 
@@ -257,6 +464,13 @@ function main() {
   if (entries.length === 0) {
     console.warn('No specs found under specs/<slug>/<version>/.');
   }
+
+  // Discover shared/framework/method-extension schemas first so we can
+  // resolve $refs from payload schemas against them when building tasks.
+  const sharedEntries = discoverSharedSchemas();
+  const sharedRecords = sharedEntries.map(buildSharedRecord);
+  const sharedByPath = new Map(sharedEntries.map((e) => [e.filePath, sharedRecords[sharedEntries.indexOf(e)]]));
+  const sharedBySlug = new Map(sharedRecords.map((r) => [r.slug, r]));
 
   const tasks = [];
   const seen = new Set();
@@ -298,7 +512,13 @@ function main() {
     seen.add(idKey);
     const schema = checkPayloadSchema(slug, version, dir);
     if (!schema) continue;
-    tasks.push(buildTask(entry, meta, schema));
+    const payloadSchemaPath = path.join(dir, 'payload.schema.json');
+    const { uses: refUses, unresolved } = computeUses(schema, payloadSchemaPath, sharedByPath);
+    for (const u of unresolved) {
+      warn(`${slug}/${version}/payload.schema.json: $ref '${u}' did not resolve to a discovered shared schema`);
+    }
+    const uses = applyMethodExtensions(meta, slug, version, refUses, sharedBySlug);
+    tasks.push(buildTask(entry, meta, schema, uses));
   }
 
   // related[] referential integrity
@@ -317,12 +537,16 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`Validated ${tasks.length} spec${tasks.length === 1 ? '' : 's'}.`);
+  console.log(
+    `Validated ${tasks.length} spec${tasks.length === 1 ? '' : 's'}, ` +
+    `indexed ${sharedRecords.length} shared schema${sharedRecords.length === 1 ? '' : 's'}.`
+  );
 
   if (validateOnly) return;
 
   tasks.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : a.version < b.version ? 1 : -1));
-  emitTasks(tasks);
+  sharedRecords.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
+  emitTasks(tasks, sharedRecords);
   syncWebsiteSpecs();
   syncWebsiteBindings();
   syncWebsiteFrameworkSpec();

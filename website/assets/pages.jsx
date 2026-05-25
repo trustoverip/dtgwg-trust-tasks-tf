@@ -569,6 +569,373 @@ function RegistryPage({ initial, setRoute }) {
 }
 
 /* ============================================================
+   SHARED SCHEMA HELPERS — used by SpecPage's Uses panel and by SchemaPage
+   ============================================================ */
+
+/* Human label for the kind of shared schema. Kept short for chip layout. */
+function sharedKindLabel(kind) {
+  switch (kind) {
+    case "framework":         return "Framework";
+    case "method-extension":  return "Method Extension";
+    case "shared":            return "Shared";
+    default:                  return kind || "Shared";
+  }
+}
+
+/* Accent color: framework gets neutral, method-extension gets amber, otherwise
+   follow the family's category color when one exists. */
+function sharedAccent(rec) {
+  if (rec.kind === "framework") return "var(--tt-text-muted)";
+  if (rec.kind === "method-extension") return "var(--tt-amber, var(--tt-coral))";
+  const cat = window.TT_CATEGORIES.find(c => c.id === rec.family);
+  return cat ? `var(--tt-${cat.color})` : "var(--tt-navy)";
+}
+
+/* Compact card describing one shared-schema dependency. Clicking navigates
+   to /schema/<slug>; the optional def name (when the parent task referenced
+   a specific $defs entry) becomes a deep-link fragment. The optional
+   `method`/`requirement` props are populated for method-extension entries. */
+function SharedChip({ rec, def, occurrences, method, requirement, setRoute }) {
+  const accent = sharedAccent(rec);
+  const onGo = (e) => {
+    e.preventDefault();
+    setRoute({ name: "schema", slug: rec.slug, hash: def || undefined });
+  };
+  const href = `/schema/${rec.slug}${def ? `#${def}` : ""}`;
+  return (
+    <a
+      href={href}
+      onClick={onGo}
+      style={{
+        display: "block",
+        padding: "var(--tt-space-4)",
+        border: "1px solid var(--tt-border)",
+        borderLeft: `3px solid ${accent}`,
+        borderRadius: "var(--tt-radius)",
+        textDecoration: "none",
+        color: "inherit",
+        background: "var(--tt-surface)"
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "var(--tt-space-3)", marginBottom: "var(--tt-space-2)" }}>
+        <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)" }}>
+          {sharedKindLabel(rec.kind)}
+          {rec.family && rec.kind !== "framework" ? ` · ${rec.family}` : ""}
+        </span>
+        {occurrences > 1 && (
+          <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)" }}>
+            referenced {occurrences}×
+          </span>
+        )}
+      </div>
+      <div style={{ fontFamily: "var(--tt-font-display)", fontSize: "var(--tt-text-md)", marginBottom: "var(--tt-space-2)" }}>
+        {def ? <code style={{ fontSize: "0.92em" }}>{def}</code> : rec.title}
+        {def && <span style={{ color: "var(--tt-text-muted)" }}> — {rec.title}</span>}
+      </div>
+      {method && (
+        <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)" }}>
+          when <code>method = "{method}"</code>
+          {requirement && requirement !== "OPTIONAL" && (
+            <span> · <b style={{ color: "var(--tt-text)" }}>{requirement}</b></span>
+          )}
+        </div>
+      )}
+      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {rec.schemaId || rec.sourcePath}
+      </div>
+    </a>
+  );
+}
+
+/* Render one labeled group of chips. Pulled out so UsesPanel can stack the
+ * "From payload schema" and "Method extensions" sections with consistent
+ * styling and the unresolved-shared fallback. */
+function UsesGroup({ heading, hint, entries, setRoute }) {
+  if (!entries || entries.length === 0) return null;
+  const catalog = window.TT_SHARED || [];
+  return (
+    <div style={{ marginBottom: "var(--tt-space-5)" }}>
+      <h3 style={{ marginTop: 0, marginBottom: "var(--tt-space-2)", fontSize: "var(--tt-text-md)" }}>{heading}</h3>
+      {hint && (
+        <p style={{ color: "var(--tt-text-muted)", marginTop: 0, marginBottom: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)" }}>{hint}</p>
+      )}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "var(--tt-space-3)" }}>
+        {entries.map((u, i) => {
+          const rec = catalog.find(s => s.slug === u.schemaSlug);
+          if (!rec) {
+            return (
+              <div key={i} style={{ padding: "var(--tt-space-4)", border: "1px dashed var(--tt-border)", borderRadius: "var(--tt-radius)", color: "var(--tt-text-muted)" }}>
+                <code style={{ fontSize: "0.9em" }}>{u.schemaSlug}</code><br />
+                <small>shared schema not indexed</small>
+              </div>
+            );
+          }
+          return (
+            <SharedChip
+              key={i}
+              rec={rec}
+              def={u.def}
+              occurrences={u.occurrences}
+              method={u.method}
+              requirement={u.requirement}
+              setRoute={setRoute}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function UsesPanel({ uses, setRoute }) {
+  if (!uses || uses.length === 0) {
+    return <p style={{ color: "var(--tt-text-muted)" }}>This task's payload schema has no cross-document references and declares no method extensions — it's self-contained.</p>;
+  }
+  const refs = uses.filter(u => (u.via || "ref") === "ref");
+  const methodExts = uses.filter(u => u.via === "methodExtension");
+  return (
+    <React.Fragment>
+      <UsesGroup
+        heading="From payload schema"
+        hint="Resolved by walking $ref pointers in this task's payload.schema.json."
+        entries={refs}
+        setRoute={setRoute}
+      />
+      <UsesGroup
+        heading="Method extensions"
+        hint="Vendor-namespaced extension shapes that producers MAY include in the payload's `ext` member when their declared method matches. Declared in the spec's frontmatter."
+        entries={methodExts}
+        setRoute={setRoute}
+      />
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
+   SCHEMA PAGE — standalone view for a shared/framework/method-extension schema
+   ============================================================ */
+function SchemaPage({ slug, setRoute }) {
+  const catalog = window.TT_SHARED || [];
+  const rec = catalog.find(s => s.slug === slug);
+  // Always call the fragment-scroll effect regardless of whether the schema
+  // resolves, so hook order is stable across renders (Rules of Hooks).
+  useE(() => {
+    if (!rec || !location.hash) return;
+    const target = document.getElementById(`def-${location.hash.slice(1)}`);
+    if (target) requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
+  }, [slug, !!rec]);
+
+  if (!rec) {
+    return (
+      <section className="container">
+        <div className="tt-empty" style={{ padding: "var(--tt-space-6)", marginTop: "var(--tt-space-6)" }}>
+          <b>No shared schema matches <code>/schema/{slug}</code>.</b>
+          <div style={{ marginTop: "var(--tt-space-4)" }}>
+            <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }}>← Back to registry</a>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  const usedBy = (window.TT_SHARED_USED_BY && window.TT_SHARED_USED_BY[slug]) || [];
+  const accent = sharedAccent(rec);
+  const schemaIdLink = rec.schemaId;
+
+  return (
+    <section className="container container--wide tt-spec">
+      <div>
+        <div style={{ marginBottom: "var(--tt-space-4)" }}>
+          <span className="tt-spec__num">
+            <span style={{ color: accent }}>{sharedKindLabel(rec.kind)}</span>
+            {rec.family && rec.kind !== "framework" ? ` · ${rec.family}` : ""}
+            {" · "}{rec.slug}
+          </span>
+        </div>
+        <h1 className="tt-spec__title">{rec.title}</h1>
+        {rec.description && (
+          <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{rec.description}</p>
+        )}
+
+        {schemaIdLink && (
+          <div
+            className="tt-type-uri"
+            style={{
+              display: "flex", alignItems: "stretch",
+              border: "1px solid var(--tt-border)",
+              borderLeft: `3px solid ${accent}`,
+              background: "var(--tt-surface-elev)",
+              marginBottom: "var(--tt-space-6)",
+              fontFamily: "var(--tt-font-mono)",
+              fontSize: "var(--tt-text-sm)",
+            }}
+          >
+            <div style={{ padding: "var(--tt-space-3) var(--tt-space-4)", borderRight: "1px solid var(--tt-border)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", display: "flex", alignItems: "center" }}>Schema $id</div>
+            <code style={{ flex: 1, padding: "var(--tt-space-3) var(--tt-space-4)", overflow: "auto", whiteSpace: "nowrap", color: "var(--tt-text)" }}>{schemaIdLink}</code>
+          </div>
+        )}
+
+        <h2 id="source">Source</h2>
+        <p>
+          <code>{rec.sourcePath}</code>
+          {" — "}
+          <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main${rec.sourcePath}`} target="_blank" rel="noreferrer">View on GitHub →</a>
+        </p>
+
+        {rec.defs.length > 0 && (
+          <React.Fragment>
+            <h2 id="defs">Definitions</h2>
+            <p style={{ color: "var(--tt-text-muted)", marginTop: "calc(-1 * var(--tt-space-3))" }}>
+              Each definition can be referenced from a payload schema as
+              {" "}<code>{rec.sourcePath.replace("/specs/", "")}#/$defs/&lt;Name&gt;</code>.
+            </p>
+            <ul style={{ paddingLeft: "var(--tt-space-5)" }}>
+              {rec.defs.map(d => (
+                <li key={d} id={`def-${d}`}>
+                  <code>{d}</code>
+                  {rec.schema.$defs && rec.schema.$defs[d] && rec.schema.$defs[d].description && (
+                    <span style={{ color: "var(--tt-text-muted)" }}> — {rec.schema.$defs[d].description}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </React.Fragment>
+        )}
+
+        <h2 id="schema">JSON Schema</h2>
+        <CodeBlock json={rec.schema} />
+
+        <h2 id="used-by">Used by</h2>
+        {usedBy.length === 0 ? (
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            No payload schema currently references this document via <code>$ref</code>. It is published as a building block for ecosystem use.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-3)" }}>
+            {usedBy.map((u, i) => (
+              <a
+                key={i}
+                href={`/spec/${u.slug}/${u.version}`}
+                onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: u.slug, version: u.version }); }}
+                style={{ padding: "var(--tt-space-4)", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", display: "flex", justifyContent: "space-between", alignItems: "center", textDecoration: "none", color: "inherit" }}
+              >
+                <span>
+                  <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", marginRight: "var(--tt-space-3)" }}>
+                    {u.slug} · v{u.version}
+                  </span>
+                  {u.title}
+                  {u.def && (
+                    <span style={{ marginLeft: "var(--tt-space-3)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)" }}>
+                      → <code>{u.def}</code>
+                    </span>
+                  )}
+                  {u.via === "methodExtension" && (
+                    <span style={{ marginLeft: "var(--tt-space-3)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)" }}>
+                      via <code>method = "{u.method}"</code>
+                      {u.requirement && u.requirement !== "OPTIONAL" && (
+                        <span> · {u.requirement}</span>
+                      )}
+                    </span>
+                  )}
+                </span>
+                <TTStatus status={u.status} />
+              </a>
+            ))}
+          </div>
+        )}
+
+        <div style={{ marginTop: "var(--tt-space-8)", paddingTop: "var(--tt-space-5)", borderTop: "1px solid var(--tt-line)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--tt-space-4)" }}>
+          <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }} className="btn btn--ghost">← Back to registry</a>
+          <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main${rec.sourcePath}`} target="_blank" rel="noreferrer" className="btn btn--ghost">Edit on GitHub →</a>
+        </div>
+      </div>
+
+      <aside className="tt-spec__sidebar">
+        <div className="tt-toc-title">On this page</div>
+        <ol className="tt-toc">
+          {[
+            { id: "source", text: "Source" },
+            ...(rec.defs.length > 0 ? [{ id: "defs", text: "Definitions" }] : []),
+            { id: "schema", text: "JSON Schema" },
+            { id: "used-by", text: "Used by" }
+          ].map(({ id: sid, text }) => (
+            <li key={sid}><a href={`#${sid}`}>{text}</a></li>
+          ))}
+        </ol>
+      </aside>
+    </section>
+  );
+}
+
+/* ============================================================
+   SCHEMAS INDEX PAGE — browse every shared/framework schema
+   ============================================================ */
+function SchemasIndexPage({ setRoute }) {
+  const catalog = window.TT_SHARED || [];
+  const usedBy = window.TT_SHARED_USED_BY || {};
+  // Group by kind so the framework primitives sit at the top, then family-shared,
+  // then method extensions. Within each group, alphabetize by slug.
+  const groups = [
+    { id: "framework",         label: "Framework primitives",  desc: "Reusable $defs cross-referenced by every Trust Task specification." },
+    { id: "shared",            label: "Family-shared schemas", desc: "Per-category shared $defs (e.g. did-management, acl, auth) referenced by every task in that family." },
+    { id: "method-extension",  label: "Method extensions",     desc: "Optional vendor-namespaced extension shapes (e.g. did:webvh) that producers MAY include via the ext member." }
+  ];
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Shared schemas"
+        title="Reusable building blocks"
+        lede="Trust Task payload schemas don't duplicate common shapes — they reference these documents via $ref. Each shared schema is independently versioned and citable."
+      />
+      <section className="container">
+        {groups.map(g => {
+          const items = catalog.filter(s => s.kind === g.id);
+          if (items.length === 0) return null;
+          return (
+            <div key={g.id} style={{ marginBottom: "var(--tt-space-7)" }}>
+              <h2 style={{ marginBottom: "var(--tt-space-2)" }}>{g.label}</h2>
+              <p style={{ color: "var(--tt-text-muted)", marginTop: 0, marginBottom: "var(--tt-space-5)" }}>{g.desc}</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "var(--tt-space-4)" }}>
+                {items.map(rec => {
+                  const refs = (usedBy[rec.slug] || []).length;
+                  return (
+                    <a
+                      key={rec.slug}
+                      href={`/schema/${rec.slug}`}
+                      onClick={(e) => { e.preventDefault(); setRoute({ name: "schema", slug: rec.slug }); }}
+                      style={{
+                        padding: "var(--tt-space-4)",
+                        border: "1px solid var(--tt-border)",
+                        borderLeft: `3px solid ${sharedAccent(rec)}`,
+                        borderRadius: "var(--tt-radius)",
+                        textDecoration: "none",
+                        color: "inherit",
+                        background: "var(--tt-surface)"
+                      }}
+                    >
+                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "var(--tt-space-2)" }}>
+                        {rec.family || sharedKindLabel(rec.kind)}
+                      </div>
+                      <div style={{ fontFamily: "var(--tt-font-display)", fontSize: "var(--tt-text-md)", marginBottom: "var(--tt-space-2)" }}>{rec.title}</div>
+                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {rec.slug}
+                      </div>
+                      <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)" }}>
+                        {rec.defs.length > 0 && <span>{rec.defs.length} def{rec.defs.length === 1 ? "" : "s"}</span>}
+                        <span>{refs} task{refs === 1 ? "" : "s"} reference{refs === 1 ? "s" : ""} this</span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* ============================================================
    SPEC PAGE
    ============================================================ */
 function SpecPage({ slug, version, id, setRoute }) {
@@ -628,7 +995,7 @@ function SpecPage({ slug, version, id, setRoute }) {
   }, [proseHtml]);
 
   useE(() => {
-    const ids = ["metadata", ...proseToc.map(t => t.id), "schema", "related"];
+    const ids = ["metadata", ...proseToc.map(t => t.id), "schema", "uses", "related"];
     const onScroll = () => {
       for (const sid of ids) {
         const el = document.getElementById(sid);
@@ -714,6 +1081,12 @@ function SpecPage({ slug, version, id, setRoute }) {
         <p>The normative JSON Schema for this Trust Task's <code>payload</code> member (Draft 2020-12). The outer document structure (<code>id</code>, <code>type</code>, <code>issuer</code>, <code>recipient</code>, <code>issuedAt</code>, <code>expiresAt</code>, <code>proof</code>) is defined by the framework specification.</p>
         <CodeBlock json={task.schema} />
 
+        <h2 id="uses">Shared Schemas Used</h2>
+        <p style={{ color: "var(--tt-text-muted)", marginTop: "calc(-1 * var(--tt-space-3))" }}>
+          Reusable building blocks this task's payload schema references via <code>$ref</code> — framework primitives, family-level shared definitions, and method extensions.
+        </p>
+        <UsesPanel uses={task.uses} setRoute={setRoute} />
+
         <h2 id="related">Related Trust Tasks</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-3)" }}>
           {(task.related || []).map(rid => {
@@ -743,6 +1116,7 @@ function SpecPage({ slug, version, id, setRoute }) {
             { id: "metadata", text: "Metadata" },
             ...proseToc,
             { id: "schema", text: "JSON Schema" },
+            { id: "uses", text: "Shared Schemas Used" },
             { id: "related", text: "Related Trust Tasks" }
           ].map(({ id: sid, text }) => (
             <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{text}</a></li>

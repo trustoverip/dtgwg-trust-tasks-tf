@@ -61,6 +61,12 @@
         const slugSegs = versionLike ? rest.slice(0, -1) : rest;
         return { name: routeName, slug: slugSegs.join("/"), version };
       }
+      if (name === "schema") {
+        // /schema/<slug…> — the slug is the full remainder, including any version
+        // segment. The version is part of the schema's $id, not a separate param.
+        if (rest.length === 0) return { name: "schemas" };
+        return { name: "schema", slug: rest.join("/") };
+      }
       if (name === "registry" && rest[0]) return { name: "registry", cat: rest[0] };
       return { name };
     }
@@ -83,6 +89,10 @@
         if (r.name === "spec") {
           const v = r.version || (window.TT_TASKS.find(t => t.slug === r.slug || t.id === r.id) || {}).version || "";
           path = `/spec/${r.slug || r.id}${v ? "/" + v : ""}`;
+        } else if (r.name === "schema") {
+          path = `/schema/${r.slug}`;
+        } else if (r.name === "schemas") {
+          path = "/schema";
         } else if (r.name === "binding") {
           const v = r.version || (window.TT_BINDINGS && (window.TT_BINDINGS.find(b => b.slug === r.slug) || {}).version) || "";
           // Singular /binding/ per SPEC §9.3; matches the canonical bindingURI
@@ -132,6 +142,8 @@
       switch (route.name) {
         case "registry":      view = <RegistryPage initial={{ cat: route.cat, q: route.q, kw: route.kw }} setRoute={setRoute} />; break;
         case "spec":          view = <SpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
+        case "schema":        view = <SchemaPage slug={route.slug} setRoute={setRoute} />; break;
+        case "schemas":       view = <SchemasIndexPage setRoute={setRoute} />; break;
         case "specification": view = <FrameworkSpecPage setRoute={setRoute} />; break;
         case "bindings":      view = <BindingsPage setRoute={setRoute} />; break;
         case "binding":       view = <BindingSpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
