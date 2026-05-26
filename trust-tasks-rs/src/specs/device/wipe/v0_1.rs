@@ -9,12 +9,18 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -55,7 +61,8 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext>
+for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -65,7 +72,8 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
+for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -102,20 +110,24 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+            return Err(
+                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -212,9 +224,9 @@ pub struct Payload {
     ///Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent.
     pub reason: PayloadReason,
     /**How aggressively the target should wipe:
-    - `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.
-    - `cache-and-keys` — discard cache + device-local key material; consumer must re-onboard.
-    - `full` — `cache-and-keys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.*/
+- `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.
+- `cache-and-keys` — discard cache + device-local key material; consumer must re-onboard.
+- `full` — `cache-and-keys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.*/
     pub scope: PayloadScope,
 }
 impl ::std::convert::From<&Payload> for Payload {
@@ -254,7 +266,9 @@ impl ::std::convert::From<&PayloadDeviceId> for PayloadDeviceId {
 }
 impl ::std::str::FromStr for PayloadDeviceId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -263,7 +277,9 @@ impl ::std::str::FromStr for PayloadDeviceId {
 }
 impl ::std::convert::TryFrom<&str> for PayloadDeviceId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -329,7 +345,9 @@ impl ::std::convert::From<&PayloadReason> for PayloadReason {
 }
 impl ::std::str::FromStr for PayloadReason {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 256usize {
             return Err("longer than 256 characters".into());
         }
@@ -341,7 +359,9 @@ impl ::std::str::FromStr for PayloadReason {
 }
 impl ::std::convert::TryFrom<&str> for PayloadReason {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -402,7 +422,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum PayloadScope {
     #[serde(rename = "cache")]
@@ -428,7 +448,9 @@ impl ::std::fmt::Display for PayloadScope {
 }
 impl ::std::str::FromStr for PayloadScope {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "cache" => Ok(Self::Cache),
             "cache-and-keys" => Ok(Self::CacheAndKeys),
@@ -439,7 +461,9 @@ impl ::std::str::FromStr for PayloadScope {
 }
 impl ::std::convert::TryFrom<&str> for PayloadScope {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -649,7 +673,7 @@ impl ::std::default::Default for ResponseDiagnostics {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum ResponseScope {
     #[serde(rename = "cache")]
@@ -675,7 +699,9 @@ impl ::std::fmt::Display for ResponseScope {
 }
 impl ::std::str::FromStr for ResponseScope {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "cache" => Ok(Self::Cache),
             "cache-and-keys" => Ok(Self::CacheAndKeys),
@@ -686,7 +712,9 @@ impl ::std::str::FromStr for ResponseScope {
 }
 impl ::std::convert::TryFrom<&str> for ResponseScope {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }

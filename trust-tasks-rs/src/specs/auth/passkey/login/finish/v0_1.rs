@@ -9,12 +9,18 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -103,13 +109,18 @@ pub struct AssertionResponse {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub authenticator_attachment: ::std::option::Option<AssertionResponseAuthenticatorAttachment>,
+    pub authenticator_attachment: ::std::option::Option<
+        AssertionResponseAuthenticatorAttachment,
+    >,
     #[serde(
         rename = "clientExtensionResults",
         default,
         skip_serializing_if = "::serde_json::Map::is_empty"
     )]
-    pub client_extension_results: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub client_extension_results: ::serde_json::Map<
+        ::std::string::String,
+        ::serde_json::Value,
+    >,
     pub id: ::std::string::String,
     #[serde(rename = "rawId")]
     pub raw_id: ::std::string::String,
@@ -145,7 +156,7 @@ impl ::std::convert::From<&AssertionResponse> for AssertionResponse {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum AssertionResponseAuthenticatorAttachment {
     #[serde(rename = "platform")]
@@ -168,7 +179,9 @@ impl ::std::fmt::Display for AssertionResponseAuthenticatorAttachment {
 }
 impl ::std::str::FromStr for AssertionResponseAuthenticatorAttachment {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "platform" => Ok(Self::Platform),
             "cross-platform" => Ok(Self::CrossPlatform),
@@ -178,11 +191,14 @@ impl ::std::str::FromStr for AssertionResponseAuthenticatorAttachment {
 }
 impl ::std::convert::TryFrom<&str> for AssertionResponseAuthenticatorAttachment {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for AssertionResponseAuthenticatorAttachment {
+impl ::std::convert::TryFrom<&::std::string::String>
+for AssertionResponseAuthenticatorAttachment {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -190,7 +206,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for AssertionResponseAuthen
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthenticatorAttachment {
+impl ::std::convert::TryFrom<::std::string::String>
+for AssertionResponseAuthenticatorAttachment {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -277,7 +294,8 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext>
+for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -287,7 +305,8 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
+for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -324,20 +343,24 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+            return Err(
+                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -452,7 +475,9 @@ impl ::std::convert::From<&PayloadAuthId> for PayloadAuthId {
 }
 impl ::std::str::FromStr for PayloadAuthId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -461,7 +486,9 @@ impl ::std::str::FromStr for PayloadAuthId {
 }
 impl ::std::convert::TryFrom<&str> for PayloadAuthId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -570,7 +597,7 @@ impl ::std::convert::From<&Response> for Response {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum ResponsePurpose {
     #[serde(rename = "login")]
@@ -593,7 +620,9 @@ impl ::std::fmt::Display for ResponsePurpose {
 }
 impl ::std::str::FromStr for ResponsePurpose {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "login" => Ok(Self::Login),
             "step-up" => Ok(Self::StepUp),
@@ -603,7 +632,9 @@ impl ::std::str::FromStr for ResponsePurpose {
 }
 impl ::std::convert::TryFrom<&str> for ResponsePurpose {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -742,7 +773,9 @@ impl ::std::convert::From<&SessionAmrItem> for SessionAmrItem {
 }
 impl ::std::str::FromStr for SessionAmrItem {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -751,7 +784,9 @@ impl ::std::str::FromStr for SessionAmrItem {
 }
 impl ::std::convert::TryFrom<&str> for SessionAmrItem {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -816,7 +851,9 @@ impl ::std::convert::From<&SessionId> for SessionId {
 }
 impl ::std::str::FromStr for SessionId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -825,7 +862,9 @@ impl ::std::str::FromStr for SessionId {
 }
 impl ::std::convert::TryFrom<&str> for SessionId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -890,7 +929,9 @@ impl ::std::convert::From<&SessionSubject> for SessionSubject {
 }
 impl ::std::str::FromStr for SessionSubject {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -899,7 +940,9 @@ impl ::std::str::FromStr for SessionSubject {
 }
 impl ::std::convert::TryFrom<&str> for SessionSubject {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1060,7 +1103,9 @@ impl ::std::convert::From<&TokenBundleAccessToken> for TokenBundleAccessToken {
 }
 impl ::std::str::FromStr for TokenBundleAccessToken {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1069,7 +1114,9 @@ impl ::std::str::FromStr for TokenBundleAccessToken {
 }
 impl ::std::convert::TryFrom<&str> for TokenBundleAccessToken {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1134,7 +1181,9 @@ impl ::std::convert::From<&TokenBundleRefreshToken> for TokenBundleRefreshToken 
 }
 impl ::std::str::FromStr for TokenBundleRefreshToken {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1143,7 +1192,9 @@ impl ::std::str::FromStr for TokenBundleRefreshToken {
 }
 impl ::std::convert::TryFrom<&str> for TokenBundleRefreshToken {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1207,7 +1258,9 @@ impl ::std::convert::From<&TokenBundleScopeItem> for TokenBundleScopeItem {
 }
 impl ::std::str::FromStr for TokenBundleScopeItem {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1216,7 +1269,9 @@ impl ::std::str::FromStr for TokenBundleScopeItem {
 }
 impl ::std::convert::TryFrom<&str> for TokenBundleScopeItem {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1281,7 +1336,9 @@ impl ::std::convert::From<&TokenBundleTokenType> for TokenBundleTokenType {
 }
 impl ::std::str::FromStr for TokenBundleTokenType {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1290,7 +1347,9 @@ impl ::std::str::FromStr for TokenBundleTokenType {
 }
 impl ::std::convert::TryFrom<&str> for TokenBundleTokenType {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1326,8 +1385,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/login/finish/0.1";
 }
 impl crate::Payload for Response {
-    const TYPE_URI: &'static str =
-        "https://trusttasks.org/spec/auth/passkey/login/finish/0.1#response";
+    const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/login/finish/0.1#response";
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
@@ -1341,19 +1399,21 @@ mod conformance {
     #[test]
     fn response_example_1() {
         const JSON: &str = "{\n  \"id\": \"00000000-7777-8888-9999-aaaaaaaaaaaa\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/login/finish/0.1#response\",\n  \"threadId\": \"eeeeeeee-5555-6666-7777-888888888888\",\n  \"issuer\": \"did:web:auth.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-05-23T13:00:31Z\",\n  \"payload\": {\n    \"purpose\": \"login\",\n    \"session\": {\n      \"id\": \"fa7d3c89-3f49-49b2-9d7d-2a8c0a8a7b9b\",\n      \"subject\": \"did:web:alice.example\",\n      \"issuedAt\": \"2026-05-23T13:00:31Z\",\n      \"expiresAt\": \"2026-05-23T13:30:31Z\",\n      \"amr\": [\"passkey\"],\n      \"acr\": \"aal2\"\n    },\n    \"tokens\": {\n      \"accessToken\": \"eyJhbGciOi…\",\n      \"refreshToken\": \"rt_passkey_abc\",\n      \"tokenType\": \"Bearer\",\n      \"expiresIn\": 1800\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
+            .expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON)
+            .expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     #[test]
     fn response_example_2() {
         const JSON: &str = "{\n  \"id\": \"11111100-8888-9999-aaaa-bbbbbbbbbbbb\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/login/finish/0.1#response\",\n  \"threadId\": \"ffffffff-6666-7777-8888-999999999999\",\n  \"issuer\": \"did:web:auth.example\",\n  \"recipient\": \"did:web:alice.example\",\n  \"issuedAt\": \"2026-05-23T13:00:31Z\",\n  \"payload\": {\n    \"purpose\": \"step-up\",\n    \"session\": {\n      \"id\": \"ec5d3c89-3f49-49b2-9d7d-2a8c0a8a7b9b\",\n      \"subject\": \"did:web:alice.example\",\n      \"issuedAt\": \"2026-05-23T10:00:31Z\",\n      \"expiresAt\": \"2026-05-23T13:30:31Z\",\n      \"amr\": [\"did\", \"passkey\"],\n      \"acr\": \"aal2\"\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
+            .expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON)
+            .expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     /// Each fixture in `payload.invalid-examples.json` MUST be
@@ -1384,15 +1444,14 @@ mod conformance {
                 Ok(v) => v,
                 Err(_) => continue,
             };
-            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone())
+                .is_ok();
             let schema_ok = super::Payload::validate_value(&value).is_ok();
             assert!(
-                !(serde_ok && schema_ok),
+                ! (serde_ok && schema_ok),
                 "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
-                i + 1,
-                note,
-                raw
+                i + 1, note, raw
             );
         }
     }

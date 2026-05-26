@@ -9,12 +9,18 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -55,7 +61,8 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext>
+for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -65,7 +72,8 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
+for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -102,20 +110,24 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+            return Err(
+                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -306,7 +318,9 @@ impl ::std::convert::From<&PayloadByConsumer> for PayloadByConsumer {
 }
 impl ::std::str::FromStr for PayloadByConsumer {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -315,7 +329,9 @@ impl ::std::str::FromStr for PayloadByConsumer {
 }
 impl ::std::convert::TryFrom<&str> for PayloadByConsumer {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -380,7 +396,9 @@ impl ::std::convert::From<&PayloadContextId> for PayloadContextId {
 }
 impl ::std::str::FromStr for PayloadContextId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -389,7 +407,9 @@ impl ::std::str::FromStr for PayloadContextId {
 }
 impl ::std::convert::TryFrom<&str> for PayloadContextId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -454,7 +474,9 @@ impl ::std::convert::From<&PayloadEntryId> for PayloadEntryId {
 }
 impl ::std::str::FromStr for PayloadEntryId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -463,7 +485,9 @@ impl ::std::str::FromStr for PayloadEntryId {
 }
 impl ::std::convert::TryFrom<&str> for PayloadEntryId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -519,7 +543,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEntryId {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum PayloadKindFilterItem {
     #[serde(rename = "proxy-login")]
@@ -542,7 +566,9 @@ impl ::std::fmt::Display for PayloadKindFilterItem {
 }
 impl ::std::str::FromStr for PayloadKindFilterItem {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "proxy-login" => Ok(Self::ProxyLogin),
             "release" => Ok(Self::Release),
@@ -552,7 +578,9 @@ impl ::std::str::FromStr for PayloadKindFilterItem {
 }
 impl ::std::convert::TryFrom<&str> for PayloadKindFilterItem {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -782,7 +810,9 @@ impl ::std::convert::From<&UsageRecordConsumerDid> for UsageRecordConsumerDid {
 }
 impl ::std::str::FromStr for UsageRecordConsumerDid {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -791,7 +821,9 @@ impl ::std::str::FromStr for UsageRecordConsumerDid {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordConsumerDid {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -855,7 +887,9 @@ impl ::std::convert::From<&UsageRecordContextId> for UsageRecordContextId {
 }
 impl ::std::str::FromStr for UsageRecordContextId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -864,7 +898,9 @@ impl ::std::str::FromStr for UsageRecordContextId {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordContextId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -928,7 +964,9 @@ impl ::std::convert::From<&UsageRecordDeviceId> for UsageRecordDeviceId {
 }
 impl ::std::str::FromStr for UsageRecordDeviceId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -937,7 +975,9 @@ impl ::std::str::FromStr for UsageRecordDeviceId {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordDeviceId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1001,7 +1041,9 @@ impl ::std::convert::From<&UsageRecordEntryId> for UsageRecordEntryId {
 }
 impl ::std::str::FromStr for UsageRecordEntryId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1010,7 +1052,9 @@ impl ::std::str::FromStr for UsageRecordEntryId {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordEntryId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1074,7 +1118,9 @@ impl ::std::convert::From<&UsageRecordId> for UsageRecordId {
 }
 impl ::std::str::FromStr for UsageRecordId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1083,7 +1129,9 @@ impl ::std::str::FromStr for UsageRecordId {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1139,7 +1187,7 @@ impl<'de> ::serde::Deserialize<'de> for UsageRecordId {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum UsageRecordKind {
     #[serde(rename = "proxy-login")]
@@ -1162,7 +1210,9 @@ impl ::std::fmt::Display for UsageRecordKind {
 }
 impl ::std::str::FromStr for UsageRecordKind {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "proxy-login" => Ok(Self::ProxyLogin),
             "release" => Ok(Self::Release),
@@ -1172,7 +1222,9 @@ impl ::std::str::FromStr for UsageRecordKind {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordKind {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1221,7 +1273,7 @@ impl ::std::convert::TryFrom<::std::string::String> for UsageRecordKind {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum UsageRecordOutcome {
     #[serde(rename = "allowed")]
@@ -1259,7 +1311,9 @@ impl ::std::fmt::Display for UsageRecordOutcome {
 }
 impl ::std::str::FromStr for UsageRecordOutcome {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "allowed" => Ok(Self::Allowed),
             "denied" => Ok(Self::Denied),
@@ -1274,7 +1328,9 @@ impl ::std::str::FromStr for UsageRecordOutcome {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordOutcome {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1327,7 +1383,9 @@ impl ::std::convert::From<&UsageRecordSessionId> for UsageRecordSessionId {
 }
 impl ::std::str::FromStr for UsageRecordSessionId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1336,7 +1394,9 @@ impl ::std::str::FromStr for UsageRecordSessionId {
 }
 impl ::std::convert::TryFrom<&str> for UsageRecordSessionId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }

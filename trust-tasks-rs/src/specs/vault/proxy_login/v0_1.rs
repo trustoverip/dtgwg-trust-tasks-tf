@@ -9,12 +9,18 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -80,7 +86,9 @@ pub struct ConsumerContext {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub last_user_verification_at: ::std::option::Option<
+        ::chrono::DateTime<::chrono::offset::Utc>,
+    >,
     ///Producer-supplied network classification. Advisory.
     #[serde(
         rename = "networkClass",
@@ -136,7 +144,9 @@ impl ::std::convert::From<&ConsumerContextDeviceId> for ConsumerContextDeviceId 
 }
 impl ::std::str::FromStr for ConsumerContextDeviceId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -145,7 +155,9 @@ impl ::std::str::FromStr for ConsumerContextDeviceId {
 }
 impl ::std::convert::TryFrom<&str> for ConsumerContextDeviceId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -205,7 +217,7 @@ impl<'de> ::serde::Deserialize<'de> for ConsumerContextDeviceId {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum ConsumerContextNetworkClass {
     #[serde(rename = "unknown")]
@@ -237,7 +249,9 @@ impl ::std::fmt::Display for ConsumerContextNetworkClass {
 }
 impl ::std::str::FromStr for ConsumerContextNetworkClass {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "unknown" => Ok(Self::Unknown),
             "home" => Ok(Self::Home),
@@ -250,7 +264,9 @@ impl ::std::str::FromStr for ConsumerContextNetworkClass {
 }
 impl ::std::convert::TryFrom<&str> for ConsumerContextNetworkClass {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -344,7 +360,9 @@ impl ::std::convert::From<&DidcommAuthcryptEnvelopeJwe> for DidcommAuthcryptEnve
 }
 impl ::std::str::FromStr for DidcommAuthcryptEnvelopeJwe {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -353,7 +371,9 @@ impl ::std::str::FromStr for DidcommAuthcryptEnvelopeJwe {
 }
 impl ::std::convert::TryFrom<&str> for DidcommAuthcryptEnvelopeJwe {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -411,7 +431,8 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext>
+for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -421,7 +442,8 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
+for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -458,20 +480,24 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+            return Err(
+                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -602,7 +628,9 @@ impl ::std::convert::From<&HpkeArmoredEnvelopeArmored> for HpkeArmoredEnvelopeAr
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeArmored {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -611,7 +639,9 @@ impl ::std::str::FromStr for HpkeArmoredEnvelopeArmored {
 }
 impl ::std::convert::TryFrom<&str> for HpkeArmoredEnvelopeArmored {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -670,7 +700,7 @@ impl<'de> ::serde::Deserialize<'de> for HpkeArmoredEnvelopeArmored {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum HpkeArmoredEnvelopeProducerAssertion {
     #[serde(rename = "did-signed")]
@@ -696,7 +726,9 @@ impl ::std::fmt::Display for HpkeArmoredEnvelopeProducerAssertion {
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeProducerAssertion {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "did-signed" => Ok(Self::DidSigned),
             "attested" => Ok(Self::Attested),
@@ -707,11 +739,14 @@ impl ::std::str::FromStr for HpkeArmoredEnvelopeProducerAssertion {
 }
 impl ::std::convert::TryFrom<&str> for HpkeArmoredEnvelopeProducerAssertion {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for HpkeArmoredEnvelopeProducerAssertion {
+impl ::std::convert::TryFrom<&::std::string::String>
+for HpkeArmoredEnvelopeProducerAssertion {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -719,7 +754,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for HpkeArmoredEnvelopeProd
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for HpkeArmoredEnvelopeProducerAssertion {
+impl ::std::convert::TryFrom<::std::string::String>
+for HpkeArmoredEnvelopeProducerAssertion {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -759,15 +795,16 @@ impl ::std::convert::From<HpkeArmoredEnvelopeRecipientKeyId> for ::std::string::
     }
 }
 impl ::std::convert::From<&HpkeArmoredEnvelopeRecipientKeyId>
-    for HpkeArmoredEnvelopeRecipientKeyId
-{
+for HpkeArmoredEnvelopeRecipientKeyId {
     fn from(value: &HpkeArmoredEnvelopeRecipientKeyId) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeRecipientKeyId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -776,11 +813,14 @@ impl ::std::str::FromStr for HpkeArmoredEnvelopeRecipientKeyId {
 }
 impl ::std::convert::TryFrom<&str> for HpkeArmoredEnvelopeRecipientKeyId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for HpkeArmoredEnvelopeRecipientKeyId {
+impl ::std::convert::TryFrom<&::std::string::String>
+for HpkeArmoredEnvelopeRecipientKeyId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -788,7 +828,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for HpkeArmoredEnvelopeReci
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for HpkeArmoredEnvelopeRecipientKeyId {
+impl ::std::convert::TryFrom<::std::string::String>
+for HpkeArmoredEnvelopeRecipientKeyId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -834,6 +875,12 @@ impl<'de> ::serde::Deserialize<'de> for HpkeArmoredEnvelopeRecipientKeyId {
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
+///    "nonce": {
+///      "description": "Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.",
+///      "type": "string",
+///      "maxLength": 512,
+///      "minLength": 1
+///    },
 ///    "stepUpProof": {
 ///      "description": "Optional — included on retry after a prior proxy-login attempt returned `step_up_required`.",
 ///      "$ref": "#/definitions/StepUpProof"
@@ -841,6 +888,12 @@ impl<'de> ::serde::Deserialize<'de> for HpkeArmoredEnvelopeRecipientKeyId {
 ///    "target": {
 ///      "description": "Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).",
 ///      "$ref": "#/definitions/SiteTarget"
+///    },
+///    "ttlSecondsHint": {
+///      "description": "Optional caller-preferred session TTL in seconds. The maintainer caps server-side per its policy; a higher hint MUST be silently truncated rather than rejected. Drivers that have a fixed-TTL bearer (e.g. SIOP id_tokens with their own `exp`) MUST NOT extend beyond the underlying credential's lifetime regardless of hint.",
+///      "type": "integer",
+///      "maximum": 86400.0,
+///      "minimum": 1.0
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -862,6 +915,9 @@ pub struct Payload {
     pub entry_id: PayloadEntryId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub nonce: ::std::option::Option<PayloadNonce>,
     ///Optional — included on retry after a prior proxy-login attempt returned `step_up_required`.
     #[serde(
         rename = "stepUpProof",
@@ -872,6 +928,13 @@ pub struct Payload {
     ///Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub target: ::std::option::Option<SiteTarget>,
+    ///Optional caller-preferred session TTL in seconds. The maintainer caps server-side per its policy; a higher hint MUST be silently truncated rather than rejected. Drivers that have a fixed-TTL bearer (e.g. SIOP id_tokens with their own `exp`) MUST NOT extend beyond the underlying credential's lifetime regardless of hint.
+    #[serde(
+        rename = "ttlSecondsHint",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub ttl_seconds_hint: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl ::std::convert::From<&Payload> for Payload {
     fn from(value: &Payload) -> Self {
@@ -911,7 +974,9 @@ impl ::std::convert::From<&PayloadEntryId> for PayloadEntryId {
 }
 impl ::std::str::FromStr for PayloadEntryId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -920,7 +985,9 @@ impl ::std::str::FromStr for PayloadEntryId {
 }
 impl ::std::convert::TryFrom<&str> for PayloadEntryId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -941,6 +1008,88 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadEntryId {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadEntryId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.",
+///  "type": "string",
+///  "maxLength": 512,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadNonce(::std::string::String);
+impl ::std::ops::Deref for PayloadNonce {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadNonce> for ::std::string::String {
+    fn from(value: PayloadNonce) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<&PayloadNonce> for PayloadNonce {
+    fn from(value: &PayloadNonce) -> Self {
+        value.clone()
+    }
+}
+impl ::std::str::FromStr for PayloadNonce {
+    type Err = self::error::ConversionError;
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 512usize {
+            return Err("longer than 512 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadNonce {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadNonce {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadNonce {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1227,12 +1376,14 @@ impl ::std::convert::From<&SiteTargetBundleId> for SiteTargetBundleId {
 }
 impl ::std::str::FromStr for SiteTargetBundleId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Za-z0-9.-]+$").unwrap());
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[A-Za-z0-9.-]+$").unwrap() });
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^[A-Za-z0-9.-]+$\"".into());
         }
@@ -1241,7 +1392,9 @@ impl ::std::str::FromStr for SiteTargetBundleId {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetBundleId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1306,7 +1459,9 @@ impl ::std::convert::From<&SiteTargetDid> for SiteTargetDid {
 }
 impl ::std::str::FromStr for SiteTargetDid {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1315,7 +1470,9 @@ impl ::std::str::FromStr for SiteTargetDid {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetDid {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1381,14 +1538,17 @@ impl ::std::convert::From<&SiteTargetPackageName> for SiteTargetPackageName {
 }
 impl ::std::str::FromStr for SiteTargetPackageName {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$").unwrap()
-            });
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        {
+            ::regress::Regex::new("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
+                .unwrap()
+        });
         if PATTERN.find(value).is_none() {
             return Err(
                 "doesn't match pattern \"^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$\""
@@ -1400,7 +1560,9 @@ impl ::std::str::FromStr for SiteTargetPackageName {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetPackageName {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1452,38 +1614,43 @@ impl ::std::ops::Deref for SiteTargetSha256CertFingerprintsItem {
         &self.0
     }
 }
-impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem> for ::std::string::String {
+impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem>
+for ::std::string::String {
     fn from(value: SiteTargetSha256CertFingerprintsItem) -> Self {
         value.0
     }
 }
 impl ::std::convert::From<&SiteTargetSha256CertFingerprintsItem>
-    for SiteTargetSha256CertFingerprintsItem
-{
+for SiteTargetSha256CertFingerprintsItem {
     fn from(value: &SiteTargetSha256CertFingerprintsItem) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetSha256CertFingerprintsItem {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[0-9A-F]{2}(:[0-9A-F]{2}){31}$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[0-9A-F]{2}(:[0-9A-F]{2}){31}$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\"".into());
+            return Err(
+                "doesn't match pattern \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for SiteTargetSha256CertFingerprintsItem {
+impl ::std::convert::TryFrom<&::std::string::String>
+for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -1491,7 +1658,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for SiteTargetSha256CertFin
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for SiteTargetSha256CertFingerprintsItem {
+impl ::std::convert::TryFrom<::std::string::String>
+for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -1545,12 +1713,14 @@ impl ::std::convert::From<&SiteTargetTeamId> for SiteTargetTeamId {
 }
 impl ::std::str::FromStr for SiteTargetTeamId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Z0-9]+$").unwrap());
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[A-Z0-9]+$").unwrap() });
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^[A-Z0-9]+$\"".into());
         }
@@ -1559,7 +1729,9 @@ impl ::std::str::FromStr for SiteTargetTeamId {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetTeamId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1675,7 +1847,9 @@ impl ::std::convert::From<&StepUpProofChallengeId> for StepUpProofChallengeId {
 }
 impl ::std::str::FromStr for StepUpProofChallengeId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1684,7 +1858,9 @@ impl ::std::str::FromStr for StepUpProofChallengeId {
 }
 impl ::std::convert::TryFrom<&str> for StepUpProofChallengeId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1741,7 +1917,7 @@ impl<'de> ::serde::Deserialize<'de> for StepUpProofChallengeId {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum StepUpProofKind {
     #[serde(rename = "webauthn-uv")]
@@ -1767,7 +1943,9 @@ impl ::std::fmt::Display for StepUpProofKind {
 }
 impl ::std::str::FromStr for StepUpProofKind {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "webauthn-uv" => Ok(Self::WebauthnUv),
             "push-approval" => Ok(Self::PushApproval),
@@ -1778,7 +1956,9 @@ impl ::std::str::FromStr for StepUpProofKind {
 }
 impl ::std::convert::TryFrom<&str> for StepUpProofKind {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1870,7 +2050,9 @@ impl ::std::convert::From<&TspMessageEnvelopeMessage> for TspMessageEnvelopeMess
 }
 impl ::std::str::FromStr for TspMessageEnvelopeMessage {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1879,7 +2061,9 @@ impl ::std::str::FromStr for TspMessageEnvelopeMessage {
 }
 impl ::std::convert::TryFrom<&str> for TspMessageEnvelopeMessage {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1913,8 +2097,7 @@ impl<'de> ::serde::Deserialize<'de> for TspMessageEnvelopeMessage {
 }
 /// Generation of default values for serde.
 pub mod defaults {
-    pub(super) fn hpke_armored_envelope_producer_assertion(
-    ) -> super::HpkeArmoredEnvelopeProducerAssertion {
+    pub(super) fn hpke_armored_envelope_producer_assertion() -> super::HpkeArmoredEnvelopeProducerAssertion {
         super::HpkeArmoredEnvelopeProducerAssertion::DidSigned
     }
 }
@@ -1928,5 +2111,5 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"ConsumerContext\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deviceId\": {\n          \"description\": \"Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastUserVerificationAt\": {\n          \"description\": \"Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"networkClass\": {\n          \"description\": \"Producer-supplied network classification. Advisory.\",\n          \"enum\": [\n            \"unknown\",\n            \"home\",\n            \"corp\",\n            \"public\",\n            \"vpn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"ConsumerContext\",\n      \"type\": \"object\"\n    },\n    \"DidcommAuthcryptEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\\n\\nM2A is the only implementation today; this is also the canonical default for new code.\",\n      \"properties\": {\n        \"envelope\": {\n          \"const\": \"didcomm-authcrypt\"\n        },\n        \"jwe\": {\n          \"description\": \"Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"jwe\"\n      ],\n      \"title\": \"DidcommAuthcryptEnvelope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"HpkeArmoredEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.\\n\\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.\",\n      \"properties\": {\n        \"armored\": {\n          \"description\": \"ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"envelope\": {\n          \"const\": \"hpke-armored\"\n        },\n        \"producerAssertion\": {\n          \"default\": \"did-signed\",\n          \"description\": \"Producer-assertion mode per the sealed-transfer framework. `did-signed` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinned-only` = OOB SHA-256 digest only (dev/test, NOT for production).\",\n          \"enum\": [\n            \"did-signed\",\n            \"attested\",\n            \"pinned-only\"\n          ],\n          \"type\": \"string\"\n        },\n        \"recipientKeyId\": {\n          \"description\": \"did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"armored\",\n        \"recipientKeyId\"\n      ],\n      \"title\": \"HpkeArmoredEnvelope\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sealedSessionBlob\": {\n          \"$ref\": \"#/$defs/SealedEnvelope\",\n          \"description\": \"Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`.\"\n        }\n      },\n      \"required\": [\n        \"sealedSessionBlob\"\n      ],\n      \"title\": \"Vault Proxy-Login — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedEnvelope\": {\n      \"description\": \"Discriminated by `envelope`. Exactly one variant matches per document.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/DidcommAuthcryptEnvelope\"\n        },\n        {\n          \"$ref\": \"#/$defs/HpkeArmoredEnvelope\"\n        },\n        {\n          \"$ref\": \"#/$defs/TspMessageEnvelope\"\n        }\n      ],\n      \"title\": \"SealedEnvelope\"\n    },\n    \"SiteTarget\": {\n      \"description\": \"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"web-origin\"\n            },\n            \"origin\": {\n              \"description\": \"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"origin\"\n          ],\n          \"title\": \"WebOrigin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"did\": {\n              \"description\": \"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"did\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"did\"\n          ],\n          \"title\": \"Did\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"bundleId\": {\n              \"description\": \"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"ios-app\"\n            },\n            \"teamId\": {\n              \"description\": \"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Z0-9]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"bundleId\"\n          ],\n          \"title\": \"IosApp\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"android-app\"\n            },\n            \"packageName\": {\n              \"description\": \"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\n              \"type\": \"string\"\n            },\n            \"sha256CertFingerprints\": {\n              \"description\": \"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\n              \"items\": {\n                \"pattern\": \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"packageName\",\n            \"sha256CertFingerprints\"\n          ],\n          \"title\": \"AndroidApp\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SiteTarget\"\n    },\n    \"StepUpProof\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"challengeId\": {\n          \"description\": \"Maintainer-issued challenge id the proof responds to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"enum\": [\n            \"webauthn-uv\",\n            \"push-approval\",\n            \"totp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"proof\",\n        \"challengeId\"\n      ],\n      \"title\": \"StepUpProof\",\n      \"type\": \"object\"\n    },\n    \"TspMessageEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.\",\n      \"properties\": {\n        \"envelope\": {\n          \"const\": \"tsp-message\"\n        },\n        \"message\": {\n          \"description\": \"Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"message\"\n      ],\n      \"title\": \"TspMessageEnvelope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/proxy-login/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.\",\n  \"properties\": {\n    \"consumerContext\": {\n      \"$ref\": \"#/$defs/ConsumerContext\",\n      \"description\": \"Caller's situational context — fed to the maintainer's policy engine to decide proxy vs fill, require step-up, etc. Producers populate what they can observe; fields are advisory and the maintainer MUST cross-check anything security-relevant against its own state.\"\n    },\n    \"entryId\": {\n      \"description\": \"Vault entry id to log in with.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"stepUpProof\": {\n      \"$ref\": \"#/$defs/StepUpProof\",\n      \"description\": \"Optional — included on retry after a prior proxy-login attempt returned `step_up_required`.\"\n    },\n    \"target\": {\n      \"$ref\": \"#/$defs/SiteTarget\",\n      \"description\": \"Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).\"\n    }\n  },\n  \"required\": [\n    \"entryId\"\n  ],\n  \"title\": \"Vault Proxy-Login — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"ConsumerContext\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deviceId\": {\n          \"description\": \"Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastUserVerificationAt\": {\n          \"description\": \"Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"networkClass\": {\n          \"description\": \"Producer-supplied network classification. Advisory.\",\n          \"enum\": [\n            \"unknown\",\n            \"home\",\n            \"corp\",\n            \"public\",\n            \"vpn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"ConsumerContext\",\n      \"type\": \"object\"\n    },\n    \"DidcommAuthcryptEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\\n\\nM2A is the only implementation today; this is also the canonical default for new code.\",\n      \"properties\": {\n        \"envelope\": {\n          \"const\": \"didcomm-authcrypt\"\n        },\n        \"jwe\": {\n          \"description\": \"Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"jwe\"\n      ],\n      \"title\": \"DidcommAuthcryptEnvelope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"HpkeArmoredEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.\\n\\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.\",\n      \"properties\": {\n        \"armored\": {\n          \"description\": \"ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"envelope\": {\n          \"const\": \"hpke-armored\"\n        },\n        \"producerAssertion\": {\n          \"default\": \"did-signed\",\n          \"description\": \"Producer-assertion mode per the sealed-transfer framework. `did-signed` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinned-only` = OOB SHA-256 digest only (dev/test, NOT for production).\",\n          \"enum\": [\n            \"did-signed\",\n            \"attested\",\n            \"pinned-only\"\n          ],\n          \"type\": \"string\"\n        },\n        \"recipientKeyId\": {\n          \"description\": \"did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"armored\",\n        \"recipientKeyId\"\n      ],\n      \"title\": \"HpkeArmoredEnvelope\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sealedSessionBlob\": {\n          \"$ref\": \"#/$defs/SealedEnvelope\",\n          \"description\": \"Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`.\"\n        }\n      },\n      \"required\": [\n        \"sealedSessionBlob\"\n      ],\n      \"title\": \"Vault Proxy-Login — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedEnvelope\": {\n      \"description\": \"Discriminated by `envelope`. Exactly one variant matches per document.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/DidcommAuthcryptEnvelope\"\n        },\n        {\n          \"$ref\": \"#/$defs/HpkeArmoredEnvelope\"\n        },\n        {\n          \"$ref\": \"#/$defs/TspMessageEnvelope\"\n        }\n      ],\n      \"title\": \"SealedEnvelope\"\n    },\n    \"SiteTarget\": {\n      \"description\": \"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"web-origin\"\n            },\n            \"origin\": {\n              \"description\": \"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"origin\"\n          ],\n          \"title\": \"WebOrigin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"did\": {\n              \"description\": \"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"did\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"did\"\n          ],\n          \"title\": \"Did\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"bundleId\": {\n              \"description\": \"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"ios-app\"\n            },\n            \"teamId\": {\n              \"description\": \"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Z0-9]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"bundleId\"\n          ],\n          \"title\": \"IosApp\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"android-app\"\n            },\n            \"packageName\": {\n              \"description\": \"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\n              \"type\": \"string\"\n            },\n            \"sha256CertFingerprints\": {\n              \"description\": \"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\n              \"items\": {\n                \"pattern\": \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"packageName\",\n            \"sha256CertFingerprints\"\n          ],\n          \"title\": \"AndroidApp\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SiteTarget\"\n    },\n    \"StepUpProof\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"challengeId\": {\n          \"description\": \"Maintainer-issued challenge id the proof responds to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"enum\": [\n            \"webauthn-uv\",\n            \"push-approval\",\n            \"totp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"proof\",\n        \"challengeId\"\n      ],\n      \"title\": \"StepUpProof\",\n      \"type\": \"object\"\n    },\n    \"TspMessageEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.\",\n      \"properties\": {\n        \"envelope\": {\n          \"const\": \"tsp-message\"\n        },\n        \"message\": {\n          \"description\": \"Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"message\"\n      ],\n      \"title\": \"TspMessageEnvelope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/proxy-login/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.\",\n  \"properties\": {\n    \"consumerContext\": {\n      \"$ref\": \"#/$defs/ConsumerContext\",\n      \"description\": \"Caller's situational context — fed to the maintainer's policy engine to decide proxy vs fill, require step-up, etc. Producers populate what they can observe; fields are advisory and the maintainer MUST cross-check anything security-relevant against its own state.\"\n    },\n    \"entryId\": {\n      \"description\": \"Vault entry id to log in with.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"nonce\": {\n      \"description\": \"Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"stepUpProof\": {\n      \"$ref\": \"#/$defs/StepUpProof\",\n      \"description\": \"Optional — included on retry after a prior proxy-login attempt returned `step_up_required`.\"\n    },\n    \"target\": {\n      \"$ref\": \"#/$defs/SiteTarget\",\n      \"description\": \"Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).\"\n    },\n    \"ttlSecondsHint\": {\n      \"description\": \"Optional caller-preferred session TTL in seconds. The maintainer caps server-side per its policy; a higher hint MUST be silently truncated rather than rejected. Drivers that have a fixed-TTL bearer (e.g. SIOP id_tokens with their own `exp`) MUST NOT extend beyond the underlying credential's lifetime regardless of hint.\",\n      \"maximum\": 86400,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"entryId\"\n  ],\n  \"title\": \"Vault Proxy-Login — payload\",\n  \"type\": \"object\"\n}\n";
 }

@@ -79,6 +79,7 @@ A conforming **producer** **MUST**:
 2. Populate `consumerContext` truthfully — populating false UV claims to bypass policy is a violation and maintainers MAY ban consumers caught doing so.
 3. Carry a `proof`.
 4. On `step_up_required`, satisfy the demanded method and retry with `stepUpProof` carrying the proof bytes and the challenge id.
+5. For SIOPv2-shaped flows where the consumer will post the resulting credential to a relying party that issued an authorization-request `nonce`, **MUST** populate `nonce` with that value. Omitting it forces the maintainer to generate its own nonce — which the RP will reject during id_token verification.
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
@@ -90,7 +91,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
    - `password`: HTTP form post / API call with username + password, then TOTP if seed present.
    - `passkey`: WebAuthn assertion using the stored credential — only viable when the third party accepts a non-browser WebAuthn flow (rare; usually falls through to `not_proxyable`).
    - `oauth-tokens`: refresh the access token if needed, return it as a header.
-   - `did-self-issued`: issue a SIOP id_token signed by the referenced key.
+   - `did-self-issued`: issue a SIOP id_token signed by the referenced key. If the consumer supplied `nonce`, embed it verbatim as the id_token's `nonce` claim; otherwise generate a fresh nonce. Drivers MUST treat the consumer's nonce as opaque (no canonicalisation, trimming, or re-encoding) so the RP's exact-match check succeeds.
    - `didcomm-peer`: complete the DIDComm authentication handshake to the relying party.
    - `bearer-token`: simply return the token in the configured header.
 6. Construct a `SessionBlob` with `expiresAt` set conservatively (RECOMMENDED ≤ the third party's session TTL, and never more than 1 hour for high-value sites). Seal with HPKE to the consumer's published recipient X25519 key.
@@ -108,6 +109,10 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 `payload.consumerContext` (optional, RECOMMENDED).
 
 `payload.stepUpProof` (REQUIRED on retry after step_up_required).
+
+`payload.nonce` (optional) — caller-supplied nonce the maintainer embeds verbatim in the session credential when the driver has a nonce concept. The canonical use is SIOPv2: the RP's authorization-request `nonce` MUST appear as the `nonce` claim in the SIOP id_token the maintainer mints, or the RP rejects the token. Drivers without a nonce concept (Password POST, OAuth refresh, cookie-injection drivers) ignore the field. When omitted, the maintainer generates its own nonce; appropriate for push-mode flows that don't pre-fetch a challenge.
+
+`payload.ttlSecondsHint` (optional) — caller-preferred session TTL in seconds; capped server-side. A higher hint MUST silently truncate, not reject. Drivers issuing fixed-TTL bearers (e.g. SIOP id_tokens with their own `exp`) MUST NOT extend beyond the underlying credential's lifetime regardless of hint.
 
 ## Response
 
@@ -135,6 +140,30 @@ A conforming **consumer** (the vault maintainer) **MUST**:
   "proof": { "…": "…" }
 }
 ```
+
+### SIOP-bound login with RP-supplied nonce
+
+```json
+{
+  "id": "plogin-siop-1",
+  "type": "https://trusttasks.org/spec/vault/proxy-login/0.1",
+  "issuer": "did:peer:2.Ez6LSc…",
+  "recipient": "did:web:vta.example",
+  "issuedAt": "2026-05-26T13:00:00Z",
+  "payload": {
+    "entryId": "vault_01HZX2_did_self_issued",
+    "target": { "kind": "did", "did": "did:web:rp.example" },
+    "nonce": "5e3f… (the value returned by GET /auth/challenge at the RP)",
+    "consumerContext": {
+      "deviceId": "dev_01HZX3…",
+      "lastUserVerificationAt": "2026-05-26T12:59:30Z"
+    }
+  },
+  "proof": { "…": "…" }
+}
+```
+
+The maintainer mints a SIOP id_token whose `nonce` claim is exactly the value supplied. The consumer posts the id_token (extracted from the returned `SessionBlob.headers[].Authorization`) to the RP's `/auth/` endpoint; the RP's nonce check succeeds.
 
 ### Step-up required → retry
 

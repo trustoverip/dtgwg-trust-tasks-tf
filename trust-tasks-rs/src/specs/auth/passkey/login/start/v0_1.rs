@@ -9,12 +9,18 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -108,7 +114,7 @@ impl ::std::convert::From<&CredentialDescriptor> for CredentialDescriptor {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum CredentialDescriptorTransportsItem {
     #[serde(rename = "usb")]
@@ -140,7 +146,9 @@ impl ::std::fmt::Display for CredentialDescriptorTransportsItem {
 }
 impl ::std::str::FromStr for CredentialDescriptorTransportsItem {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "usb" => Ok(Self::Usb),
             "nfc" => Ok(Self::Nfc),
@@ -153,11 +161,14 @@ impl ::std::str::FromStr for CredentialDescriptorTransportsItem {
 }
 impl ::std::convert::TryFrom<&str> for CredentialDescriptorTransportsItem {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for CredentialDescriptorTransportsItem {
+impl ::std::convert::TryFrom<&::std::string::String>
+for CredentialDescriptorTransportsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -165,7 +176,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for CredentialDescriptorTra
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTransportsItem {
+impl ::std::convert::TryFrom<::std::string::String>
+for CredentialDescriptorTransportsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -241,7 +253,9 @@ pub struct CredentialRequestOptions {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
+    pub user_verification: ::std::option::Option<
+        CredentialRequestOptionsUserVerification,
+    >,
 }
 impl ::std::convert::From<&CredentialRequestOptions> for CredentialRequestOptions {
     fn from(value: &CredentialRequestOptions) -> Self {
@@ -273,14 +287,17 @@ impl ::std::convert::From<CredentialRequestOptionsRpId> for ::std::string::Strin
         value.0
     }
 }
-impl ::std::convert::From<&CredentialRequestOptionsRpId> for CredentialRequestOptionsRpId {
+impl ::std::convert::From<&CredentialRequestOptionsRpId>
+for CredentialRequestOptionsRpId {
     fn from(value: &CredentialRequestOptionsRpId) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for CredentialRequestOptionsRpId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -289,7 +306,9 @@ impl ::std::str::FromStr for CredentialRequestOptionsRpId {
 }
 impl ::std::convert::TryFrom<&str> for CredentialRequestOptionsRpId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -345,7 +364,7 @@ impl<'de> ::serde::Deserialize<'de> for CredentialRequestOptionsRpId {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum CredentialRequestOptionsUserVerification {
     #[serde(rename = "discouraged")]
@@ -371,7 +390,9 @@ impl ::std::fmt::Display for CredentialRequestOptionsUserVerification {
 }
 impl ::std::str::FromStr for CredentialRequestOptionsUserVerification {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "discouraged" => Ok(Self::Discouraged),
             "preferred" => Ok(Self::Preferred),
@@ -382,11 +403,14 @@ impl ::std::str::FromStr for CredentialRequestOptionsUserVerification {
 }
 impl ::std::convert::TryFrom<&str> for CredentialRequestOptionsUserVerification {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for CredentialRequestOptionsUserVerification {
+impl ::std::convert::TryFrom<&::std::string::String>
+for CredentialRequestOptionsUserVerification {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -394,7 +418,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for CredentialRequestOption
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for CredentialRequestOptionsUserVerification {
+impl ::std::convert::TryFrom<::std::string::String>
+for CredentialRequestOptionsUserVerification {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -428,7 +453,8 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext>
+for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -438,7 +464,8 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
+for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -475,20 +502,24 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+            return Err(
+                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -605,7 +636,7 @@ impl ::std::default::Default for Payload {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum PayloadPurpose {
     #[serde(rename = "login")]
@@ -628,7 +659,9 @@ impl ::std::fmt::Display for PayloadPurpose {
 }
 impl ::std::str::FromStr for PayloadPurpose {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "login" => Ok(Self::Login),
             "step-up" => Ok(Self::StepUp),
@@ -638,7 +671,9 @@ impl ::std::str::FromStr for PayloadPurpose {
 }
 impl ::std::convert::TryFrom<&str> for PayloadPurpose {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -691,7 +726,9 @@ impl ::std::convert::From<&PayloadSubject> for PayloadSubject {
 }
 impl ::std::str::FromStr for PayloadSubject {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -700,7 +737,9 @@ impl ::std::str::FromStr for PayloadSubject {
 }
 impl ::std::convert::TryFrom<&str> for PayloadSubject {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -815,7 +854,9 @@ impl ::std::convert::From<&ResponseAuthId> for ResponseAuthId {
 }
 impl ::std::str::FromStr for ResponseAuthId {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -824,7 +865,9 @@ impl ::std::str::FromStr for ResponseAuthId {
 }
 impl ::std::convert::TryFrom<&str> for ResponseAuthId {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -860,8 +903,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/login/start/0.1";
 }
 impl crate::Payload for Response {
-    const TYPE_URI: &'static str =
-        "https://trusttasks.org/spec/auth/passkey/login/start/0.1#response";
+    const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/login/start/0.1#response";
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
@@ -875,10 +917,11 @@ mod conformance {
     #[test]
     fn response_example_1() {
         const JSON: &str = "{\n  \"id\": \"dddddddd-4444-5555-6666-777777777777\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/login/start/0.1#response\",\n  \"threadId\": \"aaaaaaaa-1111-2222-3333-444444444444\",\n  \"issuer\": \"did:web:auth.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-05-23T13:00:01Z\",\n  \"payload\": {\n    \"authId\": \"auth_3c4d5e6f7890abcd\",\n    \"options\": {\n      \"challenge\": \"Q2hhbExlbmdlVmFsdWVCYXNlNjQ\",\n      \"timeout\": 60000,\n      \"rpId\": \"auth.example\",\n      \"allowCredentials\": [\n        { \"type\": \"public-key\", \"id\": \"Y3JlZF8xYTJiM2M\" }\n      ],\n      \"userVerification\": \"preferred\"\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
+            .expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON)
+            .expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     /// Each fixture in `payload.invalid-examples.json` MUST be
@@ -895,25 +938,21 @@ mod conformance {
                 "Unknown purpose value — the enum is `login` or `step-up`.",
                 "{\n  \"purpose\": \"register\"\n}",
             ),
-            (
-                "Unknown top-level payload member.",
-                "{\n  \"userHandle\": \"abc\"\n}",
-            ),
+            ("Unknown top-level payload member.", "{\n  \"userHandle\": \"abc\"\n}"),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {
             let value: serde_json::Value = match serde_json::from_str(raw) {
                 Ok(v) => v,
                 Err(_) => continue,
             };
-            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone())
+                .is_ok();
             let schema_ok = super::Payload::validate_value(&value).is_ok();
             assert!(
-                !(serde_ok && schema_ok),
+                ! (serde_ok && schema_ok),
                 "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
-                i + 1,
-                note,
-                raw
+                i + 1, note, raw
             );
         }
     }
