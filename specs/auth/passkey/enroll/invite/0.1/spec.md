@@ -5,7 +5,7 @@ title: Auth — Passkey Enroll (invite)
 summary: An administrator issues a single-use invite URL that an unenrolled subject can redeem to bind their first passkey, bridging the cold-start gap where the subject has no existing authentication factor.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - auth
   - passkey

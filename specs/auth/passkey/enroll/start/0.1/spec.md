@@ -5,7 +5,7 @@ title: Auth — Passkey Enroll (start)
 summary: An authenticated subject asks the auth service to begin a WebAuthn registration ceremony so a new passkey can be bound to their VID.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - auth
   - passkey

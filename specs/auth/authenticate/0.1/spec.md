@@ -5,7 +5,7 @@ title: Auth — Authenticate
 summary: A subject presents a previously-issued challenge inside a proof-bearing Trust Task document; the proof verifies the subject controls their VID, and the auth service responds with a session + tokens.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - auth
   - authentication

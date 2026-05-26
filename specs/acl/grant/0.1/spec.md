@@ -5,7 +5,7 @@ title: ACL — Grant
 summary: A granting authority records, in a verifiable form, that a subject has been added to an access-control list with a named role and optional scopes.
 status: draft
 targetFrameworkVersion: "0.1"
-category: permission
+category: access-control
 keywords:
   - acl
   - access-control

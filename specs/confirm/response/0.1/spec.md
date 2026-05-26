@@ -5,7 +5,7 @@ title: Confirm — Response
 summary: An approver's signed answer to a confirm/request — the proof on this document is the cryptographic record of the user's decision.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - confirm
   - consent

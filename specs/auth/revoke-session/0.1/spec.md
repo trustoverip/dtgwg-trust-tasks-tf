@@ -5,7 +5,7 @@ title: Auth — Revoke Session
 summary: A subject (or an administrator acting on their behalf) tells an auth service to invalidate a specific session or every session bound to the subject.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - auth
   - logout

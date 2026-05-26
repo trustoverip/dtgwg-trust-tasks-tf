@@ -5,7 +5,7 @@ title: Confirm — Request
 summary: A relying party asks a wallet (or any consent agent) to obtain user confirmation for a specific action; the wallet returns a signed confirm/response that is the cryptographic record of the user's decision.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - confirm
   - consent

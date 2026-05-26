@@ -5,7 +5,7 @@ title: Auth — Passkey Login (start)
 summary: A party asks an auth service to begin a WebAuthn authentication ceremony — issuing PublicKeyCredentialRequestOptions for either an initial login or an AAL step-up against an existing session.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - auth
   - passkey

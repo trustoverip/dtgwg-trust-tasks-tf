@@ -5,7 +5,7 @@ title: Auth — Passkey Enroll (finish)
 summary: A subject submits the WebAuthn attestation that completes a passkey enrollment. The auth service verifies the attestation and binds the public credential to the subject's VID.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - auth
   - passkey

@@ -56,7 +56,20 @@
     },
     "category": {
       "type": "string",
-      "description": "TT_CATEGORIES id (identity | credentials | data-exchange | governance | payments | ai-agents | reputation)."
+      "enum": [
+        "access-control",
+        "ai-agents",
+        "authentication",
+        "credentials",
+        "data-exchange",
+        "did-management",
+        "framework",
+        "governance",
+        "identity",
+        "payments",
+        "reputation"
+      ],
+      "description": "TT_CATEGORIES id. Pick the one that most cleanly describes the task's domain. Roughly:\n- access-control: ACL / role / permission / capability tasks (acl/*).\n- ai-agents: tasks specific to AI-agent interaction patterns.\n- authentication: login, session, challenge/response, passkey, step-up (auth/*, confirm/*).\n- credentials: vault / credential management (vault/*).\n- data-exchange: data-transport / sync / event-stream tasks (sync/*).\n- did-management: DID lifecycle, hosting, domain, server registry (did-management/*).\n- framework: framework-defined meta-tasks (trust-task-error, trust-task-discovery, etc.).\n- governance: policy / rule-engine / decision tasks (policy/*).\n- identity: identity-anchor / device-binding / persona tasks (device/*).\n- payments: payment-flow tasks.\n- reputation: reputation / attestation tasks.\n\nEnforced as a closed enum to prevent the silent category drift that produced `permission` (now access-control) and `did-management` (recognised) — adding a new category is now a deliberate spec-meta-schema PR rather than a typo in a single spec.md."
     },
     "keywords": {
       "type": "array",

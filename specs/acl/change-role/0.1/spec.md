@@ -5,7 +5,7 @@ title: ACL — Change Role
 summary: An authorized party records the transition of a subject's role within an access-control list, with an optimistic concurrency check against the prior role.
 status: draft
 targetFrameworkVersion: "0.1"
-category: permission
+category: access-control
 keywords:
   - acl
   - access-control

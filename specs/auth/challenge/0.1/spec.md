@@ -5,7 +5,7 @@ title: Auth — Challenge
 summary: A party requests a one-time nonce from an authentication service that they will sign to prove control of their VID.
 status: draft
 targetFrameworkVersion: "0.1"
-category: identity
+category: authentication
 keywords:
   - auth
   - authentication
