@@ -51,6 +51,15 @@ errorCodes:
   - code: vault/upsert:secret_required
     meaning: A create or rotation was attempted without `sealedSecret` for a secretKind that requires one.
     retryable: false
+  - code: vault/upsert:envelope_unsupported
+    meaning: The `sealedSecret.envelope` kind is not one the maintainer implements (e.g. a TSP message arriving at a maintainer that only speaks `didcomm-authcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` to learn which envelope kinds the maintainer accepts.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        receivedEnvelope: { type: "string" }
+        supportedEnvelopes: { type: "array", items: { "type": "string" } }
   - code: vault/upsert:context_change_forbidden
     meaning: The consumer attempted to change `contextId` on an existing entry. Move-between-contexts MUST be done as delete + recreate.
     retryable: false

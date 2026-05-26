@@ -52,6 +52,15 @@ errorCodes:
   - code: vault/proxy-login:policy_deny
     meaning: Policy denies proxy-login for this consumer + entry combination outright (no step-up will satisfy it).
     retryable: false
+  - code: vault/proxy-login:envelope_unsupported
+    meaning: The maintainer cannot emit a `sealedSessionBlob` in any envelope kind the consumer accepts. Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        requestedEnvelope: { type: "string" }
+        supportedEnvelopes: { type: "array", items: { "type": "string" } }
 ---
 
 ## Abstract

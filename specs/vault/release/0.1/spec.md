@@ -42,6 +42,15 @@ errorCodes:
   - code: vault/release:policy_deny
     meaning: Policy refuses to release this secret to this consumer.
     retryable: false
+  - code: vault/release:envelope_unsupported
+    meaning: The consumer's published recipient key advertises envelope kinds the maintainer does not implement (e.g. consumer requests `tsp-message` against a maintainer that only emits `didcomm-authcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        requestedEnvelope: { type: "string" }
+        supportedEnvelopes: { type: "array", items: { "type": "string" } }
 ---
 
 ## Abstract

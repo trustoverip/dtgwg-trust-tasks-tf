@@ -9,7 +9,7 @@
 export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
 
 /**
- * Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob (HPKE-sealed) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.
+ * Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.
  */
 export interface VaultProxyLoginPayload {
   /**

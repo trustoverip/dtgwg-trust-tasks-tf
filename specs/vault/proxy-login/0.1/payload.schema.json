@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/proxy-login/0.1",
   "title": "Vault Proxy-Login — payload",
-  "description": "Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob (HPKE-sealed) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.",
+  "description": "Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.",
   "type": "object",
   "additionalProperties": false,
   "required": ["entryId"],
@@ -27,21 +27,6 @@
     "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {
-    "SealedSessionBlob": {
-      "title": "SealedSessionBlob",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["armored", "recipientKeyId"],
-      "properties": {
-        "armored": { "type": "string" },
-        "recipientKeyId": { "type": "string", "minLength": 1 },
-        "producerAssertion": {
-          "type": "string",
-          "enum": ["did-signed", "attested", "pinned-only"],
-          "default": "did-signed"
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Vault Proxy-Login — response payload",
@@ -50,8 +35,8 @@
       "required": ["sealedSessionBlob"],
       "properties": {
         "sealedSessionBlob": {
-          "$ref": "#/$defs/SealedSessionBlob",
-          "description": "HPKE-sealed envelope containing the SessionBlob (see _shared/0.1/session-blob.schema.json). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin."
+          "$ref": "../../_shared/0.1/sealed-envelope.schema.json#/$defs/SealedEnvelope",
+          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`."
         },
         "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
       }

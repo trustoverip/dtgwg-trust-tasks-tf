@@ -9,7 +9,7 @@
 export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
 
 /**
- * Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in an HPKE-sealed envelope (see vault-secret.schema.json for the cleartext shape). This is the fallback when proxy-login is not viable (vault/proxy-login:not_proxyable) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).
+ * Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:not_proxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).
  */
 export interface VaultReleasePayload {
   entryId: string;

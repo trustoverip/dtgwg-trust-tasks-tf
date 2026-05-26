@@ -69,6 +69,7 @@ export * as SyncEvent_v0_1 from "./sync/event/0.1/payload";
 export * as TrustTaskDiscovery_v0_1 from "./trust-task-discovery/0.1/payload";
 export * as TrustTaskError_v0_1 from "./trust-task-error/0.1/payload";
 export * as ConsumerContextShared from "./vault/_shared/0.1/consumer-context";
+export * as SealedEnvelopeShared from "./vault/_shared/0.1/sealed-envelope";
 export * as SessionBlobShared from "./vault/_shared/0.1/session-blob";
 export * as VaultEntryShared from "./vault/_shared/0.1/vault-entry";
 export * as VaultSecretShared from "./vault/_shared/0.1/vault-secret";

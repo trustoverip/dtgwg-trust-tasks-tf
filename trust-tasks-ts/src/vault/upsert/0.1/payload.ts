@@ -27,9 +27,13 @@ export type SecretKind =
   | "bearer-token"
   | "ssh-key"
   | "custom";
+/**
+ * Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelope_unsupported`. REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated.
+ */
+export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
 
 /**
- * Create a new vault entry or update an existing one. The secret material — if present — rides inside an HPKE-sealed envelope (see SealedSecret), so the Trust Task carries ciphertext and an authenticator, not plaintext. Updates may be partial: any populated metadata field replaces the current value; omitted fields are left untouched; explicit null clears the field (per `clearFields`). Optimistic-concurrency check via `expectedVersion`.
+ * Create a new vault entry or update an existing one. The secret material — if present — rides inside a pluggable cipher envelope (see `vault/_shared/0.1/sealed-envelope`), so the Trust Task carries ciphertext and an authenticator, not plaintext. Updates may be partial: any populated metadata field replaces the current value; omitted fields are left untouched; explicit null clears the field (per `clearFields`). Optimistic-concurrency check via `expectedVersion`.
  */
 export interface VaultUpsertPayload {
   /**
@@ -56,7 +60,7 @@ export interface VaultUpsertPayload {
   selectors?: string[];
   customFieldNames?: string[];
   expiresAt?: string;
-  sealedSecret?: SealedSecret;
+  sealedSecret?: SealedEnvelope;
   /**
    * List of metadata fields to explicitly clear on this upsert. Distinguishes "don't touch" (field omitted from payload) from "clear" (field listed here).
    */
@@ -102,21 +106,46 @@ export interface AndroidApp {
   sha256CertFingerprints: [string, ...string[]];
 }
 /**
- * HPKE-sealed envelope carrying the VaultSecret cleartext (see _shared/0.1/vault-secret.schema.json). REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated.
+ * DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.
+ *
+ * M2A is the only implementation today; this is also the canonical default for new code.
  */
-export interface SealedSecret {
+export interface DidcommAuthcryptEnvelope {
+  envelope: "didcomm-authcrypt";
   /**
-   * OpenPGP-style ASCII-armored HPKE envelope. Multi-line base64 with header + CRC24 checksum.
+   * Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
+   */
+  jwe: string;
+}
+/**
+ * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.
+ *
+ * No open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.
+ */
+export interface HpkeArmoredEnvelope {
+  envelope: "hpke-armored";
+  /**
+   * ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
    */
   armored: string;
   /**
-   * Identifier of the X25519 public key the envelope was sealed to. The receiving side uses this to select the matching private key. Convention: did:key:<X25519 public-key-multibase> for VTA-facing seals.
+   * did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.
    */
   recipientKeyId: string;
   /**
-   * Which producer-assertion mode was used per the framework sealed-transfer spec. `did-signed` = Ed25519 signature by issuer; `attested` = TEE quote; `pinned-only` = OOB SHA-256 pinning (dev/test only).
+   * Producer-assertion mode per the sealed-transfer framework. `did-signed` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinned-only` = OOB SHA-256 digest only (dev/test, NOT for production).
    */
   producerAssertion?: "did-signed" | "attested" | "pinned-only";
+}
+/**
+ * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
+ */
+export interface TspMessageEnvelope {
+  envelope: "tsp-message";
+  /**
+   * Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
+   */
+  message: string;
 }
 /**
  * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
