@@ -104,10 +104,13 @@ A conforming **consumer** (the hosting service) **MUST**:
   "recipient": "did:web:did.example.com",
   "issuedAt": "2026-06-01T10:00:00Z",
   "payload": {
-    "path": "alice"
+    "path": "alice",
+    "reserve": false
   }
 }
 ```
+
+`reserve` defaults to `false`; the field is shown explicitly so the example matches the byte-for-byte wire form a conformant serializer emits.
 
 ### Check-and-reserve in one round-trip
 

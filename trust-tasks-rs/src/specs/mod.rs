@@ -32,6 +32,15 @@
 #![allow(clippy::clone_on_copy)]
 #![allow(clippy::redundant_closure)]
 #![allow(clippy::to_string_trait_impl)]
+// `oneOf` enums whose variants reference structs with differing field
+// counts (e.g. `sync/event/0.1`'s `VaultUpsertedEvent` carries a full
+// VaultEntry; `VaultDeletedEvent` carries only ids) emit a Rust enum
+// with a size disparity clippy flags. Boxing the large variant to
+// shrink the disparity would mean the codegen output diverges from
+// typify's emission, breaking the drift check. Suppress the lint on
+// generated code instead — the size disparity reflects the spec's
+// natural shape, not a bug we'd fix at this layer.
+#![allow(clippy::large_enum_variant)]
 // JSON-Schema `description` fields are copied verbatim into Rust doc
 // comments. Schemas embed full URIs and angle-bracketed grammar
 // placeholders (e.g. `<prefix>/*`), neither of which rustdoc parses as

@@ -459,7 +459,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"1a2b3c4d-5e6f-4789-abcd-ef0123456789\",\n  \"type\": \"https://trusttasks.org/spec/did-management/did/check-name/0.1\",\n  \"issuer\": \"did:key:z6MkAlice\",\n  \"recipient\": \"did:web:did.example.com\",\n  \"issuedAt\": \"2026-06-01T10:00:00Z\",\n  \"payload\": {\n    \"path\": \"alice\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"1a2b3c4d-5e6f-4789-abcd-ef0123456789\",\n  \"type\": \"https://trusttasks.org/spec/did-management/did/check-name/0.1\",\n  \"issuer\": \"did:key:z6MkAlice\",\n  \"recipient\": \"did:web:did.example.com\",\n  \"issuedAt\": \"2026-06-01T10:00:00Z\",\n  \"payload\": {\n    \"path\": \"alice\",\n    \"reserve\": false\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

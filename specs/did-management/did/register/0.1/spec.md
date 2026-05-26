@@ -125,10 +125,13 @@ A *request* document carries `type: https://trusttasks.org/spec/did-management/d
     "path": "alice",
     "method": "webvh",
     "domain": "did.example.com",
-    "didData": "{\"versionId\":\"1-...\",\"versionTime\":\"2026-06-01T09:59:50Z\",\"parameters\":{...},\"state\":{...},\"proof\":[...]}"
+    "didData": "{\"versionId\":\"1-...\",\"versionTime\":\"2026-06-01T09:59:50Z\",\"parameters\":{...},\"state\":{...},\"proof\":[...]}",
+    "force": false
   }
 }
 ```
+
+`force` defaults to `false`; the field is shown explicitly so the example matches the byte-for-byte wire form a conformant serializer emits.
 
 ### Admin force-replaces an existing slot
 

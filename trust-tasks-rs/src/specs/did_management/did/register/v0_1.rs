@@ -660,7 +660,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/did-management/did/register/0.1\",\n  \"issuer\": \"did:key:z6MkAlice\",\n  \"recipient\": \"did:web:did.example.com\",\n  \"issuedAt\": \"2026-06-01T10:00:00Z\",\n  \"payload\": {\n    \"path\": \"alice\",\n    \"method\": \"webvh\",\n    \"domain\": \"did.example.com\",\n    \"didData\": \"{\\\"versionId\\\":\\\"1-...\\\",\\\"versionTime\\\":\\\"2026-06-01T09:59:50Z\\\",\\\"parameters\\\":{...},\\\"state\\\":{...},\\\"proof\\\":[...]}\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/did-management/did/register/0.1\",\n  \"issuer\": \"did:key:z6MkAlice\",\n  \"recipient\": \"did:web:did.example.com\",\n  \"issuedAt\": \"2026-06-01T10:00:00Z\",\n  \"payload\": {\n    \"path\": \"alice\",\n    \"method\": \"webvh\",\n    \"domain\": \"did.example.com\",\n    \"didData\": \"{\\\"versionId\\\":\\\"1-...\\\",\\\"versionTime\\\":\\\"2026-06-01T09:59:50Z\\\",\\\"parameters\\\":{...},\\\"state\\\":{...},\\\"proof\\\":[...]}\",\n    \"force\": false\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
