@@ -19,6 +19,14 @@ export interface VaultProxyLoginPayload {
   target?: SiteTarget;
   consumerContext?: ConsumerContext;
   stepUpProof?: StepUpProof;
+  /**
+   * Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.
+   */
+  nonce?: string;
+  /**
+   * Optional caller-preferred session TTL in seconds. The maintainer caps server-side per its policy; a higher hint MUST be silently truncated rather than rejected. Drivers that have a fixed-TTL bearer (e.g. SIOP id_tokens with their own `exp`) MUST NOT extend beyond the underlying credential's lifetime regardless of hint.
+   */
+  ttlSecondsHint?: number;
   ext?: Ext;
 }
 export interface WebOrigin {

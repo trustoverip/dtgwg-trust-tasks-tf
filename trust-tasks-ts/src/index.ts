@@ -64,6 +64,7 @@ export * as PolicyDelete_v0_1 from "./policy/delete/0.1/payload";
 export * as PolicyEvaluate_v0_1 from "./policy/evaluate/0.1/payload";
 export * as PolicyList_v0_1 from "./policy/list/0.1/payload";
 export * as PolicyUpsert_v0_1 from "./policy/upsert/0.1/payload";
+export * as ProvisionIntegration_v0_1 from "./provision/integration/0.1/payload";
 export * as SyncEventShared from "./sync/_shared/0.1/sync-event";
 export * as SyncEvent_v0_1 from "./sync/event/0.1/payload";
 export * as TrustTaskDiscovery_v0_1 from "./trust-task-discovery/0.1/payload";

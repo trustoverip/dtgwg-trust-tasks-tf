@@ -108,6 +108,10 @@ export interface VaultEntry {
    * Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync.
    */
   version: number;
+  /**
+   * Optional cached DID the entry will act AS for DID-shaped flows — mirrors the `did` field of the entry's secret payload when `secretKind` carries one (`did-self-issued`, `didcomm-peer`). Absent for kinds that have no DID concept (`password`, `passkey`, `oauth-tokens`, `bearer-token`, `ssh-key`, `custom`). MAINTAINER-DERIVED, NOT CONSUMER-SUPPLIED: the maintainer MUST recompute this from the canonical secret at every upsert / secret rotation; a producer-supplied value on `vault/upsert/0.1` MUST be ignored (no error, but no honour). Read-only on the wire, present in metadata views so consumers can drive RP-side flows (e.g. fetch `/auth/challenge` keyed on the principal DID before requesting a proxy-login) without releasing the secret.
+   */
+  principalDid?: string;
   ext?: Ext;
 }
 export interface WebOrigin {

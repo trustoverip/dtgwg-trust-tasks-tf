@@ -56,6 +56,7 @@ pub mod confirm;
 pub mod device;
 pub mod did_management;
 pub mod policy;
+pub mod provision;
 pub mod sync;
 pub mod trust_task_discovery;
 pub mod vault;
