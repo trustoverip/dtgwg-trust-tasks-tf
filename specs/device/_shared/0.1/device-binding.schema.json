@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/device/_shared/0.1/device-binding",
+  "title": "DeviceBinding — shared definition for the device/* spec family",
+  "description": "Canonical metadata view of a registered consumer device — a Companion (browser plugin, mobile app, desktop app) or a Service (mediator, AI agent, daemon) enrolled to a VTA. Referenced by every device/* specification. Pairs with the ACL: a DeviceBinding is the device-facing half of an AclEntry. Most fields are maintainer-side observations (device id, attestation, timestamps); a few are consumer-supplied at registration time (form factor, display name).",
+  "$defs": {
+    "DeviceBinding": {
+      "title": "DeviceBinding",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deviceId", "consumerKind", "displayName", "registeredAt", "consumerDid"],
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe."
+        },
+        "consumerDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration."
+        },
+        "consumerKind": { "$ref": "#/$defs/ConsumerKind" },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Human-readable name (e.g. \"Glenn's MacBook — Chrome\", \"iPhone 17\")."
+        },
+        "platform": {
+          "type": "string",
+          "description": "Free-form platform descriptor (e.g. \"macOS 16 / Chrome 142\", \"iOS 19.1\", \"Android 16\", \"Linux/x86_64\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat."
+        },
+        "attestation": { "$ref": "#/$defs/DeviceAttestation" },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Capability" },
+          "uniqueItems": true,
+          "description": "Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable."
+        },
+        "registeredAt": { "type": "string", "format": "date-time" },
+        "lastSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Updated on every device/heartbeat and on any successful auth."
+        },
+        "disabledAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit."
+        },
+        "wipedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe)."
+        },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "ConsumerKind": {
+      "title": "ConsumerKind",
+      "description": "Discriminator: is this consumer a user-driven Companion or a headless Service?",
+      "oneOf": [
+        {
+          "title": "Companion",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "formFactor"],
+          "properties": {
+            "kind": { "const": "companion" },
+            "formFactor": {
+              "type": "string",
+              "enum": ["browser", "mobile", "desktop"]
+            }
+          }
+        },
+        {
+          "title": "Service",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "serviceKind"],
+          "properties": {
+            "kind": { "const": "service" },
+            "serviceKind": {
+              "type": "string",
+              "enum": ["mediator", "ai-agent", "daemon"]
+            }
+          }
+        }
+      ]
+    },
+    "Capability": {
+      "title": "Capability",
+      "type": "string",
+      "enum": [
+        "vault-read",
+        "vault-write",
+        "proxy-login",
+        "fill-release",
+        "policy-admin",
+        "device-admin",
+        "sign",
+        "key-mint"
+      ],
+      "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each."
+    },
+    "DeviceAttestation": {
+      "title": "DeviceAttestation",
+      "description": "Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.",
+      "oneOf": [
+        {
+          "title": "WebAuthnAttestation",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "aaguid"],
+          "properties": {
+            "kind": { "const": "webauthn" },
+            "aaguid": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "description": "WebAuthn Authenticator AAGUID (UUID)."
+            },
+            "attestationStatement": {
+              "type": "string",
+              "description": "Base64url-encoded WebAuthn attestation statement, when supplied by the platform."
+            }
+          }
+        },
+        {
+          "title": "AppleAppAttest",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "keyId", "attestation"],
+          "properties": {
+            "kind": { "const": "apple-app-attest" },
+            "keyId": { "type": "string", "minLength": 1 },
+            "attestation": { "type": "string" }
+          }
+        },
+        {
+          "title": "PlayIntegrity",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "token"],
+          "properties": {
+            "kind": { "const": "play-integrity" },
+            "token": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "title": "Tpm",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "quote"],
+          "properties": {
+            "kind": { "const": "tpm" },
+            "quote": { "type": "string" }
+          }
+        },
+        {
+          "title": "NitroEnclave",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "quote"],
+          "properties": {
+            "kind": { "const": "nitro-enclave" },
+            "quote": { "type": "string" }
+          }
+        },
+        {
+          "title": "NoAttestation",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "none" }
+          },
+          "description": "No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up)."
+        }
+      ]
+    }
+  }
+}

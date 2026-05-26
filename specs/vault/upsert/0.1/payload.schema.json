@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/upsert/0.1",
+  "title": "Vault Upsert — payload",
+  "description": "Create a new vault entry or update an existing one. The secret material — if present — rides inside an HPKE-sealed envelope (see SealedSecret), so the Trust Task carries ciphertext and an authenticator, not plaintext. Updates may be partial: any populated metadata field replaces the current value; omitted fields are left untouched; explicit null clears the field (per `clearFields`). Optimistic-concurrency check via `expectedVersion`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "targets", "label", "secretKind"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Entry id. Omit to create; supply to update. Maintainers MAY accept consumer-supplied ids on create (recommended: ULID) or MAY assign their own and return the assigned id in the response."
+    },
+    "expectedVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "When updating, the consumer's last-observed `version` for the entry. The maintainer rejects with `vault/upsert:version_conflict` if the current version differs. Omit on create."
+    },
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Trust context the entry belongs to. Cannot be changed by upsert; to move an entry between contexts the consumer MUST delete and recreate."
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "../../_shared/0.1/vault-entry.schema.json#/$defs/SiteTarget" }
+    },
+    "label": { "type": "string", "minLength": 1 },
+    "secretKind": { "$ref": "../../_shared/0.1/vault-entry.schema.json#/$defs/SecretKind" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 64 },
+      "uniqueItems": true
+    },
+    "notes": { "type": "string", "maxLength": 4096 },
+    "favicon": { "type": "string", "format": "uri" },
+    "selectors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "customFieldNames": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "uniqueItems": true
+    },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "sealedSecret": {
+      "$ref": "#/$defs/SealedSecret",
+      "description": "HPKE-sealed envelope carrying the VaultSecret cleartext (see _shared/0.1/vault-secret.schema.json). REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated."
+    },
+    "clearFields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["notes", "favicon", "expiresAt", "tags", "selectors", "customFieldNames"]
+      },
+      "uniqueItems": true,
+      "description": "List of metadata fields to explicitly clear on this upsert. Distinguishes \"don't touch\" (field omitted from payload) from \"clear\" (field listed here)."
+    },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "SealedSecret": {
+      "title": "SealedSecret",
+      "description": "HPKE-sealed envelope containing the VaultSecret cleartext. Format is the framework's standard sealed-transfer envelope (X25519-HKDF-SHA256 KEM + HKDF-SHA256 KDF + ChaCha20-Poly1305 AEAD, OpenPGP-style ASCII armoring with Bundle-Id + Digest-Algo headers + CRC24). The Trust Task carries the armored ciphertext; the maintainer (or any party with the X25519 private key) unseals to recover the VaultSecret.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["armored", "recipientKeyId"],
+      "properties": {
+        "armored": {
+          "type": "string",
+          "description": "OpenPGP-style ASCII-armored HPKE envelope. Multi-line base64 with header + CRC24 checksum."
+        },
+        "recipientKeyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the X25519 public key the envelope was sealed to. The receiving side uses this to select the matching private key. Convention: did:key:<X25519 public-key-multibase> for VTA-facing seals."
+        },
+        "producerAssertion": {
+          "type": "string",
+          "enum": ["did-signed", "attested", "pinned-only"],
+          "default": "did-signed",
+          "description": "Which producer-assertion mode was used per the framework sealed-transfer spec. `did-signed` = Ed25519 signature by issuer; `attested` = TEE quote; `pinned-only` = OOB SHA-256 pinning (dev/test only)."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Upsert — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": { "$ref": "../../_shared/0.1/vault-entry.schema.json#/$defs/VaultEntry" },
+        "created": {
+          "type": "boolean",
+          "description": "true when this upsert created a new entry; false when it updated an existing one."
+        },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

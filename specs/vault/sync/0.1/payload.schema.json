@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/sync/0.1",
+  "title": "Vault Sync — payload",
+  "description": "Consumer requests an incremental delta of vault changes since a given seq baseline. The maintainer returns an ordered list of upsert/delete/acl/policy events, followed by a new seq baseline the consumer SHOULD persist for the next sync. Pairs with sync/event/0.1 server-push notifications: a live consumer subscribes to push events; on reconnect after offline, it calls vault/sync to catch up.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional — narrow the delta to a single context. Omit for all contexts the consumer has VaultRead on."
+    },
+    "sinceSeq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The seq value the consumer last received. Omit on first sync (= full snapshot). When supplied, the maintainer returns events with seq > sinceSeq."
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "description": "Maximum number of events to include in this response. Maintainer-defined default and ceiling."
+    },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Sync — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["events", "newSinceSeq", "truncated"],
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": { "$ref": "../../../sync/_shared/0.1/sync-event.schema.json#/$defs/SyncEvent" },
+          "description": "Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.1's push form."
+        },
+        "newSinceSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The seq value the consumer should persist for its next vault/sync call. Equal to the highest event seq in this response, or the consumer's prior `sinceSeq` if the response was empty."
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "true if more events exist beyond this page. Consumer SHOULD immediately call vault/sync again with `sinceSeq = newSinceSeq`."
+        },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

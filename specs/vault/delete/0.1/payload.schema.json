@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/delete/0.1",
+  "title": "Vault Delete — payload",
+  "description": "Tombstone a vault entry. The maintainer SHOULD keep the tombstone for a configured grace period so late-syncing consumers wipe the entry from their caches; after the grace period expires the maintainer MAY garbage-collect.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "expectedVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Observed version for optimistic-concurrency check. Recommended to supply."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Optional human-readable reason recorded in the audit log."
+    },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Delete — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "deletedAt", "graceUntil"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "deletedAt": { "type": "string", "format": "date-time" },
+        "graceUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent."
+        },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

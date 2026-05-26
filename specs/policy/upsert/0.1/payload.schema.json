@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/upsert/0.1",
+  "title": "Policy Upsert — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "module"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "expectedVersion": { "type": "integer", "minimum": 0 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "description": { "type": "string", "maxLength": 1024 },
+    "module": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Rego source. The maintainer parses and validates against its evaluator before persisting; a syntactically invalid module is rejected."
+    },
+    "appliesTo": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "priority": { "type": "integer", "minimum": 0, "maximum": 1000 },
+    "enabled": { "type": "boolean", "default": true },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Upsert — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "created"],
+      "properties": {
+        "policy": { "$ref": "../../_shared/0.1/policy.schema.json#/$defs/PolicyModule" },
+        "created": { "type": "boolean" },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

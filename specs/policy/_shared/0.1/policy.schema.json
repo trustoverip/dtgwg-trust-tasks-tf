@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/_shared/0.1/policy",
+  "title": "Policy — shared definitions",
+  "description": "Shared Rego policy types referenced by the policy/* spec family. The maintainer evaluates these against PolicyInput (the request context) to decide proxy_login vs fill, release vs deny, and step-up demands. Engine: embedded Rego via `regorus` (pure-Rust evaluator) in the canonical maintainer implementation; other implementations MAY use a different engine if they accept the same Rego syntax.",
+  "$defs": {
+    "PolicyModule": {
+      "title": "PolicyModule",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "module", "version", "createdAt", "updatedAt"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\")."
+        },
+        "description": { "type": "string", "maxLength": 1024 },
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision."
+        },
+        "appliesTo": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy)."
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins."
+        },
+        "enabled": { "type": "boolean", "default": true },
+        "version": { "type": "integer", "minimum": 0 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "PolicyInput": {
+      "title": "PolicyInput",
+      "description": "The structured input fed to a policy evaluator on every vault/proxy-login, vault/release, and policy/evaluate call.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request", "site", "contextId", "consumer"],
+      "properties": {
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "type": "string", "enum": ["proxy_login", "release", "step_up_response"] }
+          }
+        },
+        "site": { "$ref": "../../../vault/_shared/0.1/vault-entry.schema.json#/$defs/SiteTarget" },
+        "contextId": { "type": "string", "minLength": 1 },
+        "consumer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["did"],
+          "properties": {
+            "did": { "type": "string" },
+            "kind": { "$ref": "../../../device/_shared/0.1/device-binding.schema.json#/$defs/ConsumerKind" },
+            "deviceId": { "type": "string" },
+            "lastUserVerificationAt": { "type": "string", "format": "date-time" },
+            "networkClass": { "type": "string", "enum": ["unknown", "home", "corp", "public", "vpn"] }
+          }
+        }
+      }
+    },
+    "PolicyDecision": {
+      "title": "PolicyDecision",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision"],
+      "properties": {
+        "decision": { "type": "string", "enum": ["allow", "deny", "require_step_up"] },
+        "mode": {
+          "type": "string",
+          "enum": ["proxy", "fill"],
+          "description": "When decision == \"allow\", whether the maintainer should proxy-login or release-for-fill. Default: proxy."
+        },
+        "stepUp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method"],
+          "properties": {
+            "method": { "type": "string", "enum": ["webauthn-uv", "push-approval", "totp"] },
+            "ttlSeconds": { "type": "integer", "minimum": 1 }
+          },
+          "description": "When decision == \"require_step_up\", which method to demand."
+        },
+        "ttlSecondsCap": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "When decision == \"allow\", maximum lifetime of the issued session blob / released secret."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Human-readable explanation for diagnostic display."
+        }
+      }
+    }
+  }
+}

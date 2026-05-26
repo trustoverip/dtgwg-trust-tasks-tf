@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/list/0.1",
+  "title": "Policy List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "enabledOnly": { "type": "boolean", "default": false },
+    "pageSize": { "type": "integer", "minimum": 1, "maximum": 1000 },
+    "cursor": { "type": "string" },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policies", "truncated"],
+      "properties": {
+        "policies": {
+          "type": "array",
+          "items": { "$ref": "../../_shared/0.1/policy.schema.json#/$defs/PolicyModule" }
+        },
+        "truncated": { "type": "boolean" },
+        "cursor": { "type": "string" },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

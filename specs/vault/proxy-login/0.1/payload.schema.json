@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/proxy-login/0.1",
+  "title": "Vault Proxy-Login — payload",
+  "description": "Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob (HPKE-sealed) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entryId"],
+  "properties": {
+    "entryId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Vault entry id to log in with."
+    },
+    "target": {
+      "$ref": "../../_shared/0.1/vault-entry.schema.json#/$defs/SiteTarget",
+      "description": "Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target)."
+    },
+    "consumerContext": {
+      "$ref": "../../_shared/0.1/consumer-context.schema.json#/$defs/ConsumerContext",
+      "description": "Caller's situational context — fed to the maintainer's policy engine to decide proxy vs fill, require step-up, etc. Producers populate what they can observe; fields are advisory and the maintainer MUST cross-check anything security-relevant against its own state."
+    },
+    "stepUpProof": {
+      "$ref": "../../_shared/0.1/consumer-context.schema.json#/$defs/StepUpProof",
+      "description": "Optional — included on retry after a prior proxy-login attempt returned `step_up_required`."
+    },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "SealedSessionBlob": {
+      "title": "SealedSessionBlob",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["armored", "recipientKeyId"],
+      "properties": {
+        "armored": { "type": "string" },
+        "recipientKeyId": { "type": "string", "minLength": 1 },
+        "producerAssertion": {
+          "type": "string",
+          "enum": ["did-signed", "attested", "pinned-only"],
+          "default": "did-signed"
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Proxy-Login — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sealedSessionBlob"],
+      "properties": {
+        "sealedSessionBlob": {
+          "$ref": "#/$defs/SealedSessionBlob",
+          "description": "HPKE-sealed envelope containing the SessionBlob (see _shared/0.1/session-blob.schema.json). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin."
+        },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

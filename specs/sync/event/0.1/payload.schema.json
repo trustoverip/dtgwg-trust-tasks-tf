@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/sync/event/0.1",
+  "title": "Sync Event — payload",
+  "description": "One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.1 to pull missed events.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event"],
+  "properties": {
+    "event": { "$ref": "../../_shared/0.1/sync-event.schema.json#/$defs/SyncEvent" },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/_shared/0.1/consumer-context",
+  "title": "ConsumerContext & StepUpProof — shared definitions used by vault tasks that hit the policy engine",
+  "description": "Reused by vault/proxy-login, vault/release, and any future vault task that needs to feed situational context to the maintainer's policy engine or carry the response to a step-up demand. Producer-supplied fields are advisory — the maintainer cross-checks anything security-relevant against its own state.",
+  "$defs": {
+    "ConsumerContext": {
+      "title": "ConsumerContext",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity."
+        },
+        "lastUserVerificationAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds."
+        },
+        "networkClass": {
+          "type": "string",
+          "enum": ["unknown", "home", "corp", "public", "vpn"],
+          "description": "Producer-supplied network classification. Advisory."
+        }
+      }
+    },
+    "StepUpProof": {
+      "title": "StepUpProof",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "proof", "challengeId"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["webauthn-uv", "push-approval", "totp"] },
+        "proof": {
+          "type": "string",
+          "description": "Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code."
+        },
+        "challengeId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Maintainer-issued challenge id the proof responds to."
+        }
+      }
+    }
+  }
+}

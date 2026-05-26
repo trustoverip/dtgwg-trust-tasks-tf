@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/device/disable/0.1",
+  "title": "Device Disable — payload",
+  "description": "Disable a Companion or Service. The maintainer revokes the device's ACL entry, refuses subsequent authentication, and emits sync events so other devices learn of the disable. Distinct from device/wipe: disable is a passive denial; wipe additionally instructs the target to destroy its local cache.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["deviceId"],
+  "properties": {
+    "deviceId": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "maxLength": 256 },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Disable — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deviceId", "disabledAt"],
+      "properties": {
+        "deviceId": { "type": "string" },
+        "disabledAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

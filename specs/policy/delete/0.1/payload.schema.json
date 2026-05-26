@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/delete/0.1",
+  "title": "Policy Delete — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "expectedVersion": { "type": "integer", "minimum": 0 },
+    "reason": { "type": "string", "maxLength": 256 },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Delete — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "deletedAt"],
+      "properties": {
+        "id": { "type": "string" },
+        "deletedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
