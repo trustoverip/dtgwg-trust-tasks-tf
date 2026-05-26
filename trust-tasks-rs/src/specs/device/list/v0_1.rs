@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -67,7 +61,7 @@ pub mod error {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum Capability {
     #[serde(rename = "vault-read")]
@@ -108,9 +102,7 @@ impl ::std::fmt::Display for Capability {
 }
 impl ::std::str::FromStr for Capability {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "vault-read" => Ok(Self::VaultRead),
             "vault-write" => Ok(Self::VaultWrite),
@@ -126,9 +118,7 @@ impl ::std::str::FromStr for Capability {
 }
 impl ::std::convert::TryFrom<&str> for Capability {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -210,10 +200,16 @@ impl ::std::convert::TryFrom<::std::string::String> for Capability {
 pub enum ConsumerKind {
     ///Companion
     #[serde(rename = "companion")]
-    Companion { #[serde(rename = "formFactor")] form_factor: ConsumerKindFormFactor },
+    Companion {
+        #[serde(rename = "formFactor")]
+        form_factor: ConsumerKindFormFactor,
+    },
     ///Service
     #[serde(rename = "service")]
-    Service { #[serde(rename = "serviceKind")] service_kind: ConsumerKindServiceKind },
+    Service {
+        #[serde(rename = "serviceKind")]
+        service_kind: ConsumerKindServiceKind,
+    },
 }
 impl ::std::convert::From<&Self> for ConsumerKind {
     fn from(value: &ConsumerKind) -> Self {
@@ -245,7 +241,7 @@ impl ::std::convert::From<&Self> for ConsumerKind {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum ConsumerKindFormFactor {
     #[serde(rename = "browser")]
@@ -271,9 +267,7 @@ impl ::std::fmt::Display for ConsumerKindFormFactor {
 }
 impl ::std::str::FromStr for ConsumerKindFormFactor {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "browser" => Ok(Self::Browser),
             "mobile" => Ok(Self::Mobile),
@@ -284,9 +278,7 @@ impl ::std::str::FromStr for ConsumerKindFormFactor {
 }
 impl ::std::convert::TryFrom<&str> for ConsumerKindFormFactor {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -331,7 +323,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ConsumerKindFormFactor {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum ConsumerKindServiceKind {
     #[serde(rename = "mediator")]
@@ -357,9 +349,7 @@ impl ::std::fmt::Display for ConsumerKindServiceKind {
 }
 impl ::std::str::FromStr for ConsumerKindServiceKind {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "mediator" => Ok(Self::Mediator),
             "ai-agent" => Ok(Self::AiAgent),
@@ -370,9 +360,7 @@ impl ::std::str::FromStr for ConsumerKindServiceKind {
 }
 impl ::std::convert::TryFrom<&str> for ConsumerKindServiceKind {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -589,16 +577,14 @@ impl ::std::convert::From<&DeviceAttestationAaguid> for DeviceAttestationAaguid 
 }
 impl ::std::str::FromStr for DeviceAttestationAaguid {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        {
-            ::regress::Regex::new(
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new(
                     "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 )
                 .unwrap()
-        });
+            });
         if PATTERN.find(value).is_none() {
             return Err(
                 "doesn't match pattern \"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$\""
@@ -610,9 +596,7 @@ impl ::std::str::FromStr for DeviceAttestationAaguid {
 }
 impl ::std::convert::TryFrom<&str> for DeviceAttestationAaguid {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -676,9 +660,7 @@ impl ::std::convert::From<&DeviceAttestationKeyId> for DeviceAttestationKeyId {
 }
 impl ::std::str::FromStr for DeviceAttestationKeyId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -687,9 +669,7 @@ impl ::std::str::FromStr for DeviceAttestationKeyId {
 }
 impl ::std::convert::TryFrom<&str> for DeviceAttestationKeyId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -753,9 +733,7 @@ impl ::std::convert::From<&DeviceAttestationToken> for DeviceAttestationToken {
 }
 impl ::std::str::FromStr for DeviceAttestationToken {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -764,9 +742,7 @@ impl ::std::str::FromStr for DeviceAttestationToken {
 }
 impl ::std::convert::TryFrom<&str> for DeviceAttestationToken {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -961,9 +937,7 @@ impl ::std::convert::From<&DeviceBindingConsumerDid> for DeviceBindingConsumerDi
 }
 impl ::std::str::FromStr for DeviceBindingConsumerDid {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -972,9 +946,7 @@ impl ::std::str::FromStr for DeviceBindingConsumerDid {
 }
 impl ::std::convert::TryFrom<&str> for DeviceBindingConsumerDid {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1039,9 +1011,7 @@ impl ::std::convert::From<&DeviceBindingDeviceId> for DeviceBindingDeviceId {
 }
 impl ::std::str::FromStr for DeviceBindingDeviceId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1050,9 +1020,7 @@ impl ::std::str::FromStr for DeviceBindingDeviceId {
 }
 impl ::std::convert::TryFrom<&str> for DeviceBindingDeviceId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1118,9 +1086,7 @@ impl ::std::convert::From<&DeviceBindingDisplayName> for DeviceBindingDisplayNam
 }
 impl ::std::str::FromStr for DeviceBindingDisplayName {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 128usize {
             return Err("longer than 128 characters".into());
         }
@@ -1132,9 +1098,7 @@ impl ::std::str::FromStr for DeviceBindingDisplayName {
 }
 impl ::std::convert::TryFrom<&str> for DeviceBindingDisplayName {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1192,8 +1156,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -1203,8 +1166,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -1241,24 +1203,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1391,9 +1349,7 @@ pub struct Payload {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_seen_since: ::std::option::Option<
-        ::chrono::DateTime<::chrono::offset::Utc>,
-    >,
+    pub last_seen_since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "pageSize",
         default,
@@ -1452,7 +1408,7 @@ impl ::std::default::Default for Payload {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum PayloadConsumerKindFilter {
     #[serde(rename = "companion")]
@@ -1475,9 +1431,7 @@ impl ::std::fmt::Display for PayloadConsumerKindFilter {
 }
 impl ::std::str::FromStr for PayloadConsumerKindFilter {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "companion" => Ok(Self::Companion),
             "service" => Ok(Self::Service),
@@ -1487,9 +1441,7 @@ impl ::std::str::FromStr for PayloadConsumerKindFilter {
 }
 impl ::std::convert::TryFrom<&str> for PayloadConsumerKindFilter {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1534,7 +1486,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadConsumerKindFilte
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum PayloadFormFactorFilter {
     #[serde(rename = "browser")]
@@ -1560,9 +1512,7 @@ impl ::std::fmt::Display for PayloadFormFactorFilter {
 }
 impl ::std::str::FromStr for PayloadFormFactorFilter {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "browser" => Ok(Self::Browser),
             "mobile" => Ok(Self::Mobile),
@@ -1573,9 +1523,7 @@ impl ::std::str::FromStr for PayloadFormFactorFilter {
 }
 impl ::std::convert::TryFrom<&str> for PayloadFormFactorFilter {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1620,7 +1568,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadFormFactorFilter 
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum PayloadServiceKindFilter {
     #[serde(rename = "mediator")]
@@ -1646,9 +1594,7 @@ impl ::std::fmt::Display for PayloadServiceKindFilter {
 }
 impl ::std::str::FromStr for PayloadServiceKindFilter {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "mediator" => Ok(Self::Mediator),
             "ai-agent" => Ok(Self::AiAgent),
@@ -1659,9 +1605,7 @@ impl ::std::str::FromStr for PayloadServiceKindFilter {
 }
 impl ::std::convert::TryFrom<&str> for PayloadServiceKindFilter {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }

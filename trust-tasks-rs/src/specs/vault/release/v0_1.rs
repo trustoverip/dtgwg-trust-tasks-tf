@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -86,9 +80,7 @@ pub struct ConsumerContext {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_user_verification_at: ::std::option::Option<
-        ::chrono::DateTime<::chrono::offset::Utc>,
-    >,
+    pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Producer-supplied network classification. Advisory.
     #[serde(
         rename = "networkClass",
@@ -144,9 +136,7 @@ impl ::std::convert::From<&ConsumerContextDeviceId> for ConsumerContextDeviceId 
 }
 impl ::std::str::FromStr for ConsumerContextDeviceId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -155,9 +145,7 @@ impl ::std::str::FromStr for ConsumerContextDeviceId {
 }
 impl ::std::convert::TryFrom<&str> for ConsumerContextDeviceId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -217,7 +205,7 @@ impl<'de> ::serde::Deserialize<'de> for ConsumerContextDeviceId {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum ConsumerContextNetworkClass {
     #[serde(rename = "unknown")]
@@ -249,9 +237,7 @@ impl ::std::fmt::Display for ConsumerContextNetworkClass {
 }
 impl ::std::str::FromStr for ConsumerContextNetworkClass {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "unknown" => Ok(Self::Unknown),
             "home" => Ok(Self::Home),
@@ -264,9 +250,7 @@ impl ::std::str::FromStr for ConsumerContextNetworkClass {
 }
 impl ::std::convert::TryFrom<&str> for ConsumerContextNetworkClass {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -360,9 +344,7 @@ impl ::std::convert::From<&DidcommAuthcryptEnvelopeJwe> for DidcommAuthcryptEnve
 }
 impl ::std::str::FromStr for DidcommAuthcryptEnvelopeJwe {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -371,9 +353,7 @@ impl ::std::str::FromStr for DidcommAuthcryptEnvelopeJwe {
 }
 impl ::std::convert::TryFrom<&str> for DidcommAuthcryptEnvelopeJwe {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -431,8 +411,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -442,8 +421,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -480,24 +458,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -628,9 +602,7 @@ impl ::std::convert::From<&HpkeArmoredEnvelopeArmored> for HpkeArmoredEnvelopeAr
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeArmored {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -639,9 +611,7 @@ impl ::std::str::FromStr for HpkeArmoredEnvelopeArmored {
 }
 impl ::std::convert::TryFrom<&str> for HpkeArmoredEnvelopeArmored {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -700,7 +670,7 @@ impl<'de> ::serde::Deserialize<'de> for HpkeArmoredEnvelopeArmored {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum HpkeArmoredEnvelopeProducerAssertion {
     #[serde(rename = "did-signed")]
@@ -726,9 +696,7 @@ impl ::std::fmt::Display for HpkeArmoredEnvelopeProducerAssertion {
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeProducerAssertion {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "did-signed" => Ok(Self::DidSigned),
             "attested" => Ok(Self::Attested),
@@ -739,14 +707,11 @@ impl ::std::str::FromStr for HpkeArmoredEnvelopeProducerAssertion {
 }
 impl ::std::convert::TryFrom<&str> for HpkeArmoredEnvelopeProducerAssertion {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String>
-for HpkeArmoredEnvelopeProducerAssertion {
+impl ::std::convert::TryFrom<&::std::string::String> for HpkeArmoredEnvelopeProducerAssertion {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -754,8 +719,7 @@ for HpkeArmoredEnvelopeProducerAssertion {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String>
-for HpkeArmoredEnvelopeProducerAssertion {
+impl ::std::convert::TryFrom<::std::string::String> for HpkeArmoredEnvelopeProducerAssertion {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -795,16 +759,15 @@ impl ::std::convert::From<HpkeArmoredEnvelopeRecipientKeyId> for ::std::string::
     }
 }
 impl ::std::convert::From<&HpkeArmoredEnvelopeRecipientKeyId>
-for HpkeArmoredEnvelopeRecipientKeyId {
+    for HpkeArmoredEnvelopeRecipientKeyId
+{
     fn from(value: &HpkeArmoredEnvelopeRecipientKeyId) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeRecipientKeyId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -813,14 +776,11 @@ impl ::std::str::FromStr for HpkeArmoredEnvelopeRecipientKeyId {
 }
 impl ::std::convert::TryFrom<&str> for HpkeArmoredEnvelopeRecipientKeyId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String>
-for HpkeArmoredEnvelopeRecipientKeyId {
+impl ::std::convert::TryFrom<&::std::string::String> for HpkeArmoredEnvelopeRecipientKeyId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -828,8 +788,7 @@ for HpkeArmoredEnvelopeRecipientKeyId {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String>
-for HpkeArmoredEnvelopeRecipientKeyId {
+impl ::std::convert::TryFrom<::std::string::String> for HpkeArmoredEnvelopeRecipientKeyId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -962,9 +921,7 @@ impl ::std::convert::From<&PayloadEntryId> for PayloadEntryId {
 }
 impl ::std::str::FromStr for PayloadEntryId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -973,9 +930,7 @@ impl ::std::str::FromStr for PayloadEntryId {
 }
 impl ::std::convert::TryFrom<&str> for PayloadEntryId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1153,7 +1108,7 @@ impl ::std::convert::From<TspMessageEnvelope> for SealedEnvelope {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum SecretKind {
     #[serde(rename = "password")]
@@ -1194,9 +1149,7 @@ impl ::std::fmt::Display for SecretKind {
 }
 impl ::std::str::FromStr for SecretKind {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "password" => Ok(Self::Password),
             "passkey" => Ok(Self::Passkey),
@@ -1212,9 +1165,7 @@ impl ::std::str::FromStr for SecretKind {
 }
 impl ::std::convert::TryFrom<&str> for SecretKind {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1421,14 +1372,12 @@ impl ::std::convert::From<&SiteTargetBundleId> for SiteTargetBundleId {
 }
 impl ::std::str::FromStr for SiteTargetBundleId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[A-Za-z0-9.-]+$").unwrap() });
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Za-z0-9.-]+$").unwrap());
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^[A-Za-z0-9.-]+$\"".into());
         }
@@ -1437,9 +1386,7 @@ impl ::std::str::FromStr for SiteTargetBundleId {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetBundleId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1504,9 +1451,7 @@ impl ::std::convert::From<&SiteTargetDid> for SiteTargetDid {
 }
 impl ::std::str::FromStr for SiteTargetDid {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1515,9 +1460,7 @@ impl ::std::str::FromStr for SiteTargetDid {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetDid {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1583,17 +1526,14 @@ impl ::std::convert::From<&SiteTargetPackageName> for SiteTargetPackageName {
 }
 impl ::std::str::FromStr for SiteTargetPackageName {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        {
-            ::regress::Regex::new("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
-                .unwrap()
-        });
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
             return Err(
                 "doesn't match pattern \"^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$\""
@@ -1605,9 +1545,7 @@ impl ::std::str::FromStr for SiteTargetPackageName {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetPackageName {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1659,43 +1597,38 @@ impl ::std::ops::Deref for SiteTargetSha256CertFingerprintsItem {
         &self.0
     }
 }
-impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem>
-for ::std::string::String {
+impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem> for ::std::string::String {
     fn from(value: SiteTargetSha256CertFingerprintsItem) -> Self {
         value.0
     }
 }
 impl ::std::convert::From<&SiteTargetSha256CertFingerprintsItem>
-for SiteTargetSha256CertFingerprintsItem {
+    for SiteTargetSha256CertFingerprintsItem
+{
     fn from(value: &SiteTargetSha256CertFingerprintsItem) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetSha256CertFingerprintsItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[0-9A-F]{2}(:[0-9A-F]{2}){31}$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[0-9A-F]{2}(:[0-9A-F]{2}){31}$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String>
-for SiteTargetSha256CertFingerprintsItem {
+impl ::std::convert::TryFrom<&::std::string::String> for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -1703,8 +1636,7 @@ for SiteTargetSha256CertFingerprintsItem {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String>
-for SiteTargetSha256CertFingerprintsItem {
+impl ::std::convert::TryFrom<::std::string::String> for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -1758,14 +1690,12 @@ impl ::std::convert::From<&SiteTargetTeamId> for SiteTargetTeamId {
 }
 impl ::std::str::FromStr for SiteTargetTeamId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[A-Z0-9]+$").unwrap() });
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Z0-9]+$").unwrap());
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^[A-Z0-9]+$\"".into());
         }
@@ -1774,9 +1704,7 @@ impl ::std::str::FromStr for SiteTargetTeamId {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetTeamId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1892,9 +1820,7 @@ impl ::std::convert::From<&StepUpProofChallengeId> for StepUpProofChallengeId {
 }
 impl ::std::str::FromStr for StepUpProofChallengeId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1903,9 +1829,7 @@ impl ::std::str::FromStr for StepUpProofChallengeId {
 }
 impl ::std::convert::TryFrom<&str> for StepUpProofChallengeId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1962,7 +1886,7 @@ impl<'de> ::serde::Deserialize<'de> for StepUpProofChallengeId {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum StepUpProofKind {
     #[serde(rename = "webauthn-uv")]
@@ -1988,9 +1912,7 @@ impl ::std::fmt::Display for StepUpProofKind {
 }
 impl ::std::str::FromStr for StepUpProofKind {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "webauthn-uv" => Ok(Self::WebauthnUv),
             "push-approval" => Ok(Self::PushApproval),
@@ -2001,9 +1923,7 @@ impl ::std::str::FromStr for StepUpProofKind {
 }
 impl ::std::convert::TryFrom<&str> for StepUpProofKind {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -2095,9 +2015,7 @@ impl ::std::convert::From<&TspMessageEnvelopeMessage> for TspMessageEnvelopeMess
 }
 impl ::std::str::FromStr for TspMessageEnvelopeMessage {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -2106,9 +2024,7 @@ impl ::std::str::FromStr for TspMessageEnvelopeMessage {
 }
 impl ::std::convert::TryFrom<&str> for TspMessageEnvelopeMessage {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -2142,7 +2058,8 @@ impl<'de> ::serde::Deserialize<'de> for TspMessageEnvelopeMessage {
 }
 /// Generation of default values for serde.
 pub mod defaults {
-    pub(super) fn hpke_armored_envelope_producer_assertion() -> super::HpkeArmoredEnvelopeProducerAssertion {
+    pub(super) fn hpke_armored_envelope_producer_assertion(
+    ) -> super::HpkeArmoredEnvelopeProducerAssertion {
         super::HpkeArmoredEnvelopeProducerAssertion::DidSigned
     }
 }

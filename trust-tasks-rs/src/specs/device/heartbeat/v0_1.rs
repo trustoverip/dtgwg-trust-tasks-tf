@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -61,8 +55,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -72,8 +65,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -110,24 +102,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -286,7 +274,7 @@ impl ::std::convert::From<&QueuedOperation> for QueuedOperation {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum QueuedOperationKind {
     #[serde(rename = "wipe")]
@@ -312,9 +300,7 @@ impl ::std::fmt::Display for QueuedOperationKind {
 }
 impl ::std::str::FromStr for QueuedOperationKind {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "wipe" => Ok(Self::Wipe),
             "policy-reload" => Ok(Self::PolicyReload),
@@ -325,9 +311,7 @@ impl ::std::str::FromStr for QueuedOperationKind {
 }
 impl ::std::convert::TryFrom<&str> for QueuedOperationKind {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -443,7 +427,7 @@ impl ::std::convert::From<&Response> for Response {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum ResponseSyncHint {
     #[serde(rename = "up-to-date")]
@@ -469,9 +453,7 @@ impl ::std::fmt::Display for ResponseSyncHint {
 }
 impl ::std::str::FromStr for ResponseSyncHint {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "up-to-date" => Ok(Self::UpToDate),
             "sync-due" => Ok(Self::SyncDue),
@@ -482,9 +464,7 @@ impl ::std::str::FromStr for ResponseSyncHint {
 }
 impl ::std::convert::TryFrom<&str> for ResponseSyncHint {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }

@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -112,9 +106,7 @@ impl ::std::convert::From<&PayloadPatternsItem> for PayloadPatternsItem {
 }
 impl ::std::str::FromStr for PayloadPatternsItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -123,9 +115,7 @@ impl ::std::str::FromStr for PayloadPatternsItem {
 }
 impl ::std::convert::TryFrom<&str> for PayloadPatternsItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -272,24 +262,20 @@ impl ::std::convert::From<&ResponseFrameworkVersion> for ResponseFrameworkVersio
 }
 impl ::std::str::FromStr for ResponseFrameworkVersion {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$\"".into(),
-            );
+            return Err("doesn't match pattern \"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ResponseFrameworkVersion {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -374,9 +360,7 @@ pub enum ResponseSupportedTypesItem {
             default,
             skip_serializing_if = "::std::option::Option::is_none"
         )]
-        required_ext: ::std::option::Option<
-            Vec<ResponseSupportedTypesItemObjectRequiredExtItem>,
-        >,
+        required_ext: ::std::option::Option<Vec<ResponseSupportedTypesItemObjectRequiredExtItem>>,
         ///A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.
         #[serde(rename = "type")]
         type_: ::std::string::String,
@@ -408,42 +392,41 @@ impl ::std::ops::Deref for ResponseSupportedTypesItemObjectRequiredExtItem {
     }
 }
 impl ::std::convert::From<ResponseSupportedTypesItemObjectRequiredExtItem>
-for ::std::string::String {
+    for ::std::string::String
+{
     fn from(value: ResponseSupportedTypesItemObjectRequiredExtItem) -> Self {
         value.0
     }
 }
 impl ::std::convert::From<&ResponseSupportedTypesItemObjectRequiredExtItem>
-for ResponseSupportedTypesItemObjectRequiredExtItem {
+    for ResponseSupportedTypesItemObjectRequiredExtItem
+{
     fn from(value: &ResponseSupportedTypesItemObjectRequiredExtItem) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseSupportedTypesItemObjectRequiredExtItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ResponseSupportedTypesItemObjectRequiredExtItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
 impl ::std::convert::TryFrom<&::std::string::String>
-for ResponseSupportedTypesItemObjectRequiredExtItem {
+    for ResponseSupportedTypesItemObjectRequiredExtItem
+{
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -452,7 +435,8 @@ for ResponseSupportedTypesItemObjectRequiredExtItem {
     }
 }
 impl ::std::convert::TryFrom<::std::string::String>
-for ResponseSupportedTypesItemObjectRequiredExtItem {
+    for ResponseSupportedTypesItemObjectRequiredExtItem
+{
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -490,71 +474,64 @@ mod conformance {
     #[test]
     fn request_example_1() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:6e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"issuer\": \"did:web:client.example\",\n  \"recipient\": \"did:web:server.example\",\n  \"issuedAt\": \"2026-06-20T10:00:00Z\",\n  \"payload\": {}\n}\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn request_example_2() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"issuer\": \"did:web:client.example\",\n  \"recipient\": \"did:web:server.example\",\n  \"issuedAt\": \"2026-06-20T10:00:00Z\",\n  \"payload\": {\n    \"patterns\": [\"acl/*\"]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn request_example_3() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:8e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"issuer\": \"did:web:client.example\",\n  \"recipient\": \"did:web:server.example\",\n  \"issuedAt\": \"2026-06-20T10:00:00Z\",\n  \"payload\": {\n    \"patterns\": [\"acl/*\", \"kyc-handoff\"]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn response_example_1() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:9e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1#response\",\n  \"threadId\": \"urn:uuid:6e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": [\n      \"https://trusttasks.org/spec/acl/change-role/0.1\",\n      \"https://trusttasks.org/spec/acl/grant/0.1\",\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/revoke/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     #[test]
     fn response_example_2() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:ae2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1#response\",\n  \"threadId\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": [\n      \"https://trusttasks.org/spec/acl/change-role/0.1\",\n      \"https://trusttasks.org/spec/acl/grant/0.1\",\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/revoke/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     #[test]
     fn response_example_3() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:ce2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1#response\",\n  \"threadId\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"frameworkVersion\": \"0.1\",\n    \"supportedTypes\": [\n      {\n        \"type\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n        \"requiredExt\": [\"vnd.affinidi.webvh\"]\n      },\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     #[test]
     fn response_example_4() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:be2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1#response\",\n  \"threadId\": \"urn:uuid:8e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": []\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
 }

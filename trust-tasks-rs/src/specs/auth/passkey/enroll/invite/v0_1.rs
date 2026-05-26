@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -61,8 +55,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -72,8 +65,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -110,24 +102,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -268,9 +256,7 @@ impl ::std::convert::From<&PayloadScopesItem> for PayloadScopesItem {
 }
 impl ::std::str::FromStr for PayloadScopesItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -279,9 +265,7 @@ impl ::std::str::FromStr for PayloadScopesItem {
 }
 impl ::std::convert::TryFrom<&str> for PayloadScopesItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -346,9 +330,7 @@ impl ::std::convert::From<&PayloadSubject> for PayloadSubject {
 }
 impl ::std::str::FromStr for PayloadSubject {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -357,9 +339,7 @@ impl ::std::str::FromStr for PayloadSubject {
 }
 impl ::std::convert::TryFrom<&str> for PayloadSubject {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -532,9 +512,7 @@ impl ::std::convert::From<&ResponseInviteToken> for ResponseInviteToken {
 }
 impl ::std::str::FromStr for ResponseInviteToken {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 16usize {
             return Err("shorter than 16 characters".into());
         }
@@ -543,9 +521,7 @@ impl ::std::str::FromStr for ResponseInviteToken {
 }
 impl ::std::convert::TryFrom<&str> for ResponseInviteToken {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -582,7 +558,8 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
-    const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response";
+    const TYPE_URI: &'static str =
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
@@ -597,11 +574,10 @@ mod conformance {
     #[test]
     fn response_example_1() {
         const JSON: &str = "{\n  \"id\": \"invite-resp-2345-6789-01bc-def234567890\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response\",\n  \"threadId\": \"invite-1234-5678-90ab-cdef12345678\",\n  \"issuer\": \"did:web:auth.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-05-23T17:00:01Z\",\n  \"payload\": {\n    \"subject\": \"did:web:bob.example\",\n    \"expiresAt\": \"2026-05-24T17:00:01Z\",\n    \"invite\": {\n      \"token\": \"inv_8f2c1d4e9a7b30568f2c1d4e9a7b3056\",\n      \"url\": \"https://auth.example/enroll?token=inv_8f2c1d4e9a7b30568f2c1d4e9a7b3056\"\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     /// Each fixture in `payload.invalid-examples.json` MUST be
@@ -629,14 +605,15 @@ mod conformance {
                 Ok(v) => v,
                 Err(_) => continue,
             };
-            let serde_ok = serde_json::from_value::<super::Payload>(value.clone())
-                .is_ok();
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
             let schema_ok = super::Payload::validate_value(&value).is_ok();
             assert!(
-                ! (serde_ok && schema_ok),
+                !(serde_ok && schema_ok),
                 "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
-                i + 1, note, raw
+                i + 1,
+                note,
+                raw
             );
         }
     }

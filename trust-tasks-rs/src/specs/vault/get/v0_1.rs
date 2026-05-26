@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -138,9 +132,7 @@ impl ::std::convert::From<&AttachmentRefId> for AttachmentRefId {
 }
 impl ::std::str::FromStr for AttachmentRefId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -149,9 +141,7 @@ impl ::std::str::FromStr for AttachmentRefId {
 }
 impl ::std::convert::TryFrom<&str> for AttachmentRefId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -217,9 +207,7 @@ impl ::std::convert::From<&AttachmentRefName> for AttachmentRefName {
 }
 impl ::std::str::FromStr for AttachmentRefName {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 256usize {
             return Err("longer than 256 characters".into());
         }
@@ -231,9 +219,7 @@ impl ::std::str::FromStr for AttachmentRefName {
 }
 impl ::std::convert::TryFrom<&str> for AttachmentRefName {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -298,11 +284,9 @@ impl ::std::convert::From<&AttachmentRefSha256> for AttachmentRefSha256 {
 }
 impl ::std::str::FromStr for AttachmentRefSha256 {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[0-9a-f]{64}$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[0-9a-f]{64}$").unwrap());
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^[0-9a-f]{64}$\"".into());
         }
@@ -311,9 +295,7 @@ impl ::std::str::FromStr for AttachmentRefSha256 {
 }
 impl ::std::convert::TryFrom<&str> for AttachmentRefSha256 {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -371,8 +353,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -382,8 +363,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -420,24 +400,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -542,9 +518,7 @@ impl ::std::convert::From<&PayloadId> for PayloadId {
 }
 impl ::std::str::FromStr for PayloadId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -553,9 +527,7 @@ impl ::std::str::FromStr for PayloadId {
 }
 impl ::std::convert::TryFrom<&str> for PayloadId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -675,7 +647,7 @@ impl ::std::convert::From<&Response> for Response {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum SecretKind {
     #[serde(rename = "password")]
@@ -716,9 +688,7 @@ impl ::std::fmt::Display for SecretKind {
 }
 impl ::std::str::FromStr for SecretKind {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "password" => Ok(Self::Password),
             "passkey" => Ok(Self::Passkey),
@@ -734,9 +704,7 @@ impl ::std::str::FromStr for SecretKind {
 }
 impl ::std::convert::TryFrom<&str> for SecretKind {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -943,14 +911,12 @@ impl ::std::convert::From<&SiteTargetBundleId> for SiteTargetBundleId {
 }
 impl ::std::str::FromStr for SiteTargetBundleId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[A-Za-z0-9.-]+$").unwrap() });
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Za-z0-9.-]+$").unwrap());
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^[A-Za-z0-9.-]+$\"".into());
         }
@@ -959,9 +925,7 @@ impl ::std::str::FromStr for SiteTargetBundleId {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetBundleId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1026,9 +990,7 @@ impl ::std::convert::From<&SiteTargetDid> for SiteTargetDid {
 }
 impl ::std::str::FromStr for SiteTargetDid {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1037,9 +999,7 @@ impl ::std::str::FromStr for SiteTargetDid {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetDid {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1105,17 +1065,14 @@ impl ::std::convert::From<&SiteTargetPackageName> for SiteTargetPackageName {
 }
 impl ::std::str::FromStr for SiteTargetPackageName {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        {
-            ::regress::Regex::new("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
-                .unwrap()
-        });
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
             return Err(
                 "doesn't match pattern \"^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$\""
@@ -1127,9 +1084,7 @@ impl ::std::str::FromStr for SiteTargetPackageName {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetPackageName {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1181,43 +1136,38 @@ impl ::std::ops::Deref for SiteTargetSha256CertFingerprintsItem {
         &self.0
     }
 }
-impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem>
-for ::std::string::String {
+impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem> for ::std::string::String {
     fn from(value: SiteTargetSha256CertFingerprintsItem) -> Self {
         value.0
     }
 }
 impl ::std::convert::From<&SiteTargetSha256CertFingerprintsItem>
-for SiteTargetSha256CertFingerprintsItem {
+    for SiteTargetSha256CertFingerprintsItem
+{
     fn from(value: &SiteTargetSha256CertFingerprintsItem) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetSha256CertFingerprintsItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[0-9A-F]{2}(:[0-9A-F]{2}){31}$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[0-9A-F]{2}(:[0-9A-F]{2}){31}$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String>
-for SiteTargetSha256CertFingerprintsItem {
+impl ::std::convert::TryFrom<&::std::string::String> for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -1225,8 +1175,7 @@ for SiteTargetSha256CertFingerprintsItem {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String>
-for SiteTargetSha256CertFingerprintsItem {
+impl ::std::convert::TryFrom<::std::string::String> for SiteTargetSha256CertFingerprintsItem {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -1280,14 +1229,12 @@ impl ::std::convert::From<&SiteTargetTeamId> for SiteTargetTeamId {
 }
 impl ::std::str::FromStr for SiteTargetTeamId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[A-Z0-9]+$").unwrap() });
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Z0-9]+$").unwrap());
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^[A-Z0-9]+$\"".into());
         }
@@ -1296,9 +1243,7 @@ impl ::std::str::FromStr for SiteTargetTeamId {
 }
 impl ::std::convert::TryFrom<&str> for SiteTargetTeamId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1537,9 +1482,7 @@ pub struct VaultEntry {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub password_changed_at: ::std::option::Option<
-        ::chrono::DateTime<::chrono::offset::Utc>,
-    >,
+    pub password_changed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Discriminator for the kind of secret this entry holds. The secret material itself is NEVER returned in metadata views; the kind is exposed so consumers can render an appropriate UI affordance and so policy decisions can route by kind.
     #[serde(rename = "secretKind")]
     pub secret_kind: SecretKind,
@@ -1601,9 +1544,7 @@ impl ::std::convert::From<&VaultEntryContextId> for VaultEntryContextId {
 }
 impl ::std::str::FromStr for VaultEntryContextId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1612,9 +1553,7 @@ impl ::std::str::FromStr for VaultEntryContextId {
 }
 impl ::std::convert::TryFrom<&str> for VaultEntryContextId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1672,17 +1611,14 @@ impl ::std::convert::From<VaultEntryCustomFieldNamesItem> for ::std::string::Str
         value.0
     }
 }
-impl ::std::convert::From<&VaultEntryCustomFieldNamesItem>
-for VaultEntryCustomFieldNamesItem {
+impl ::std::convert::From<&VaultEntryCustomFieldNamesItem> for VaultEntryCustomFieldNamesItem {
     fn from(value: &VaultEntryCustomFieldNamesItem) -> Self {
         value.clone()
     }
 }
 impl ::std::str::FromStr for VaultEntryCustomFieldNamesItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 128usize {
             return Err("longer than 128 characters".into());
         }
@@ -1694,9 +1630,7 @@ impl ::std::str::FromStr for VaultEntryCustomFieldNamesItem {
 }
 impl ::std::convert::TryFrom<&str> for VaultEntryCustomFieldNamesItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1761,9 +1695,7 @@ impl ::std::convert::From<&VaultEntryId> for VaultEntryId {
 }
 impl ::std::str::FromStr for VaultEntryId {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1772,9 +1704,7 @@ impl ::std::str::FromStr for VaultEntryId {
 }
 impl ::std::convert::TryFrom<&str> for VaultEntryId {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1839,9 +1769,7 @@ impl ::std::convert::From<&VaultEntryLabel> for VaultEntryLabel {
 }
 impl ::std::str::FromStr for VaultEntryLabel {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1850,9 +1778,7 @@ impl ::std::str::FromStr for VaultEntryLabel {
 }
 impl ::std::convert::TryFrom<&str> for VaultEntryLabel {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1917,9 +1843,7 @@ impl ::std::convert::From<&VaultEntryNotes> for VaultEntryNotes {
 }
 impl ::std::str::FromStr for VaultEntryNotes {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 4096usize {
             return Err("longer than 4096 characters".into());
         }
@@ -1928,9 +1852,7 @@ impl ::std::str::FromStr for VaultEntryNotes {
 }
 impl ::std::convert::TryFrom<&str> for VaultEntryNotes {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -1994,9 +1916,7 @@ impl ::std::convert::From<&VaultEntrySelectorsItem> for VaultEntrySelectorsItem 
 }
 impl ::std::str::FromStr for VaultEntrySelectorsItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -2005,9 +1925,7 @@ impl ::std::str::FromStr for VaultEntrySelectorsItem {
 }
 impl ::std::convert::TryFrom<&str> for VaultEntrySelectorsItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -2072,9 +1990,7 @@ impl ::std::convert::From<&VaultEntryTagsItem> for VaultEntryTagsItem {
 }
 impl ::std::str::FromStr for VaultEntryTagsItem {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 64usize {
             return Err("longer than 64 characters".into());
         }
@@ -2086,9 +2002,7 @@ impl ::std::str::FromStr for VaultEntryTagsItem {
 }
 impl ::std::convert::TryFrom<&str> for VaultEntryTagsItem {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
