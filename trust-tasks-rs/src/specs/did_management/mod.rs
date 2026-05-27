@@ -2,5 +2,6 @@
 
 pub mod did;
 pub mod domain;
+pub mod me;
 pub mod registry;
 pub mod server;
