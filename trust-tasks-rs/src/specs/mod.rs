@@ -60,4 +60,5 @@ pub mod provision;
 pub mod sync;
 pub mod trust_task_discovery;
 pub mod vault;
+pub mod webvh;
 // trust-tasks-codegen:end

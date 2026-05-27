@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/webvh/witness/publish/0.1",
+  "title": "WebVH Witness Publish — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic", "witness"],
+  "properties": {
+    "mnemonic": { "type": "string", "minLength": 1 },
+    "witness": {
+      "type": "object",
+      "description": "Witness proof object per the did:webvh specification. Shape is method-defined; consumers validate the signature against the configured witness DID(s)."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "WebVH Witness Publish — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mnemonic", "witnessUrl"],
+      "properties": {
+        "mnemonic": { "type": "string" },
+        "witnessUrl": { "type": "string", "format": "uri" },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

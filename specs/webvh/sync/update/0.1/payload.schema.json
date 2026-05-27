@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/webvh/sync/update/0.1",
+  "title": "WebVH Sync Update — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic", "didId", "logContent", "versionCount"],
+  "properties": {
+    "mnemonic": { "type": "string", "minLength": 1 },
+    "didId": { "type": "string", "minLength": 1 },
+    "logContent": { "type": "string", "minLength": 1 },
+    "witnessContent": { "type": "string" },
+    "versionCount": { "type": "integer", "minimum": 1 },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "WebVH Sync Update — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mnemonic", "status"],
+      "properties": {
+        "mnemonic": { "type": "string" },
+        "status": { "type": "string", "enum": ["applied"] },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

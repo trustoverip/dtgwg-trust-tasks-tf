@@ -83,3 +83,6 @@ export * as VaultSignTrustTask_v0_1 from "./vault/sign-trust-task/0.1/payload";
 export * as VaultSync_v0_1 from "./vault/sync/0.1/payload";
 export * as VaultUpsert_v0_1 from "./vault/upsert/0.1/payload";
 export * as VaultUsage_v0_1 from "./vault/usage/0.1/payload";
+export * as WebvhSyncDelete_v0_1 from "./webvh/sync/delete/0.1/payload";
+export * as WebvhSyncUpdate_v0_1 from "./webvh/sync/update/0.1/payload";
+export * as WebvhWitnessPublish_v0_1 from "./webvh/witness/publish/0.1/payload";
