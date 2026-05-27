@@ -5,7 +5,7 @@
   "description": "Relayer presents a VP-signed bootstrap request from an integration holder; the maintainer mints the integration's DIDs and admin credential from a registered DID template and ships the material back HPKE-sealed to the holder's ephemeral did:key. Two ask variants are supported: TemplateBootstrap (mint integration DID + optional admin DID) and AdminRotation (mint only the long-term admin DID).",
   "type": "object",
   "additionalProperties": false,
-  "required": ["request", "context"],
+  "required": ["request"],
   "properties": {
     "request": {
       "$ref": "#/$defs/BootstrapRequest",
@@ -14,7 +14,7 @@
     "context": {
       "type": "string",
       "minLength": 1,
-      "description": "The maintainer's context identifier the integration is to be provisioned into. Authoritative — overrides any `contextHint` carried inside `request.ask`."
+      "description": "The maintainer's context identifier the integration is to be provisioned into. When present, authoritative — overrides any `contextHint` carried inside `request.ask`. When ABSENT, the maintainer infers the target context using these rules in order: (1) if the relayer's grant scopes to exactly one context, use that context; (2) if the relayer is a super-admin (Admin role with unrestricted scope) and the maintainer has exactly one context registered, use that context; (3) otherwise reject the request with `provision/integration:context_required`. Wallet-class consumers (browser plugins, mobile companions) that don't know the maintainer's context layout SHOULD omit this field; integration-class consumers (mediator, did-hosting) targeting a specific operational context SHOULD send it explicitly."
     },
     "assertion": {
       "type": "string",

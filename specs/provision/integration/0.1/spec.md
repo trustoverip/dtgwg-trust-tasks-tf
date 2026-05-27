@@ -62,6 +62,18 @@ errorCodes:
   - code: provision/integration:context_not_found
     meaning: "The requested `context` does not exist at the maintainer and `createContext` was either omitted or denied. When the caller has super-admin privileges they MAY retry with `createContext = true` to provision the context inline."
     retryable: false
+  - code: provision/integration:context_required
+    meaning: "`payload.context` was omitted and the maintainer could not infer a unique target context from the relayer's grant. The relayer either holds admin role in multiple contexts (rule #1 ambiguous) or is a super-admin and the maintainer has multiple contexts registered (rule #2 ambiguous). The relayer SHOULD retry with an explicit `context` value selected from `details.candidates`."
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        candidates:
+          type: array
+          minItems: 2
+          items: { type: "string", minLength: 1 }
+          description: "Contexts the maintainer considered as plausible targets. The relayer picks one and retries."
   - code: provision/integration:forbidden
     meaning: The authenticated caller is not authorised to provision into `context` (or to create it). Distinct from the framework's `unauthorized` — the caller was authenticated successfully but lacks the role.
     retryable: false
@@ -125,7 +137,7 @@ A conforming **producer** (the integration holder or its relayer) **MUST**:
    * carry a `validUntil` RFC 3339 UTC timestamp; the maintainer enforces ±5min skew;
    * carry an `ask` per "Ask variants" below;
    * carry a `proof` of cryptosuite `eddsa-jcs-2022`, `proofPurpose: "authentication"`, whose `verificationMethod` resolves under `holder`. The proof MUST sign the JCS canonicalisation of the VP with `proof` removed.
-3. Populate `payload.context` with the maintainer's context identifier the integration is to land in.
+3. **MAY** populate `payload.context` with the maintainer's context identifier the integration is to land in. Producers that don't track the maintainer's context layout (typically wallet-class consumers — browser plugins, mobile companions) SHOULD omit this and let the maintainer infer per "Context inference" below. Producers targeting a specific operational context (typically integration-class consumers — mediators, did-hosting hosts) SHOULD send it explicitly.
 4. **MAY** include `payload.assertion` to request a non-default sealed-bundle assertion mode. The wire enum is `"did-signed"` (default — Ed25519 signature over the bundle's domain-bound digest, verified by the holder out-of-band against the producer's published key) and `"pinned-only"` (the holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only).
 5. **MAY** include `payload.vcValiditySeconds` to request a non-default validity window for the issued authorization VC. The maintainer's policy decides the floor and ceiling; values outside that range MAY be silently clamped or rejected with `provision/integration:invalid_bootstrap_request` (`reason: "shape"`).
 6. **MAY** include `payload.createContext: true` to provision the target context inline if it does not exist. The maintainer accepts this **only** when the caller has super-admin role; context-admin callers MUST receive `provision/integration:forbidden` against a missing context.
@@ -143,7 +155,7 @@ A conforming **consumer** (the provisioning maintainer) **MUST**:
    * for `TemplateBootstrap`: `template.name` MUST be registered with `kind` ≠ `"admin"`; when `adminTemplate` is present, `adminTemplate.name` MUST be registered with `kind == "admin"`. Missing → `provision/integration:template_not_found`.
    * for `AdminRotation`: `adminTemplate.name` MUST be registered with `kind == "admin"`. Missing → `provision/integration:template_not_found`.
    * For every named template, validate `vars` against the template's declared `requiredVars` / `optionalVars`. Missing or unknown vars → `provision/integration:template_vars_invalid`.
-5. Authorise the relayer in `payload.context`. If the context does not exist and `payload.createContext` is `true`, the relayer MUST be super-admin; otherwise emit `provision/integration:context_not_found`. If the relayer is authenticated but lacks the required role, emit `provision/integration:forbidden`.
+5. Resolve the target context: use `payload.context` when present; otherwise infer per "Context inference" above and emit `provision/integration:context_required` if no unique target can be determined. Authorise the relayer in the resolved context. If the context does not exist and `payload.createContext` is `true`, the relayer MUST be super-admin; otherwise emit `provision/integration:context_not_found`. If the relayer is authenticated but lacks the required role, emit `provision/integration:forbidden`.
 6. Mint the keys server-side:
    * for `TemplateBootstrap`: render the integration template; mint Ed25519 (signing) and X25519 (key-agreement) keypairs for every verification method the template declares; persist private halves in the maintainer's keystore; allocate a DID identifier per the template's method (`did:webvh` writes a `did.jsonl` log; `did:key` derives from the signing pubkey). When `adminTemplate` is present, additionally mint the admin DID + keys.
    * for `AdminRotation`: render the admin template only.
@@ -202,11 +214,25 @@ The `ask` member of the VP body is a discriminated union, tagged on `type`:
 
 The `AdminRotation` variant is what a holder that needs *only* an admin identity at this maintainer requests — e.g. a companion browser plugin or mobile wallet whose integration-side identity is irrelevant to the maintainer. The reply carries an `AdminRotationPayload` (see "Sealed bundle"), not a `TemplateBootstrapPayload`.
 
+## Context inference
+
+When the producer omits `payload.context`, the maintainer infers the target context using the following rules in order:
+
+1. **Single-context grant.** If the relayer's ACL entry scopes to exactly one context, use that context. This is the common case for an integration-scoped admin (e.g. `pnm acl create --did <eph> --role admin --contexts ctx_x`): the operator already named the bucket on the wire when they granted the ephemeral, and the maintainer respects that scoping.
+
+2. **Single-context maintainer.** If the relayer is a super-admin (Admin role with unrestricted `allowed_contexts`) and the maintainer has exactly one context registered, use that context. Covers the typical single-VTA, single-context, single-admin deployment where the wallet's ephemeral was granted with `pnm acl create --did <eph> --role admin` (no `--contexts` flag, producing a super-admin grant).
+
+3. **Ambiguous — refuse.** Any other state — multi-context relayer, super-admin against a multi-context maintainer — emits `provision/integration:context_required` with `details.candidates` listing the contexts the maintainer considered. The relayer picks one and retries with an explicit `context`.
+
+The inference is opportunistic, not authoritative — when the producer DOES send a `context`, the maintainer uses it verbatim and inference does not run. Producers MAY send `context` even when inference would succeed, e.g. to make audit logs unambiguous; the wire shape supports both modes interchangeably.
+
+Maintainers that wish to expose a configured "primary" context (e.g. TEE deployments that pin `admin_context_id` at boot) MAY treat that as a fallback for case (2) above when multiple contexts are registered — the produced wire-shape is identical from the consumer's perspective. This MUST be documented in the maintainer's operator guide; the spec does not pin which approach the maintainer takes.
+
 ## Payload
 
 `payload.request` (REQUIRED) — VP-framed bootstrap request. Full shape under `$defs.BootstrapRequest` of [`payload.schema.json`](payload.schema.json).
 
-`payload.context` (REQUIRED) — maintainer's context identifier.
+`payload.context` (OPTIONAL) — maintainer's context identifier. When absent, the maintainer infers per "Context inference" above. Producers that don't know the maintainer's context layout SHOULD omit; producers targeting a specific operational context SHOULD send.
 
 `payload.assertion` (OPTIONAL) — `"did-signed"` (default) or `"pinned-only"`.
 
@@ -372,7 +398,7 @@ Response:
 
 ### AdminRotation (browser-plugin onboarding)
 
-Request payload:
+Wallet-class consumer; `context` omitted so the maintainer infers per "Context inference" — typically rule (1) when the ephemeral was granted with `--contexts` or rule (2) for a super-admin grant against a single-context maintainer:
 
 ```json
 {
@@ -385,13 +411,11 @@ Request payload:
     "validUntil": "2026-05-26T13:15:00Z",
     "ask": {
       "type": "AdminRotation",
-      "contextHint": "default",
       "adminTemplate": { "name": "vta-admin", "vars": {} },
       "note": "companion: brave / glenn-mbp"
     },
     "proof": { "type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "verificationMethod": "did:key:z6Mkve…#z6Mkve…", "created": "2026-05-26T13:00:00Z", "proofPurpose": "authentication", "proofValue": "z6ab…" }
-  },
-  "context": "default"
+  }
 }
 ```
 

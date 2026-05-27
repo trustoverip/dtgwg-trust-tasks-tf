@@ -14,9 +14,9 @@ export type BootstrapAsk = TemplateBootstrapAsk | AdminRotationAsk;
 export interface ProvisionIntegrationPayload {
   request: BootstrapRequest;
   /**
-   * The maintainer's context identifier the integration is to be provisioned into. Authoritative — overrides any `contextHint` carried inside `request.ask`.
+   * The maintainer's context identifier the integration is to be provisioned into. When present, authoritative — overrides any `contextHint` carried inside `request.ask`. When ABSENT, the maintainer infers the target context using these rules in order: (1) if the relayer's grant scopes to exactly one context, use that context; (2) if the relayer is a super-admin (Admin role with unrestricted scope) and the maintainer has exactly one context registered, use that context; (3) otherwise reject the request with `provision/integration:context_required`. Wallet-class consumers (browser plugins, mobile companions) that don't know the maintainer's context layout SHOULD omit this field; integration-class consumers (mediator, did-hosting) targeting a specific operational context SHOULD send it explicitly.
    */
-  context: string;
+  context?: string;
   /**
    * Producer-assertion mode the maintainer should apply to the returned sealed bundle. `did-signed` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinned-only` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertion_unsupported` to unsupported requests.
    */
