@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.1.2] — 2026-05-27
+
+This is a roll-up release covering everything merged since 0.1.1 (PRs #40–#56). The change set is overwhelmingly additive — new spec families regenerated into `specs::*` — so existing consumers should pick up `0.1.2` via `cargo update -p trust-tasks-rs` without code changes.
+
+### Added — new spec families
+
+- **`did-management/`** (24 specs) — full DID hosting lifecycle: `did/{check-name, register, publish, info, list, delete, disable, enable, change-owner, rollback, problem-report}`, `domain/{create, update, disable, enable, purge, set-default, assign, unassign}`, `me/domains`, `server/{register, health, stats-sync}`, `registry/{admin-register, deregister}`. Shared schemas for `DidRecord`, `DomainEntry`, `ServiceInstance`, and the webvh method extension.
+- **`webvh/`** (3 specs) — did:webvh-protocol-internal mechanics: `witness/publish`, `sync/update`, `sync/delete`.
+- **`vault/`** (11 specs) — credential manager surface: `list, get, upsert, delete, sync, proxy-login, release, sign-trust-task, usage` and shared schemas (`VaultEntry`, `VaultSecret`, `SessionBlob`, `SealedEnvelope`, `ConsumerContext`).
+- **`device/`** (5 specs) — Companion / Service lifecycle: `register, list, disable, wipe, heartbeat`.
+- **`policy/`** (4 specs) — Rego policy CRUD: `list, upsert, delete, evaluate`.
+- **`sync/`** — `sync/event/0.1` server-push event envelope.
+- **`provision/integration/0.1`** — generic provisioning Trust Task for template-driven integration bootstrap.
+- **`auth/`** (15 specs) — full session lifecycle: `challenge, authenticate, refresh, revoke-session, whoami, sessions/list, step-up/{approve-request, approve-response}, passkey/{enroll, login}/{start, finish, invite}`.
+- **`acl/swap-key/0.1`** — atomic ACL key rotation for the swap-then-rotate enrolment pattern.
+- **`confirm/{request, response}/0.1`** — generic confirmation envelope.
+
+### Changed — existing specs
+
+- `did-management/did/register/0.1`: adds `did-management/did/register:invalid_path` error code, mirroring `did/check-name`'s identical code for the atomic register flow.
+- `did-management/server/register/0.1`: adds optional `enabledMethods[]` and `protocolVersion` request fields so hosting servers can declare their capabilities. Both default cleanly when omitted.
+- `provision/integration/0.1`: makes `contextId` optional with inference rules from the template's declared scope.
+- `vault/proxy-login/0.1`: adds optional `nonce` and `ttlSecondsHint` fields for RP-issued challenges and caller-hinted TTLs.
+- `vault/_shared/0.1/vault-entry`: adds optional `principalDid` metadata so vault entries can carry the DID they would act AS in a proxy-login.
+- `vault/_shared/0.1/vault-secret`: `SealedSecret`/`SealedSessionBlob` reshape into pluggable envelopes; `VaultSecret::Password` gains a `PasswordLoginConfig` for site-specific form quirks.
+
+### Added — framework
+
+- `category` taxonomy is now an enforced enum at the spec.meta level — invalid categories fail validation.
+
 ## [0.1.1] — 2026-05-19
 
 ### Changed — consumer-pipeline hardening (SPEC §7.2 items 6 + 7)

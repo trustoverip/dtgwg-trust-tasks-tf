@@ -4,6 +4,17 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.1.2] — 2026-05-27
+
+### Changed
+
+- Track `trust-tasks-rs` 0.1.2. No public API changes in this crate;
+  the bump exists so DIDComm consumers can `cargo update -p
+  trust-tasks-didcomm` and pick up the new spec families
+  (`did-management/*`, `webvh/*`, `vault/*`, `device/*`, `policy/*`,
+  `provision/integration`, etc.) over DIDComm without further
+  dependency surgery.
+
 ## [0.1.0] — initial pre-release, tracks `SPEC.md` 0.1
 
 ### Added

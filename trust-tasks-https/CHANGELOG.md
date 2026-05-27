@@ -4,6 +4,16 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.1.2] — 2026-05-27
+
+### Changed
+
+- Track `trust-tasks-rs` 0.1.2. No public API changes in this crate; the
+  bump exists so consumers can `cargo update -p trust-tasks-https` and
+  pick up the new spec families (`did-management/*`, `webvh/*`,
+  `vault/*`, `device/*`, `policy/*`, `provision/integration`, etc.) over
+  the HTTPS transport without further dependency surgery.
+
 ## [0.1.1] — 2026-05-19
 
 ### Added

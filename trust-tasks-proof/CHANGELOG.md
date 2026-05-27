@@ -4,6 +4,15 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.1.2] — 2026-05-27
+
+### Changed
+
+- Track `trust-tasks-rs` 0.1.2. No public API changes in this crate;
+  bump-only release so downstream proof-verifier consumers can `cargo
+  update -p trust-tasks-proof` in lockstep with the trust-tasks
+  workspace.
+
 ## [0.1.0] — initial pre-release, tracks `SPEC.md` 0.1
 
 Renamed from `trust-tasks-proof-affinidi` and restructured as an
