@@ -5,6 +5,7 @@ pub mod get;
 pub mod list;
 pub mod proxy_login;
 pub mod release;
+pub mod sign_trust_task;
 pub mod sync;
 pub mod upsert;
 pub mod usage;

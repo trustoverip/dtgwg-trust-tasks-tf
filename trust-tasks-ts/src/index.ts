@@ -79,6 +79,7 @@ export * as VaultGet_v0_1 from "./vault/get/0.1/payload";
 export * as VaultList_v0_1 from "./vault/list/0.1/payload";
 export * as VaultProxyLogin_v0_1 from "./vault/proxy-login/0.1/payload";
 export * as VaultRelease_v0_1 from "./vault/release/0.1/payload";
+export * as VaultSignTrustTask_v0_1 from "./vault/sign-trust-task/0.1/payload";
 export * as VaultSync_v0_1 from "./vault/sync/0.1/payload";
 export * as VaultUpsert_v0_1 from "./vault/upsert/0.1/payload";
 export * as VaultUsage_v0_1 from "./vault/usage/0.1/payload";
