@@ -50,10 +50,12 @@ export * as DidManagementDidRollback_v0_1 from "./did-management/did/rollback/0.
 export * as DidManagementDomainAssign_v0_1 from "./did-management/domain/assign/0.1/payload";
 export * as DidManagementDomainCreate_v0_1 from "./did-management/domain/create/0.1/payload";
 export * as DidManagementDomainDisable_v0_1 from "./did-management/domain/disable/0.1/payload";
+export * as DidManagementDomainEnable_v0_1 from "./did-management/domain/enable/0.1/payload";
 export * as DidManagementDomainPurge_v0_1 from "./did-management/domain/purge/0.1/payload";
 export * as DidManagementDomainSetDefault_v0_1 from "./did-management/domain/set-default/0.1/payload";
 export * as DidManagementDomainUnassign_v0_1 from "./did-management/domain/unassign/0.1/payload";
 export * as DidManagementDomainUpdate_v0_1 from "./did-management/domain/update/0.1/payload";
+export * as DidManagementMeDomains_v0_1 from "./did-management/me/domains/0.1/payload";
 export * as DidManagementRegistryAdminRegister_v0_1 from "./did-management/registry/admin-register/0.1/payload";
 export * as DidManagementRegistryDeregister_v0_1 from "./did-management/registry/deregister/0.1/payload";
 export * as DidManagementServerHealth_v0_1 from "./did-management/server/health/0.1/payload";

@@ -36,6 +36,13 @@ Draft.
 
 A conforming producer (the hosting server) MUST hold the `Service` role on the control plane's ACL. Emits `type: https://trusttasks.org/spec/did-management/server/register/0.1` with `payload.instanceId`, `payload.did`, `payload.publicUrl`, and `payload.servedDomains[]`. The consumer (control plane) verifies the Service-role binding, upserts the registry entry, and replies with the accepted flag plus the `lastSeen` timestamp it stamped.
 
+The producer MAY additionally declare its capabilities:
+
+- `payload.enabledMethods[]` — the DID methods the server is willing to host (e.g. `["webvh", "web"]`). Consumers SHOULD record this against the registry entry so the operator can see which methods each server supports and route domain assignments accordingly. When omitted, consumers MUST assume only `webvh` is supported (the historical default).
+- `payload.protocolVersion` — the wire-protocol revision the server speaks (e.g. `"1.0"`). Consumers SHOULD record this to support future protocol-level negotiation. When omitted, consumers MUST assume `"1.0"`.
+
+Both fields are additive and ignorable by older consumers; producers that omit them remain conformant.
+
 ## Request
 
 ```json
@@ -44,7 +51,8 @@ A conforming producer (the hosting server) MUST hold the `Service` role on the c
   "issuedAt": "2026-06-20T09:00:00Z",
   "payload": { "instanceId": "did_web_node1_example_com", "did": "did:web:node1.example.com",
     "publicUrl": "https://node1.example.com", "servedDomains": ["tenant-a.example.com"],
-    "label": "EU-West edge node 1" } }
+    "label": "EU-West edge node 1",
+    "enabledMethods": ["webvh"], "protocolVersion": "1.0" } }
 ```
 
 ## Response

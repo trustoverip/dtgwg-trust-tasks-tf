@@ -49,6 +49,15 @@ errorCodes:
       properties:
         embeddedHost: { type: string }
         configuredHosts: { type: array, items: { type: string } }
+  - code: did-management/did/register:invalid_path
+    meaning: The submitted `path` violates the host's path grammar (length bounds, character set, reserved roots). Mirrors `did-management/did/check-name:invalid_path` for the atomic register flow.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        path: { type: string }
+        reason: { type: string }
   - code: did-management:unknown_domain
     meaning: The submitted `domain` is not a known hosting domain on this consumer. See [the category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false

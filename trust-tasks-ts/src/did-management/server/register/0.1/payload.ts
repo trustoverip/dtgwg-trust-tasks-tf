@@ -9,6 +9,14 @@ export interface ServerRegisterPayload {
   publicUrl: string;
   servedDomains: string[];
   label?: string;
+  /**
+   * DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh'].
+   */
+  enabledMethods?: string[];
+  /**
+   * Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.
+   */
+  protocolVersion?: string;
   ext?: Ext;
 }
 /**

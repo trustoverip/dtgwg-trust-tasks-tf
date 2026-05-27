@@ -11,6 +11,16 @@
     "publicUrl": { "type": "string", "format": "uri" },
     "servedDomains": { "type": "array", "items": { "type": "string" } },
     "label": { "type": "string" },
+    "enabledMethods": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh']."
+    },
+    "protocolVersion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'."
+    },
     "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {
