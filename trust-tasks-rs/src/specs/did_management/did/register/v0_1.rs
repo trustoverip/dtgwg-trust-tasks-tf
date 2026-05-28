@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -178,8 +172,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -189,8 +182,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -227,24 +219,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -390,10 +378,9 @@ impl ::std::convert::From<PayloadDidDataString> for PayloadDidData {
     }
 }
 impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json::Value>>
-for PayloadDidData {
-    fn from(
-        value: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ) -> Self {
+    for PayloadDidData
+{
+    fn from(value: ::serde_json::Map<::std::string::String, ::serde_json::Value>) -> Self {
         Self::Object(value)
     }
 }
@@ -429,9 +416,7 @@ impl ::std::convert::From<&PayloadDidDataString> for PayloadDidDataString {
 }
 impl ::std::str::FromStr for PayloadDidDataString {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -440,9 +425,7 @@ impl ::std::str::FromStr for PayloadDidDataString {
 }
 impl ::std::convert::TryFrom<&str> for PayloadDidDataString {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -507,9 +490,7 @@ impl ::std::convert::From<&PayloadMethod> for PayloadMethod {
 }
 impl ::std::str::FromStr for PayloadMethod {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -518,9 +499,7 @@ impl ::std::str::FromStr for PayloadMethod {
 }
 impl ::std::convert::TryFrom<&str> for PayloadMethod {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -585,9 +564,7 @@ impl ::std::convert::From<&PayloadPath> for PayloadPath {
 }
 impl ::std::str::FromStr for PayloadPath {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -596,9 +573,7 @@ impl ::std::str::FromStr for PayloadPath {
 }
 impl ::std::convert::TryFrom<&str> for PayloadPath {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -671,7 +646,8 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/did/register/0.1";
 }
 impl crate::Payload for Response {
-    const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/did/register/0.1#response";
+    const TYPE_URI: &'static str =
+        "https://trusttasks.org/spec/did-management/did/register/0.1#response";
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
@@ -685,31 +661,28 @@ mod conformance {
     #[test]
     fn request_example_1() {
         const JSON: &str = "{\n  \"id\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/did-management/did/register/0.1\",\n  \"issuer\": \"did:key:z6MkAlice\",\n  \"recipient\": \"did:web:did.example.com\",\n  \"issuedAt\": \"2026-06-01T10:00:00Z\",\n  \"payload\": {\n    \"path\": \"alice\",\n    \"method\": \"webvh\",\n    \"domain\": \"did.example.com\",\n    \"didData\": \"{\\\"versionId\\\":\\\"1-...\\\",\\\"versionTime\\\":\\\"2026-06-01T09:59:50Z\\\",\\\"parameters\\\":{...},\\\"state\\\":{...},\\\"proof\\\":[...]}\",\n    \"force\": false\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn request_example_2() {
         const JSON: &str = "{\n  \"id\": \"8a91c7b3-2e62-4a91-a3a4-9d61b75e2f01\",\n  \"type\": \"https://trusttasks.org/spec/did-management/did/register/0.1\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:did.example.com\",\n  \"issuedAt\": \"2026-06-01T11:00:00Z\",\n  \"payload\": {\n    \"path\": \"abandoned-slot\",\n    \"method\": \"webvh\",\n    \"didData\": \"{\\\"versionId\\\":\\\"1-...\\\",...}\",\n    \"force\": true\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn response_example_1() {
         const JSON: &str = "{\n  \"id\": \"5e3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f3\",\n  \"type\": \"https://trusttasks.org/spec/did-management/did/register/0.1#response\",\n  \"threadId\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:did.example.com\",\n  \"recipient\": \"did:key:z6MkAlice\",\n  \"issuedAt\": \"2026-06-01T10:00:01Z\",\n  \"payload\": {\n    \"record\": {\n      \"mnemonic\": \"alice\",\n      \"owner\": \"did:key:z6MkAlice\",\n      \"createdAt\": \"2026-06-01T10:00:01Z\",\n      \"updatedAt\": \"2026-06-01T10:00:01Z\",\n      \"versionCount\": 1,\n      \"didId\": \"did:webvh:abc123:did.example.com:alice\",\n      \"method\": \"webvh\",\n      \"domain\": \"did.example.com\",\n      \"disabled\": false\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
     /// Each fixture in `payload.invalid-examples.json` MUST be
@@ -740,14 +713,15 @@ mod conformance {
                 Ok(v) => v,
                 Err(_) => continue,
             };
-            let serde_ok = serde_json::from_value::<super::Payload>(value.clone())
-                .is_ok();
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
             let schema_ok = super::Payload::validate_value(&value).is_ok();
             assert!(
-                ! (serde_ok && schema_ok),
+                !(serde_ok && schema_ok),
                 "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
-                i + 1, note, raw
+                i + 1,
+                note,
+                raw
             );
         }
     }

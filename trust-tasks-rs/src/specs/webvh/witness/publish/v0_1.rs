@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -61,8 +55,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -72,8 +65,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -110,24 +102,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -235,9 +223,7 @@ impl ::std::convert::From<&PayloadMnemonic> for PayloadMnemonic {
 }
 impl ::std::str::FromStr for PayloadMnemonic {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -246,9 +232,7 @@ impl ::std::str::FromStr for PayloadMnemonic {
 }
 impl ::std::convert::TryFrom<&str> for PayloadMnemonic {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -341,21 +325,19 @@ mod conformance {
     #[test]
     fn request_example_1() {
         const JSON: &str = "{ \"id\": \"wp-1\", \"type\": \"https://trusttasks.org/spec/webvh/witness/publish/0.1\",\n  \"issuer\": \"did:key:z6MkAlice\", \"recipient\": \"did:web:did.example.com\",\n  \"issuedAt\": \"2026-06-25T09:00:00Z\",\n  \"payload\": {\n    \"mnemonic\": \"alice\",\n    \"witness\": {\n      \"versionId\": \"5-abcdef...\",\n      \"witness\": \"did:webvh:WIT1:witness.example.com\",\n      \"proof\": {\n        \"type\": \"DataIntegrityProof\",\n        \"cryptosuite\": \"eddsa-jcs-2022\",\n        \"created\": \"2026-06-25T08:59:55Z\",\n        \"verificationMethod\": \"did:webvh:WIT1:witness.example.com#key-1\",\n        \"proofPurpose\": \"assertionMethod\",\n        \"proofValue\": \"z...\"\n      }\n    }\n  } }\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn response_example_1() {
         const JSON: &str = "{ \"id\": \"wp-1-r\", \"type\": \"https://trusttasks.org/spec/webvh/witness/publish/0.1#response\",\n  \"threadId\": \"wp-1\", \"issuer\": \"did:web:did.example.com\", \"recipient\": \"did:key:z6MkAlice\",\n  \"issuedAt\": \"2026-06-25T09:00:01Z\",\n  \"payload\": {\n    \"mnemonic\": \"alice\",\n    \"witnessUrl\": \"https://did.example.com/alice/did-witness.json\"\n  } }\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
 }

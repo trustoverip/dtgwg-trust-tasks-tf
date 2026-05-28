@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -159,7 +153,7 @@ impl ::std::convert::From<&DomainEntry> for DomainEntry {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum DomainEntryStatus {
     #[serde(rename = "active")]
@@ -182,9 +176,7 @@ impl ::std::fmt::Display for DomainEntryStatus {
 }
 impl ::std::str::FromStr for DomainEntryStatus {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "active" => Ok(Self::Active),
             "disabled" => Ok(Self::Disabled),
@@ -194,9 +186,7 @@ impl ::std::str::FromStr for DomainEntryStatus {
 }
 impl ::std::convert::TryFrom<&str> for DomainEntryStatus {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -242,8 +232,7 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
@@ -253,8 +242,7 @@ impl ::std::convert::From<&Ext> for Ext {
         value.clone()
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -291,24 +279,20 @@ impl ::std::convert::From<&ExtKey> for ExtKey {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -371,7 +355,9 @@ impl ::std::convert::From<&Payload> for Payload {
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
-        Self { ext: Default::default() }
+        Self {
+            ext: Default::default(),
+        }
     }
 }
 ///`Response`
@@ -425,7 +411,8 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/me/domains/0.1";
 }
 impl crate::Payload for Response {
-    const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/me/domains/0.1#response";
+    const TYPE_URI: &'static str =
+        "https://trusttasks.org/spec/did-management/me/domains/0.1#response";
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
@@ -439,21 +426,19 @@ mod conformance {
     #[test]
     fn request_example_1() {
         const JSON: &str = "{ \"id\": \"md-1\", \"type\": \"https://trusttasks.org/spec/did-management/me/domains/0.1\",\n  \"issuer\": \"did:key:z6MkAlice\", \"recipient\": \"did:web:control.example.com\",\n  \"issuedAt\": \"2026-06-22T09:00:00Z\", \"payload\": {} }\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn response_example_1() {
         const JSON: &str = "{ \"id\": \"md-1-r\", \"type\": \"https://trusttasks.org/spec/did-management/me/domains/0.1#response\",\n  \"threadId\": \"md-1\", \"issuer\": \"did:web:control.example.com\", \"recipient\": \"did:key:z6MkAlice\",\n  \"issuedAt\": \"2026-06-22T09:00:01Z\",\n  \"payload\": {\n    \"domains\": [\n      { \"name\": \"tenant-a.example.com\", \"label\": \"Tenant A\",\n        \"status\": \"active\", \"defaultDomain\": false,\n        \"createdAt\": \"2026-06-10T09:00:00Z\" },\n      { \"name\": \"did.example.com\", \"label\": \"Default tenant\",\n        \"status\": \"active\", \"defaultDomain\": true,\n        \"createdAt\": \"2026-05-01T09:00:00Z\" }\n    ],\n    \"default\": \"did.example.com\"\n  } }\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
 }

@@ -44,9 +44,9 @@ dependencies = [
 
 [[package]]
 name = "aes"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66bd29a732b644c0431c6140f370d097879203d79b80c94a6747ba0872adaef8"
+checksum = "f1fc76eaeac4c9164506c466d4ffdd8ec9d0c5bf57ee97177c4d8eceb3a0e138"
 dependencies = [
  "cipher 0.5.1",
  "cpubits",
@@ -6552,7 +6552,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fba075fc5275473109af54d96e91d3828d1f3c10a77d3089e672efa103f7dbfd"
 dependencies = [
- "aes 0.9.0",
+ "aes 0.9.1",
  "aes-gcm",
  "affinidi-did-resolver-cache-sdk",
  "affinidi-tdk",
