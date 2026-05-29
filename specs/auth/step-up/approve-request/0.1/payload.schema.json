@@ -31,6 +31,17 @@
       "type": "string",
       "description": "The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level."
     },
+    "acceptableEvidence": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["did-signed", "webauthn"] },
+      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`."
+    },
+    "webauthn": {
+      "$ref": "../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialRequestOptions",
+      "description": "Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with."
+    },
     "ttl": {
       "type": "integer",
       "minimum": 1,

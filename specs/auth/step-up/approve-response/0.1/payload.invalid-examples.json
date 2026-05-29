@@ -24,5 +24,46 @@
       "challenge": "short",
       "decision": "approved"
     }
+  },
+  {
+    "note": "Unknown evidence kind.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "decision": "approved",
+      "evidence": { "kind": "totp", "code": "123456" }
+    }
+  },
+  {
+    "note": "WebAuthn evidence missing the required assertion.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "decision": "approved",
+      "evidence": { "kind": "webauthn" }
+    }
+  },
+  {
+    "note": "WebAuthn assertion response is missing required signature field.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "decision": "approved",
+      "evidence": {
+        "kind": "webauthn",
+        "assertion": {
+          "id": "Y3JlZF8xYTJiM2M",
+          "rawId": "Y3JlZF8xYTJiM2M",
+          "type": "public-key",
+          "response": {
+            "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+            "authenticatorData": "TXltSXNUaGVBdXRoRGF0YQ"
+          }
+        }
+      }
+    }
   }
 ]

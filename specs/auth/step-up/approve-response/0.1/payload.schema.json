@@ -35,11 +35,45 @@
       "type": "string",
       "description": "The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it."
     },
+    "evidence": {
+      "$ref": "#/$defs/Evidence",
+      "description": "How the approver demonstrated the factor backing this elevation. A tagged union on `kind`. When `evidence` is absent the elevation is gated solely by the document's framework `proof` (equivalent to `kind: did-signed`). When `kind: webauthn` is supplied, the carried WebAuthn assertion over `challenge` is the gate and the framework `proof` MAY be omitted."
+    },
     "ext": {
       "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
     }
   },
   "$defs": {
+    "Evidence": {
+      "$anchor": "evidence",
+      "title": "Step-up Evidence",
+      "description": "Tagged union over `kind` describing the cryptographic factor the approver presents to back the elevation. Pluggable so new factor kinds can be added without disturbing existing consumers (SPEC §4.5.1 ext rules apply to unknown kinds at the producer's discretion).",
+      "oneOf": [
+        {
+          "title": "DidSigned",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "did-signed" }
+          },
+          "description": "The elevation is gated by the document's framework `proof` — a Data Integrity signature from a key the subject controls (SPEC §4.7). This is the default when `evidence` is omitted. `amr` reflects \"vta\"/\"did\"."
+        },
+        {
+          "title": "WebAuthn",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "assertion"],
+          "properties": {
+            "kind": { "const": "webauthn" },
+            "assertion": {
+              "$ref": "../../../_shared/0.1/webauthn.schema.json#/$defs/AssertionResponse",
+              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API (`navigator.credentials.get` / ASAuthorization / Credential Manager). Its `clientDataJSON` challenge MUST equal the step-up `challenge`. The relying party verifies it per WebAuthn Level 2 §7.2 exactly as auth/passkey/login/finish does; the assertion is the gate and `amr` reflects \"passkey\"."
+            }
+          }
+        }
+      ]
+    },
     "Response": {
       "$anchor": "response",
       "title": "Auth Step-up Approve Response — relying party ack",

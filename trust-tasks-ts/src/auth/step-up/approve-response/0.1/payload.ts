@@ -4,6 +4,11 @@
  */
 
 /**
+ * How the approver demonstrated the factor backing this elevation. A tagged union on `kind`. When `evidence` is absent the elevation is gated solely by the document's framework `proof` (equivalent to `kind: did-signed`). When `kind: webauthn` is supplied, the carried WebAuthn assertion over `challenge` is the gate and the framework `proof` MAY be omitted.
+ */
+export type StepUpEvidence = DidSigned | WebAuthn;
+
+/**
  * The approver's signed ratification of a step-up: subject + sessionId + challenge are echoed inside a proof-bearing document so the relying party can elevate the session.
  */
 export interface AuthStepUpApproveResponse {
@@ -31,7 +36,34 @@ export interface AuthStepUpApproveResponse {
    * The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it.
    */
   grantedAcr?: string;
+  evidence?: StepUpEvidence;
   ext?: Ext;
+}
+/**
+ * The elevation is gated by the document's framework `proof` — a Data Integrity signature from a key the subject controls (SPEC §4.7). This is the default when `evidence` is omitted. `amr` reflects "vta"/"did".
+ */
+export interface DidSigned {
+  kind: "did-signed";
+}
+export interface WebAuthn {
+  kind: "webauthn";
+  assertion: AuthenticatorAssertionResponseLogin;
+}
+/**
+ * The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API (`navigator.credentials.get` / ASAuthorization / Credential Manager). Its `clientDataJSON` challenge MUST equal the step-up `challenge`. The relying party verifies it per WebAuthn Level 2 §7.2 exactly as auth/passkey/login/finish does; the assertion is the gate and `amr` reflects "passkey".
+ */
+export interface AuthenticatorAssertionResponseLogin {
+  id: string;
+  rawId: string;
+  type: "public-key";
+  response: {
+    clientDataJSON: string;
+    authenticatorData: string;
+    signature: string;
+    userHandle?: string | null;
+  };
+  authenticatorAttachment?: "platform" | "cross-platform";
+  clientExtensionResults?: {};
 }
 /**
  * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.

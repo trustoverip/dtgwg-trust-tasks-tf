@@ -21,8 +21,8 @@ parties:
   - role: Relying party
     requirement: REQUIRED
 proofRequirement:
-  requirement: REQUIRED
-  rationale: The proof IS the step-up. Without a verified signature from the subject's authoritative key, the relying party has no basis to elevate.
+  requirement: RECOMMENDED
+  rationale: Exactly one cryptographic gate MUST back the elevation. For `evidence.kind = did-signed` (the default when `evidence` is absent) the gate IS the framework proof — a signature from the subject's authoritative key — so proof is mandatory in that case. For `evidence.kind = webauthn` the gate is the carried WebAuthn assertion over the challenge, and the framework proof MAY be omitted; WebAuthn supplies its own audience binding via rpId/origin. The requirement is therefore RECOMMENDED at the spec level and made conditional in the conformance rules below.
 errorCodes:
   - code: auth/step-up/approve-response:challenge_unknown
     meaning: The relying party has no pending step-up matching the echoed challenge.
@@ -36,6 +36,19 @@ errorCodes:
   - code: auth/step-up/approve-response:acr_unsatisfied
     meaning: The grantedAcr is below the targetAcr the relying party originally requested.
     retryable: false
+  - code: auth/step-up/approve-response:assertion_invalid
+    meaning: The WebAuthn assertion carried in `evidence` failed verification. `details.reason` carries a machine-readable hint.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          enum: ["challenge_mismatch", "origin_mismatch", "rp_id_mismatch", "signature_invalid", "counter_regressed", "credential_unknown", "user_handle_mismatch"]
+  - code: auth/step-up/approve-response:no_gate
+    meaning: The document carried neither a verifiable framework proof (did-signed) nor a `webauthn` evidence assertion. There is no cryptographic basis to elevate.
+    retryable: false
 related:
   - auth/step-up/approve-request
   - auth/passkey/login/finish
@@ -45,9 +58,14 @@ related:
 
 ## Abstract
 
-The **Auth — Step-up Approve Response** Trust Task is the signed ratification of an earlier [`auth/step-up/approve-request/0.1`](../approve-request/0.1/spec.md). The approver echoes the request's `subject`, `sessionId`, and `challenge`, sets `decision` to `approved` or `denied`, and signs the document with the subject's key. The framework `proof` IS the step-up gate.
+The **Auth — Step-up Approve Response** Trust Task is the ratification of an earlier [`auth/step-up/approve-request/0.1`](../approve-request/0.1/spec.md). The approver echoes the request's `subject`, `sessionId`, and `challenge`, sets `decision` to `approved` or `denied`, and backs the decision with **one of two cryptographic gates**, selected by the optional `payload.evidence` tagged union:
 
-A relying party processing an `approved` response elevates the session's `amr`/`acr` per its own policy and replies with the elevated session snapshot. A `denied` response is signed too — it serves as audit evidence that the user explicitly refused.
+- **`evidence.kind = did-signed`** (the default when `evidence` is absent) — the framework `proof` IS the gate: a Data Integrity signature from a key the subject controls. This is the original, transport-agnostic step-up. Resulting `amr` reflects `"did"`/`"vta"`.
+- **`evidence.kind = webauthn`** — the approver carries an `AuthenticatorAssertionResponse` produced by a platform passkey over the step-up `challenge` (the cross-device path: a relying party at AAL 1 in a browser, the user elevating with Face ID / Touch ID / Android biometric on their phone). The assertion is the gate; the relying party verifies it per WebAuthn Level 2 §7.2 exactly as [`auth/passkey/login/finish/0.1`](../../passkey/login/finish/0.1/spec.md) does. Resulting `amr` reflects `"passkey"`.
+
+Supporting both lets one step-up flow serve a DID-key approver (a VTA ratifying programmatically) and a biometric-bound passkey approver (a phone) without two separate protocols. A relying party advertises which gates it will accept via the request's `acceptableEvidence` ([`approve-request`](../approve-request/0.1/spec.md)).
+
+A relying party processing an `approved` response elevates the session's `amr`/`acr` per its own policy and replies with the elevated session snapshot. A `denied` response is signed too (did-signed) — it serves as audit evidence that the user explicitly refused.
 
 ## Status of this Document
 
@@ -63,19 +81,25 @@ A conforming **producer** (the approver) **MUST**:
 2. Echo `payload.subject`, `payload.sessionId`, and `payload.challenge` verbatim from the matching approve-request.
 3. Set `payload.decision` to `approved` or `denied`. When `denied`, populate `payload.deniedReason`.
 4. **MAY** declare `payload.grantedAcr` to convey which AAL the approver believes it demonstrated. Relying parties MAY upgrade the session to ≤ this value; MUST NOT exceed it.
-5. Include a `proof` whose `verificationMethod` resolves to a key the subject controls. The `proof.proofPurpose` MUST be `assertionMethod`.
+5. Provide exactly one cryptographic gate for the elevation:
+   - For `evidence.kind = did-signed` (or when `evidence` is omitted): include a framework `proof` whose `verificationMethod` resolves to a key the subject controls. The `proof.proofPurpose` MUST be `assertionMethod`.
+   - For `evidence.kind = webauthn`: populate `payload.evidence.assertion` with the unmodified `AuthenticatorAssertionResponse`; binary fields base64url-encoded. The assertion's `clientDataJSON` `challenge` MUST equal `payload.challenge`. A framework `proof` MAY additionally be included (to bind the approver's own identity) but is not the gate.
+6. A `denied` decision MUST use `evidence.kind = did-signed` — a refusal is a subject-signed statement, not a possession proof.
 
 A conforming **consumer** (the relying party) **MUST**:
 
-1. Validate the document and verify the `proof`.
+1. Validate the document. Determine the gate from `payload.evidence.kind` (treating an absent `evidence` as `did-signed`).
 2. Locate the matching pending step-up via `payload.challenge`. Unknown → `challenge_unknown`. Expired → `challenge_expired`.
-3. Verify `payload.subject` equals the session's subject AND equals the document's `issuer` AND equals the DID resolved from the proof's `verificationMethod`. Mismatch → `subject_mismatch`.
-4. Verify `payload.challenge` equals the bound challenge bit-for-bit (constant-time comparator).
+3. Verify `payload.challenge` equals the bound challenge bit-for-bit (constant-time comparator).
+4. Verify the gate:
+   - **`did-signed`** — verify the framework `proof`. Verify `payload.subject` equals the session's subject AND equals the document's `issuer` AND equals the DID resolved from the proof's `verificationMethod`. Mismatch → `subject_mismatch`. Missing/invalid proof → `proof_invalid` (or `no_gate` if no gate of either kind is present).
+   - **`webauthn`** — perform full WebAuthn Level 2 §7.2 assertion verification against the bound challenge: decode `clientDataJSON` (`type === "webauthn.get"`, challenge match, `origin` match); verify `rpIdHash` matches the consumer's RP ID; verify the signature with the stored credential public key; verify the signature counter strictly increased. Any failure → `assertion_invalid` with `details.reason`. Resolve `credential.id` (and `userHandle`) to a subject and verify it equals the session's subject. Mismatch → `assertion_invalid:user_handle_mismatch`.
 5. When `decision === "approved"`:
-   - Apply the session elevation per the consumer's policy: update `session.amr` to include the new factor, raise `session.acr` to at most `payload.grantedAcr`.
+   - Apply the session elevation per the consumer's policy: update `session.amr` to include the new factor (`"passkey"` for a webauthn gate, `"vta"`/`"did"` for a did-signed gate), raise `session.acr` to at most `payload.grantedAcr`.
    - If the session's `acr` cannot reach the originally-requested `targetAcr` → `acr_unsatisfied`.
-   - Consume the step-up so the same approve-response cannot be replayed.
+   - Consume the step-up so the same approve-response cannot be replayed. For a webauthn gate, persist the credential counter update.
 6. When `decision === "denied"`:
+   - Verify the did-signed gate (a denial MUST be subject-signed).
    - Consume the step-up.
    - Persist the denied response for audit. Take no further action on the session.
 
@@ -92,6 +116,8 @@ A conforming **consumer** (the relying party) **MUST**:
 `payload.deniedReason` — required when decision is `denied`.
 
 `payload.grantedAcr` — optional approver-declared AAL.
+
+`payload.evidence` — optional tagged union selecting the gate: `{ "kind": "did-signed" }` (framework proof is the gate; the default when omitted) or `{ "kind": "webauthn", "assertion": <AuthenticatorAssertionResponse> }` (the assertion over `challenge` is the gate). New kinds may be added in later minor versions; consumers that do not recognise a `kind` MUST reject with `no_gate` rather than silently elevate.
 
 `payload.ext` — extension slot.
 
@@ -120,6 +146,41 @@ A conforming **consumer** (the relying party) **MUST**:
     "created": "2026-05-23T14:00:30Z",
     "proofPurpose": "assertionMethod",
     "proofValue": "z3kg…"
+  }
+}
+```
+
+### Approver approves with a passkey on their phone (cross-device AAL2)
+
+The phone received the approve-request via DIDComm (woken by a push notification), showed the `reason`, and the user confirmed with Face ID. The phone's platform passkey signed over the step-up `challenge`; that assertion is the gate. No framework `proof` is required — though one MAY be added to bind the phone's own DID.
+
+```json
+{
+  "id": "approve-resp-aaaa-bbbb-cccc-ddddeeeeffff",
+  "type": "https://trusttasks.org/spec/auth/step-up/approve-response/0.1",
+  "issuer": "did:web:alice.example",
+  "recipient": "did:web:bank.example",
+  "issuedAt": "2026-05-23T14:00:30Z",
+  "payload": {
+    "subject": "did:web:alice.example",
+    "sessionId": "ec5d3c89-3f49-49b2-9d7d-2a8c0a8a7b9b",
+    "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+    "decision": "approved",
+    "grantedAcr": "aal2",
+    "evidence": {
+      "kind": "webauthn",
+      "assertion": {
+        "id": "Y3JlZF8xYTJiM2M",
+        "rawId": "Y3JlZF8xYTJiM2M",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiVkhKaGJuTm1aWEpEYjI1bWFYSnRUbTl1WTJWWVdRIn0",
+          "authenticatorData": "TXltSXNUaGVBdXRoRGF0YQ",
+          "signature": "U2lnbmF0dXJlVmFsdWVCYXNlNjQ",
+          "userHandle": "dXNyXzhmMmMxZDRlOWE3YjMwNTY"
+        }
+      }
+    }
   }
 }
 ```
@@ -191,7 +252,11 @@ The relying party's `#response` confirms whether elevation succeeded.
 
 ## Security & Privacy
 
-**Proof IS the gate.** The relying party MUST NOT take any field in this document as authoritative without a verified proof. A bearer-token-style step-up is not safe — the threat model includes a token-stealing attacker who would happily issue their own approve-response.
+**Exactly one gate, never zero.** The relying party MUST NOT take any field in this document as authoritative without a verified gate — either a framework `proof` (did-signed) or a verified WebAuthn assertion (webauthn). A bearer-token-style step-up is not safe — the threat model includes a token-stealing attacker who would happily issue their own approve-response. A document presenting neither gate, or an `evidence.kind` the consumer does not recognise, MUST be rejected (`no_gate`), never elevated.
+
+**WebAuthn challenge binding.** For a webauthn gate the assertion's `clientDataJSON` challenge MUST equal `payload.challenge` — the same nonce the relying party bound server-side at approve-request time. This is what stops an attacker from harvesting a passkey assertion gathered for one ceremony and replaying it into a step-up. The relying party verifies the binding before consulting `subject`; the WebAuthn `rpId`/`origin` checks supply the audience binding that the framework `recipient` would otherwise provide, which is why the framework `proof` MAY be omitted for this kind.
+
+**Gate ↔ amr consistency.** The factor recorded in `session.amr` MUST match the gate actually verified: `"passkey"` only when a WebAuthn assertion verified, `"vta"`/`"did"` only when a subject DID signature verified. A relying party MUST NOT record `"passkey"` on the strength of a `grantedAcr: "aal2"` hint alone — `grantedAcr` is an approver claim, not evidence.
 
 **Echo verification.** All three echo fields (`subject`, `sessionId`, `challenge`) MUST be compared bit-for-bit. An attacker who can re-target a captured approve-response to a different session (by mutating `sessionId`) MUST be defeated by the proof — but defense-in-depth: comparing all three fields blocks attacks against weak proof implementations.
 

@@ -29,6 +29,379 @@ pub mod error {
         }
     }
 }
+///`CredentialDescriptor`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "PublicKeyCredentialDescriptor",
+///  "type": "object",
+///  "required": [
+///    "id",
+///    "type"
+///  ],
+///  "properties": {
+///    "id": {
+///      "description": "base64url-encoded credential id.",
+///      "type": "string"
+///    },
+///    "transports": {
+///      "type": "array",
+///      "items": {
+///        "enum": [
+///          "usb",
+///          "nfc",
+///          "ble",
+///          "internal",
+///          "hybrid"
+///        ]
+///      }
+///    },
+///    "type": {
+///      "const": "public-key"
+///    }
+///  },
+///  "additionalProperties": false,
+///  "$anchor": "credentialDescriptor"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct CredentialDescriptor {
+    ///base64url-encoded credential id.
+    pub id: ::std::string::String,
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub transports: ::std::vec::Vec<CredentialDescriptorTransportsItem>,
+    #[serde(rename = "type")]
+    pub type_: ::serde_json::Value,
+}
+impl ::std::convert::From<&CredentialDescriptor> for CredentialDescriptor {
+    fn from(value: &CredentialDescriptor) -> Self {
+        value.clone()
+    }
+}
+///`CredentialDescriptorTransportsItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "enum": [
+///    "usb",
+///    "nfc",
+///    "ble",
+///    "internal",
+///    "hybrid"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum CredentialDescriptorTransportsItem {
+    #[serde(rename = "usb")]
+    Usb,
+    #[serde(rename = "nfc")]
+    Nfc,
+    #[serde(rename = "ble")]
+    Ble,
+    #[serde(rename = "internal")]
+    Internal,
+    #[serde(rename = "hybrid")]
+    Hybrid,
+}
+impl ::std::convert::From<&Self> for CredentialDescriptorTransportsItem {
+    fn from(value: &CredentialDescriptorTransportsItem) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CredentialDescriptorTransportsItem {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Usb => f.write_str("usb"),
+            Self::Nfc => f.write_str("nfc"),
+            Self::Ble => f.write_str("ble"),
+            Self::Internal => f.write_str("internal"),
+            Self::Hybrid => f.write_str("hybrid"),
+        }
+    }
+}
+impl ::std::str::FromStr for CredentialDescriptorTransportsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "usb" => Ok(Self::Usb),
+            "nfc" => Ok(Self::Nfc),
+            "ble" => Ok(Self::Ble),
+            "internal" => Ok(Self::Internal),
+            "hybrid" => Ok(Self::Hybrid),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for CredentialDescriptorTransportsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CredentialDescriptorTransportsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTransportsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Server-issued options for `navigator.credentials.get({ publicKey: ... })`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "PublicKeyCredentialRequestOptions",
+///  "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+///  "type": "object",
+///  "required": [
+///    "challenge"
+///  ],
+///  "properties": {
+///    "allowCredentials": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/CredentialDescriptor"
+///      }
+///    },
+///    "challenge": {
+///      "description": "base64url-encoded one-time nonce.",
+///      "type": "string"
+///    },
+///    "rpId": {
+///      "type": "string",
+///      "minLength": 1
+///    },
+///    "timeout": {
+///      "type": "integer",
+///      "minimum": 1.0
+///    },
+///    "userVerification": {
+///      "enum": [
+///        "discouraged",
+///        "preferred",
+///        "required"
+///      ]
+///    }
+///  },
+///  "additionalProperties": false,
+///  "$anchor": "credentialRequestOptions"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct CredentialRequestOptions {
+    #[serde(
+        rename = "allowCredentials",
+        default,
+        skip_serializing_if = "::std::vec::Vec::is_empty"
+    )]
+    pub allow_credentials: ::std::vec::Vec<CredentialDescriptor>,
+    ///base64url-encoded one-time nonce.
+    pub challenge: ::std::string::String,
+    #[serde(
+        rename = "rpId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub rp_id: ::std::option::Option<CredentialRequestOptionsRpId>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
+    #[serde(
+        rename = "userVerification",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
+}
+impl ::std::convert::From<&CredentialRequestOptions> for CredentialRequestOptions {
+    fn from(value: &CredentialRequestOptions) -> Self {
+        value.clone()
+    }
+}
+///`CredentialRequestOptionsRpId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct CredentialRequestOptionsRpId(::std::string::String);
+impl ::std::ops::Deref for CredentialRequestOptionsRpId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<CredentialRequestOptionsRpId> for ::std::string::String {
+    fn from(value: CredentialRequestOptionsRpId) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<&CredentialRequestOptionsRpId> for CredentialRequestOptionsRpId {
+    fn from(value: &CredentialRequestOptionsRpId) -> Self {
+        value.clone()
+    }
+}
+impl ::std::str::FromStr for CredentialRequestOptionsRpId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for CredentialRequestOptionsRpId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CredentialRequestOptionsRpId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CredentialRequestOptionsRpId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CredentialRequestOptionsRpId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`CredentialRequestOptionsUserVerification`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "enum": [
+///    "discouraged",
+///    "preferred",
+///    "required"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum CredentialRequestOptionsUserVerification {
+    #[serde(rename = "discouraged")]
+    Discouraged,
+    #[serde(rename = "preferred")]
+    Preferred,
+    #[serde(rename = "required")]
+    Required,
+}
+impl ::std::convert::From<&Self> for CredentialRequestOptionsUserVerification {
+    fn from(value: &CredentialRequestOptionsUserVerification) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CredentialRequestOptionsUserVerification {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Discouraged => f.write_str("discouraged"),
+            Self::Preferred => f.write_str("preferred"),
+            Self::Required => f.write_str("required"),
+        }
+    }
+}
+impl ::std::str::FromStr for CredentialRequestOptionsUserVerification {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "discouraged" => Ok(Self::Discouraged),
+            "preferred" => Ok(Self::Preferred),
+            "required" => Ok(Self::Required),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for CredentialRequestOptionsUserVerification {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CredentialRequestOptionsUserVerification {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CredentialRequestOptionsUserVerification {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -164,6 +537,19 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "subject"
 ///  ],
 ///  "properties": {
+///    "acceptableEvidence": {
+///      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`.",
+///      "type": "array",
+///      "items": {
+///        "type": "string",
+///        "enum": [
+///          "did-signed",
+///          "webauthn"
+///        ]
+///      },
+///      "minItems": 1,
+///      "uniqueItems": true
+///    },
 ///    "challenge": {
 ///      "description": "base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.",
 ///      "type": "string",
@@ -195,6 +581,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "description": "Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.",
 ///      "type": "integer",
 ///      "minimum": 1.0
+///    },
+///    "webauthn": {
+///      "description": "Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.",
+///      "$ref": "#/definitions/CredentialRequestOptions"
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -204,6 +594,13 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Payload {
+    ///Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`.
+    #[serde(
+        rename = "acceptableEvidence",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub acceptable_evidence: ::std::option::Option<Vec<PayloadAcceptableEvidenceItem>>,
     ///base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.
     pub challenge: PayloadChallenge,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -225,10 +622,90 @@ pub struct Payload {
     ///Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
+    ///Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub webauthn: ::std::option::Option<CredentialRequestOptions>,
 }
 impl ::std::convert::From<&Payload> for Payload {
     fn from(value: &Payload) -> Self {
         value.clone()
+    }
+}
+///`PayloadAcceptableEvidenceItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "did-signed",
+///    "webauthn"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum PayloadAcceptableEvidenceItem {
+    #[serde(rename = "did-signed")]
+    DidSigned,
+    #[serde(rename = "webauthn")]
+    Webauthn,
+}
+impl ::std::convert::From<&Self> for PayloadAcceptableEvidenceItem {
+    fn from(value: &PayloadAcceptableEvidenceItem) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for PayloadAcceptableEvidenceItem {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::DidSigned => f.write_str("did-signed"),
+            Self::Webauthn => f.write_str("webauthn"),
+        }
+    }
+}
+impl ::std::str::FromStr for PayloadAcceptableEvidenceItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "did-signed" => Ok(Self::DidSigned),
+            "webauthn" => Ok(Self::Webauthn),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadAcceptableEvidenceItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadAcceptableEvidenceItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadAcceptableEvidenceItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.
@@ -666,7 +1143,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable explanation of WHY the relying party is asking (e.g. \\\"confirm transfer of 1000 USD to bob.example\\\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"The session the relying party wants elevated. Opaque to the approver.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The VID whose session is being elevated. The approver MUST verify this is a VID it can speak for.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"targetAcr\": {\n      \"description\": \"The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level.\",\n      \"type\": \"string\"\n    },\n    \"ttl\": {\n      \"description\": \"Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"sessionId\",\n    \"challenge\",\n    \"reason\"\n  ],\n  \"title\": \"Auth — Step-up Approve Request\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialRequestOptions\": {\n      \"$anchor\": \"credentialRequestOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\n      \"properties\": {\n        \"allowCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"rpId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"userVerification\": {\n          \"enum\": [\n            \"discouraged\",\n            \"preferred\",\n            \"required\"\n          ]\n        }\n      },\n      \"required\": [\n        \"challenge\"\n      ],\n      \"title\": \"PublicKeyCredentialRequestOptions\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session.\",\n  \"properties\": {\n    \"acceptableEvidence\": {\n      \"description\": \"Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`.\",\n      \"items\": {\n        \"enum\": [\n          \"did-signed\",\n          \"webauthn\"\n        ],\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"challenge\": {\n      \"description\": \"base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable explanation of WHY the relying party is asking (e.g. \\\"confirm transfer of 1000 USD to bob.example\\\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"The session the relying party wants elevated. Opaque to the approver.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The VID whose session is being elevated. The approver MUST verify this is a VID it can speak for.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"targetAcr\": {\n      \"description\": \"The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level.\",\n      \"type\": \"string\"\n    },\n    \"ttl\": {\n      \"description\": \"Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"webauthn\": {\n      \"$ref\": \"#/$defs/CredentialRequestOptions\",\n      \"description\": \"Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"sessionId\",\n    \"challenge\",\n    \"reason\"\n  ],\n  \"title\": \"Auth — Step-up Approve Request\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

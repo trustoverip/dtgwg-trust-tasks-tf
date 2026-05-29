@@ -29,6 +29,293 @@ pub mod error {
         }
     }
 }
+///The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "AuthenticatorAssertionResponse (login)",
+///  "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
+///  "type": "object",
+///  "required": [
+///    "id",
+///    "rawId",
+///    "response",
+///    "type"
+///  ],
+///  "properties": {
+///    "authenticatorAttachment": {
+///      "enum": [
+///        "platform",
+///        "cross-platform"
+///      ]
+///    },
+///    "clientExtensionResults": {
+///      "type": "object"
+///    },
+///    "id": {
+///      "type": "string"
+///    },
+///    "rawId": {
+///      "type": "string"
+///    },
+///    "response": {
+///      "type": "object",
+///      "required": [
+///        "authenticatorData",
+///        "clientDataJSON",
+///        "signature"
+///      ],
+///      "properties": {
+///        "authenticatorData": {
+///          "type": "string"
+///        },
+///        "clientDataJSON": {
+///          "type": "string"
+///        },
+///        "signature": {
+///          "type": "string"
+///        },
+///        "userHandle": {
+///          "type": [
+///            "string",
+///            "null"
+///          ]
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    "type": {
+///      "const": "public-key"
+///    }
+///  },
+///  "additionalProperties": false,
+///  "$anchor": "assertionResponse"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct AssertionResponse {
+    #[serde(
+        rename = "authenticatorAttachment",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub authenticator_attachment: ::std::option::Option<AssertionResponseAuthenticatorAttachment>,
+    #[serde(
+        rename = "clientExtensionResults",
+        default,
+        skip_serializing_if = "::serde_json::Map::is_empty"
+    )]
+    pub client_extension_results: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub id: ::std::string::String,
+    #[serde(rename = "rawId")]
+    pub raw_id: ::std::string::String,
+    pub response: AssertionResponseResponse,
+    #[serde(rename = "type")]
+    pub type_: ::serde_json::Value,
+}
+impl ::std::convert::From<&AssertionResponse> for AssertionResponse {
+    fn from(value: &AssertionResponse) -> Self {
+        value.clone()
+    }
+}
+///`AssertionResponseAuthenticatorAttachment`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "enum": [
+///    "platform",
+///    "cross-platform"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum AssertionResponseAuthenticatorAttachment {
+    #[serde(rename = "platform")]
+    Platform,
+    #[serde(rename = "cross-platform")]
+    CrossPlatform,
+}
+impl ::std::convert::From<&Self> for AssertionResponseAuthenticatorAttachment {
+    fn from(value: &AssertionResponseAuthenticatorAttachment) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for AssertionResponseAuthenticatorAttachment {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Platform => f.write_str("platform"),
+            Self::CrossPlatform => f.write_str("cross-platform"),
+        }
+    }
+}
+impl ::std::str::FromStr for AssertionResponseAuthenticatorAttachment {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "platform" => Ok(Self::Platform),
+            "cross-platform" => Ok(Self::CrossPlatform),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for AssertionResponseAuthenticatorAttachment {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AssertionResponseAuthenticatorAttachment {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthenticatorAttachment {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///`AssertionResponseResponse`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "authenticatorData",
+///    "clientDataJSON",
+///    "signature"
+///  ],
+///  "properties": {
+///    "authenticatorData": {
+///      "type": "string"
+///    },
+///    "clientDataJSON": {
+///      "type": "string"
+///    },
+///    "signature": {
+///      "type": "string"
+///    },
+///    "userHandle": {
+///      "type": [
+///        "string",
+///        "null"
+///      ]
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct AssertionResponseResponse {
+    #[serde(rename = "authenticatorData")]
+    pub authenticator_data: ::std::string::String,
+    #[serde(rename = "clientDataJSON")]
+    pub client_data_json: ::std::string::String,
+    pub signature: ::std::string::String,
+    #[serde(
+        rename = "userHandle",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub user_handle: ::std::option::Option<::std::string::String>,
+}
+impl ::std::convert::From<&AssertionResponseResponse> for AssertionResponseResponse {
+    fn from(value: &AssertionResponseResponse) -> Self {
+        value.clone()
+    }
+}
+///Tagged union over `kind` describing the cryptographic factor the approver presents to back the elevation. Pluggable so new factor kinds can be added without disturbing existing consumers (SPEC §4.5.1 ext rules apply to unknown kinds at the producer's discretion).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "Step-up Evidence",
+///  "description": "Tagged union over `kind` describing the cryptographic factor the approver presents to back the elevation. Pluggable so new factor kinds can be added without disturbing existing consumers (SPEC §4.5.1 ext rules apply to unknown kinds at the producer's discretion).",
+///  "oneOf": [
+///    {
+///      "title": "DidSigned",
+///      "description": "The elevation is gated by the document's framework `proof` — a Data Integrity signature from a key the subject controls (SPEC §4.7). This is the default when `evidence` is omitted. `amr` reflects \"vta\"/\"did\".",
+///      "type": "object",
+///      "required": [
+///        "kind"
+///      ],
+///      "properties": {
+///        "kind": {
+///          "const": "did-signed"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "WebAuthn",
+///      "type": "object",
+///      "required": [
+///        "assertion",
+///        "kind"
+///      ],
+///      "properties": {
+///        "assertion": {
+///          "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API (`navigator.credentials.get` / ASAuthorization / Credential Manager). Its `clientDataJSON` challenge MUST equal the step-up `challenge`. The relying party verifies it per WebAuthn Level 2 §7.2 exactly as auth/passkey/login/finish does; the assertion is the gate and `amr` reflects \"passkey\".",
+///          "$ref": "#/definitions/AssertionResponse"
+///        },
+///        "kind": {
+///          "const": "webauthn"
+///        }
+///      },
+///      "additionalProperties": false
+///    }
+///  ],
+///  "$anchor": "evidence"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(tag = "kind", content = "assertion")]
+pub enum Evidence {
+    #[serde(rename = "did-signed")]
+    DidSigned,
+    ///WebAuthn
+    #[serde(rename = "webauthn")]
+    Webauthn(AssertionResponse),
+}
+impl ::std::convert::From<&Self> for Evidence {
+    fn from(value: &Evidence) -> Self {
+        value.clone()
+    }
+}
+impl ::std::convert::From<AssertionResponse> for Evidence {
+    fn from(value: AssertionResponse) -> Self {
+        Self::Webauthn(value)
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -181,6 +468,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "description": "Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).",
 ///      "type": "string"
 ///    },
+///    "evidence": {
+///      "description": "How the approver demonstrated the factor backing this elevation. A tagged union on `kind`. When `evidence` is absent the elevation is gated solely by the document's framework `proof` (equivalent to `kind: did-signed`). When `kind: webauthn` is supplied, the carried WebAuthn assertion over `challenge` is the gate and the framework `proof` MAY be omitted.",
+///      "$ref": "#/definitions/Evidence"
+///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
@@ -217,6 +508,9 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub denied_reason: ::std::option::Option<::std::string::String>,
+    ///How the approver demonstrated the factor backing this elevation. A tagged union on `kind`. When `evidence` is absent the elevation is gated solely by the document's framework `proof` (equivalent to `kind: did-signed`). When `kind: webauthn` is supplied, the carried WebAuthn assertion over `challenge` is the gate and the framework `proof` MAY be omitted.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub evidence: ::std::option::Option<Evidence>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it.
@@ -979,16 +1273,14 @@ impl<'de> ::serde::Deserialize<'de> for SessionSubject {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/step-up/approve-response/0.1";
-    const IS_PROOF_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str =
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response";
-    const IS_PROOF_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Present when status is `rejected` (e.g. \\\"challenge expired\\\", \\\"session not found\\\", \\\"acr ceiling exceeded\\\").\",\n          \"type\": \"string\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"Present when status is `elevated`. The session's updated amr/acr after the approval was applied.\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"elevated\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Response — relying party ack\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approve-response/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The approver's signed ratification of a step-up: subject + sessionId + challenge are echoed inside a proof-bearing document so the relying party can elevate the session.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"decision\": {\n      \"description\": \"`approved` elevates the session per the relying party's policy. `denied` is a signed refusal — useful for audit even though it elevates nothing.\",\n      \"enum\": [\n        \"approved\",\n        \"denied\"\n      ],\n      \"type\": \"string\"\n    },\n    \"deniedReason\": {\n      \"description\": \"Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"grantedAcr\": {\n      \"description\": \"The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it.\",\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party uses it to locate the session to elevate.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party verifies it equals the session's subject.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"sessionId\",\n    \"challenge\",\n    \"decision\"\n  ],\n  \"title\": \"Auth — Step-up Approve Response\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"Evidence\": {\n      \"$anchor\": \"evidence\",\n      \"description\": \"Tagged union over `kind` describing the cryptographic factor the approver presents to back the elevation. Pluggable so new factor kinds can be added without disturbing existing consumers (SPEC §4.5.1 ext rules apply to unknown kinds at the producer's discretion).\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The elevation is gated by the document's framework `proof` — a Data Integrity signature from a key the subject controls (SPEC §4.7). This is the default when `evidence` is omitted. `amr` reflects \\\"vta\\\"/\\\"did\\\".\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"did-signed\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"title\": \"DidSigned\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"assertion\": {\n              \"$ref\": \"#/$defs/AssertionResponse\",\n              \"description\": \"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API (`navigator.credentials.get` / ASAuthorization / Credential Manager). Its `clientDataJSON` challenge MUST equal the step-up `challenge`. The relying party verifies it per WebAuthn Level 2 §7.2 exactly as auth/passkey/login/finish does; the assertion is the gate and `amr` reflects \\\"passkey\\\".\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"assertion\"\n          ],\n          \"title\": \"WebAuthn\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Step-up Evidence\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Present when status is `rejected` (e.g. \\\"challenge expired\\\", \\\"session not found\\\", \\\"acr ceiling exceeded\\\").\",\n          \"type\": \"string\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"Present when status is `elevated`. The session's updated amr/acr after the approval was applied.\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"elevated\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Response — relying party ack\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approve-response/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The approver's signed ratification of a step-up: subject + sessionId + challenge are echoed inside a proof-bearing document so the relying party can elevate the session.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"decision\": {\n      \"description\": \"`approved` elevates the session per the relying party's policy. `denied` is a signed refusal — useful for audit even though it elevates nothing.\",\n      \"enum\": [\n        \"approved\",\n        \"denied\"\n      ],\n      \"type\": \"string\"\n    },\n    \"deniedReason\": {\n      \"description\": \"Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).\",\n      \"type\": \"string\"\n    },\n    \"evidence\": {\n      \"$ref\": \"#/$defs/Evidence\",\n      \"description\": \"How the approver demonstrated the factor backing this elevation. A tagged union on `kind`. When `evidence` is absent the elevation is gated solely by the document's framework `proof` (equivalent to `kind: did-signed`). When `kind: webauthn` is supplied, the carried WebAuthn assertion over `challenge` is the gate and the framework `proof` MAY be omitted.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"grantedAcr\": {\n      \"description\": \"The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it.\",\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party uses it to locate the session to elevate.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party verifies it equals the session's subject.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"sessionId\",\n    \"challenge\",\n    \"decision\"\n  ],\n  \"title\": \"Auth — Step-up Approve Response\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {
@@ -1034,6 +1326,18 @@ mod conformance {
             (
                 "Challenge below minimum length.",
                 "{\n  \"challenge\": \"short\",\n  \"decision\": \"approved\",\n  \"sessionId\": \"ec5d3c89\",\n  \"subject\": \"did:web:alice.example\"\n}",
+            ),
+            (
+                "Unknown evidence kind.",
+                "{\n  \"challenge\": \"VHJhbnNmZXJDb25maXJtTm9uY2VYWQ\",\n  \"decision\": \"approved\",\n  \"evidence\": {\n    \"code\": \"123456\",\n    \"kind\": \"totp\"\n  },\n  \"sessionId\": \"ec5d3c89\",\n  \"subject\": \"did:web:alice.example\"\n}",
+            ),
+            (
+                "WebAuthn evidence missing the required assertion.",
+                "{\n  \"challenge\": \"VHJhbnNmZXJDb25maXJtTm9uY2VYWQ\",\n  \"decision\": \"approved\",\n  \"evidence\": {\n    \"kind\": \"webauthn\"\n  },\n  \"sessionId\": \"ec5d3c89\",\n  \"subject\": \"did:web:alice.example\"\n}",
+            ),
+            (
+                "WebAuthn assertion response is missing required signature field.",
+                "{\n  \"challenge\": \"VHJhbnNmZXJDb25maXJtTm9uY2VYWQ\",\n  \"decision\": \"approved\",\n  \"evidence\": {\n    \"assertion\": {\n      \"id\": \"Y3JlZF8xYTJiM2M\",\n      \"rawId\": \"Y3JlZF8xYTJiM2M\",\n      \"response\": {\n        \"authenticatorData\": \"TXltSXNUaGVBdXRoRGF0YQ\",\n        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0\"\n      },\n      \"type\": \"public-key\"\n    },\n    \"kind\": \"webauthn\"\n  },\n  \"sessionId\": \"ec5d3c89\",\n  \"subject\": \"did:web:alice.example\"\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {
