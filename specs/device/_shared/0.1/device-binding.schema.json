@@ -32,6 +32,10 @@
           "description": "Free-form platform descriptor (e.g. \"macOS 16 / Chrome 142\", \"iOS 19.1\", \"Android 16\", \"Linux/x86_64\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat."
         },
         "attestation": { "$ref": "#/$defs/DeviceAttestation" },
+        "pushCapable": {
+          "type": "boolean",
+          "description": "Whether this device has registered a push channel with its mediator via the push binding's `set-device-info` (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only — the actual push token is held by the mediator, never by the maintainer/VTA. The maintainer sets this from a signal supplied by its mediator, not from device-supplied registration data."
+        },
         "capabilities": {
           "type": "array",
           "items": { "$ref": "#/$defs/Capability" },
@@ -176,6 +180,74 @@
             "kind": { "const": "none" }
           },
           "description": "No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up)."
+        }
+      ]
+    },
+    "PushRegistration": {
+      "title": "PushRegistration",
+      "description": "A device's platform push channel — the body of a DIDComm `set-device-info` message the device sends to its mediator (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). Held by the mediator only, never by the maintainer/VTA. Used by the mediator to send a contentless wake-up when DIDComm messages are queued for an offline device — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.",
+      "oneOf": [
+        {
+          "title": "Apns",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["platform", "token", "topic"],
+          "properties": {
+            "platform": { "const": "apns" },
+            "token": {
+              "type": "string",
+              "minLength": 1,
+              "description": "APNs device token (hex string issued by Apple Push Notification service)."
+            },
+            "topic": {
+              "type": "string",
+              "minLength": 1,
+              "description": "APNs topic — typically the app bundle identifier the mediator pushes to."
+            },
+            "environment": {
+              "type": "string",
+              "enum": ["sandbox", "production"],
+              "description": "Which APNs environment issued the token. Maintainers route to the matching APNs endpoint."
+            }
+          }
+        },
+        {
+          "title": "Fcm",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["platform", "token"],
+          "properties": {
+            "platform": { "const": "fcm" },
+            "token": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Firebase Cloud Messaging registration token. The mediator sends a data message (not a notification message) so the app controls wake and display."
+            }
+          }
+        },
+        {
+          "title": "WebPush",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["platform", "endpoint", "keys"],
+          "properties": {
+            "platform": { "const": "webpush" },
+            "endpoint": {
+              "type": "string",
+              "format": "uri",
+              "description": "RFC 8030 Web Push subscription endpoint."
+            },
+            "keys": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["p256dh", "auth"],
+              "properties": {
+                "p256dh": { "type": "string", "minLength": 1, "description": "base64url-encoded P-256 ECDH public key." },
+                "auth": { "type": "string", "minLength": 1, "description": "base64url-encoded auth secret." }
+              },
+              "description": "Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption."
+            }
+          }
         }
       ]
     }

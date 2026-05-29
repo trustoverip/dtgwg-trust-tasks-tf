@@ -61,6 +61,8 @@ A conforming **producer** **MUST**:
 3. **SHOULD** populate `attestation` when the platform supports it. Maintainers MAY require attestation by policy.
 4. Carry a `proof`.
 
+> **Note.** Push wake-up is **not** configured here. A device that needs to be woken in the background (any mobile Companion) registers its push channel directly with its **mediator** via the [push wake-up binding](../../../../bindings/push/0.1/spec.md)'s `set-device-info` exchange — the mediator holds the token, not the maintainer. The maintainer's only view of it is the non-secret `pushCapable` flag on the returned `DeviceBinding`.
+
 A conforming **consumer** (the vault maintainer) **MUST**:
 
 1. Verify proof. The producer's DID MUST already be in the ACL (placed there by step 2 above). If not → `device/register:no_pending_enrolment`.
@@ -71,7 +73,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 ## Payload
 
-`consumerKind` (REQUIRED), `displayName` (REQUIRED), `hpkePublicKey` (REQUIRED), `platform` (optional), `attestation` (optional, RECOMMENDED).
+`consumerKind` (REQUIRED), `displayName` (REQUIRED), `hpkePublicKey` (REQUIRED), `platform` (optional), `attestation` (optional, RECOMMENDED). Push wake-up is registered with the mediator, not here (see the note above).
 
 ## Response
 
