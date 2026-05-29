@@ -28,10 +28,38 @@ export interface AuthStepUpApproveRequest {
    */
   targetAcr?: string;
   /**
+   * Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`.
+   *
+   * @minItems 1
+   */
+  acceptableEvidence?: ["did-signed" | "webauthn", ...("did-signed" | "webauthn")[]];
+  webauthn?: PublicKeyCredentialRequestOptions;
+  /**
    * Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.
    */
   ttl?: number;
   ext?: Ext;
+}
+/**
+ * Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.
+ */
+export interface PublicKeyCredentialRequestOptions {
+  /**
+   * base64url-encoded one-time nonce.
+   */
+  challenge: string;
+  timeout?: number;
+  rpId?: string;
+  allowCredentials?: PublicKeyCredentialDescriptor[];
+  userVerification?: "discouraged" | "preferred" | "required";
+}
+export interface PublicKeyCredentialDescriptor {
+  type: "public-key";
+  /**
+   * base64url-encoded credential id.
+   */
+  id: string;
+  transports?: ("usb" | "nfc" | "ble" | "internal" | "hybrid")[];
 }
 /**
  * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.

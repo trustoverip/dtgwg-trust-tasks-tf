@@ -67,14 +67,16 @@ A conforming **producer** (the relying party) **MUST**:
 4. Generate `payload.challenge` with ≥128 bits of entropy and bind it server-side to `(subject, sessionId, expiresAt)`.
 5. Populate `payload.reason` with a user-meaningful explanation. The approver MAY refuse with `user_declined` if the reason is empty or generic.
 6. **MAY** declare `payload.targetAcr` — the AAL the relying party expects on completion.
-7. Include a verified `proof` so the approver can rely on the request's `recipient` as authoritative.
+7. **MAY** declare `payload.acceptableEvidence` to constrain which approve-response gates it will accept (`did-signed`, `webauthn`, or both). When the relying party wants a passkey-backed elevation (`webauthn`), it **SHOULD** also supply `payload.webauthn` — the `PublicKeyCredentialRequestOptions` the approver feeds to the platform passkey API — whose `challenge` **MUST** equal `payload.challenge`.
+8. Include a verified `proof` so the approver can rely on the request's `recipient` as authoritative.
 
 A conforming **consumer** (the approver) **MUST**:
 
 1. Verify the document's `proof`.
 2. Determine whether it speaks for `payload.subject`. If not → `subject_unknown`.
 3. Decide whether to surface the request to the user (subject of consent) or to ratify it programmatically (policy-bound delegation). The framework leaves this to the approver — but if a human is presented with the request, the `reason` MUST be shown verbatim.
-4. Return a `#response` document carrying `status: accepted` (will return an approve-response asynchronously) or `status: refused` (with a `reason`).
+4. Honor `payload.acceptableEvidence` when present: the approve-response it later returns MUST carry an `evidence.kind` in that list. If the approver cannot satisfy any listed kind (e.g. `webauthn` was demanded but the device has no passkey for the subject) → `method_unsupported`. When `payload.webauthn` is present and the approver will produce `webauthn` evidence, it MUST pass those options to the platform passkey API unchanged and assert over `payload.challenge`.
+5. Return a `#response` document carrying `status: accepted` (will return an approve-response asynchronously) or `status: refused` (with a `reason`).
 
 The approve-response document arrives out-of-band — typically via the approver's preferred transport (DIDComm push to the relying party's mediator, or a push channel the relying party registered at request time).
 
@@ -90,6 +92,10 @@ The approve-response document arrives out-of-band — typically via the approver
 `payload.subject`, `payload.sessionId`, `payload.challenge`, `payload.reason` — all REQUIRED.
 
 `payload.targetAcr`, `payload.ttl` — optional hints.
+
+`payload.acceptableEvidence` — optional list of accepted approve-response gates (`did-signed` / `webauthn`).
+
+`payload.webauthn` — optional `PublicKeyCredentialRequestOptions` for driving a passkey-backed (`webauthn`) elevation; its `challenge` MUST equal `payload.challenge`.
 
 `payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member).
 
@@ -110,6 +116,38 @@ The approve-response document arrives out-of-band — typically via the approver
     "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
     "reason": "Confirm transfer of $1,000 to did:web:bob.example",
     "targetAcr": "aal2",
+    "ttl": 120
+  },
+  "proof": { "…": "…" }
+}
+```
+
+### Relying party requires a passkey-backed elevation on the user's phone
+
+The relying party holds a browser session at AAL 1 and will only accept a `webauthn` gate. It supplies the WebAuthn request options; the approver (the phone) prompts Face ID, asserts the passkey over the shared `challenge`, and returns it inside the approve-response `evidence`.
+
+```json
+{
+  "id": "step-up-2345-6789-01bc-def123456789",
+  "type": "https://trusttasks.org/spec/auth/step-up/approve-request/0.1",
+  "issuer": "did:web:bank.example",
+  "recipient": "did:web:alice.example",
+  "issuedAt": "2026-05-23T14:00:00Z",
+  "payload": {
+    "subject": "did:web:alice.example",
+    "sessionId": "ec5d3c89-3f49-49b2-9d7d-2a8c0a8a7b9b",
+    "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+    "reason": "Confirm transfer of $1,000 to did:web:bob.example",
+    "targetAcr": "aal2",
+    "acceptableEvidence": ["webauthn"],
+    "webauthn": {
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "rpId": "bank.example",
+      "userVerification": "required",
+      "allowCredentials": [
+        { "type": "public-key", "id": "Y3JlZF8xYTJiM2M" }
+      ]
+    },
     "ttl": 120
   },
   "proof": { "…": "…" }
