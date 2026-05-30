@@ -11,6 +11,10 @@
     "displayName": { "type": "string", "minLength": 1, "maxLength": 128 },
     "platform": { "type": "string" },
     "attestation": { "$ref": "../../_shared/0.1/device-binding.schema.json#/$defs/DeviceAttestation" },
+    "keyCustody": {
+      "$ref": "../../_shared/0.1/device-binding.schema.json#/$defs/KeyCustody",
+      "description": "OPTIONAL. How the device custodies its private keys (tier + algorithms). RECOMMENDED for mobile Companions. Maintainer policy input — see docs/design-notes/mobile-key-custody-profile.md."
+    },
     "hpkePublicKey": {
       "type": "string",
       "minLength": 1,
