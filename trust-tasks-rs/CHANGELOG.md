@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.1.3] — 2026-05-30
+
+Additive cross-device step-up + push-wake-up support, regenerated from the spec changes in PRs #61 and #62. The change set is purely additive, so existing consumers pick up `0.1.3` via `cargo update -p trust-tasks-rs` without code changes.
+
+### Changed — existing specs
+
+- **`auth/step-up/approve-response/0.1`**: adds optional `evidence` — a tagged union (`did-signed` | `webauthn`) selecting the elevation gate. The `webauthn` variant carries an `AuthenticatorAssertionResponse` over the step-up challenge, enabling cross-device AAL2 (a browser session elevated by a passkey on the phone) alongside the existing DID-signed gate. Adds the `assertion_invalid` and `no_gate` error codes. Generated as the `Evidence` enum.
+- **`auth/step-up/approve-request/0.1`**: adds optional `acceptableEvidence` (which evidence gates the relying party will accept) and `webauthn` (`PublicKeyCredentialRequestOptions`) so a relying party can drive a passkey-backed elevation.
+- **`device/_shared/0.1/device-binding`** (`DeviceBinding`): adds the non-secret `pushCapable` flag for `device/list` visibility. The push token itself is held by the mediator (per the push wake-up binding), never by the maintainer/VTA.
+
 ## [0.1.2] — 2026-05-27
 
 This is a roll-up release covering everything merged since 0.1.1 (PRs #40–#56). The change set is overwhelmingly additive — new spec families regenerated into `specs::*` — so existing consumers should pick up `0.1.2` via `cargo update -p trust-tasks-rs` without code changes.
@@ -172,5 +182,6 @@ This is a roll-up release covering everything merged since 0.1.1 (PRs #40–#56)
 - `TypeUri` parser accepts `trust-task-discovery` as a framework-defined
   slug per the SPEC §6.1 reserved-slug list.
 
+[0.1.3]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-rs-v0.1.3
 [0.1.1]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-rs-v0.1.1
 [0.1.0]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/v0.1.0
