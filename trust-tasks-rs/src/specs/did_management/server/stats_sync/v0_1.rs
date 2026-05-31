@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -242,11 +232,6 @@ pub struct Payload {
     #[serde(rename = "perMnemonic")]
     pub per_mnemonic: ::std::vec::Vec<PayloadPerMnemonicItem>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadBucketsItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -290,11 +275,6 @@ pub struct PayloadBucketsItem {
     pub r: u64,
     pub u: u64,
 }
-impl ::std::convert::From<&PayloadBucketsItem> for PayloadBucketsItem {
-    fn from(value: &PayloadBucketsItem) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadBucketsItemMnemonic`
 ///
 /// <details><summary>JSON schema</summary>
@@ -318,11 +298,6 @@ impl ::std::ops::Deref for PayloadBucketsItemMnemonic {
 impl ::std::convert::From<PayloadBucketsItemMnemonic> for ::std::string::String {
     fn from(value: PayloadBucketsItemMnemonic) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadBucketsItemMnemonic> for PayloadBucketsItemMnemonic {
-    fn from(value: &PayloadBucketsItemMnemonic) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadBucketsItemMnemonic {
@@ -391,11 +366,6 @@ impl ::std::ops::Deref for PayloadInstanceId {
 impl ::std::convert::From<PayloadInstanceId> for ::std::string::String {
     fn from(value: PayloadInstanceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadInstanceId> for PayloadInstanceId {
-    fn from(value: &PayloadInstanceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadInstanceId {
@@ -478,11 +448,6 @@ pub struct PayloadPerMnemonicItem {
     pub resolves: u64,
     pub updates: u64,
 }
-impl ::std::convert::From<&PayloadPerMnemonicItem> for PayloadPerMnemonicItem {
-    fn from(value: &PayloadPerMnemonicItem) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadPerMnemonicItemMnemonic`
 ///
 /// <details><summary>JSON schema</summary>
@@ -506,11 +471,6 @@ impl ::std::ops::Deref for PayloadPerMnemonicItemMnemonic {
 impl ::std::convert::From<PayloadPerMnemonicItemMnemonic> for ::std::string::String {
     fn from(value: PayloadPerMnemonicItemMnemonic) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadPerMnemonicItemMnemonic> for PayloadPerMnemonicItemMnemonic {
-    fn from(value: &PayloadPerMnemonicItemMnemonic) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadPerMnemonicItemMnemonic {
@@ -593,11 +553,6 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "instanceId")]
     pub instance_id: ::std::string::String,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =

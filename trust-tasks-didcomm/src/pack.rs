@@ -53,7 +53,7 @@ where
 /// the verified peer DID.
 ///
 /// `expected_sender_did` is the DID the consumer expects the envelope
-/// to come from. The current `affinidi-messaging-didcomm` (v0.13)
+/// to come from. The current `affinidi-messaging-didcomm` (v0.14)
 /// `DIDCommAgent::unpack` requires this to look up the sender's public
 /// key in its store; pass the DID of the peer you previously called
 /// `agent.add_peer(...)` for. Servers receiving from multiple peers
@@ -82,6 +82,13 @@ where
             authenticated: true,
             sender_kid: Some(sender_kid),
             recipient_kid,
+            // didcomm 0.14 adds `legacy_kek_used` (pre-0.14 ECDH-1PU KEK
+            // migration signal), `non_repudiation`, and inner-JWS
+            // `signer_kid`. The §4.8.1 transport-authenticated sender is
+            // the authcrypt `sender_kid`; surfacing the inner signer or
+            // gating on the legacy KEK would be a behaviour change beyond
+            // this binding's current contract, so they're ignored here.
+            ..
         } => (
             message,
             did_from_kid(&sender_kid),
@@ -97,6 +104,10 @@ where
         UnpackResult::Signed { .. } => {
             return Err(DidcommError::UnauthenticatedSender);
         }
+        // `UnpackResult` is `#[non_exhaustive]` as of didcomm 0.14. Any
+        // future variant won't carry the transport-authenticated sender
+        // the §4.8.1 pipeline relies on, so fail closed.
+        _ => return Err(DidcommError::UnauthenticatedSender),
     };
 
     if message.typ != ENVELOPE_TYPE {

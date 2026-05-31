@@ -141,11 +141,6 @@ pub struct DidRecord {
     #[serde(rename = "versionCount")]
     pub version_count: u64,
 }
-impl ::std::convert::From<&DidRecord> for DidRecord {
-    fn from(value: &DidRecord) -> Self {
-        value.clone()
-    }
-}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -177,11 +172,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -210,11 +200,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -311,11 +296,6 @@ pub struct Payload {
     #[serde(default)]
     pub reserve: bool,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadPath`
 ///
 /// <details><summary>JSON schema</summary>
@@ -339,11 +319,6 @@ impl ::std::ops::Deref for PayloadPath {
 impl ::std::convert::From<PayloadPath> for ::std::string::String {
     fn from(value: PayloadPath) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadPath> for PayloadPath {
-    fn from(value: &PayloadPath) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadPath {
@@ -435,11 +410,6 @@ pub struct Response {
     pub record: ::std::option::Option<DidRecord>,
     ///True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available.
     pub reserved: bool,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/did/check-name/0.1";

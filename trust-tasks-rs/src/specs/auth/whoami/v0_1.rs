@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -174,11 +164,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -244,11 +229,6 @@ pub struct Response {
     ///Current session state for the producer.
     pub session: Session,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseRolesItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -272,11 +252,6 @@ impl ::std::ops::Deref for ResponseRolesItem {
 impl ::std::convert::From<ResponseRolesItem> for ::std::string::String {
     fn from(value: ResponseRolesItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseRolesItem> for ResponseRolesItem {
-    fn from(value: &ResponseRolesItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseRolesItem {
@@ -345,11 +320,6 @@ impl ::std::ops::Deref for ResponseScopesItem {
 impl ::std::convert::From<ResponseScopesItem> for ::std::string::String {
     fn from(value: ResponseScopesItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseScopesItem> for ResponseScopesItem {
-    fn from(value: &ResponseScopesItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseScopesItem {
@@ -477,11 +447,6 @@ pub struct Session {
     ///The authenticated party's VID (typically a DID URL).
     pub subject: SessionSubject,
 }
-impl ::std::convert::From<&Session> for Session {
-    fn from(value: &Session) -> Self {
-        value.clone()
-    }
-}
 ///`SessionAmrItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -505,11 +470,6 @@ impl ::std::ops::Deref for SessionAmrItem {
 impl ::std::convert::From<SessionAmrItem> for ::std::string::String {
     fn from(value: SessionAmrItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionAmrItem> for SessionAmrItem {
-    fn from(value: &SessionAmrItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionAmrItem {
@@ -581,11 +541,6 @@ impl ::std::convert::From<SessionId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&SessionId> for SessionId {
-    fn from(value: &SessionId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SessionId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -653,11 +608,6 @@ impl ::std::ops::Deref for SessionSubject {
 impl ::std::convert::From<SessionSubject> for ::std::string::String {
     fn from(value: SessionSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionSubject> for SessionSubject {
-    fn from(value: &SessionSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionSubject {

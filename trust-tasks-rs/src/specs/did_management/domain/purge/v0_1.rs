@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -185,11 +175,6 @@ pub struct Payload {
     #[serde(rename = "purgeServers", default)]
     pub purge_servers: bool,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadName`
 ///
 /// <details><summary>JSON schema</summary>
@@ -213,11 +198,6 @@ impl ::std::ops::Deref for PayloadName {
 impl ::std::convert::From<PayloadName> for ::std::string::String {
     fn from(value: PayloadName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadName> for PayloadName {
-    fn from(value: &PayloadName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadName {
@@ -326,11 +306,6 @@ pub struct Response {
     #[serde(rename = "purgedAt")]
     pub purged_at: ::chrono::DateTime<::chrono::offset::Utc>,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseFanoutItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -365,11 +340,6 @@ pub struct ResponseFanoutItem {
     pub instance_id: ::std::string::String,
     pub status: ResponseFanoutItemStatus,
 }
-impl ::std::convert::From<&ResponseFanoutItem> for ResponseFanoutItem {
-    fn from(value: &ResponseFanoutItem) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseFanoutItemStatus`
 ///
 /// <details><summary>JSON schema</summary>
@@ -401,11 +371,6 @@ pub enum ResponseFanoutItemStatus {
     Queued,
     #[serde(rename = "failed")]
     Failed,
-}
-impl ::std::convert::From<&Self> for ResponseFanoutItemStatus {
-    fn from(value: &ResponseFanoutItemStatus) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ResponseFanoutItemStatus {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {

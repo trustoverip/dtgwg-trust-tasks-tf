@@ -102,11 +102,6 @@ pub enum ConsumerKind {
         service_kind: ConsumerKindServiceKind,
     },
 }
-impl ::std::convert::From<&Self> for ConsumerKind {
-    fn from(value: &ConsumerKind) -> Self {
-        value.clone()
-    }
-}
 ///`ConsumerKindFormFactor`
 ///
 /// <details><summary>JSON schema</summary>
@@ -141,11 +136,6 @@ pub enum ConsumerKindFormFactor {
     Mobile,
     #[serde(rename = "desktop")]
     Desktop,
-}
-impl ::std::convert::From<&Self> for ConsumerKindFormFactor {
-    fn from(value: &ConsumerKindFormFactor) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ConsumerKindFormFactor {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -224,11 +214,6 @@ pub enum ConsumerKindServiceKind {
     #[serde(rename = "daemon")]
     Daemon,
 }
-impl ::std::convert::From<&Self> for ConsumerKindServiceKind {
-    fn from(value: &ConsumerKindServiceKind) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for ConsumerKindServiceKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -302,11 +287,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -335,11 +315,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -449,11 +424,6 @@ pub struct Payload {
     pub include_trace: bool,
     pub input: PolicyInput,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PolicyDecision`
 ///
 /// <details><summary>JSON schema</summary>
@@ -543,11 +513,6 @@ pub struct PolicyDecision {
     )]
     pub ttl_seconds_cap: ::std::option::Option<::std::num::NonZeroU64>,
 }
-impl ::std::convert::From<&PolicyDecision> for PolicyDecision {
-    fn from(value: &PolicyDecision) -> Self {
-        value.clone()
-    }
-}
 ///`PolicyDecisionDecision`
 ///
 /// <details><summary>JSON schema</summary>
@@ -582,11 +547,6 @@ pub enum PolicyDecisionDecision {
     Deny,
     #[serde(rename = "require_step_up")]
     RequireStepUp,
-}
-impl ::std::convert::From<&Self> for PolicyDecisionDecision {
-    fn from(value: &PolicyDecisionDecision) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PolicyDecisionDecision {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -662,11 +622,6 @@ pub enum PolicyDecisionMode {
     Proxy,
     #[serde(rename = "fill")]
     Fill,
-}
-impl ::std::convert::From<&Self> for PolicyDecisionMode {
-    fn from(value: &PolicyDecisionMode) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PolicyDecisionMode {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -748,11 +703,6 @@ pub struct PolicyDecisionStepUp {
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
 }
-impl ::std::convert::From<&PolicyDecisionStepUp> for PolicyDecisionStepUp {
-    fn from(value: &PolicyDecisionStepUp) -> Self {
-        value.clone()
-    }
-}
 ///`PolicyDecisionStepUpMethod`
 ///
 /// <details><summary>JSON schema</summary>
@@ -787,11 +737,6 @@ pub enum PolicyDecisionStepUpMethod {
     PushApproval,
     #[serde(rename = "totp")]
     Totp,
-}
-impl ::std::convert::From<&Self> for PolicyDecisionStepUpMethod {
-    fn from(value: &PolicyDecisionStepUpMethod) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PolicyDecisionStepUpMethod {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -921,11 +866,6 @@ pub struct PolicyInput {
     pub request: PolicyInputRequest,
     pub site: SiteTarget,
 }
-impl ::std::convert::From<&PolicyInput> for PolicyInput {
-    fn from(value: &PolicyInput) -> Self {
-        value.clone()
-    }
-}
 ///`PolicyInputConsumer`
 ///
 /// <details><summary>JSON schema</summary>
@@ -990,11 +930,6 @@ pub struct PolicyInputConsumer {
     )]
     pub network_class: ::std::option::Option<PolicyInputConsumerNetworkClass>,
 }
-impl ::std::convert::From<&PolicyInputConsumer> for PolicyInputConsumer {
-    fn from(value: &PolicyInputConsumer) -> Self {
-        value.clone()
-    }
-}
 ///`PolicyInputConsumerNetworkClass`
 ///
 /// <details><summary>JSON schema</summary>
@@ -1035,11 +970,6 @@ pub enum PolicyInputConsumerNetworkClass {
     Public,
     #[serde(rename = "vpn")]
     Vpn,
-}
-impl ::std::convert::From<&Self> for PolicyInputConsumerNetworkClass {
-    fn from(value: &PolicyInputConsumerNetworkClass) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PolicyInputConsumerNetworkClass {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1110,11 +1040,6 @@ impl ::std::ops::Deref for PolicyInputContextId {
 impl ::std::convert::From<PolicyInputContextId> for ::std::string::String {
     fn from(value: PolicyInputContextId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PolicyInputContextId> for PolicyInputContextId {
-    fn from(value: &PolicyInputContextId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PolicyInputContextId {
@@ -1189,11 +1114,6 @@ impl<'de> ::serde::Deserialize<'de> for PolicyInputContextId {
 pub struct PolicyInputRequest {
     pub kind: PolicyInputRequestKind,
 }
-impl ::std::convert::From<&PolicyInputRequest> for PolicyInputRequest {
-    fn from(value: &PolicyInputRequest) -> Self {
-        value.clone()
-    }
-}
 ///`PolicyInputRequestKind`
 ///
 /// <details><summary>JSON schema</summary>
@@ -1228,11 +1148,6 @@ pub enum PolicyInputRequestKind {
     Release,
     #[serde(rename = "step_up_response")]
     StepUpResponse,
-}
-impl ::std::convert::From<&Self> for PolicyInputRequestKind {
-    fn from(value: &PolicyInputRequestKind) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PolicyInputRequestKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1330,11 +1245,6 @@ pub struct Response {
     ///Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub trace: ::std::vec::Vec<::std::string::String>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 ///A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
 ///
@@ -1484,11 +1394,6 @@ pub enum SiteTarget {
         sha256_cert_fingerprints: Vec<SiteTargetSha256CertFingerprintsItem>,
     },
 }
-impl ::std::convert::From<&Self> for SiteTarget {
-    fn from(value: &SiteTarget) -> Self {
-        value.clone()
-    }
-}
 ///iOS bundle identifier in reverse-DNS form (e.g. "com.github.stwalkerster.codehub"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).
 ///
 /// <details><summary>JSON schema</summary>
@@ -1514,11 +1419,6 @@ impl ::std::ops::Deref for SiteTargetBundleId {
 impl ::std::convert::From<SiteTargetBundleId> for ::std::string::String {
     fn from(value: SiteTargetBundleId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetBundleId> for SiteTargetBundleId {
-    fn from(value: &SiteTargetBundleId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetBundleId {
@@ -1595,11 +1495,6 @@ impl ::std::convert::From<SiteTargetDid> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&SiteTargetDid> for SiteTargetDid {
-    fn from(value: &SiteTargetDid) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SiteTargetDid {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1668,11 +1563,6 @@ impl ::std::ops::Deref for SiteTargetPackageName {
 impl ::std::convert::From<SiteTargetPackageName> for ::std::string::String {
     fn from(value: SiteTargetPackageName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetPackageName> for SiteTargetPackageName {
-    fn from(value: &SiteTargetPackageName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetPackageName {
@@ -1753,13 +1643,6 @@ impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem> for ::std::strin
         value.0
     }
 }
-impl ::std::convert::From<&SiteTargetSha256CertFingerprintsItem>
-    for SiteTargetSha256CertFingerprintsItem
-{
-    fn from(value: &SiteTargetSha256CertFingerprintsItem) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SiteTargetSha256CertFingerprintsItem {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1832,11 +1715,6 @@ impl ::std::ops::Deref for SiteTargetTeamId {
 impl ::std::convert::From<SiteTargetTeamId> for ::std::string::String {
     fn from(value: SiteTargetTeamId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetTeamId> for SiteTargetTeamId {
-    fn from(value: &SiteTargetTeamId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetTeamId {

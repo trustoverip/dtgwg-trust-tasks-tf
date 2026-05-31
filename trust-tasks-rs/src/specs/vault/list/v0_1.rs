@@ -94,11 +94,6 @@ pub struct AttachmentRef {
     #[serde(rename = "sizeBytes")]
     pub size_bytes: u64,
 }
-impl ::std::convert::From<&AttachmentRef> for AttachmentRef {
-    fn from(value: &AttachmentRef) -> Self {
-        value.clone()
-    }
-}
 ///Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism.
 ///
 /// <details><summary>JSON schema</summary>
@@ -123,11 +118,6 @@ impl ::std::ops::Deref for AttachmentRefId {
 impl ::std::convert::From<AttachmentRefId> for ::std::string::String {
     fn from(value: AttachmentRefId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&AttachmentRefId> for AttachmentRefId {
-    fn from(value: &AttachmentRefId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for AttachmentRefId {
@@ -200,11 +190,6 @@ impl ::std::convert::From<AttachmentRefName> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&AttachmentRefName> for AttachmentRefName {
-    fn from(value: &AttachmentRefName) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for AttachmentRefName {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -275,11 +260,6 @@ impl ::std::ops::Deref for AttachmentRefSha256 {
 impl ::std::convert::From<AttachmentRefSha256> for ::std::string::String {
     fn from(value: AttachmentRefSha256) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&AttachmentRefSha256> for AttachmentRefSha256 {
-    fn from(value: &AttachmentRefSha256) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for AttachmentRefSha256 {
@@ -358,11 +338,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -391,11 +366,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -617,11 +587,6 @@ pub struct Payload {
     )]
     pub used_since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -666,11 +631,6 @@ impl ::std::ops::Deref for PayloadContextId {
 impl ::std::convert::From<PayloadContextId> for ::std::string::String {
     fn from(value: PayloadContextId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadContextId> for PayloadContextId {
-    fn from(value: &PayloadContextId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadContextId {
@@ -741,11 +701,6 @@ impl ::std::ops::Deref for PayloadTag {
 impl ::std::convert::From<PayloadTag> for ::std::string::String {
     fn from(value: PayloadTag) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadTag> for PayloadTag {
-    fn from(value: &PayloadTag) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadTag {
@@ -819,11 +774,6 @@ impl ::std::ops::Deref for PayloadTargetAndroidPackage {
 impl ::std::convert::From<PayloadTargetAndroidPackage> for ::std::string::String {
     fn from(value: PayloadTargetAndroidPackage) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadTargetAndroidPackage> for PayloadTargetAndroidPackage {
-    fn from(value: &PayloadTargetAndroidPackage) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadTargetAndroidPackage {
@@ -905,11 +855,6 @@ impl ::std::convert::From<PayloadTargetDid> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PayloadTargetDid> for PayloadTargetDid {
-    fn from(value: &PayloadTargetDid) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PayloadTargetDid {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -978,11 +923,6 @@ impl ::std::ops::Deref for PayloadTargetIosBundleId {
 impl ::std::convert::From<PayloadTargetIosBundleId> for ::std::string::String {
     fn from(value: PayloadTargetIosBundleId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadTargetIosBundleId> for PayloadTargetIosBundleId {
-    fn from(value: &PayloadTargetIosBundleId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadTargetIosBundleId {
@@ -1100,11 +1040,6 @@ pub struct Response {
     ///true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent.
     pub truncated: bool,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 /**Discriminator for the secret type stored in the entry. Definitions:
 - `password` — username + password (+ optional TOTP seed).
 - `passkey` — WebAuthn discoverable credential (private key + rpId + userHandle).
@@ -1164,11 +1099,6 @@ pub enum SecretKind {
     SshKey,
     #[serde(rename = "custom")]
     Custom,
-}
-impl ::std::convert::From<&Self> for SecretKind {
-    fn from(value: &SecretKind) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for SecretKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1370,11 +1300,6 @@ pub enum SiteTarget {
         sha256_cert_fingerprints: Vec<SiteTargetSha256CertFingerprintsItem>,
     },
 }
-impl ::std::convert::From<&Self> for SiteTarget {
-    fn from(value: &SiteTarget) -> Self {
-        value.clone()
-    }
-}
 ///iOS bundle identifier in reverse-DNS form (e.g. "com.github.stwalkerster.codehub"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).
 ///
 /// <details><summary>JSON schema</summary>
@@ -1400,11 +1325,6 @@ impl ::std::ops::Deref for SiteTargetBundleId {
 impl ::std::convert::From<SiteTargetBundleId> for ::std::string::String {
     fn from(value: SiteTargetBundleId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetBundleId> for SiteTargetBundleId {
-    fn from(value: &SiteTargetBundleId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetBundleId {
@@ -1481,11 +1401,6 @@ impl ::std::convert::From<SiteTargetDid> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&SiteTargetDid> for SiteTargetDid {
-    fn from(value: &SiteTargetDid) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SiteTargetDid {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1554,11 +1469,6 @@ impl ::std::ops::Deref for SiteTargetPackageName {
 impl ::std::convert::From<SiteTargetPackageName> for ::std::string::String {
     fn from(value: SiteTargetPackageName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetPackageName> for SiteTargetPackageName {
-    fn from(value: &SiteTargetPackageName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetPackageName {
@@ -1639,13 +1549,6 @@ impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem> for ::std::strin
         value.0
     }
 }
-impl ::std::convert::From<&SiteTargetSha256CertFingerprintsItem>
-    for SiteTargetSha256CertFingerprintsItem
-{
-    fn from(value: &SiteTargetSha256CertFingerprintsItem) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SiteTargetSha256CertFingerprintsItem {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1718,11 +1621,6 @@ impl ::std::ops::Deref for SiteTargetTeamId {
 impl ::std::convert::From<SiteTargetTeamId> for ::std::string::String {
     fn from(value: SiteTargetTeamId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetTeamId> for SiteTargetTeamId {
-    fn from(value: &SiteTargetTeamId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetTeamId {
@@ -2016,11 +1914,6 @@ pub struct VaultEntry {
     ///Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync.
     pub version: u64,
 }
-impl ::std::convert::From<&VaultEntry> for VaultEntry {
-    fn from(value: &VaultEntry) -> Self {
-        value.clone()
-    }
-}
 ///Identifier of the trust context (persona) the entry belongs to. Opaque string interpreted by the vault maintainer; corresponds to a single ContextRecord on the VTA side.
 ///
 /// <details><summary>JSON schema</summary>
@@ -2045,11 +1938,6 @@ impl ::std::ops::Deref for VaultEntryContextId {
 impl ::std::convert::From<VaultEntryContextId> for ::std::string::String {
     fn from(value: VaultEntryContextId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&VaultEntryContextId> for VaultEntryContextId {
-    fn from(value: &VaultEntryContextId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for VaultEntryContextId {
@@ -2119,11 +2007,6 @@ impl ::std::ops::Deref for VaultEntryCustomFieldNamesItem {
 impl ::std::convert::From<VaultEntryCustomFieldNamesItem> for ::std::string::String {
     fn from(value: VaultEntryCustomFieldNamesItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&VaultEntryCustomFieldNamesItem> for VaultEntryCustomFieldNamesItem {
-    fn from(value: &VaultEntryCustomFieldNamesItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for VaultEntryCustomFieldNamesItem {
@@ -2198,11 +2081,6 @@ impl ::std::convert::From<VaultEntryId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&VaultEntryId> for VaultEntryId {
-    fn from(value: &VaultEntryId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for VaultEntryId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -2270,11 +2148,6 @@ impl ::std::ops::Deref for VaultEntryLabel {
 impl ::std::convert::From<VaultEntryLabel> for ::std::string::String {
     fn from(value: VaultEntryLabel) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&VaultEntryLabel> for VaultEntryLabel {
-    fn from(value: &VaultEntryLabel) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for VaultEntryLabel {
@@ -2346,11 +2219,6 @@ impl ::std::convert::From<VaultEntryNotes> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&VaultEntryNotes> for VaultEntryNotes {
-    fn from(value: &VaultEntryNotes) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for VaultEntryNotes {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -2418,11 +2286,6 @@ impl ::std::ops::Deref for VaultEntryPrincipalDid {
 impl ::std::convert::From<VaultEntryPrincipalDid> for ::std::string::String {
     fn from(value: VaultEntryPrincipalDid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&VaultEntryPrincipalDid> for VaultEntryPrincipalDid {
-    fn from(value: &VaultEntryPrincipalDid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for VaultEntryPrincipalDid {
@@ -2493,11 +2356,6 @@ impl ::std::convert::From<VaultEntrySelectorsItem> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&VaultEntrySelectorsItem> for VaultEntrySelectorsItem {
-    fn from(value: &VaultEntrySelectorsItem) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for VaultEntrySelectorsItem {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -2565,11 +2423,6 @@ impl ::std::ops::Deref for VaultEntryTagsItem {
 impl ::std::convert::From<VaultEntryTagsItem> for ::std::string::String {
     fn from(value: VaultEntryTagsItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&VaultEntryTagsItem> for VaultEntryTagsItem {
-    fn from(value: &VaultEntryTagsItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for VaultEntryTagsItem {

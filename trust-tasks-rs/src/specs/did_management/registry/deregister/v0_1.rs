@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -180,11 +170,6 @@ pub struct Payload {
     #[serde(rename = "instanceId")]
     pub instance_id: PayloadInstanceId,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadInstanceId`
 ///
 /// <details><summary>JSON schema</summary>
@@ -208,11 +193,6 @@ impl ::std::ops::Deref for PayloadInstanceId {
 impl ::std::convert::From<PayloadInstanceId> for ::std::string::String {
     fn from(value: PayloadInstanceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadInstanceId> for PayloadInstanceId {
-    fn from(value: &PayloadInstanceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadInstanceId {
@@ -296,11 +276,6 @@ pub struct Response {
     pub instance_id: ::std::string::String,
     #[serde(rename = "removedAt")]
     pub removed_at: ::chrono::DateTime<::chrono::offset::Utc>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =

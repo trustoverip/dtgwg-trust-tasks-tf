@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -253,11 +243,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -297,11 +282,6 @@ impl ::std::ops::Deref for PayloadByConsumer {
 impl ::std::convert::From<PayloadByConsumer> for ::std::string::String {
     fn from(value: PayloadByConsumer) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadByConsumer> for PayloadByConsumer {
-    fn from(value: &PayloadByConsumer) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadByConsumer {
@@ -373,11 +353,6 @@ impl ::std::convert::From<PayloadContextId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PayloadContextId> for PayloadContextId {
-    fn from(value: &PayloadContextId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PayloadContextId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -445,11 +420,6 @@ impl ::std::ops::Deref for PayloadEntryId {
 impl ::std::convert::From<PayloadEntryId> for ::std::string::String {
     fn from(value: PayloadEntryId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadEntryId> for PayloadEntryId {
-    fn from(value: &PayloadEntryId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadEntryId {
@@ -526,11 +496,6 @@ pub enum PayloadKindFilterItem {
     ProxyLogin,
     #[serde(rename = "release")]
     Release,
-}
-impl ::std::convert::From<&Self> for PayloadKindFilterItem {
-    fn from(value: &PayloadKindFilterItem) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PayloadKindFilterItem {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -615,11 +580,6 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     pub truncated: bool,
     pub uses: ::std::vec::Vec<UsageRecord>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 ///`UsageRecord`
 ///
@@ -744,11 +704,6 @@ pub struct UsageRecord {
     )]
     pub session_id: ::std::option::Option<UsageRecordSessionId>,
 }
-impl ::std::convert::From<&UsageRecord> for UsageRecord {
-    fn from(value: &UsageRecord) -> Self {
-        value.clone()
-    }
-}
 ///DID of the Companion/Service that initiated the use.
 ///
 /// <details><summary>JSON schema</summary>
@@ -773,11 +728,6 @@ impl ::std::ops::Deref for UsageRecordConsumerDid {
 impl ::std::convert::From<UsageRecordConsumerDid> for ::std::string::String {
     fn from(value: UsageRecordConsumerDid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&UsageRecordConsumerDid> for UsageRecordConsumerDid {
-    fn from(value: &UsageRecordConsumerDid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for UsageRecordConsumerDid {
@@ -848,11 +798,6 @@ impl ::std::convert::From<UsageRecordContextId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&UsageRecordContextId> for UsageRecordContextId {
-    fn from(value: &UsageRecordContextId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for UsageRecordContextId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -919,11 +864,6 @@ impl ::std::ops::Deref for UsageRecordDeviceId {
 impl ::std::convert::From<UsageRecordDeviceId> for ::std::string::String {
     fn from(value: UsageRecordDeviceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&UsageRecordDeviceId> for UsageRecordDeviceId {
-    fn from(value: &UsageRecordDeviceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for UsageRecordDeviceId {
@@ -994,11 +934,6 @@ impl ::std::convert::From<UsageRecordEntryId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&UsageRecordEntryId> for UsageRecordEntryId {
-    fn from(value: &UsageRecordEntryId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for UsageRecordEntryId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1065,11 +1000,6 @@ impl ::std::ops::Deref for UsageRecordId {
 impl ::std::convert::From<UsageRecordId> for ::std::string::String {
     fn from(value: UsageRecordId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&UsageRecordId> for UsageRecordId {
-    fn from(value: &UsageRecordId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for UsageRecordId {
@@ -1146,11 +1076,6 @@ pub enum UsageRecordKind {
     ProxyLogin,
     #[serde(rename = "release")]
     Release,
-}
-impl ::std::convert::From<&Self> for UsageRecordKind {
-    fn from(value: &UsageRecordKind) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for UsageRecordKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1239,11 +1164,6 @@ pub enum UsageRecordOutcome {
     #[serde(rename = "policy_deny")]
     PolicyDeny,
 }
-impl ::std::convert::From<&Self> for UsageRecordOutcome {
-    fn from(value: &UsageRecordOutcome) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for UsageRecordOutcome {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -1318,11 +1238,6 @@ impl ::std::ops::Deref for UsageRecordSessionId {
 impl ::std::convert::From<UsageRecordSessionId> for ::std::string::String {
     fn from(value: UsageRecordSessionId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&UsageRecordSessionId> for UsageRecordSessionId {
-    fn from(value: &UsageRecordSessionId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for UsageRecordSessionId {

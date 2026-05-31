@@ -117,11 +117,6 @@ pub struct AssertionResponse {
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
-impl ::std::convert::From<&AssertionResponse> for AssertionResponse {
-    fn from(value: &AssertionResponse) -> Self {
-        value.clone()
-    }
-}
 ///`AssertionResponseAuthenticatorAttachment`
 ///
 /// <details><summary>JSON schema</summary>
@@ -152,11 +147,6 @@ pub enum AssertionResponseAuthenticatorAttachment {
     Platform,
     #[serde(rename = "cross-platform")]
     CrossPlatform,
-}
-impl ::std::convert::From<&Self> for AssertionResponseAuthenticatorAttachment {
-    fn from(value: &AssertionResponseAuthenticatorAttachment) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for AssertionResponseAuthenticatorAttachment {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -246,11 +236,6 @@ pub struct AssertionResponseResponse {
     )]
     pub user_handle: ::std::option::Option<::std::string::String>,
 }
-impl ::std::convert::From<&AssertionResponseResponse> for AssertionResponseResponse {
-    fn from(value: &AssertionResponseResponse) -> Self {
-        value.clone()
-    }
-}
 ///Tagged union over `kind` describing the cryptographic factor the approver presents to back the elevation. Pluggable so new factor kinds can be added without disturbing existing consumers (SPEC §4.5.1 ext rules apply to unknown kinds at the producer's discretion).
 ///
 /// <details><summary>JSON schema</summary>
@@ -306,11 +291,6 @@ pub enum Evidence {
     #[serde(rename = "webauthn")]
     Webauthn(AssertionResponse),
 }
-impl ::std::convert::From<&Self> for Evidence {
-    fn from(value: &Evidence) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<AssertionResponse> for Evidence {
     fn from(value: AssertionResponse) -> Self {
         Self::Webauthn(value)
@@ -347,11 +327,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -380,11 +355,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -526,11 +496,6 @@ pub struct Payload {
     ///Echoed from the matching approve-request. The relying party verifies it equals the session's subject.
     pub subject: PayloadSubject,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.
 ///
 /// <details><summary>JSON schema</summary>
@@ -555,11 +520,6 @@ impl ::std::ops::Deref for PayloadChallenge {
 impl ::std::convert::From<PayloadChallenge> for ::std::string::String {
     fn from(value: PayloadChallenge) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadChallenge> for PayloadChallenge {
-    fn from(value: &PayloadChallenge) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadChallenge {
@@ -638,11 +598,6 @@ pub enum PayloadDecision {
     #[serde(rename = "denied")]
     Denied,
 }
-impl ::std::convert::From<&Self> for PayloadDecision {
-    fn from(value: &PayloadDecision) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for PayloadDecision {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -707,11 +662,6 @@ impl ::std::ops::Deref for PayloadSessionId {
 impl ::std::convert::From<PayloadSessionId> for ::std::string::String {
     fn from(value: PayloadSessionId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadSessionId> for PayloadSessionId {
-    fn from(value: &PayloadSessionId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadSessionId {
@@ -781,11 +731,6 @@ impl ::std::ops::Deref for PayloadSubject {
 impl ::std::convert::From<PayloadSubject> for ::std::string::String {
     fn from(value: PayloadSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadSubject> for PayloadSubject {
-    fn from(value: &PayloadSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadSubject {
@@ -881,11 +826,6 @@ pub struct Response {
     pub session: ::std::option::Option<Session>,
     pub status: ResponseStatus,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseStatus`
 ///
 /// <details><summary>JSON schema</summary>
@@ -917,11 +857,6 @@ pub enum ResponseStatus {
     Elevated,
     #[serde(rename = "rejected")]
     Rejected,
-}
-impl ::std::convert::From<&Self> for ResponseStatus {
-    fn from(value: &ResponseStatus) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ResponseStatus {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1045,11 +980,6 @@ pub struct Session {
     ///The authenticated party's VID (typically a DID URL).
     pub subject: SessionSubject,
 }
-impl ::std::convert::From<&Session> for Session {
-    fn from(value: &Session) -> Self {
-        value.clone()
-    }
-}
 ///`SessionAmrItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -1073,11 +1003,6 @@ impl ::std::ops::Deref for SessionAmrItem {
 impl ::std::convert::From<SessionAmrItem> for ::std::string::String {
     fn from(value: SessionAmrItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionAmrItem> for SessionAmrItem {
-    fn from(value: &SessionAmrItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionAmrItem {
@@ -1149,11 +1074,6 @@ impl ::std::convert::From<SessionId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&SessionId> for SessionId {
-    fn from(value: &SessionId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SessionId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1221,11 +1141,6 @@ impl ::std::ops::Deref for SessionSubject {
 impl ::std::convert::From<SessionSubject> for ::std::string::String {
     fn from(value: SessionSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionSubject> for SessionSubject {
-    fn from(value: &SessionSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionSubject {

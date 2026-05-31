@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -190,11 +180,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<PayloadSubject>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -228,11 +213,6 @@ impl ::std::ops::Deref for PayloadPurpose {
 impl ::std::convert::From<PayloadPurpose> for ::std::string::String {
     fn from(value: PayloadPurpose) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadPurpose> for PayloadPurpose {
-    fn from(value: &PayloadPurpose) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadPurpose {
@@ -302,11 +282,6 @@ impl ::std::ops::Deref for PayloadSubject {
 impl ::std::convert::From<PayloadSubject> for ::std::string::String {
     fn from(value: PayloadSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadSubject> for PayloadSubject {
-    fn from(value: &PayloadSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadSubject {
@@ -407,11 +382,6 @@ pub struct Response {
     #[serde(rename = "sessionId")]
     pub session_id: ResponseSessionId,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign.
 ///
 /// <details><summary>JSON schema</summary>
@@ -436,11 +406,6 @@ impl ::std::ops::Deref for ResponseChallenge {
 impl ::std::convert::From<ResponseChallenge> for ::std::string::String {
     fn from(value: ResponseChallenge) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseChallenge> for ResponseChallenge {
-    fn from(value: &ResponseChallenge) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseChallenge {
@@ -510,11 +475,6 @@ impl ::std::ops::Deref for ResponseSessionId {
 impl ::std::convert::From<ResponseSessionId> for ::std::string::String {
     fn from(value: ResponseSessionId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseSessionId> for ResponseSessionId {
-    fn from(value: &ResponseSessionId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseSessionId {

@@ -77,11 +77,6 @@ pub struct CredentialDescriptor {
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
-impl ::std::convert::From<&CredentialDescriptor> for CredentialDescriptor {
-    fn from(value: &CredentialDescriptor) -> Self {
-        value.clone()
-    }
-}
 ///`CredentialDescriptorTransportsItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -121,11 +116,6 @@ pub enum CredentialDescriptorTransportsItem {
     Internal,
     #[serde(rename = "hybrid")]
     Hybrid,
-}
-impl ::std::convert::From<&Self> for CredentialDescriptorTransportsItem {
-    fn from(value: &CredentialDescriptorTransportsItem) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for CredentialDescriptorTransportsItem {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -243,11 +233,6 @@ pub struct CredentialRequestOptions {
     )]
     pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
 }
-impl ::std::convert::From<&CredentialRequestOptions> for CredentialRequestOptions {
-    fn from(value: &CredentialRequestOptions) -> Self {
-        value.clone()
-    }
-}
 ///`CredentialRequestOptionsRpId`
 ///
 /// <details><summary>JSON schema</summary>
@@ -271,11 +256,6 @@ impl ::std::ops::Deref for CredentialRequestOptionsRpId {
 impl ::std::convert::From<CredentialRequestOptionsRpId> for ::std::string::String {
     fn from(value: CredentialRequestOptionsRpId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&CredentialRequestOptionsRpId> for CredentialRequestOptionsRpId {
-    fn from(value: &CredentialRequestOptionsRpId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for CredentialRequestOptionsRpId {
@@ -355,11 +335,6 @@ pub enum CredentialRequestOptionsUserVerification {
     #[serde(rename = "required")]
     Required,
 }
-impl ::std::convert::From<&Self> for CredentialRequestOptionsUserVerification {
-    fn from(value: &CredentialRequestOptionsUserVerification) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for CredentialRequestOptionsUserVerification {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -433,11 +408,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -466,11 +436,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -566,11 +531,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub subject: ::std::option::Option<PayloadSubject>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -612,11 +572,6 @@ pub enum PayloadPurpose {
     Login,
     #[serde(rename = "step-up")]
     StepUp,
-}
-impl ::std::convert::From<&Self> for PayloadPurpose {
-    fn from(value: &PayloadPurpose) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PayloadPurpose {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -682,11 +637,6 @@ impl ::std::ops::Deref for PayloadSubject {
 impl ::std::convert::From<PayloadSubject> for ::std::string::String {
     fn from(value: PayloadSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadSubject> for PayloadSubject {
-    fn from(value: &PayloadSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadSubject {
@@ -777,11 +727,6 @@ pub struct Response {
     ///PublicKeyCredentialRequestOptions for navigator.credentials.get.
     pub options: CredentialRequestOptions,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///Opaque server handle correlating this start with the matching finish.
 ///
 /// <details><summary>JSON schema</summary>
@@ -806,11 +751,6 @@ impl ::std::ops::Deref for ResponseAuthId {
 impl ::std::convert::From<ResponseAuthId> for ::std::string::String {
     fn from(value: ResponseAuthId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseAuthId> for ResponseAuthId {
-    fn from(value: &ResponseAuthId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseAuthId {

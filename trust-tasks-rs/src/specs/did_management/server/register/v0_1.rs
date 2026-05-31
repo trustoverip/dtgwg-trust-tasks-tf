@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -234,11 +224,6 @@ pub struct Payload {
     #[serde(rename = "servedDomains")]
     pub served_domains: ::std::vec::Vec<::std::string::String>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadDid`
 ///
 /// <details><summary>JSON schema</summary>
@@ -262,11 +247,6 @@ impl ::std::ops::Deref for PayloadDid {
 impl ::std::convert::From<PayloadDid> for ::std::string::String {
     fn from(value: PayloadDid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadDid> for PayloadDid {
-    fn from(value: &PayloadDid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadDid {
@@ -337,11 +317,6 @@ impl ::std::convert::From<PayloadEnabledMethodsItem> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PayloadEnabledMethodsItem> for PayloadEnabledMethodsItem {
-    fn from(value: &PayloadEnabledMethodsItem) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PayloadEnabledMethodsItem {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -408,11 +383,6 @@ impl ::std::ops::Deref for PayloadInstanceId {
 impl ::std::convert::From<PayloadInstanceId> for ::std::string::String {
     fn from(value: PayloadInstanceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadInstanceId> for PayloadInstanceId {
-    fn from(value: &PayloadInstanceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadInstanceId {
@@ -482,11 +452,6 @@ impl ::std::ops::Deref for PayloadProtocolVersion {
 impl ::std::convert::From<PayloadProtocolVersion> for ::std::string::String {
     fn from(value: PayloadProtocolVersion) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadProtocolVersion> for PayloadProtocolVersion {
-    fn from(value: &PayloadProtocolVersion) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadProtocolVersion {
@@ -575,11 +540,6 @@ pub struct Response {
     pub instance_id: ::std::string::String,
     #[serde(rename = "lastSeen")]
     pub last_seen: ::chrono::DateTime<::chrono::offset::Utc>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/server/register/0.1";

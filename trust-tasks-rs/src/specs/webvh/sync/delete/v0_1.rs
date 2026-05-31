@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -179,11 +169,6 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: PayloadMnemonic,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadMnemonic`
 ///
 /// <details><summary>JSON schema</summary>
@@ -207,11 +192,6 @@ impl ::std::ops::Deref for PayloadMnemonic {
 impl ::std::convert::From<PayloadMnemonic> for ::std::string::String {
     fn from(value: PayloadMnemonic) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadMnemonic> for PayloadMnemonic {
-    fn from(value: &PayloadMnemonic) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadMnemonic {
@@ -296,11 +276,6 @@ pub struct Response {
     pub mnemonic: ::std::string::String,
     pub status: ResponseStatus,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseStatus`
 ///
 /// <details><summary>JSON schema</summary>
@@ -329,11 +304,6 @@ impl ::std::convert::From<&Response> for Response {
 pub enum ResponseStatus {
     #[serde(rename = "deleted")]
     Deleted,
-}
-impl ::std::convert::From<&Self> for ResponseStatus {
-    fn from(value: &ResponseStatus) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ResponseStatus {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {

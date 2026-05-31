@@ -113,11 +113,6 @@ pub struct AttestationResponse {
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
-impl ::std::convert::From<&AttestationResponse> for AttestationResponse {
-    fn from(value: &AttestationResponse) -> Self {
-        value.clone()
-    }
-}
 ///`AttestationResponseAuthenticatorAttachment`
 ///
 /// <details><summary>JSON schema</summary>
@@ -148,11 +143,6 @@ pub enum AttestationResponseAuthenticatorAttachment {
     Platform,
     #[serde(rename = "cross-platform")]
     CrossPlatform,
-}
-impl ::std::convert::From<&Self> for AttestationResponseAuthenticatorAttachment {
-    fn from(value: &AttestationResponseAuthenticatorAttachment) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for AttestationResponseAuthenticatorAttachment {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -235,11 +225,6 @@ pub struct AttestationResponseResponse {
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub transports: ::std::vec::Vec<::std::string::String>,
 }
-impl ::std::convert::From<&AttestationResponseResponse> for AttestationResponseResponse {
-    fn from(value: &AttestationResponseResponse) -> Self {
-        value.clone()
-    }
-}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -271,11 +256,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -304,11 +284,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -414,11 +389,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim.
 ///
 /// <details><summary>JSON schema</summary>
@@ -443,11 +413,6 @@ impl ::std::ops::Deref for PayloadEnrollmentId {
 impl ::std::convert::From<PayloadEnrollmentId> for ::std::string::String {
     fn from(value: PayloadEnrollmentId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadEnrollmentId> for PayloadEnrollmentId {
-    fn from(value: &PayloadEnrollmentId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadEnrollmentId {
@@ -554,11 +519,6 @@ pub struct Response {
     pub registered_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The VID the credential is now bound to. Echoed for symmetry with finish-time error responses.
     pub subject: ::std::string::String,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1";

@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -191,11 +181,6 @@ pub struct Payload {
     )]
     pub vault_seq: ::std::option::Option<u64>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -243,11 +228,6 @@ pub struct QueuedOperation {
     ///The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.
     pub task: ::serde_json::Value,
 }
-impl ::std::convert::From<&QueuedOperation> for QueuedOperation {
-    fn from(value: &QueuedOperation) -> Self {
-        value.clone()
-    }
-}
 ///Discriminator. The framework currently supports wipe; future versions may add others.
 ///
 /// <details><summary>JSON schema</summary>
@@ -283,11 +263,6 @@ pub enum QueuedOperationKind {
     PolicyReload,
     #[serde(rename = "config-update")]
     ConfigUpdate,
-}
-impl ::std::convert::From<&Self> for QueuedOperationKind {
-    fn from(value: &QueuedOperationKind) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for QueuedOperationKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -396,11 +371,6 @@ pub struct Response {
     )]
     pub sync_hint: ::std::option::Option<ResponseSyncHint>,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///Tells the consumer whether to call vault/sync.
 ///
 /// <details><summary>JSON schema</summary>
@@ -436,11 +406,6 @@ pub enum ResponseSyncHint {
     SyncDue,
     #[serde(rename = "full-resync-required")]
     FullResyncRequired,
-}
-impl ::std::convert::From<&Self> for ResponseSyncHint {
-    fn from(value: &ResponseSyncHint) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ResponseSyncHint {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {

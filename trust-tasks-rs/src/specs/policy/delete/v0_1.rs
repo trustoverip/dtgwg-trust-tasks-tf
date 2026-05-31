@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -195,11 +185,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadId`
 ///
 /// <details><summary>JSON schema</summary>
@@ -223,11 +208,6 @@ impl ::std::ops::Deref for PayloadId {
 impl ::std::convert::From<PayloadId> for ::std::string::String {
     fn from(value: PayloadId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadId> for PayloadId {
-    fn from(value: &PayloadId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadId {
@@ -296,11 +276,6 @@ impl ::std::ops::Deref for PayloadReason {
 impl ::std::convert::From<PayloadReason> for ::std::string::String {
     fn from(value: PayloadReason) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadReason> for PayloadReason {
-    fn from(value: &PayloadReason) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadReason {
@@ -383,11 +358,6 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub id: ::std::string::String,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/delete/0.1";

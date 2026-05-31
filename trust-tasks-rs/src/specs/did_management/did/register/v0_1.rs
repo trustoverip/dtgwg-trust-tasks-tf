@@ -141,11 +141,6 @@ pub struct DidRecord {
     #[serde(rename = "versionCount")]
     pub version_count: u64,
 }
-impl ::std::convert::From<&DidRecord> for DidRecord {
-    fn from(value: &DidRecord) -> Self {
-        value.clone()
-    }
-}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -177,11 +172,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -210,11 +200,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -337,11 +322,6 @@ pub struct Payload {
     ///Local path under which the DID is to be hosted (e.g. `alice`, `tenant/staff/alice`). `.well-known` reserves the root slot — restricted to admin callers.
     pub path: PayloadPath,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///Method-specific log content. For `webvh`, a JSONL string containing one or more signed log entries. For `web`, the DID document JSON.
 ///
 /// <details><summary>JSON schema</summary>
@@ -366,11 +346,6 @@ impl ::std::convert::From<&Payload> for Payload {
 pub enum PayloadDidData {
     String(PayloadDidDataString),
     Object(::serde_json::Map<::std::string::String, ::serde_json::Value>),
-}
-impl ::std::convert::From<&Self> for PayloadDidData {
-    fn from(value: &PayloadDidData) -> Self {
-        value.clone()
-    }
 }
 impl ::std::convert::From<PayloadDidDataString> for PayloadDidData {
     fn from(value: PayloadDidDataString) -> Self {
@@ -407,11 +382,6 @@ impl ::std::ops::Deref for PayloadDidDataString {
 impl ::std::convert::From<PayloadDidDataString> for ::std::string::String {
     fn from(value: PayloadDidDataString) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadDidDataString> for PayloadDidDataString {
-    fn from(value: &PayloadDidDataString) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadDidDataString {
@@ -483,11 +453,6 @@ impl ::std::convert::From<PayloadMethod> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PayloadMethod> for PayloadMethod {
-    fn from(value: &PayloadMethod) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PayloadMethod {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -555,11 +520,6 @@ impl ::std::ops::Deref for PayloadPath {
 impl ::std::convert::From<PayloadPath> for ::std::string::String {
     fn from(value: PayloadPath) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadPath> for PayloadPath {
-    fn from(value: &PayloadPath) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadPath {
@@ -636,11 +596,6 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub record: DidRecord,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/did/register/0.1";

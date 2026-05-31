@@ -123,11 +123,6 @@ pub struct DomainEntry {
     ///Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.
     pub status: DomainEntryStatus,
 }
-impl ::std::convert::From<&DomainEntry> for DomainEntry {
-    fn from(value: &DomainEntry) -> Self {
-        value.clone()
-    }
-}
 ///Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.
 ///
 /// <details><summary>JSON schema</summary>
@@ -160,11 +155,6 @@ pub enum DomainEntryStatus {
     Active,
     #[serde(rename = "disabled")]
     Disabled,
-}
-impl ::std::convert::From<&Self> for DomainEntryStatus {
-    fn from(value: &DomainEntryStatus) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for DomainEntryStatus {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -237,11 +227,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -270,11 +255,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -361,11 +341,6 @@ pub struct Payload {
     pub label: ::std::option::Option<::std::string::String>,
     pub name: PayloadName,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadName`
 ///
 /// <details><summary>JSON schema</summary>
@@ -389,11 +364,6 @@ impl ::std::ops::Deref for PayloadName {
 impl ::std::convert::From<PayloadName> for ::std::string::String {
     fn from(value: PayloadName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadName> for PayloadName {
-    fn from(value: &PayloadName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadName {
@@ -469,11 +439,6 @@ pub struct Response {
     pub entry: DomainEntry,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/domain/update/0.1";

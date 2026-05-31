@@ -141,11 +141,6 @@ pub struct AclEntry {
     )]
     pub updated_by: ::std::option::Option<::std::string::String>,
 }
-impl ::std::convert::From<&AclEntry> for AclEntry {
-    fn from(value: &AclEntry) -> Self {
-        value.clone()
-    }
-}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -177,11 +172,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -210,11 +200,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -332,11 +317,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///The VID currently bound in the ACL. MUST equal the document's `issuer` (per the conformance section: the holder swaps THEIR OWN entry).
 ///
 /// <details><summary>JSON schema</summary>
@@ -361,11 +341,6 @@ impl ::std::ops::Deref for PayloadCurrentSubject {
 impl ::std::convert::From<PayloadCurrentSubject> for ::std::string::String {
     fn from(value: PayloadCurrentSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadCurrentSubject> for PayloadCurrentSubject {
-    fn from(value: &PayloadCurrentSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadCurrentSubject {
@@ -431,11 +406,6 @@ pub enum PayloadLinkProof {
     Object(::serde_json::Map<::std::string::String, ::serde_json::Value>),
     String(::std::string::String),
 }
-impl ::std::convert::From<&Self> for PayloadLinkProof {
-    fn from(value: &PayloadLinkProof) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json::Value>>
     for PayloadLinkProof
 {
@@ -467,11 +437,6 @@ impl ::std::ops::Deref for PayloadNewSubject {
 impl ::std::convert::From<PayloadNewSubject> for ::std::string::String {
     fn from(value: PayloadNewSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadNewSubject> for PayloadNewSubject {
-    fn from(value: &PayloadNewSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadNewSubject {
@@ -560,11 +525,6 @@ pub struct Response {
     #[serde(rename = "previousSubject")]
     pub previous_subject: ResponsePreviousSubject,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///Echo of the swapped-out VID. The maintainer has removed every artifact bound to this subject (refresh tokens, persistent sessions); the holder MUST NOT attempt to reuse it.
 ///
 /// <details><summary>JSON schema</summary>
@@ -589,11 +549,6 @@ impl ::std::ops::Deref for ResponsePreviousSubject {
 impl ::std::convert::From<ResponsePreviousSubject> for ::std::string::String {
     fn from(value: ResponsePreviousSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponsePreviousSubject> for ResponsePreviousSubject {
-    fn from(value: &ResponsePreviousSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponsePreviousSubject {

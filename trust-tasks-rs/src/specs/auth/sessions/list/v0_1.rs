@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -172,11 +162,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -220,11 +205,6 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///Every active session the consumer holds for the producer's subject. Sorted MAY be by issuedAt descending; the framework imposes no ordering.
     pub sessions: ::std::vec::Vec<Session>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 ///A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
 ///
@@ -308,11 +288,6 @@ pub struct Session {
     ///The authenticated party's VID (typically a DID URL).
     pub subject: SessionSubject,
 }
-impl ::std::convert::From<&Session> for Session {
-    fn from(value: &Session) -> Self {
-        value.clone()
-    }
-}
 ///`SessionAmrItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -336,11 +311,6 @@ impl ::std::ops::Deref for SessionAmrItem {
 impl ::std::convert::From<SessionAmrItem> for ::std::string::String {
     fn from(value: SessionAmrItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionAmrItem> for SessionAmrItem {
-    fn from(value: &SessionAmrItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionAmrItem {
@@ -412,11 +382,6 @@ impl ::std::convert::From<SessionId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&SessionId> for SessionId {
-    fn from(value: &SessionId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SessionId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -484,11 +449,6 @@ impl ::std::ops::Deref for SessionSubject {
 impl ::std::convert::From<SessionSubject> for ::std::string::String {
     fn from(value: SessionSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionSubject> for SessionSubject {
-    fn from(value: &SessionSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionSubject {

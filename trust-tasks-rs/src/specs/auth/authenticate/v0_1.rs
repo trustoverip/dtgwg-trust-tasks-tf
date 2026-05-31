@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -204,11 +194,6 @@ pub struct Payload {
     #[serde(rename = "sessionId")]
     pub session_id: PayloadSessionId,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges.
 ///
 /// <details><summary>JSON schema</summary>
@@ -233,11 +218,6 @@ impl ::std::ops::Deref for PayloadChallenge {
 impl ::std::convert::From<PayloadChallenge> for ::std::string::String {
     fn from(value: PayloadChallenge) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadChallenge> for PayloadChallenge {
-    fn from(value: &PayloadChallenge) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadChallenge {
@@ -308,11 +288,6 @@ impl ::std::convert::From<PayloadScopeItem> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PayloadScopeItem> for PayloadScopeItem {
-    fn from(value: &PayloadScopeItem) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PayloadScopeItem {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -380,11 +355,6 @@ impl ::std::ops::Deref for PayloadSessionId {
 impl ::std::convert::From<PayloadSessionId> for ::std::string::String {
     fn from(value: PayloadSessionId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadSessionId> for PayloadSessionId {
-    fn from(value: &PayloadSessionId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadSessionId {
@@ -473,11 +443,6 @@ pub struct Response {
     ///Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh.
     pub tokens: TokenBundle,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
 ///
 /// <details><summary>JSON schema</summary>
@@ -560,11 +525,6 @@ pub struct Session {
     ///The authenticated party's VID (typically a DID URL).
     pub subject: SessionSubject,
 }
-impl ::std::convert::From<&Session> for Session {
-    fn from(value: &Session) -> Self {
-        value.clone()
-    }
-}
 ///`SessionAmrItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -588,11 +548,6 @@ impl ::std::ops::Deref for SessionAmrItem {
 impl ::std::convert::From<SessionAmrItem> for ::std::string::String {
     fn from(value: SessionAmrItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionAmrItem> for SessionAmrItem {
-    fn from(value: &SessionAmrItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionAmrItem {
@@ -664,11 +619,6 @@ impl ::std::convert::From<SessionId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&SessionId> for SessionId {
-    fn from(value: &SessionId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SessionId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -736,11 +686,6 @@ impl ::std::ops::Deref for SessionSubject {
 impl ::std::convert::From<SessionSubject> for ::std::string::String {
     fn from(value: SessionSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SessionSubject> for SessionSubject {
-    fn from(value: &SessionSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SessionSubject {
@@ -877,11 +822,6 @@ pub struct TokenBundle {
     #[serde(rename = "tokenType")]
     pub token_type: TokenBundleTokenType,
 }
-impl ::std::convert::From<&TokenBundle> for TokenBundle {
-    fn from(value: &TokenBundle) -> Self {
-        value.clone()
-    }
-}
 ///Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.
 ///
 /// <details><summary>JSON schema</summary>
@@ -906,11 +846,6 @@ impl ::std::ops::Deref for TokenBundleAccessToken {
 impl ::std::convert::From<TokenBundleAccessToken> for ::std::string::String {
     fn from(value: TokenBundleAccessToken) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&TokenBundleAccessToken> for TokenBundleAccessToken {
-    fn from(value: &TokenBundleAccessToken) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for TokenBundleAccessToken {
@@ -982,11 +917,6 @@ impl ::std::convert::From<TokenBundleRefreshToken> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&TokenBundleRefreshToken> for TokenBundleRefreshToken {
-    fn from(value: &TokenBundleRefreshToken) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for TokenBundleRefreshToken {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1053,11 +983,6 @@ impl ::std::ops::Deref for TokenBundleScopeItem {
 impl ::std::convert::From<TokenBundleScopeItem> for ::std::string::String {
     fn from(value: TokenBundleScopeItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&TokenBundleScopeItem> for TokenBundleScopeItem {
-    fn from(value: &TokenBundleScopeItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for TokenBundleScopeItem {
@@ -1127,11 +1052,6 @@ impl ::std::ops::Deref for TokenBundleTokenType {
 impl ::std::convert::From<TokenBundleTokenType> for ::std::string::String {
     fn from(value: TokenBundleTokenType) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&TokenBundleTokenType> for TokenBundleTokenType {
-    fn from(value: &TokenBundleTokenType) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for TokenBundleTokenType {

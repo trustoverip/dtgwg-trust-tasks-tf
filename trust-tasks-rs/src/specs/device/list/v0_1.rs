@@ -81,11 +81,6 @@ pub enum Capability {
     #[serde(rename = "key-mint")]
     KeyMint,
 }
-impl ::std::convert::From<&Self> for Capability {
-    fn from(value: &Capability) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for Capability {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -211,11 +206,6 @@ pub enum ConsumerKind {
         service_kind: ConsumerKindServiceKind,
     },
 }
-impl ::std::convert::From<&Self> for ConsumerKind {
-    fn from(value: &ConsumerKind) -> Self {
-        value.clone()
-    }
-}
 ///`ConsumerKindFormFactor`
 ///
 /// <details><summary>JSON schema</summary>
@@ -250,11 +240,6 @@ pub enum ConsumerKindFormFactor {
     Mobile,
     #[serde(rename = "desktop")]
     Desktop,
-}
-impl ::std::convert::From<&Self> for ConsumerKindFormFactor {
-    fn from(value: &ConsumerKindFormFactor) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ConsumerKindFormFactor {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -332,11 +317,6 @@ pub enum ConsumerKindServiceKind {
     AiAgent,
     #[serde(rename = "daemon")]
     Daemon,
-}
-impl ::std::convert::From<&Self> for ConsumerKindServiceKind {
-    fn from(value: &ConsumerKindServiceKind) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ConsumerKindServiceKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -539,11 +519,6 @@ pub enum DeviceAttestation {
     #[serde(rename = "none")]
     None,
 }
-impl ::std::convert::From<&Self> for DeviceAttestation {
-    fn from(value: &DeviceAttestation) -> Self {
-        value.clone()
-    }
-}
 ///WebAuthn Authenticator AAGUID (UUID).
 ///
 /// <details><summary>JSON schema</summary>
@@ -568,11 +543,6 @@ impl ::std::ops::Deref for DeviceAttestationAaguid {
 impl ::std::convert::From<DeviceAttestationAaguid> for ::std::string::String {
     fn from(value: DeviceAttestationAaguid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DeviceAttestationAaguid> for DeviceAttestationAaguid {
-    fn from(value: &DeviceAttestationAaguid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DeviceAttestationAaguid {
@@ -653,11 +623,6 @@ impl ::std::convert::From<DeviceAttestationKeyId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&DeviceAttestationKeyId> for DeviceAttestationKeyId {
-    fn from(value: &DeviceAttestationKeyId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for DeviceAttestationKeyId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -724,11 +689,6 @@ impl ::std::ops::Deref for DeviceAttestationToken {
 impl ::std::convert::From<DeviceAttestationToken> for ::std::string::String {
     fn from(value: DeviceAttestationToken) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DeviceAttestationToken> for DeviceAttestationToken {
-    fn from(value: &DeviceAttestationToken) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DeviceAttestationToken {
@@ -910,11 +870,6 @@ pub struct DeviceBinding {
     )]
     pub wiped_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
-impl ::std::convert::From<&DeviceBinding> for DeviceBinding {
-    fn from(value: &DeviceBinding) -> Self {
-        value.clone()
-    }
-}
 ///The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.
 ///
 /// <details><summary>JSON schema</summary>
@@ -939,11 +894,6 @@ impl ::std::ops::Deref for DeviceBindingConsumerDid {
 impl ::std::convert::From<DeviceBindingConsumerDid> for ::std::string::String {
     fn from(value: DeviceBindingConsumerDid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DeviceBindingConsumerDid> for DeviceBindingConsumerDid {
-    fn from(value: &DeviceBindingConsumerDid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DeviceBindingConsumerDid {
@@ -1015,11 +965,6 @@ impl ::std::convert::From<DeviceBindingDeviceId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&DeviceBindingDeviceId> for DeviceBindingDeviceId {
-    fn from(value: &DeviceBindingDeviceId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for DeviceBindingDeviceId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1088,11 +1033,6 @@ impl ::std::ops::Deref for DeviceBindingDisplayName {
 impl ::std::convert::From<DeviceBindingDisplayName> for ::std::string::String {
     fn from(value: DeviceBindingDisplayName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DeviceBindingDisplayName> for DeviceBindingDisplayName {
-    fn from(value: &DeviceBindingDisplayName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DeviceBindingDisplayName {
@@ -1172,11 +1112,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -1205,11 +1140,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -1374,11 +1304,6 @@ pub struct Payload {
     )]
     pub service_kind_filter: ::std::option::Option<PayloadServiceKindFilter>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -1426,11 +1351,6 @@ pub enum PayloadConsumerKindFilter {
     Companion,
     #[serde(rename = "service")]
     Service,
-}
-impl ::std::convert::From<&Self> for PayloadConsumerKindFilter {
-    fn from(value: &PayloadConsumerKindFilter) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PayloadConsumerKindFilter {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1506,11 +1426,6 @@ pub enum PayloadFormFactorFilter {
     Mobile,
     #[serde(rename = "desktop")]
     Desktop,
-}
-impl ::std::convert::From<&Self> for PayloadFormFactorFilter {
-    fn from(value: &PayloadFormFactorFilter) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PayloadFormFactorFilter {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1588,11 +1503,6 @@ pub enum PayloadServiceKindFilter {
     AiAgent,
     #[serde(rename = "daemon")]
     Daemon,
-}
-impl ::std::convert::From<&Self> for PayloadServiceKindFilter {
-    fn from(value: &PayloadServiceKindFilter) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PayloadServiceKindFilter {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1679,11 +1589,6 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub truncated: bool,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/list/0.1";

@@ -61,11 +61,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub patterns: ::std::vec::Vec<PayloadPatternsItem>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -97,11 +92,6 @@ impl ::std::ops::Deref for PayloadPatternsItem {
 impl ::std::convert::From<PayloadPatternsItem> for ::std::string::String {
     fn from(value: PayloadPatternsItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadPatternsItem> for PayloadPatternsItem {
-    fn from(value: &PayloadPatternsItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadPatternsItem {
@@ -224,11 +214,6 @@ pub struct Response {
     #[serde(rename = "supportedTypes")]
     pub supported_types: ::std::vec::Vec<ResponseSupportedTypesItem>,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.
 ///
 /// <details><summary>JSON schema</summary>
@@ -253,11 +238,6 @@ impl ::std::ops::Deref for ResponseFrameworkVersion {
 impl ::std::convert::From<ResponseFrameworkVersion> for ::std::string::String {
     fn from(value: ResponseFrameworkVersion) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseFrameworkVersion> for ResponseFrameworkVersion {
-    fn from(value: &ResponseFrameworkVersion) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseFrameworkVersion {
@@ -366,11 +346,6 @@ pub enum ResponseSupportedTypesItem {
         type_: ::std::string::String,
     },
 }
-impl ::std::convert::From<&Self> for ResponseSupportedTypesItem {
-    fn from(value: &ResponseSupportedTypesItem) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseSupportedTypesItemObjectRequiredExtItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -396,13 +371,6 @@ impl ::std::convert::From<ResponseSupportedTypesItemObjectRequiredExtItem>
 {
     fn from(value: ResponseSupportedTypesItemObjectRequiredExtItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseSupportedTypesItemObjectRequiredExtItem>
-    for ResponseSupportedTypesItemObjectRequiredExtItem
-{
-    fn from(value: &ResponseSupportedTypesItemObjectRequiredExtItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseSupportedTypesItemObjectRequiredExtItem {

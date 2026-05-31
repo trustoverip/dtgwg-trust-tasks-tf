@@ -86,11 +86,6 @@ pub struct AdminRotationAsk {
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
-impl ::std::convert::From<&AdminRotationAsk> for AdminRotationAsk {
-    fn from(value: &AdminRotationAsk) -> Self {
-        value.clone()
-    }
-}
 ///Hint for the admin grant's target context. The wire `payload.context` is authoritative.
 ///
 /// <details><summary>JSON schema</summary>
@@ -115,11 +110,6 @@ impl ::std::ops::Deref for AdminRotationAskContextHint {
 impl ::std::convert::From<AdminRotationAskContextHint> for ::std::string::String {
     fn from(value: AdminRotationAskContextHint) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&AdminRotationAskContextHint> for AdminRotationAskContextHint {
-    fn from(value: &AdminRotationAskContextHint) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for AdminRotationAskContextHint {
@@ -190,11 +180,6 @@ impl ::std::ops::Deref for AdminRotationAskNote {
 impl ::std::convert::From<AdminRotationAskNote> for ::std::string::String {
     fn from(value: AdminRotationAskNote) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&AdminRotationAskNote> for AdminRotationAskNote {
-    fn from(value: &AdminRotationAskNote) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for AdminRotationAskNote {
@@ -268,11 +253,6 @@ impl<'de> ::serde::Deserialize<'de> for AdminRotationAskNote {
 pub enum BootstrapAsk {
     TemplateBootstrapAsk(TemplateBootstrapAsk),
     AdminRotationAsk(AdminRotationAsk),
-}
-impl ::std::convert::From<&Self> for BootstrapAsk {
-    fn from(value: &BootstrapAsk) -> Self {
-        value.clone()
-    }
 }
 impl ::std::convert::From<TemplateBootstrapAsk> for BootstrapAsk {
     fn from(value: TemplateBootstrapAsk) -> Self {
@@ -389,11 +369,6 @@ pub struct BootstrapRequest {
     #[serde(rename = "validUntil")]
     pub valid_until: ::chrono::DateTime<::chrono::offset::Utc>,
 }
-impl ::std::convert::From<&BootstrapRequest> for BootstrapRequest {
-    fn from(value: &BootstrapRequest) -> Self {
-        value.clone()
-    }
-}
 ///The integration's ephemeral did:key (Ed25519). Identifies the party the returned bundle is HPKE-sealed for; the VP proof verifies under this DID's verification method.
 ///
 /// <details><summary>JSON schema</summary>
@@ -419,11 +394,6 @@ impl ::std::ops::Deref for BootstrapRequestHolder {
 impl ::std::convert::From<BootstrapRequestHolder> for ::std::string::String {
     fn from(value: BootstrapRequestHolder) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&BootstrapRequestHolder> for BootstrapRequestHolder {
-    fn from(value: &BootstrapRequestHolder) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for BootstrapRequestHolder {
@@ -502,11 +472,6 @@ impl ::std::convert::From<BootstrapRequestId> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&BootstrapRequestId> for BootstrapRequestId {
-    fn from(value: &BootstrapRequestId) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for BootstrapRequestId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -575,11 +540,6 @@ impl ::std::ops::Deref for BootstrapRequestLabel {
 impl ::std::convert::From<BootstrapRequestLabel> for ::std::string::String {
     fn from(value: BootstrapRequestLabel) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&BootstrapRequestLabel> for BootstrapRequestLabel {
-    fn from(value: &BootstrapRequestLabel) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for BootstrapRequestLabel {
@@ -654,11 +614,6 @@ impl ::std::convert::From<BootstrapRequestNonce> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&BootstrapRequestNonce> for BootstrapRequestNonce {
-    fn from(value: &BootstrapRequestNonce) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for BootstrapRequestNonce {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -727,11 +682,6 @@ impl ::std::ops::Deref for BootstrapRequestTypeItem {
 impl ::std::convert::From<BootstrapRequestTypeItem> for ::std::string::String {
     fn from(value: BootstrapRequestTypeItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&BootstrapRequestTypeItem> for BootstrapRequestTypeItem {
-    fn from(value: &BootstrapRequestTypeItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for BootstrapRequestTypeItem {
@@ -842,11 +792,6 @@ pub struct DataIntegrityProof {
     #[serde(rename = "verificationMethod")]
     pub verification_method: DataIntegrityProofVerificationMethod,
 }
-impl ::std::convert::From<&DataIntegrityProof> for DataIntegrityProof {
-    fn from(value: &DataIntegrityProof) -> Self {
-        value.clone()
-    }
-}
 ///This version pins `eddsa-jcs-2022`. Maintainers MUST reject other values until a future minor extends the allowlist.
 ///
 /// <details><summary>JSON schema</summary>
@@ -871,11 +816,6 @@ impl ::std::ops::Deref for DataIntegrityProofCryptosuite {
 impl ::std::convert::From<DataIntegrityProofCryptosuite> for ::std::string::String {
     fn from(value: DataIntegrityProofCryptosuite) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DataIntegrityProofCryptosuite> for DataIntegrityProofCryptosuite {
-    fn from(value: &DataIntegrityProofCryptosuite) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DataIntegrityProofCryptosuite {
@@ -947,11 +887,6 @@ impl ::std::convert::From<DataIntegrityProofProofValue> for ::std::string::Strin
         value.0
     }
 }
-impl ::std::convert::From<&DataIntegrityProofProofValue> for DataIntegrityProofProofValue {
-    fn from(value: &DataIntegrityProofProofValue) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for DataIntegrityProofProofValue {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1019,13 +954,6 @@ impl ::std::ops::Deref for DataIntegrityProofVerificationMethod {
 impl ::std::convert::From<DataIntegrityProofVerificationMethod> for ::std::string::String {
     fn from(value: DataIntegrityProofVerificationMethod) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DataIntegrityProofVerificationMethod>
-    for DataIntegrityProofVerificationMethod
-{
-    fn from(value: &DataIntegrityProofVerificationMethod) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DataIntegrityProofVerificationMethod {
@@ -1111,11 +1039,6 @@ pub struct DidTemplateRef {
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
 }
-impl ::std::convert::From<&DidTemplateRef> for DidTemplateRef {
-    fn from(value: &DidTemplateRef) -> Self {
-        value.clone()
-    }
-}
 ///Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1141,11 +1064,6 @@ impl ::std::ops::Deref for DidTemplateRefName {
 impl ::std::convert::From<DidTemplateRefName> for ::std::string::String {
     fn from(value: DidTemplateRefName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DidTemplateRefName> for DidTemplateRefName {
-    fn from(value: &DidTemplateRefName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DidTemplateRefName {
@@ -1225,11 +1143,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -1258,11 +1171,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -1389,11 +1297,6 @@ pub struct Payload {
     )]
     pub vc_validity_seconds: ::std::option::Option<::std::num::NonZeroU64>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///Producer-assertion mode the maintainer should apply to the returned sealed bundle. `did-signed` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinned-only` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertion_unsupported` to unsupported requests.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1427,11 +1330,6 @@ pub enum PayloadAssertion {
     DidSigned,
     #[serde(rename = "pinned-only")]
     PinnedOnly,
-}
-impl ::std::convert::From<&Self> for PayloadAssertion {
-    fn from(value: &PayloadAssertion) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PayloadAssertion {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1502,11 +1400,6 @@ impl ::std::ops::Deref for PayloadContext {
 impl ::std::convert::From<PayloadContext> for ::std::string::String {
     fn from(value: PayloadContext) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadContext> for PayloadContext {
-    fn from(value: &PayloadContext) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadContext {
@@ -1698,11 +1591,6 @@ pub struct ProvisionSummary {
     )]
     pub webvh_server_id: ::std::option::Option<ProvisionSummaryWebvhServerId>,
 }
-impl ::std::convert::From<&ProvisionSummary> for ProvisionSummary {
-    fn from(value: &ProvisionSummary) -> Self {
-        value.clone()
-    }
-}
 ///Long-term admin DID after this provisioning. Equals `clientDid` when no admin rollover occurred (TemplateBootstrap with no `adminTemplate`); equals the freshly-minted admin DID when `adminTemplate` was used or when the ask was `AdminRotation`. Maintainers that pre-date admin rollover MAY omit this; consumers SHOULD default it to `clientDid` for backward compatibility.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1727,11 +1615,6 @@ impl ::std::ops::Deref for ProvisionSummaryAdminDid {
 impl ::std::convert::From<ProvisionSummaryAdminDid> for ::std::string::String {
     fn from(value: ProvisionSummaryAdminDid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ProvisionSummaryAdminDid> for ProvisionSummaryAdminDid {
-    fn from(value: &ProvisionSummaryAdminDid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ProvisionSummaryAdminDid {
@@ -1803,13 +1686,6 @@ impl ::std::convert::From<ProvisionSummaryAdminTemplateName> for ::std::string::
         value.0
     }
 }
-impl ::std::convert::From<&ProvisionSummaryAdminTemplateName>
-    for ProvisionSummaryAdminTemplateName
-{
-    fn from(value: &ProvisionSummaryAdminTemplateName) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for ProvisionSummaryAdminTemplateName {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1877,11 +1753,6 @@ impl ::std::ops::Deref for ProvisionSummaryBundleIdHex {
 impl ::std::convert::From<ProvisionSummaryBundleIdHex> for ::std::string::String {
     fn from(value: ProvisionSummaryBundleIdHex) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ProvisionSummaryBundleIdHex> for ProvisionSummaryBundleIdHex {
-    fn from(value: &ProvisionSummaryBundleIdHex) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ProvisionSummaryBundleIdHex {
@@ -1955,11 +1826,6 @@ impl ::std::convert::From<ProvisionSummaryClientDid> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&ProvisionSummaryClientDid> for ProvisionSummaryClientDid {
-    fn from(value: &ProvisionSummaryClientDid) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for ProvisionSummaryClientDid {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -2027,11 +1893,6 @@ impl ::std::ops::Deref for ProvisionSummaryIntegrationDid {
 impl ::std::convert::From<ProvisionSummaryIntegrationDid> for ::std::string::String {
     fn from(value: ProvisionSummaryIntegrationDid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ProvisionSummaryIntegrationDid> for ProvisionSummaryIntegrationDid {
-    fn from(value: &ProvisionSummaryIntegrationDid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ProvisionSummaryIntegrationDid {
@@ -2103,11 +1964,6 @@ impl ::std::convert::From<ProvisionSummaryTemplateKind> for ::std::string::Strin
         value.0
     }
 }
-impl ::std::convert::From<&ProvisionSummaryTemplateKind> for ProvisionSummaryTemplateKind {
-    fn from(value: &ProvisionSummaryTemplateKind) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for ProvisionSummaryTemplateKind {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -2177,11 +2033,6 @@ impl ::std::convert::From<ProvisionSummaryTemplateName> for ::std::string::Strin
         value.0
     }
 }
-impl ::std::convert::From<&ProvisionSummaryTemplateName> for ProvisionSummaryTemplateName {
-    fn from(value: &ProvisionSummaryTemplateName) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for ProvisionSummaryTemplateName {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -2249,11 +2100,6 @@ impl ::std::ops::Deref for ProvisionSummaryWebvhServerId {
 impl ::std::convert::From<ProvisionSummaryWebvhServerId> for ::std::string::String {
     fn from(value: ProvisionSummaryWebvhServerId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ProvisionSummaryWebvhServerId> for ProvisionSummaryWebvhServerId {
-    fn from(value: &ProvisionSummaryWebvhServerId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ProvisionSummaryWebvhServerId {
@@ -2349,11 +2195,6 @@ pub struct Response {
     ///Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field.
     pub summary: ProvisionSummary,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///OpenPGP-style ASCII-armored ciphertext of `SealedPayloadV1`. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`. Recipient is the X25519 derivation of `request.holder`'s Ed25519 pubkey.
 ///
 /// <details><summary>JSON schema</summary>
@@ -2378,11 +2219,6 @@ impl ::std::ops::Deref for ResponseBundle {
 impl ::std::convert::From<ResponseBundle> for ::std::string::String {
     fn from(value: ResponseBundle) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseBundle> for ResponseBundle {
-    fn from(value: &ResponseBundle) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseBundle {
@@ -2452,11 +2288,6 @@ impl ::std::ops::Deref for ResponseDigest {
 impl ::std::convert::From<ResponseDigest> for ::std::string::String {
     fn from(value: ResponseDigest) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseDigest> for ResponseDigest {
-    fn from(value: &ResponseDigest) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseDigest {
@@ -2571,11 +2402,6 @@ pub struct TemplateBootstrapAsk {
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
-impl ::std::convert::From<&TemplateBootstrapAsk> for TemplateBootstrapAsk {
-    fn from(value: &TemplateBootstrapAsk) -> Self {
-        value.clone()
-    }
-}
 ///Hint for the integration's target context. The wire `payload.context` is authoritative; this hint exists for documentation / cross-check only.
 ///
 /// <details><summary>JSON schema</summary>
@@ -2600,11 +2426,6 @@ impl ::std::ops::Deref for TemplateBootstrapAskContextHint {
 impl ::std::convert::From<TemplateBootstrapAskContextHint> for ::std::string::String {
     fn from(value: TemplateBootstrapAskContextHint) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&TemplateBootstrapAskContextHint> for TemplateBootstrapAskContextHint {
-    fn from(value: &TemplateBootstrapAskContextHint) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for TemplateBootstrapAskContextHint {
@@ -2675,11 +2496,6 @@ impl ::std::ops::Deref for TemplateBootstrapAskNote {
 impl ::std::convert::From<TemplateBootstrapAskNote> for ::std::string::String {
     fn from(value: TemplateBootstrapAskNote) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&TemplateBootstrapAskNote> for TemplateBootstrapAskNote {
-    fn from(value: &TemplateBootstrapAskNote) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for TemplateBootstrapAskNote {

@@ -89,11 +89,6 @@ pub struct ConsumerContext {
     )]
     pub network_class: ::std::option::Option<ConsumerContextNetworkClass>,
 }
-impl ::std::convert::From<&ConsumerContext> for ConsumerContext {
-    fn from(value: &ConsumerContext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for ConsumerContext {
     fn default() -> Self {
         Self {
@@ -127,11 +122,6 @@ impl ::std::ops::Deref for ConsumerContextDeviceId {
 impl ::std::convert::From<ConsumerContextDeviceId> for ::std::string::String {
     fn from(value: ConsumerContextDeviceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ConsumerContextDeviceId> for ConsumerContextDeviceId {
-    fn from(value: &ConsumerContextDeviceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ConsumerContextDeviceId {
@@ -219,11 +209,6 @@ pub enum ConsumerContextNetworkClass {
     #[serde(rename = "vpn")]
     Vpn,
 }
-impl ::std::convert::From<&Self> for ConsumerContextNetworkClass {
-    fn from(value: &ConsumerContextNetworkClass) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for ConsumerContextNetworkClass {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -306,11 +291,6 @@ pub struct DidcommAuthcryptEnvelope {
     ///Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
     pub jwe: DidcommAuthcryptEnvelopeJwe,
 }
-impl ::std::convert::From<&DidcommAuthcryptEnvelope> for DidcommAuthcryptEnvelope {
-    fn from(value: &DidcommAuthcryptEnvelope) -> Self {
-        value.clone()
-    }
-}
 ///Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
 ///
 /// <details><summary>JSON schema</summary>
@@ -335,11 +315,6 @@ impl ::std::ops::Deref for DidcommAuthcryptEnvelopeJwe {
 impl ::std::convert::From<DidcommAuthcryptEnvelopeJwe> for ::std::string::String {
     fn from(value: DidcommAuthcryptEnvelopeJwe) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&DidcommAuthcryptEnvelopeJwe> for DidcommAuthcryptEnvelopeJwe {
-    fn from(value: &DidcommAuthcryptEnvelopeJwe) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for DidcommAuthcryptEnvelopeJwe {
@@ -416,11 +391,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -449,11 +419,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -564,11 +529,6 @@ pub struct HpkeArmoredEnvelope {
     #[serde(rename = "recipientKeyId")]
     pub recipient_key_id: HpkeArmoredEnvelopeRecipientKeyId,
 }
-impl ::std::convert::From<&HpkeArmoredEnvelope> for HpkeArmoredEnvelope {
-    fn from(value: &HpkeArmoredEnvelope) -> Self {
-        value.clone()
-    }
-}
 ///ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
 ///
 /// <details><summary>JSON schema</summary>
@@ -593,11 +553,6 @@ impl ::std::ops::Deref for HpkeArmoredEnvelopeArmored {
 impl ::std::convert::From<HpkeArmoredEnvelopeArmored> for ::std::string::String {
     fn from(value: HpkeArmoredEnvelopeArmored) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&HpkeArmoredEnvelopeArmored> for HpkeArmoredEnvelopeArmored {
-    fn from(value: &HpkeArmoredEnvelopeArmored) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeArmored {
@@ -680,11 +635,6 @@ pub enum HpkeArmoredEnvelopeProducerAssertion {
     #[serde(rename = "pinned-only")]
     PinnedOnly,
 }
-impl ::std::convert::From<&Self> for HpkeArmoredEnvelopeProducerAssertion {
-    fn from(value: &HpkeArmoredEnvelopeProducerAssertion) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for HpkeArmoredEnvelopeProducerAssertion {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -756,13 +706,6 @@ impl ::std::ops::Deref for HpkeArmoredEnvelopeRecipientKeyId {
 impl ::std::convert::From<HpkeArmoredEnvelopeRecipientKeyId> for ::std::string::String {
     fn from(value: HpkeArmoredEnvelopeRecipientKeyId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&HpkeArmoredEnvelopeRecipientKeyId>
-    for HpkeArmoredEnvelopeRecipientKeyId
-{
-    fn from(value: &HpkeArmoredEnvelopeRecipientKeyId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for HpkeArmoredEnvelopeRecipientKeyId {
@@ -884,11 +827,6 @@ pub struct Payload {
     )]
     pub ttl_seconds_hint: ::std::option::Option<::std::num::NonZeroU64>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadEntryId`
 ///
 /// <details><summary>JSON schema</summary>
@@ -912,11 +850,6 @@ impl ::std::ops::Deref for PayloadEntryId {
 impl ::std::convert::From<PayloadEntryId> for ::std::string::String {
     fn from(value: PayloadEntryId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadEntryId> for PayloadEntryId {
-    fn from(value: &PayloadEntryId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadEntryId {
@@ -1014,11 +947,6 @@ pub struct Response {
     #[serde(rename = "ttlSeconds")]
     pub ttl_seconds: ::std::num::NonZeroU64,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///Discriminated by `envelope`. Exactly one variant matches per document.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1047,11 +975,6 @@ pub enum SealedEnvelope {
     DidcommAuthcryptEnvelope(DidcommAuthcryptEnvelope),
     HpkeArmoredEnvelope(HpkeArmoredEnvelope),
     TspMessageEnvelope(TspMessageEnvelope),
-}
-impl ::std::convert::From<&Self> for SealedEnvelope {
-    fn from(value: &SealedEnvelope) -> Self {
-        value.clone()
-    }
 }
 impl ::std::convert::From<DidcommAuthcryptEnvelope> for SealedEnvelope {
     fn from(value: DidcommAuthcryptEnvelope) -> Self {
@@ -1127,11 +1050,6 @@ pub enum SecretKind {
     SshKey,
     #[serde(rename = "custom")]
     Custom,
-}
-impl ::std::convert::From<&Self> for SecretKind {
-    fn from(value: &SecretKind) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for SecretKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1333,11 +1251,6 @@ pub enum SiteTarget {
         sha256_cert_fingerprints: Vec<SiteTargetSha256CertFingerprintsItem>,
     },
 }
-impl ::std::convert::From<&Self> for SiteTarget {
-    fn from(value: &SiteTarget) -> Self {
-        value.clone()
-    }
-}
 ///iOS bundle identifier in reverse-DNS form (e.g. "com.github.stwalkerster.codehub"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).
 ///
 /// <details><summary>JSON schema</summary>
@@ -1363,11 +1276,6 @@ impl ::std::ops::Deref for SiteTargetBundleId {
 impl ::std::convert::From<SiteTargetBundleId> for ::std::string::String {
     fn from(value: SiteTargetBundleId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetBundleId> for SiteTargetBundleId {
-    fn from(value: &SiteTargetBundleId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetBundleId {
@@ -1444,11 +1352,6 @@ impl ::std::convert::From<SiteTargetDid> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&SiteTargetDid> for SiteTargetDid {
-    fn from(value: &SiteTargetDid) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SiteTargetDid {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1517,11 +1420,6 @@ impl ::std::ops::Deref for SiteTargetPackageName {
 impl ::std::convert::From<SiteTargetPackageName> for ::std::string::String {
     fn from(value: SiteTargetPackageName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetPackageName> for SiteTargetPackageName {
-    fn from(value: &SiteTargetPackageName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetPackageName {
@@ -1602,13 +1500,6 @@ impl ::std::convert::From<SiteTargetSha256CertFingerprintsItem> for ::std::strin
         value.0
     }
 }
-impl ::std::convert::From<&SiteTargetSha256CertFingerprintsItem>
-    for SiteTargetSha256CertFingerprintsItem
-{
-    fn from(value: &SiteTargetSha256CertFingerprintsItem) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for SiteTargetSha256CertFingerprintsItem {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1681,11 +1572,6 @@ impl ::std::ops::Deref for SiteTargetTeamId {
 impl ::std::convert::From<SiteTargetTeamId> for ::std::string::String {
     fn from(value: SiteTargetTeamId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&SiteTargetTeamId> for SiteTargetTeamId {
-    fn from(value: &SiteTargetTeamId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for SiteTargetTeamId {
@@ -1782,11 +1668,6 @@ pub struct StepUpProof {
     ///Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.
     pub proof: ::std::string::String,
 }
-impl ::std::convert::From<&StepUpProof> for StepUpProof {
-    fn from(value: &StepUpProof) -> Self {
-        value.clone()
-    }
-}
 ///Maintainer-issued challenge id the proof responds to.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1811,11 +1692,6 @@ impl ::std::ops::Deref for StepUpProofChallengeId {
 impl ::std::convert::From<StepUpProofChallengeId> for ::std::string::String {
     fn from(value: StepUpProofChallengeId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&StepUpProofChallengeId> for StepUpProofChallengeId {
-    fn from(value: &StepUpProofChallengeId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for StepUpProofChallengeId {
@@ -1896,11 +1772,6 @@ pub enum StepUpProofKind {
     #[serde(rename = "totp")]
     Totp,
 }
-impl ::std::convert::From<&Self> for StepUpProofKind {
-    fn from(value: &StepUpProofKind) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for StepUpProofKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -1977,11 +1848,6 @@ pub struct TspMessageEnvelope {
     ///Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
     pub message: TspMessageEnvelopeMessage,
 }
-impl ::std::convert::From<&TspMessageEnvelope> for TspMessageEnvelope {
-    fn from(value: &TspMessageEnvelope) -> Self {
-        value.clone()
-    }
-}
 ///Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
 ///
 /// <details><summary>JSON schema</summary>
@@ -2006,11 +1872,6 @@ impl ::std::ops::Deref for TspMessageEnvelopeMessage {
 impl ::std::convert::From<TspMessageEnvelopeMessage> for ::std::string::String {
     fn from(value: TspMessageEnvelopeMessage) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&TspMessageEnvelopeMessage> for TspMessageEnvelopeMessage {
-    fn from(value: &TspMessageEnvelopeMessage) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for TspMessageEnvelopeMessage {

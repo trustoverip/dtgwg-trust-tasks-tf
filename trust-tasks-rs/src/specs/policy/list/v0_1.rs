@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -203,11 +193,6 @@ pub struct Payload {
     )]
     pub page_size: ::std::option::Option<::std::num::NonZeroU64>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -242,11 +227,6 @@ impl ::std::ops::Deref for PayloadContextId {
 impl ::std::convert::From<PayloadContextId> for ::std::string::String {
     fn from(value: PayloadContextId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadContextId> for PayloadContextId {
-    fn from(value: &PayloadContextId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadContextId {
@@ -396,11 +376,6 @@ pub struct PolicyModule {
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub version: u64,
 }
-impl ::std::convert::From<&PolicyModule> for PolicyModule {
-    fn from(value: &PolicyModule) -> Self {
-        value.clone()
-    }
-}
 ///`PolicyModuleDescription`
 ///
 /// <details><summary>JSON schema</summary>
@@ -424,11 +399,6 @@ impl ::std::ops::Deref for PolicyModuleDescription {
 impl ::std::convert::From<PolicyModuleDescription> for ::std::string::String {
     fn from(value: PolicyModuleDescription) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PolicyModuleDescription> for PolicyModuleDescription {
-    fn from(value: &PolicyModuleDescription) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PolicyModuleDescription {
@@ -497,11 +467,6 @@ impl ::std::ops::Deref for PolicyModuleId {
 impl ::std::convert::From<PolicyModuleId> for ::std::string::String {
     fn from(value: PolicyModuleId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PolicyModuleId> for PolicyModuleId {
-    fn from(value: &PolicyModuleId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PolicyModuleId {
@@ -573,11 +538,6 @@ impl ::std::convert::From<PolicyModuleModule> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PolicyModuleModule> for PolicyModuleModule {
-    fn from(value: &PolicyModuleModule) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PolicyModuleModule {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -646,11 +606,6 @@ impl ::std::ops::Deref for PolicyModuleName {
 impl ::std::convert::From<PolicyModuleName> for ::std::string::String {
     fn from(value: PolicyModuleName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PolicyModuleName> for PolicyModuleName {
-    fn from(value: &PolicyModuleName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PolicyModuleName {
@@ -742,11 +697,6 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     pub policies: ::std::vec::Vec<PolicyModule>,
     pub truncated: bool,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 /// Generation of default values for serde.
 pub mod defaults {

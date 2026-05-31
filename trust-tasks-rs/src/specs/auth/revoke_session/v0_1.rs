@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -227,11 +217,6 @@ pub enum Payload {
         reason: ::std::option::Option<::std::string::String>,
     },
 }
-impl ::std::convert::From<&Self> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///The session to revoke. Mutually exclusive with `all`.
 ///
 /// <details><summary>JSON schema</summary>
@@ -256,11 +241,6 @@ impl ::std::ops::Deref for PayloadVariant0SessionId {
 impl ::std::convert::From<PayloadVariant0SessionId> for ::std::string::String {
     fn from(value: PayloadVariant0SessionId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadVariant0SessionId> for PayloadVariant0SessionId {
-    fn from(value: &PayloadVariant0SessionId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadVariant0SessionId {
@@ -343,11 +323,6 @@ pub struct Response {
     ///Number of sessions invalidated by this call. Zero is a valid outcome (e.g. the named sessionId was already revoked).
     #[serde(rename = "revokedCount")]
     pub revoked_count: u64,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/revoke-session/0.1";

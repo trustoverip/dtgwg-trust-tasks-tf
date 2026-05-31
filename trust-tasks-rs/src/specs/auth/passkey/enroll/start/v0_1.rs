@@ -190,11 +190,6 @@ pub struct CredentialCreationOptions {
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     pub user: CredentialCreationOptionsUser,
 }
-impl ::std::convert::From<&CredentialCreationOptions> for CredentialCreationOptions {
-    fn from(value: &CredentialCreationOptions) -> Self {
-        value.clone()
-    }
-}
 ///`CredentialCreationOptionsAttestation`
 ///
 /// <details><summary>JSON schema</summary>
@@ -231,11 +226,6 @@ pub enum CredentialCreationOptionsAttestation {
     Direct,
     #[serde(rename = "enterprise")]
     Enterprise,
-}
-impl ::std::convert::From<&Self> for CredentialCreationOptionsAttestation {
-    fn from(value: &CredentialCreationOptionsAttestation) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for CredentialCreationOptionsAttestation {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -349,13 +339,6 @@ pub struct CredentialCreationOptionsAuthenticatorSelection {
     pub user_verification:
         ::std::option::Option<CredentialCreationOptionsAuthenticatorSelectionUserVerification>,
 }
-impl ::std::convert::From<&CredentialCreationOptionsAuthenticatorSelection>
-    for CredentialCreationOptionsAuthenticatorSelection
-{
-    fn from(value: &CredentialCreationOptionsAuthenticatorSelection) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for CredentialCreationOptionsAuthenticatorSelection {
     fn default() -> Self {
         Self {
@@ -396,15 +379,6 @@ pub enum CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment 
     Platform,
     #[serde(rename = "cross-platform")]
     CrossPlatform,
-}
-impl ::std::convert::From<&Self>
-    for CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment
-{
-    fn from(
-        value: &CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment,
-    ) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display
     for CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment
@@ -490,11 +464,6 @@ pub enum CredentialCreationOptionsAuthenticatorSelectionResidentKey {
     #[serde(rename = "required")]
     Required,
 }
-impl ::std::convert::From<&Self> for CredentialCreationOptionsAuthenticatorSelectionResidentKey {
-    fn from(value: &CredentialCreationOptionsAuthenticatorSelectionResidentKey) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for CredentialCreationOptionsAuthenticatorSelectionResidentKey {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -574,13 +543,6 @@ pub enum CredentialCreationOptionsAuthenticatorSelectionUserVerification {
     Preferred,
     #[serde(rename = "required")]
     Required,
-}
-impl ::std::convert::From<&Self>
-    for CredentialCreationOptionsAuthenticatorSelectionUserVerification
-{
-    fn from(value: &CredentialCreationOptionsAuthenticatorSelectionUserVerification) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for CredentialCreationOptionsAuthenticatorSelectionUserVerification {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -662,13 +624,6 @@ pub struct CredentialCreationOptionsPubKeyCredParamsItem {
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
-impl ::std::convert::From<&CredentialCreationOptionsPubKeyCredParamsItem>
-    for CredentialCreationOptionsPubKeyCredParamsItem
-{
-    fn from(value: &CredentialCreationOptionsPubKeyCredParamsItem) -> Self {
-        value.clone()
-    }
-}
 ///`CredentialCreationOptionsRp`
 ///
 /// <details><summary>JSON schema</summary>
@@ -700,11 +655,6 @@ pub struct CredentialCreationOptionsRp {
     pub id: CredentialCreationOptionsRpId,
     pub name: CredentialCreationOptionsRpName,
 }
-impl ::std::convert::From<&CredentialCreationOptionsRp> for CredentialCreationOptionsRp {
-    fn from(value: &CredentialCreationOptionsRp) -> Self {
-        value.clone()
-    }
-}
 ///`CredentialCreationOptionsRpId`
 ///
 /// <details><summary>JSON schema</summary>
@@ -728,11 +678,6 @@ impl ::std::ops::Deref for CredentialCreationOptionsRpId {
 impl ::std::convert::From<CredentialCreationOptionsRpId> for ::std::string::String {
     fn from(value: CredentialCreationOptionsRpId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&CredentialCreationOptionsRpId> for CredentialCreationOptionsRpId {
-    fn from(value: &CredentialCreationOptionsRpId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for CredentialCreationOptionsRpId {
@@ -801,11 +746,6 @@ impl ::std::ops::Deref for CredentialCreationOptionsRpName {
 impl ::std::convert::From<CredentialCreationOptionsRpName> for ::std::string::String {
     fn from(value: CredentialCreationOptionsRpName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&CredentialCreationOptionsRpName> for CredentialCreationOptionsRpName {
-    fn from(value: &CredentialCreationOptionsRpName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for CredentialCreationOptionsRpName {
@@ -889,11 +829,6 @@ pub struct CredentialCreationOptionsUser {
     pub id: ::std::string::String,
     pub name: CredentialCreationOptionsUserName,
 }
-impl ::std::convert::From<&CredentialCreationOptionsUser> for CredentialCreationOptionsUser {
-    fn from(value: &CredentialCreationOptionsUser) -> Self {
-        value.clone()
-    }
-}
 ///`CredentialCreationOptionsUserName`
 ///
 /// <details><summary>JSON schema</summary>
@@ -917,13 +852,6 @@ impl ::std::ops::Deref for CredentialCreationOptionsUserName {
 impl ::std::convert::From<CredentialCreationOptionsUserName> for ::std::string::String {
     fn from(value: CredentialCreationOptionsUserName) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&CredentialCreationOptionsUserName>
-    for CredentialCreationOptionsUserName
-{
-    fn from(value: &CredentialCreationOptionsUserName) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for CredentialCreationOptionsUserName {
@@ -1017,11 +945,6 @@ pub struct CredentialDescriptor {
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
-impl ::std::convert::From<&CredentialDescriptor> for CredentialDescriptor {
-    fn from(value: &CredentialDescriptor) -> Self {
-        value.clone()
-    }
-}
 ///`CredentialDescriptorTransportsItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -1061,11 +984,6 @@ pub enum CredentialDescriptorTransportsItem {
     Internal,
     #[serde(rename = "hybrid")]
     Hybrid,
-}
-impl ::std::convert::From<&Self> for CredentialDescriptorTransportsItem {
-    fn from(value: &CredentialDescriptorTransportsItem) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for CredentialDescriptorTransportsItem {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -1144,11 +1062,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -1177,11 +1090,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -1269,11 +1177,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -1327,11 +1230,6 @@ pub struct Response {
     ///PublicKeyCredentialCreationOptions for navigator.credentials.create.
     pub options: CredentialCreationOptions,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1356,11 +1254,6 @@ impl ::std::ops::Deref for ResponseEnrollmentId {
 impl ::std::convert::From<ResponseEnrollmentId> for ::std::string::String {
     fn from(value: ResponseEnrollmentId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseEnrollmentId> for ResponseEnrollmentId {
-    fn from(value: &ResponseEnrollmentId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseEnrollmentId {

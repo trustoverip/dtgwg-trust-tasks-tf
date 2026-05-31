@@ -353,7 +353,10 @@ fn find_repo_root() -> Result<PathBuf> {
             continue;
         }
         let text = fs::read_to_string(&candidate)?;
-        let parsed: toml::Value = match text.parse() {
+        // Parse the whole document into a table. `toml::Value`'s `FromStr`
+        // parses a bare value expression (not a document) under toml 1.x,
+        // so a full Cargo.toml must go through `from_str::<Table>`.
+        let parsed: toml::Table = match toml::from_str(&text) {
             Ok(v) => v,
             Err(_) => continue, // malformed Cargo.toml — skip, keep walking
         };

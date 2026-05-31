@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -204,11 +194,6 @@ pub struct Payload {
     pub message: PayloadMessage,
     pub mnemonic: PayloadMnemonic,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadCode`
 ///
 /// <details><summary>JSON schema</summary>
@@ -232,11 +217,6 @@ impl ::std::ops::Deref for PayloadCode {
 impl ::std::convert::From<PayloadCode> for ::std::string::String {
     fn from(value: PayloadCode) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadCode> for PayloadCode {
-    fn from(value: &PayloadCode) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadCode {
@@ -307,11 +287,6 @@ impl ::std::convert::From<PayloadMessage> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PayloadMessage> for PayloadMessage {
-    fn from(value: &PayloadMessage) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PayloadMessage {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -378,11 +353,6 @@ impl ::std::ops::Deref for PayloadMnemonic {
 impl ::std::convert::From<PayloadMnemonic> for ::std::string::String {
     fn from(value: PayloadMnemonic) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadMnemonic> for PayloadMnemonic {
-    fn from(value: &PayloadMnemonic) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadMnemonic {

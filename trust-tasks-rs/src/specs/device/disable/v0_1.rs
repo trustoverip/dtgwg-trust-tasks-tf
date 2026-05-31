@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -187,11 +177,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadDeviceId`
 ///
 /// <details><summary>JSON schema</summary>
@@ -215,11 +200,6 @@ impl ::std::ops::Deref for PayloadDeviceId {
 impl ::std::convert::From<PayloadDeviceId> for ::std::string::String {
     fn from(value: PayloadDeviceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadDeviceId> for PayloadDeviceId {
-    fn from(value: &PayloadDeviceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadDeviceId {
@@ -288,11 +268,6 @@ impl ::std::ops::Deref for PayloadReason {
 impl ::std::convert::From<PayloadReason> for ::std::string::String {
     fn from(value: PayloadReason) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadReason> for PayloadReason {
-    fn from(value: &PayloadReason) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadReason {
@@ -376,11 +351,6 @@ pub struct Response {
     pub disabled_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/disable/0.1";

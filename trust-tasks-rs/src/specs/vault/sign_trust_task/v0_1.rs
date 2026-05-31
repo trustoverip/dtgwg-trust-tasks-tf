@@ -89,11 +89,6 @@ pub struct ConsumerContext {
     )]
     pub network_class: ::std::option::Option<ConsumerContextNetworkClass>,
 }
-impl ::std::convert::From<&ConsumerContext> for ConsumerContext {
-    fn from(value: &ConsumerContext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for ConsumerContext {
     fn default() -> Self {
         Self {
@@ -127,11 +122,6 @@ impl ::std::ops::Deref for ConsumerContextDeviceId {
 impl ::std::convert::From<ConsumerContextDeviceId> for ::std::string::String {
     fn from(value: ConsumerContextDeviceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ConsumerContextDeviceId> for ConsumerContextDeviceId {
-    fn from(value: &ConsumerContextDeviceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ConsumerContextDeviceId {
@@ -219,11 +209,6 @@ pub enum ConsumerContextNetworkClass {
     #[serde(rename = "vpn")]
     Vpn,
 }
-impl ::std::convert::From<&Self> for ConsumerContextNetworkClass {
-    fn from(value: &ConsumerContextNetworkClass) -> Self {
-        value.clone()
-    }
-}
 impl ::std::fmt::Display for ConsumerContextNetworkClass {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
@@ -301,11 +286,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -334,11 +314,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -454,11 +429,6 @@ pub struct Payload {
     #[serde(rename = "unsignedEnvelope")]
     pub unsigned_envelope: UnsignedTrustTaskEnvelope,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///Identifier of the vault entry whose principal will sign. The maintainer rejects with `not_signable` when `entry.secretKind` is not `did-self-issued` or `didcomm-peer` (other kinds have no DID-based signing identity).
 ///
 /// <details><summary>JSON schema</summary>
@@ -483,11 +453,6 @@ impl ::std::ops::Deref for PayloadEntryId {
 impl ::std::convert::From<PayloadEntryId> for ::std::string::String {
     fn from(value: PayloadEntryId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadEntryId> for PayloadEntryId {
-    fn from(value: &PayloadEntryId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadEntryId {
@@ -575,11 +540,6 @@ pub struct Response {
     #[serde(rename = "signedEnvelope")]
     pub signed_envelope: ResponseSignedEnvelope,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.
 ///
 /// <details><summary>JSON schema</summary>
@@ -611,11 +571,6 @@ pub struct ResponseSignedEnvelope {
     pub recipient: ::serde_json::Value,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
-}
-impl ::std::convert::From<&ResponseSignedEnvelope> for ResponseSignedEnvelope {
-    fn from(value: &ResponseSignedEnvelope) -> Self {
-        value.clone()
-    }
 }
 ///`StepUpProof`
 ///
@@ -663,11 +618,6 @@ pub struct StepUpProof {
     ///Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.
     pub proof: ::std::string::String,
 }
-impl ::std::convert::From<&StepUpProof> for StepUpProof {
-    fn from(value: &StepUpProof) -> Self {
-        value.clone()
-    }
-}
 ///Maintainer-issued challenge id the proof responds to.
 ///
 /// <details><summary>JSON schema</summary>
@@ -692,11 +642,6 @@ impl ::std::ops::Deref for StepUpProofChallengeId {
 impl ::std::convert::From<StepUpProofChallengeId> for ::std::string::String {
     fn from(value: StepUpProofChallengeId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&StepUpProofChallengeId> for StepUpProofChallengeId {
-    fn from(value: &StepUpProofChallengeId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for StepUpProofChallengeId {
@@ -776,11 +721,6 @@ pub enum StepUpProofKind {
     PushApproval,
     #[serde(rename = "totp")]
     Totp,
-}
-impl ::std::convert::From<&Self> for StepUpProofKind {
-    fn from(value: &StepUpProofKind) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for StepUpProofKind {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -927,11 +867,6 @@ pub struct UnsignedTrustTaskEnvelope {
     #[serde(rename = "type")]
     pub type_: ::std::string::String,
 }
-impl ::std::convert::From<&UnsignedTrustTaskEnvelope> for UnsignedTrustTaskEnvelope {
-    fn from(value: &UnsignedTrustTaskEnvelope) -> Self {
-        value.clone()
-    }
-}
 ///Envelope identifier. Set by the producer of the inner task.
 ///
 /// <details><summary>JSON schema</summary>
@@ -956,11 +891,6 @@ impl ::std::ops::Deref for UnsignedTrustTaskEnvelopeId {
 impl ::std::convert::From<UnsignedTrustTaskEnvelopeId> for ::std::string::String {
     fn from(value: UnsignedTrustTaskEnvelopeId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&UnsignedTrustTaskEnvelopeId> for UnsignedTrustTaskEnvelopeId {
-    fn from(value: &UnsignedTrustTaskEnvelopeId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for UnsignedTrustTaskEnvelopeId {
@@ -1032,11 +962,6 @@ impl ::std::convert::From<UnsignedTrustTaskEnvelopeIssuer> for ::std::string::St
         value.0
     }
 }
-impl ::std::convert::From<&UnsignedTrustTaskEnvelopeIssuer> for UnsignedTrustTaskEnvelopeIssuer {
-    fn from(value: &UnsignedTrustTaskEnvelopeIssuer) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for UnsignedTrustTaskEnvelopeIssuer {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1106,13 +1031,6 @@ impl ::std::convert::From<UnsignedTrustTaskEnvelopeRecipient> for ::std::string:
         value.0
     }
 }
-impl ::std::convert::From<&UnsignedTrustTaskEnvelopeRecipient>
-    for UnsignedTrustTaskEnvelopeRecipient
-{
-    fn from(value: &UnsignedTrustTaskEnvelopeRecipient) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for UnsignedTrustTaskEnvelopeRecipient {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -1180,13 +1098,6 @@ impl ::std::ops::Deref for UnsignedTrustTaskEnvelopeThreadId {
 impl ::std::convert::From<UnsignedTrustTaskEnvelopeThreadId> for ::std::string::String {
     fn from(value: UnsignedTrustTaskEnvelopeThreadId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&UnsignedTrustTaskEnvelopeThreadId>
-    for UnsignedTrustTaskEnvelopeThreadId
-{
-    fn from(value: &UnsignedTrustTaskEnvelopeThreadId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for UnsignedTrustTaskEnvelopeThreadId {

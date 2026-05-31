@@ -141,11 +141,6 @@ pub struct AclEntry {
     )]
     pub updated_by: ::std::option::Option<::std::string::String>,
 }
-impl ::std::convert::From<&AclEntry> for AclEntry {
-    fn from(value: &AclEntry) -> Self {
-        value.clone()
-    }
-}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -177,11 +172,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -210,11 +200,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -338,11 +323,6 @@ pub struct Payload {
     )]
     pub subject_prefix: ::std::option::Option<PayloadSubjectPrefix>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for Payload {
     fn default() -> Self {
         Self {
@@ -379,11 +359,6 @@ impl ::std::ops::Deref for PayloadRole {
 impl ::std::convert::From<PayloadRole> for ::std::string::String {
     fn from(value: PayloadRole) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadRole> for PayloadRole {
-    fn from(value: &PayloadRole) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadRole {
@@ -455,11 +430,6 @@ impl ::std::convert::From<PayloadScope> for ::std::string::String {
         value.0
     }
 }
-impl ::std::convert::From<&PayloadScope> for PayloadScope {
-    fn from(value: &PayloadScope) -> Self {
-        value.clone()
-    }
-}
 impl ::std::str::FromStr for PayloadScope {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
@@ -527,11 +497,6 @@ impl ::std::ops::Deref for PayloadSubjectPrefix {
 impl ::std::convert::From<PayloadSubjectPrefix> for ::std::string::String {
     fn from(value: PayloadSubjectPrefix) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadSubjectPrefix> for PayloadSubjectPrefix {
-    fn from(value: &PayloadSubjectPrefix) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadSubjectPrefix {
@@ -643,11 +608,6 @@ pub struct Response {
     pub redacted_fields: ::std::vec::Vec<::std::string::String>,
     ///true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent.
     pub truncated: bool,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/acl/list/0.1";

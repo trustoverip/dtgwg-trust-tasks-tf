@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -217,11 +207,6 @@ pub struct Payload {
     - `full` — `cache-and-keys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.*/
     pub scope: PayloadScope,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadDeviceId`
 ///
 /// <details><summary>JSON schema</summary>
@@ -245,11 +230,6 @@ impl ::std::ops::Deref for PayloadDeviceId {
 impl ::std::convert::From<PayloadDeviceId> for ::std::string::String {
     fn from(value: PayloadDeviceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadDeviceId> for PayloadDeviceId {
-    fn from(value: &PayloadDeviceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadDeviceId {
@@ -320,11 +300,6 @@ impl ::std::ops::Deref for PayloadReason {
 impl ::std::convert::From<PayloadReason> for ::std::string::String {
     fn from(value: PayloadReason) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadReason> for PayloadReason {
-    fn from(value: &PayloadReason) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadReason {
@@ -411,11 +386,6 @@ pub enum PayloadScope {
     CacheAndKeys,
     #[serde(rename = "full")]
     Full,
-}
-impl ::std::convert::From<&Self> for PayloadScope {
-    fn from(value: &PayloadScope) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for PayloadScope {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -539,11 +509,6 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     pub scope: ResponseScope,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseDiagnostics`
 ///
 /// <details><summary>JSON schema</summary>
@@ -609,11 +574,6 @@ pub struct ResponseDiagnostics {
     )]
     pub partial_reasons: ::std::vec::Vec<::std::string::String>,
 }
-impl ::std::convert::From<&ResponseDiagnostics> for ResponseDiagnostics {
-    fn from(value: &ResponseDiagnostics) -> Self {
-        value.clone()
-    }
-}
 impl ::std::default::Default for ResponseDiagnostics {
     fn default() -> Self {
         Self {
@@ -658,11 +618,6 @@ pub enum ResponseScope {
     CacheAndKeys,
     #[serde(rename = "full")]
     Full,
-}
-impl ::std::convert::From<&Self> for ResponseScope {
-    fn from(value: &ResponseScope) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ResponseScope {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {

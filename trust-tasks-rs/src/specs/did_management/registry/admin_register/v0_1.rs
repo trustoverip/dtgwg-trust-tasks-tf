@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -210,11 +200,6 @@ pub struct Payload {
     )]
     pub served_domains: ::std::vec::Vec<::std::string::String>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadDid`
 ///
 /// <details><summary>JSON schema</summary>
@@ -238,11 +223,6 @@ impl ::std::ops::Deref for PayloadDid {
 impl ::std::convert::From<PayloadDid> for ::std::string::String {
     fn from(value: PayloadDid) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadDid> for PayloadDid {
-    fn from(value: &PayloadDid) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadDid {
@@ -311,11 +291,6 @@ impl ::std::ops::Deref for PayloadInstanceId {
 impl ::std::convert::From<PayloadInstanceId> for ::std::string::String {
     fn from(value: PayloadInstanceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadInstanceId> for PayloadInstanceId {
-    fn from(value: &PayloadInstanceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadInstanceId {
@@ -391,11 +366,6 @@ pub struct Response {
     pub entry: ServiceInstance,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-}
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
 }
 ///`ServiceInstance`
 ///
@@ -475,11 +445,6 @@ pub struct ServiceInstance {
         skip_serializing_if = "::std::vec::Vec::is_empty"
     )]
     pub served_domains: ::std::vec::Vec<::std::string::String>,
-}
-impl ::std::convert::From<&ServiceInstance> for ServiceInstance {
-    fn from(value: &ServiceInstance) -> Self {
-        value.clone()
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =

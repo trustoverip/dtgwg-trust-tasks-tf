@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -219,11 +209,6 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadScopesItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -247,11 +232,6 @@ impl ::std::ops::Deref for PayloadScopesItem {
 impl ::std::convert::From<PayloadScopesItem> for ::std::string::String {
     fn from(value: PayloadScopesItem) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadScopesItem> for PayloadScopesItem {
-    fn from(value: &PayloadScopesItem) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadScopesItem {
@@ -321,11 +301,6 @@ impl ::std::ops::Deref for PayloadSubject {
 impl ::std::convert::From<PayloadSubject> for ::std::string::String {
     fn from(value: PayloadSubject) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadSubject> for PayloadSubject {
-    fn from(value: &PayloadSubject) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadSubject {
@@ -434,11 +409,6 @@ pub struct Response {
     ///Echo of the invitee's VID.
     pub subject: ::std::string::String,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseInvite`
 ///
 /// <details><summary>JSON schema</summary>
@@ -474,11 +444,6 @@ pub struct ResponseInvite {
     ///Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.
     pub url: ::std::string::String,
 }
-impl ::std::convert::From<&ResponseInvite> for ResponseInvite {
-    fn from(value: &ResponseInvite) -> Self {
-        value.clone()
-    }
-}
 ///Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.
 ///
 /// <details><summary>JSON schema</summary>
@@ -503,11 +468,6 @@ impl ::std::ops::Deref for ResponseInviteToken {
 impl ::std::convert::From<ResponseInviteToken> for ::std::string::String {
     fn from(value: ResponseInviteToken) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ResponseInviteToken> for ResponseInviteToken {
-    fn from(value: &ResponseInviteToken) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ResponseInviteToken {

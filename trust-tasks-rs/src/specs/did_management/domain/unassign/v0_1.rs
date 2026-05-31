@@ -60,11 +60,6 @@ impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_j
         value.0
     }
 }
-impl ::std::convert::From<&Ext> for Ext {
-    fn from(value: &Ext) -> Self {
-        value.clone()
-    }
-}
 impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
@@ -93,11 +88,6 @@ impl ::std::ops::Deref for ExtKey {
 impl ::std::convert::From<ExtKey> for ::std::string::String {
     fn from(value: ExtKey) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&ExtKey> for ExtKey {
-    fn from(value: &ExtKey) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for ExtKey {
@@ -186,11 +176,6 @@ pub struct Payload {
     #[serde(rename = "instanceId")]
     pub instance_id: PayloadInstanceId,
 }
-impl ::std::convert::From<&Payload> for Payload {
-    fn from(value: &Payload) -> Self {
-        value.clone()
-    }
-}
 ///`PayloadDomain`
 ///
 /// <details><summary>JSON schema</summary>
@@ -214,11 +199,6 @@ impl ::std::ops::Deref for PayloadDomain {
 impl ::std::convert::From<PayloadDomain> for ::std::string::String {
     fn from(value: PayloadDomain) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadDomain> for PayloadDomain {
-    fn from(value: &PayloadDomain) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadDomain {
@@ -287,11 +267,6 @@ impl ::std::ops::Deref for PayloadInstanceId {
 impl ::std::convert::From<PayloadInstanceId> for ::std::string::String {
     fn from(value: PayloadInstanceId) -> Self {
         value.0
-    }
-}
-impl ::std::convert::From<&PayloadInstanceId> for PayloadInstanceId {
-    fn from(value: &PayloadInstanceId) -> Self {
-        value.clone()
     }
 }
 impl ::std::str::FromStr for PayloadInstanceId {
@@ -382,11 +357,6 @@ pub struct Response {
     pub instance_id: ::std::string::String,
     pub status: ResponseStatus,
 }
-impl ::std::convert::From<&Response> for Response {
-    fn from(value: &Response) -> Self {
-        value.clone()
-    }
-}
 ///`ResponseStatus`
 ///
 /// <details><summary>JSON schema</summary>
@@ -415,11 +385,6 @@ impl ::std::convert::From<&Response> for Response {
 pub enum ResponseStatus {
     #[serde(rename = "queued")]
     Queued,
-}
-impl ::std::convert::From<&Self> for ResponseStatus {
-    fn from(value: &ResponseStatus) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for ResponseStatus {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
