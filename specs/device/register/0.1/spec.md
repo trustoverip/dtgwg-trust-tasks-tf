@@ -59,7 +59,8 @@ A conforming **producer** **MUST**:
 1. Have completed provision-integration and acl/swap-key before issuing this task. (The maintainer will reject otherwise.)
 2. Populate `consumerKind`, `displayName`, `hpkePublicKey`.
 3. **SHOULD** populate `attestation` when the platform supports it. Maintainers MAY require attestation by policy.
-4. Carry a `proof`.
+4. **SHOULD** populate `keyCustody` — especially mobile Companions — declaring how private keys are held (`tier` + signing/keyAgreement algorithms). See the [Mobile Key-Custody Profile](../../../../docs/design-notes/mobile-key-custody-profile.md).
+5. Carry a `proof`.
 
 > **Note.** Push wake-up is **not** configured here. A device that needs to be woken in the background (any mobile Companion) registers its push channel directly with its **mediator** via the [push wake-up binding](../../../../bindings/push/0.1/spec.md)'s `set-device-info` exchange — the mediator holds the token, not the maintainer. The maintainer's only view of it is the non-secret `pushCapable` flag on the returned `DeviceBinding`.
 
@@ -67,13 +68,14 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 1. Verify proof. The producer's DID MUST already be in the ACL (placed there by step 2 above). If not → `device/register:no_pending_enrolment`.
 2. Verify any supplied `attestation` against the platform's attestation infrastructure. Failure → `device/register:attestation_failed` with `details.reason`. The maintainer's policy decides whether a failed attestation is fatal or merely downgrades the device's policy class.
-3. If a DeviceBinding for this DID already exists → `device/register:already_registered`. (Re-registration is intentionally not idempotent — the consumer must rotate keys and try again.)
-4. Validate `hpkePublicKey` as a well-formed X25519 did:key. Failure → `device/register:hpke_key_invalid`.
-5. Create the DeviceBinding with `registeredAt = now`, `lastSeenAt = now`, capabilities mirrored from the ACL entry. Return the DeviceBinding.
+3. Treat any supplied `keyCustody` as **policy input** (not a gate): a `software`-tier device MAY be assigned a stricter policy class (shorter sessions, more frequent step-up), the same way a missing/failed attestation is handled.
+4. If a DeviceBinding for this DID already exists → `device/register:already_registered`. (Re-registration is intentionally not idempotent — the consumer must rotate keys and try again.)
+5. Validate `hpkePublicKey` as a well-formed X25519 did:key. Failure → `device/register:hpke_key_invalid`.
+6. Create the DeviceBinding with `registeredAt = now`, `lastSeenAt = now`, capabilities mirrored from the ACL entry. Return the DeviceBinding.
 
 ## Payload
 
-`consumerKind` (REQUIRED), `displayName` (REQUIRED), `hpkePublicKey` (REQUIRED), `platform` (optional), `attestation` (optional, RECOMMENDED). Push wake-up is registered with the mediator, not here (see the note above).
+`consumerKind` (REQUIRED), `displayName` (REQUIRED), `hpkePublicKey` (REQUIRED), `platform` (optional), `attestation` (optional, RECOMMENDED), `keyCustody` (optional, RECOMMENDED for mobile Companions). Push wake-up is registered with the mediator, not here (see the note above).
 
 ## Response
 
@@ -84,6 +86,8 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 **Bootstrap chain integrity.** The security of the device-registration path rests on provision-integration: only an existing admin can introduce a new device into the ACL. If provision-integration is compromised, device-register is also compromised. The maintainer SHOULD log every provision-integration and every subsequent register so the chain is traceable.
 
 **Attestation as policy input, not gate.** A failed or absent attestation does not automatically deny registration — the maintainer's policy decides. Strict deployments REQUIRE attestation; permissive deployments accept `none` and downgrade the device's policy class (shorter sessions, more frequent step-up).
+
+**Key custody as policy input.** `keyCustody.tier` tells the maintainer whether the device's private keys are hardware-bound (`hardware`) or software-held (`software`). On mobile, hardware custody is only achievable with **P-256** keys (the iOS Secure Enclave is P-256-only); Ed25519/X25519 holders are necessarily `software`. A maintainer MAY treat `software` like a weak/absent attestation — register but apply a stricter policy class. Per the [Mobile Key-Custody Profile](../../../../docs/design-notes/mobile-key-custody-profile.md), a mobile holder's keys SHOULD be P-256 once the supporting libraries land, and onboarding SHOULD warn when a device is on `software` tier but the platform could support `hardware`.
 
 **Display-name spoofing.** The `displayName` is producer-supplied and not authoritative. Other Companions seeing this device in a device/list response SHOULD treat the name as informational only and rely on `deviceId` for any security decision.
 

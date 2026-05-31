@@ -36,6 +36,10 @@
           "type": "boolean",
           "description": "Whether this device has registered a push channel with its mediator via the push binding's `set-device-info` (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only — the actual push token is held by the mediator, never by the maintainer/VTA. The maintainer sets this from a signal supplied by its mediator, not from device-supplied registration data."
         },
+        "keyCustody": {
+          "$ref": "#/$defs/KeyCustody",
+          "description": "How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md."
+        },
         "capabilities": {
           "type": "array",
           "items": { "$ref": "#/$defs/Capability" },
@@ -59,6 +63,28 @@
           "description": "Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe)."
         },
         "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "KeyCustody": {
+      "title": "KeyCustody",
+      "description": "How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier"],
+      "properties": {
+        "tier": {
+          "type": "string",
+          "enum": ["hardware", "software"],
+          "description": "`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices."
+        },
+        "signingAlg": {
+          "type": "string",
+          "description": "JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not)."
+        },
+        "keyAgreementCurve": {
+          "type": "string",
+          "description": "Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not)."
+        }
       }
     },
     "ConsumerKind": {

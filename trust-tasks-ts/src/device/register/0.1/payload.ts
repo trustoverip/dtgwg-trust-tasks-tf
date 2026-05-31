@@ -26,6 +26,7 @@ export interface DeviceRegisterPayload {
   displayName: string;
   platform?: string;
   attestation?: DeviceAttestation;
+  keyCustody?: KeyCustody;
   /**
    * X25519 public key (did:key form) the maintainer will use to HPKE-seal sensitive payloads to this device (sealed secrets, session blobs, sync events). REQUIRED — every Companion/Service needs a recipient key.
    */
@@ -73,6 +74,23 @@ export interface NitroEnclave {
  */
 export interface NoAttestation {
   kind: "none";
+}
+/**
+ * OPTIONAL. How the device custodies its private keys (tier + algorithms). RECOMMENDED for mobile Companions. Maintainer policy input — see docs/design-notes/mobile-key-custody-profile.md.
+ */
+export interface KeyCustody {
+  /**
+   * `hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.
+   */
+  tier: "hardware" | "software";
+  /**
+   * JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).
+   */
+  signingAlg?: string;
+  /**
+   * Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).
+   */
+  keyAgreementCurve?: string;
 }
 /**
  * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
