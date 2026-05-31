@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.1.4] — 2026-06-01
+
+Dependency-maintenance release; no spec changes and no behavioural changes. Existing consumers pick up `0.1.4` via `cargo update -p trust-tasks-rs`.
+
+### Changed
+
+- Regenerated the `specs::*` modules with `typify` 0.6, which no longer emits the redundant reflexive `impl From<&T> for T` (a `value.clone()` no-op) on generated types. These auto-derived conversions are extremely unlikely to be referenced directly; the typed payloads and their fields, the `FromStr` / `Display` / `TryFrom` impls, and `validate`-feature validators are all unchanged.
+- Bumped the internal `regress` dependency 0.10 → 0.11. `regress` is used only inside the codegen-emitted pattern validators (it does not appear in any public signature), so this is not an observable API change.
+
 ## [0.1.3] — 2026-05-30
 
 Additive cross-device step-up + push-wake-up support, regenerated from the spec changes in PRs #61 and #62. The change set is purely additive, so existing consumers pick up `0.1.3` via `cargo update -p trust-tasks-rs` without code changes.
@@ -182,6 +191,7 @@ This is a roll-up release covering everything merged since 0.1.1 (PRs #40–#56)
 - `TypeUri` parser accepts `trust-task-discovery` as a framework-defined
   slug per the SPEC §6.1 reserved-slug list.
 
+[0.1.4]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-rs-v0.1.4
 [0.1.3]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-rs-v0.1.3
 [0.1.1]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-rs-v0.1.1
 [0.1.0]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/v0.1.0

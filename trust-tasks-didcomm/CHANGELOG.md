@@ -4,6 +4,24 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.1.3] — 2026-06-01
+
+### Changed
+
+- **Upgraded `affinidi-messaging-didcomm` 0.13 → 0.14.** This is a public
+  dependency bump — the binding re-exposes didcomm's `Message`,
+  `DIDCommAgent`, `UnpackResult`, and `DIDCommError` in its API, so
+  consumers that pin their own `affinidi-messaging-didcomm` should move to
+  0.14 alongside this release.
+- `unpack_trust_task` now handles didcomm 0.14's enlarged
+  `UnpackResult::Encrypted`. The new `legacy_kek_used` (pre-0.14 ECDH-1PU
+  KEK migration signal), `non_repudiation`, and inner-JWS `signer_kid`
+  fields are accepted but not yet acted on: the SPEC §4.8.1
+  transport-authenticated sender remains the authcrypt `sender_kid`. The
+  enum is now `#[non_exhaustive]`, and any unrecognised variant fails
+  closed with `DidcommError::UnauthenticatedSender`.
+- Tracks `trust-tasks-rs` 0.1.4.
+
 ## [0.1.2] — 2026-05-27
 
 ### Changed
@@ -49,4 +67,5 @@ this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
   0.18) carrying the framework `ENVELOPE_TYPE`, asserts the verified
   sender from `UnpackMetadata` slots into `DidcommHandler::peer()`.
 
+[0.1.3]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/trust-tasks-didcomm-v0.1.3
 [0.1.0]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/tag/v0.1.0

@@ -6164,7 +6164,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "affinidi-messaging-didcomm 0.14.0",
  "affinidi-messaging-sdk",
@@ -6220,7 +6220,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "async-trait",
  "chrono",
