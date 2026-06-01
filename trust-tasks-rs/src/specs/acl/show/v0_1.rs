@@ -74,6 +74,25 @@ pub mod error {
 ///        "type": "string"
 ///      }
 ///    },
+///    "stepUp": {
+///      "description": "Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).",
+///      "type": "object",
+///      "properties": {
+///        "approver": {
+///          "description": "VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.",
+///          "type": "string"
+///        },
+///        "require": {
+///          "description": "Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).",
+///          "type": "string",
+///          "enum": [
+///            "self",
+///            "delegated"
+///          ]
+///        }
+///      },
+///      "additionalProperties": false
+///    },
 ///    "subject": {
 ///      "description": "VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.",
 ///      "type": "string"
@@ -125,6 +144,12 @@ pub struct AclEntry {
     ///Opaque scope identifiers (e.g. contexts, domains, resource prefixes).
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub scopes: ::std::vec::Vec<::std::string::String>,
+    #[serde(
+        rename = "stepUp",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub step_up: ::std::option::Option<AclEntryStepUp>,
     ///VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
     pub subject: ::std::string::String,
     #[serde(
@@ -140,6 +165,123 @@ pub struct AclEntry {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<::std::string::String>,
+}
+///Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).",
+///  "type": "object",
+///  "properties": {
+///    "approver": {
+///      "description": "VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.",
+///      "type": "string"
+///    },
+///    "require": {
+///      "description": "Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).",
+///      "type": "string",
+///      "enum": [
+///        "self",
+///        "delegated"
+///      ]
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct AclEntryStepUp {
+    ///VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub approver: ::std::option::Option<::std::string::String>,
+    ///Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub require: ::std::option::Option<AclEntryStepUpRequire>,
+}
+impl ::std::default::Default for AclEntryStepUp {
+    fn default() -> Self {
+        Self {
+            approver: Default::default(),
+            require: Default::default(),
+        }
+    }
+}
+///Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).",
+///  "type": "string",
+///  "enum": [
+///    "self",
+///    "delegated"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum AclEntryStepUpRequire {
+    #[serde(rename = "self")]
+    Self_,
+    #[serde(rename = "delegated")]
+    Delegated,
+}
+impl ::std::fmt::Display for AclEntryStepUpRequire {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Self_ => f.write_str("self"),
+            Self::Delegated => f.write_str("delegated"),
+        }
+    }
+}
+impl ::std::str::FromStr for AclEntryStepUpRequire {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "self" => Ok(Self::Self_),
+            "delegated" => Ok(Self::Delegated),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for AclEntryStepUpRequire {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AclEntryStepUpRequire {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AclEntryStepUpRequire {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
@@ -419,7 +561,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"AclEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the party that originally added this entry.\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional time after which the entry is no longer effective.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Opaque role identifier interpreted by the ACL maintainer.\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"subject\": {\n          \"description\": \"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the party that last modified this entry.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\"\n      ],\n      \"title\": \"AclEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to an acl/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/show/0.1#response.\",\n      \"properties\": {\n        \"entry\": {\n          \"description\": \"The looked-up AclEntry, or null if the subject is not in the ACL.\",\n          \"oneOf\": [\n            {\n              \"type\": \"null\"\n            },\n            {\n              \"$ref\": \"#/$defs/AclEntry\"\n            }\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"redactedFields\": {\n          \"description\": \"Names of AclEntry fields the maintainer redacted (for example, ['label'] or ['ext.vnd.example.audit']).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"ACL Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/acl/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"subject\": {\n      \"description\": \"VID of the party whose entry is being looked up.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"ACL Show — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"AclEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the party that originally added this entry.\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional time after which the entry is no longer effective.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Opaque role identifier interpreted by the ACL maintainer.\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"stepUp\": {\n          \"additionalProperties\": false,\n          \"description\": \"Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).\",\n          \"properties\": {\n            \"approver\": {\n              \"description\": \"VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.\",\n              \"type\": \"string\"\n            },\n            \"require\": {\n              \"description\": \"Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).\",\n              \"enum\": [\n                \"self\",\n                \"delegated\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the party that last modified this entry.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\"\n      ],\n      \"title\": \"AclEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to an acl/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/show/0.1#response.\",\n      \"properties\": {\n        \"entry\": {\n          \"description\": \"The looked-up AclEntry, or null if the subject is not in the ACL.\",\n          \"oneOf\": [\n            {\n              \"type\": \"null\"\n            },\n            {\n              \"$ref\": \"#/$defs/AclEntry\"\n            }\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"redactedFields\": {\n          \"description\": \"Names of AclEntry fields the maintainer redacted (for example, ['label'] or ['ext.vnd.example.audit']).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"ACL Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/acl/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"subject\": {\n      \"description\": \"VID of the party whose entry is being looked up.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"ACL Show — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

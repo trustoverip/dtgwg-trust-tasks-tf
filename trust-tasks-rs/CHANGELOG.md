@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.1.5] — 2026-06-01
+
+Additive step-up policy support, regenerated from the spec changes in this PR (`auth/step-up/policy/0.1` + the `AclEntry.stepUp` field). The wire change set is additive; existing consumers pick up `0.1.5` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`specs::auth::step_up::policy::v0_1`** — the new `auth/step-up/policy/0.1` Trust Task: a relying party's per-operation-class step-up *floor* (`Floor { operation, mode, allowAal1IfNonEscalating }`, `FloorMode` = `none`/`self`/`delegated`/`delegated-any`) plus the `enabled` master switch, with a `#response` carrying the effective policy.
+- **`AclEntry.stepUp`** (`AclEntryStepUp { approver, require }`) on the shared `acl/_shared` `AclEntry`, surfaced in every `specs::acl::*` binding. Per-entry, additive-only step-up override: names the subject's approver VID and an optional minimum mode that may raise — never lower — the maintainer's system-wide floor.
+
+### Changed
+
+- Regenerated the `specs::*` modules. `AclEntry` gains the optional `step_up` field; Rust consumers constructing `AclEntry` with a struct literal must add `step_up: None` (deserialization is unaffected — the field is optional and absent ⇒ `None`).
+
 ## [0.1.4] — 2026-06-01
 
 Dependency-maintenance release; no spec changes and no behavioural changes. Existing consumers pick up `0.1.4` via `cargo update -p trust-tasks-rs`.

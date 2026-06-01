@@ -23,6 +23,7 @@ export * as AuthRevokeSession_v0_1 from "./auth/revoke-session/0.1/payload";
 export * as AuthSessionsList_v0_1 from "./auth/sessions/list/0.1/payload";
 export * as AuthStepUpApproveRequest_v0_1 from "./auth/step-up/approve-request/0.1/payload";
 export * as AuthStepUpApproveResponse_v0_1 from "./auth/step-up/approve-response/0.1/payload";
+export * as AuthStepUpPolicy_v0_1 from "./auth/step-up/policy/0.1/payload";
 export * as AuthWhoami_v0_1 from "./auth/whoami/0.1/payload";
 export * as ConfirmRequest_v0_1 from "./confirm/request/0.1/payload";
 export * as ConfirmResponse_v0_1 from "./confirm/response/0.1/payload";

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/policy/0.1",
+  "title": "Auth — Step-up Policy — payload",
+  "description": "The relying party's (ACL maintainer's) system-wide step-up policy: the per-operation-class floor that decides whether — and how — a step-up to a higher assurance level is required before a gated operation proceeds. Set by an administrator; resolved per request against per-entry overrides (see acl/_shared AclEntry.stepUp).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["enabled", "floors"],
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Master switch. `false` (the shipping default) ⇒ step-up is NOT enforced anywhere; every operation proceeds at AAL1 regardless of `floors`, because a freshly-provisioned maintainer has no registered approver and could not otherwise be administered (chicken-and-egg). The maintainer SHOULD surface this 'not enforced' state prominently. `true` ⇒ the `floors` are enforced."
+    },
+    "floors": {
+      "type": "array",
+      "description": "The system-wide minimum step-up requirement per operation-class — the maintainer-owned floor. Per-entry `stepUp` settings on an AclEntry MAY raise the requirement for a given subject but MUST NOT lower it (additive-only). The effective requirement for a request is the strictest of (matching floor, caller's per-entry setting).",
+      "items": { "$ref": "#/$defs/Floor" }
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Floor": {
+      "title": "StepUpFloor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "mode"],
+      "properties": {
+        "operation": {
+          "type": "string",
+          "description": "The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["none", "self", "delegated", "delegated-any"],
+          "description": "Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegated-any` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated."
+        },
+        "allowAal1IfNonEscalating": {
+          "type": "boolean",
+          "description": "Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Step-up Policy — response payload",
+      "description": "The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "floors"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The effective master switch the maintainer now holds."
+        },
+        "floors": {
+          "type": "array",
+          "description": "The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).",
+          "items": { "$ref": "#/$defs/Floor" }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

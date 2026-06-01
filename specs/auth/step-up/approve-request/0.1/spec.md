@@ -38,6 +38,7 @@ errorCodes:
     retryable: true
 related:
   - auth/step-up/approve-response
+  - auth/step-up/policy
   - auth/passkey/login/finish
   - auth/refresh
   - auth/whoami

@@ -1254,11 +1254,6 @@ pub struct KeyCustody {
     ///`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.
     pub tier: KeyCustodyTier,
 }
-impl ::std::convert::From<&KeyCustody> for KeyCustody {
-    fn from(value: &KeyCustody) -> Self {
-        value.clone()
-    }
-}
 ///`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1291,11 +1286,6 @@ pub enum KeyCustodyTier {
     Hardware,
     #[serde(rename = "software")]
     Software,
-}
-impl ::std::convert::From<&Self> for KeyCustodyTier {
-    fn from(value: &KeyCustodyTier) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for KeyCustodyTier {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {

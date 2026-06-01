@@ -49,6 +49,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 updated_at: None,
                 updated_by: None,
                 expires_at: None,
+                step_up: None,
                 ext: None,
             },
             reason: Some("onboarding".into()),

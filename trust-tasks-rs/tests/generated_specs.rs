@@ -98,6 +98,7 @@ fn for_payload_pulls_type_uri_from_trait() {
             updated_at: None,
             updated_by: None,
             expires_at: None,
+            step_up: None,
             ext: None,
         },
         reason: None,
