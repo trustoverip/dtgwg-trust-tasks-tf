@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.1.7] — 2026-06-03
+
+Additive `push/*` Trust Task family, regenerated from dtgwg PR #72 (the push-gateway control plane modeled as Trust Tasks). Additive; consumers pick up `0.1.7` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`specs::push::register::v0_1`** — `push/register/0.1`: a device registers its platform push token with a gateway and receives an opaque `WakeHandle` (response). Payload `{ registration, controllerVtaDid }`.
+- **`specs::push::provision::v0_1`** — `push/provision/0.1`: the controller VTA sets a handle's trigger allowlist. Payload `{ handle, policy: WakeTriggerPolicy }`.
+- **`specs::push::wake::v0_1`** — `push/wake/0.1`: a trigger requests a contentless wake. Payload `{ handle, v, mediator?, count?, urgency? }`; response `{ status }`.
+
+These are addressed to the push gateway and reuse `WakeHandle` / `WakeTriggerPolicy` / `PushRegistration` from `device/_shared`. New `notifications` spec category.
+
 ## [0.1.6] — 2026-06-02
 
 Additive push wake-up support, regenerated from the spec changes in dtgwg PR #68 (the push-gateway / VTA-owned-trigger-allowlist model). The change set is additive; existing consumers pick up `0.1.6` via `cargo update -p trust-tasks-rs`.
