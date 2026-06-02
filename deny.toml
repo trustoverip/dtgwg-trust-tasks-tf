@@ -23,11 +23,6 @@ ignore = [
     # upstream replacement proc-macro-error2 hasn't been wired through
     # the typify dep chain yet. No active CVE, just maintenance status.
     "RUSTSEC-2024-0370",
-    # rustls-pemfile is deprecated in favour of `rustls-pki-types`'s
-    # built-in pem parsing. Transitive dep via the Affinidi messaging
-    # SDK / mediator. Unmaintained advisory, no active vuln; upstream
-    # migration is tracked in the Affinidi crates.
-    "RUSTSEC-2025-0134",
 ]
 
 # ─── Licenses ──────────────────────────────────────────────────────────────
