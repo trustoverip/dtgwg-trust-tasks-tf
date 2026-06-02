@@ -82,6 +82,13 @@ window.TT_CATEGORIES = [
     icon: "user-circle"
   },
   {
+    id: "notifications",
+    name: "Notifications",
+    color: "amber",
+    blurb: "Push wake-up control plane — register a device's push channel with a gateway, provision the VTA-owned trigger allowlist, and request a contentless wake (push/*). The contentless doorbell itself rides the push transport binding.",
+    icon: "bell"
+  },
+  {
     id: "payments",
     name: "Payments",
     color: "amber",
