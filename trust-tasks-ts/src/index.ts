@@ -32,6 +32,7 @@ export * as DeviceDisable_v0_1 from "./device/disable/0.1/payload";
 export * as DeviceHeartbeat_v0_1 from "./device/heartbeat/0.1/payload";
 export * as DeviceList_v0_1 from "./device/list/0.1/payload";
 export * as DeviceRegister_v0_1 from "./device/register/0.1/payload";
+export * as DeviceSetWake_v0_1 from "./device/set-wake/0.1/payload";
 export * as DeviceWipe_v0_1 from "./device/wipe/0.1/payload";
 export * as WebvhShared from "./did-management/_shared/0.1/did-method-extensions/webvh";
 export * as DidRecordShared from "./did-management/_shared/0.1/did-record";

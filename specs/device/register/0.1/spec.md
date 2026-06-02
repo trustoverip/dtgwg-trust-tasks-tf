@@ -62,7 +62,7 @@ A conforming **producer** **MUST**:
 4. **SHOULD** populate `keyCustody` — especially mobile Companions — declaring how private keys are held (`tier` + signing/keyAgreement algorithms). See the [Mobile Key-Custody Profile](../../../../docs/design-notes/mobile-key-custody-profile.md).
 5. Carry a `proof`.
 
-> **Note.** Push wake-up is **not** configured here. A device that needs to be woken in the background (any mobile Companion) registers its push channel directly with its **mediator** via the [push wake-up binding](../../../../bindings/push/0.1/spec.md)'s `set-device-info` exchange — the mediator holds the token, not the maintainer. The maintainer's only view of it is the non-secret `pushCapable` flag on the returned `DeviceBinding`.
+> **Note.** Push wake-up is **not** configured here. A device that needs to be woken in the background (any mobile Companion) first registers its platform push token with a **push gateway** (which returns an opaque `WakeHandle`), then conveys that handle to its VTA via [`device/set-wake`](../../set-wake/0.1/spec.md) and to its mediator via the [push wake-up binding](../../../../bindings/push/0.1/spec.md)'s `set-device-info` exchange. The raw push token is held by the **gateway** only — never by the mediator or the maintainer/VTA, which hold just the opaque handle and the VTA-owned trigger allowlist. The maintainer's view here is the non-secret `pushCapable` flag on the returned `DeviceBinding`.
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
