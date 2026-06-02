@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.1.6] — 2026-06-02
+
+Additive push wake-up support, regenerated from the spec changes in dtgwg PR #68 (the push-gateway / VTA-owned-trigger-allowlist model). The change set is additive; existing consumers pick up `0.1.6` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`specs::device::set_wake::v0_1`** — the new `device/set-wake/0.1` Trust Task: a device conveys its opaque `WakeHandle` (`{ gateway, handle }`) to its VTA so the VTA can own the trigger allowlist and provision the push gateway. Payload carries `wake_handle` (absent = clear), optional `push_platform` and `suggested_triggers`; the `#response` carries the effective `WakeTriggerPolicy` and `push_capable`. The raw platform push token never appears — only the opaque handle.
+- **`WakeHandle`** and **`WakeTriggerPolicy`** shapes (from `device/_shared/0.1/device-binding`) — the opaque gateway handle and the VTA-owned allowlist of DIDs permitted to trigger a wake.
+
+### Changed
+
+- **`DeviceBinding.pushCapable`** doc — clarified that the push token is held by the gateway alone; the VTA holds only the opaque handle and the allowlist (reflected in `device/register` and `device/list`).
+
 ## [0.1.5] — 2026-06-01
 
 Additive step-up policy support, regenerated from the spec changes in this PR (`auth/step-up/policy/0.1` + the `AclEntry.stepUp` field). The wire change set is additive; existing consumers pick up `0.1.5` via `cargo update -p trust-tasks-rs`.

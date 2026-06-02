@@ -4,4 +4,5 @@ pub mod disable;
 pub mod heartbeat;
 pub mod list;
 pub mod register;
+pub mod set_wake;
 pub mod wipe;
