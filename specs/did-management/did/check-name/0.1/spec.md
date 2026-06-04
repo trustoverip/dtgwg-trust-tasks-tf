@@ -2,7 +2,7 @@
 slug: did-management/did/check-name
 version: "0.1"
 title: DID Management — Check Name
-summary: A prospective DID owner asks a hosting service whether a given path is available, and optionally — in the same round-trip — reserves it.
+summary: A prospective DID owner asks a hosting service whether a given path is available, and optionally — in the same round-trip — reserves it; or asks the host to auto-assign and reserve a fresh path.
 status: draft
 targetFrameworkVersion: "0.1"
 category: did-management
@@ -50,14 +50,17 @@ related:
 
 ## Abstract
 
-The **DID Management — Check Name** Trust Task lets a prospective owner ask the hosting service two questions in one round-trip:
+The **DID Management — Check Name** Trust Task lets a prospective owner ask the hosting service:
 
 1. *Is this path available?* — always answered.
 2. *And if so, reserve it for me now.* — answered when the request sets `reserve: true`.
+3. *Or: pick a free path for me and reserve it.* — when `reserve: true` and `path` is **omitted**, the host auto-assigns a fresh, server-generated mnemonic.
 
-The two modes share one task so a client that wants the cheap availability probe and one that wants the atomic "check, then claim" don't need two different specs. When `reserve: false` (the default), the task is **read-only** and never mutates state. When `reserve: true` and the path is available, the consumer atomically commits a reservation owned by the caller and returns the resulting `DidRecord` — the caller's next step is [`did-management/did/publish`](../../publish/0.1/spec.md) to upload the signed log.
+These modes share one task so a client that wants the cheap availability probe, one that wants the atomic "check, then claim", and one that doesn't care which path it gets don't need three different specs. When `reserve: false` (the default), the task is **read-only** and never mutates state. When `reserve: true` and the path is available — or `path` is omitted — the consumer atomically commits a reservation owned by the caller and returns the resulting `DidRecord` (including its `didUrl`) — the caller's next step is [`did-management/did/publish`](../../publish/0.1/spec.md) to upload the signed log.
 
-If the path is not available, the response carries `available: false` and (when `reserve: true`) the consumer does not mutate state — no `record` is returned.
+**Auto-assign.** Omitting `path` is only meaningful with `reserve: true`: there is nothing to "probe" without a path, so a path-less `reserve: false` request is invalid. A path-less `reserve: true` request always succeeds against a healthy host (the mnemonic namespace is effectively unbounded), returning `available: true, reserved: true` with the generated mnemonic in `record.mnemonic`.
+
+If an explicitly-named path is not available, the response carries `available: false` and (when `reserve: true`) the consumer does not mutate state — no `record` is returned.
 
 A reservation does not block forever; the consumer's retention policy MAY garbage-collect reservations that haven't been followed by a publish within a configured grace period. The grace period and any reservation-decay semantics are policy concerns, opaque to this spec.
 
@@ -72,18 +75,20 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 A conforming **producer** **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/did-management/did/check-name/0.1`.
-2. Populate `payload.path` with the path to test.
-3. Set `payload.reserve: true` ONLY when the producer also intends to claim the slot in the same call; in that case `payload.domain` MAY be set to override the consumer's default domain resolution.
+2. Populate `payload.path` with the path to test, EXCEPT when requesting auto-assign (`reserve: true` with no `path`).
+3. Set `payload.reserve: true` ONLY when the producer also intends to claim the slot in the same call; in that case `payload.domain` MAY be set to override the consumer's default domain resolution, and `payload.path` MAY be omitted to request a server-generated mnemonic.
+4. NOT omit `payload.path` when `reserve` is `false` or absent — a path-less availability probe has no subject and MUST be rejected by the consumer.
 
 A conforming **consumer** (the hosting service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Apply the same path-grammar checks it would on `did-management/did/register` (lengths, character set, reserved roots).
+1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements). Reject a request that omits `path` unless `reserve: true`.
+2. Apply the same path-grammar checks it would on `did-management/did/register` (lengths, character set, reserved roots) to any explicitly-supplied `path`.
 3. Determine availability against the current record store; when the path is taken by a soft-deleted record, treat as not available unless the host's recovery policy permits resurrection.
-4. When `reserve: true` AND the path is available:
+4. When `reserve: true` AND (the explicit path is available OR `path` was omitted):
    - Resolve the hosting domain via explicit `payload.domain` → caller's ACL default → system default.
-   - Atomically commit a reservation (no log content yet, `versionCount: 0`) owned by the caller and return `available: true, reserved: true, record: <DidRecord>`.
-5. When `reserve: false` OR the path is not available, return `available: <bool>, reserved: false` and DO NOT mutate state.
+   - When `path` was omitted, generate a fresh mnemonic not currently in use under the resolved domain.
+   - Atomically commit a reservation (no log content yet, `versionCount: 0`) owned by the caller and return `available: true, reserved: true, record: <DidRecord>`. The `record` carries the assigned `mnemonic` and its `didUrl`.
+5. When `reserve: false`, OR `reserve: true` with an explicit `path` that is not available, return `available: <bool>, reserved: false` and DO NOT mutate state.
 
 ## Definitions
 
@@ -123,6 +128,24 @@ A conforming **consumer** (the hosting service) **MUST**:
   "issuedAt": "2026-06-01T10:00:00Z",
   "payload": {
     "path": "alice",
+    "reserve": true,
+    "domain": "did.example.com"
+  }
+}
+```
+
+### Auto-assign — reserve a server-generated path
+
+`path` is omitted; the host picks a fresh mnemonic and reserves it.
+
+```json
+{
+  "id": "3a4b5c6d-7e8f-4901-abcd-ef0123456789",
+  "type": "https://trusttasks.org/spec/did-management/did/check-name/0.1",
+  "issuer": "did:key:z6MkAlice",
+  "recipient": "did:web:did.example.com",
+  "issuedAt": "2026-06-01T10:00:00Z",
+  "payload": {
     "reserve": true,
     "domain": "did.example.com"
   }
@@ -170,6 +193,36 @@ A *response* carries `type: https://trusttasks.org/spec/did-management/did/check
       "updatedAt": "2026-06-01T10:00:01Z",
       "versionCount": 0,
       "domain": "did.example.com",
+      "didUrl": "https://did.example.com/alice/did.jsonl",
+      "disabled": false
+    }
+  }
+}
+```
+
+### Auto-assigned, reserved
+
+The host generated the mnemonic `brave-otter` and returned it in `record.mnemonic`. `available` is always `true` for a successful auto-assign.
+
+```json
+{
+  "id": "6f708192-2345-4456-9012-345678901234",
+  "type": "https://trusttasks.org/spec/did-management/did/check-name/0.1#response",
+  "threadId": "3a4b5c6d-7e8f-4901-abcd-ef0123456789",
+  "issuer": "did:web:did.example.com",
+  "recipient": "did:key:z6MkAlice",
+  "issuedAt": "2026-06-01T10:00:01Z",
+  "payload": {
+    "available": true,
+    "reserved": true,
+    "record": {
+      "mnemonic": "brave-otter",
+      "owner": "did:key:z6MkAlice",
+      "createdAt": "2026-06-01T10:00:01Z",
+      "updatedAt": "2026-06-01T10:00:01Z",
+      "versionCount": 0,
+      "domain": "did.example.com",
+      "didUrl": "https://did.example.com/brave-otter/did.jsonl",
       "disabled": false
     }
   }

@@ -4,9 +4,12 @@
  */
 
 export interface DIDManagementCheckNamePayload {
-  path: string;
   /**
-   * When true and the path is available, atomically reserve it under the caller and return the resulting DidRecord.
+   * Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation.
+   */
+  path?: string;
+  /**
+   * When true and the path is available — or, when `path` is omitted, always — atomically reserve a slot under the caller and return the resulting DidRecord. When `path` is omitted the host generates a fresh unused mnemonic (auto-assign).
    */
   reserve?: boolean;
   /**

@@ -1,10 +1,6 @@
 [
   {
-    "note": "Missing required `path`.",
-    "payload": {}
-  },
-  {
-    "note": "Empty path.",
+    "note": "Empty path. (Note: a path-less request without `reserve: true` is also invalid per spec §Conformance, but that conditional is enforced by the consumer rather than the payload schema — typify cannot model `if/then/else` — so it is not listed here as a schema-level invalid example.)",
     "payload": { "path": "" }
   }
 ]

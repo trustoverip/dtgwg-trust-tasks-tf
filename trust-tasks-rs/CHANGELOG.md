@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.1.8] — 2026-06-04
+
+`did-management/did/check-name/0.1` gains an **auto-assign** mode and the shared `DidRecord` gains a `didUrl` locator. Additive; consumers pick up `0.1.8` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`DidRecord.didUrl`** (optional) — the resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`), stable from the initial reservation (`versionCount: 0`). Propagates to every `did-management/did/*` response that carries a `record` (`check-name`, `register`, `publish`, `info`, `list`, `change-owner`, `enable`, `disable`, `rollback`, `delete`).
+
+### Changed
+
+- **`check-name/0.1` request `path` is now optional.** Omitting `path` with `reserve: true` requests an **auto-assign** reservation: the host generates a fresh server-side mnemonic, reserves it under the caller, and returns `available: true, reserved: true, record` (with the generated `mnemonic` + `didUrl`). A path-less request without `reserve: true` remains invalid — that conditional is stated in the spec's §Conformance and enforced by the consumer, because the Rust codegen (typify) cannot model JSON-Schema `if/then/else`.
+
 ## [0.1.7] — 2026-06-03
 
 Additive `push/*` Trust Task family, regenerated from dtgwg PR #72 (the push-gateway control plane modeled as Trust Tasks). Additive; consumers pick up `0.1.7` via `cargo update -p trust-tasks-rs`.

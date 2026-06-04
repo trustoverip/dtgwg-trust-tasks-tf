@@ -4,16 +4,16 @@
   "title": "DID Management Check Name — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["path"],
   "properties": {
     "path": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation."
     },
     "reserve": {
       "type": "boolean",
       "default": false,
-      "description": "When true and the path is available, atomically reserve it under the caller and return the resulting DidRecord."
+      "description": "When true and the path is available — or, when `path` is omitted, always — atomically reserve a slot under the caller and return the resulting DidRecord. When `path` is omitted the host generates a fresh unused mnemonic (auto-assign)."
     },
     "domain": {
       "type": "string",
@@ -23,6 +23,7 @@
       "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
     }
   },
+  "$comment": "`path` is intentionally not listed in `required`: it is REQUIRED for an availability probe but OPTIONAL (auto-assign) when `reserve: true`. JSON-Schema `if/then/else` would express this exactly, but the Rust codegen (typify) does not support conditional subschemas, so the rule is stated in spec.md §Conformance and enforced by the consumer, which MUST reject a path-less request unless `reserve: true`.",
   "$defs": {
     "Response": {
       "$anchor": "response",

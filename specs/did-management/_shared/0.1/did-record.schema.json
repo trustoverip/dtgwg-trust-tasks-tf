@@ -37,6 +37,11 @@
           "type": "string",
           "description": "Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`."
         },
+        "didUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published."
+        },
         "method": {
           "type": "string",
           "description": "DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era."
