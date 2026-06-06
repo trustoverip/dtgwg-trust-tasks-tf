@@ -6331,7 +6331,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-proof"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "affinidi-crypto 0.2.0",
  "affinidi-data-integrity 0.7.1",
