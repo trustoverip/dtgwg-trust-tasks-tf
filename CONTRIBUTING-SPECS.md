@@ -60,15 +60,17 @@ title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard | retired
 targetFrameworkVersion: "0.1"      # SPEC.md MAJOR.MINOR this spec targets
-category: permission               # must be one of the TT_CATEGORIES ids
+category: access-control           # must be one of the TT_CATEGORIES ids
 keywords: [acl, access-control, grant]
 authors:
   - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Granting authority
     requirement: REQUIRED          # REQUIRED | RECOMMENDED | OPTIONAL
+    member: issuer                 # issuer | recipient | (omit if the party is neither)
   - role: ACL maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED            # OPTIONAL | RECOMMENDED | REQUIRED
   rationale: A one-sentence reason your threat model needs this strength.
@@ -81,11 +83,13 @@ Notes:
 
 - **Do not declare `vidSchemes` on parties.** Which VID schemes (`did:web`, `did:key`, `x509`, OIDC, …) a maintainer accepts is an implementation/trust-framework concern, not a spec one. Leaving it out keeps specs portable across maintainers with different verification preferences.
 
-- **`bearer: true` flips off audience binding — do not set it casually.** The default for any spec is non-bearer ([SPEC §4.8.3](SPEC.md#483-bearer-specifications)). Adding `bearer: true` to your front matter does two coupled things: it declares that documents conforming to your spec are intended for unspecified consumption (any party that can verify the `proof` is a legitimate recipient), and it causes the codegen to emit `Payload::IS_BEARER = true`. That constant in turn suppresses the audience-binding rule of [SPEC §4.8.2](SPEC.md#482-audience-binding) in every conforming consumer pipeline — a `proof`-carrying document with no in-band `recipient` is accepted instead of rejected with `malformed_request`. **Only set `bearer: true` when the audience-free property is intrinsic to the assertion your spec publishes** (public attestations, heartbeats, schema-publication announcements). A spec that should have been audience-bound but is mistakenly bearer-flagged is silently exposed to cross-recipient replay (SPEC §10.1) — there is no second check downstream. If `bearer: true` is set, the spec's `parties` declaration **MUST** also list `recipient` as `OPTIONAL`, and the prose **MUST** state what assertion the document conveys and why audience binding is inappropriate for it.
+- **`bearer: true` flips off audience binding — do not set it casually.** The default for any spec is non-bearer ([SPEC §4.8.3](SPEC.md#483-bearer-specifications)). Adding `bearer: true` to your front matter does two coupled things: it declares that documents conforming to your spec are intended for unspecified consumption (any party that can verify the `proof` is a legitimate recipient), and it causes the codegen to emit `Payload::IS_BEARER = true`. That constant in turn suppresses the audience-binding rule of [SPEC §4.8.2](SPEC.md#482-audience-binding) in every conforming consumer pipeline — a `proof`-carrying document with no in-band `recipient` is accepted instead of rejected with `malformedRequest`. **Only set `bearer: true` when the audience-free property is intrinsic to the assertion your spec publishes** (public attestations, heartbeats, schema-publication announcements). A spec that should have been audience-bound but is mistakenly bearer-flagged is silently exposed to cross-recipient replay (SPEC §10.1) — there is no second check downstream. If `bearer: true` is set, the spec's `parties` declaration **MUST** also list `recipient` as `OPTIONAL`, and the prose **MUST** state what assertion the document conveys and why audience binding is inappropriate for it.
 
-- **`proofRequirement.requirement` is runtime-enforceable, not advisory.** The three values map to consumer behaviour through `Payload::IS_PROOF_REQUIRED` (codegen-emitted): `REQUIRED` sets the const to `true` and causes every conforming consumer pipeline to reject a proofless document with `proof_required` ([SPEC §7.2 item 7](SPEC.md#72-consumer-requirements)); `RECOMMENDED` and `OPTIONAL` leave the const at its trait default (`false`) and the pipeline accepts proofless documents (subject to the consumer's chosen `ProofPolicy`). Picking `REQUIRED` therefore commits every conforming consumer — including bindings without an in-band verifier — to reject proofless requests, which is the right outcome for evidentiary specs like `acl/grant` but makes the spec unreachable on bindings whose integrity guarantees are out-of-band until those bindings grow a verifier. **Pick `REQUIRED` only when the threat model genuinely needs transport-independent integrity** (audit replay, downstream corroboration, dispute resolution after the original transport has closed). For everyday request/response interactions whose integrity is already guaranteed by the transport, `RECOMMENDED` is the right default.
+- **`proofRequirement.requirement` is runtime-enforceable, not advisory.** The three values map to consumer behaviour through `Payload::IS_PROOF_REQUIRED` (codegen-emitted): `REQUIRED` sets the const to `true` and causes every conforming consumer pipeline to reject a proofless document with `proofRequired` ([SPEC §7.2 item 7](SPEC.md#72-consumer-requirements)); `RECOMMENDED` and `OPTIONAL` leave the const at its trait default (`false`) and the pipeline accepts proofless documents (subject to the consumer's chosen `ProofPolicy`). Picking `REQUIRED` therefore commits every conforming consumer — including bindings without an in-band verifier — to reject proofless requests, which is the right outcome for evidentiary specs like `acl/grant` but makes the spec unreachable on bindings whose integrity guarantees are out-of-band until those bindings grow a verifier. **Pick `REQUIRED` only when the threat model genuinely needs transport-independent integrity** (audit replay, downstream corroboration, dispute resolution after the original transport has closed). For everyday request/response interactions whose integrity is already guaranteed by the transport, `RECOMMENDED` is the right default.
 
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
+
+- **Tag the party that fills each framework member** with `member: issuer` or `member: recipient`. A party named only in the `payload` (neither the document issuer nor recipient) omits `member`. This is what makes `requirement: REQUIRED` enforceable: the codegen emits `Payload::IS_RECIPIENT_REQUIRED` from the `member: recipient` party, and every conforming consumer then rejects a document with no in-band `recipient` ([SPEC §7.2 item 5](SPEC.md#72-consumer-requirements)). For a request the `recipient` is the `member: recipient` party; a response swaps parties, so its `recipient` requirement follows the `member: issuer` party.
 
 ## Request and Response sections
 
@@ -101,6 +105,18 @@ A specification that defines a fire-and-forget task (no success response documen
 Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
 
 See `specs/acl/grant/0.1/spec.md` for a worked example.
+
+## Naming conventions (per SPEC §4.10)
+
+Member names and enumerated values use **lowerCamelCase**, so documents are consistent for both human readers and code generators:
+
+- **Payload member names** — lowerCamelCase (`sessionId`, `wakeHandle`, `redactedFields`). Deviate only where you embed a member whose name is fixed by an external vocabulary (a field copied verbatim from a WebAuthn or JOSE structure), and confine the foreign naming to that sub-object.
+- **Enumerated values you define** — statuses, kinds, decisions, event types: lowerCamelCase (`cacheAndKeys`, `stepUp`, `proxyLogin`).
+- **Extended error `code` identifiers** — the local part after the slug is lowerCamelCase (`acl/change-role:lastAuthorityProtected`), matching the framework standard codes (`malformedRequest`, `proofInvalid`).
+- **Externally-owned values** — carry **verbatim**, never re-cased: WebAuthn (`public-key`, `cross-platform`), JOSE (`EdDSA`, `ES256`), cookie `SameSite` (`Lax`, `Strict`), W3C Data Integrity (`DataIntegrityProof`, `assertionMethod`). The framework compares these by exact string equality.
+- **Slugs and `ext` namespace keys** keep their own grammars (lowercase-hyphenated and reverse-DNS) — see [SPEC §6.1](SPEC.md#61-type-uri) and [§4.5.1](SPEC.md#451-the-ext-extension-member).
+
+Casing is part of the wire contract: changing the casing of a member name or a value you define is a breaking change ([SPEC §5](SPEC.md#5-versioning)).
 
 ## `payload.schema.json`
 
@@ -188,9 +204,9 @@ errorCodes:
 Two parties may need to mint codes under `<slug>:<local>`:
 
 - **Spec authors** declare canonical codes in `errorCodes` front matter when publishing or revising the spec. These are the codes every conforming consumer can rely on.
-- **Consumer maintainers** **MAY** mint additional codes for invariants the spec did not enumerate (for example, a maintainer-specific authorization guard). The slug **MUST** be the slug of the spec **being processed** — never that of a related spec. A consumer handling `acl/change-role` that needs to surface a "last authority protected" rejection emits `acl/change-role:last_authority_protected`, **not** `acl/revoke:last_authority_protected` even though the related rule is canonically declared on `acl/revoke`. A client dispatching on `payload.code` expects the slug to identify the request's own type; cross-slug codes break that contract.
+- **Consumer maintainers** **MAY** mint additional codes for invariants the spec did not enumerate (for example, a maintainer-specific authorization guard). The slug **MUST** be the slug of the spec **being processed** — never that of a related spec. A consumer handling `acl/change-role` that needs to surface a "last authority protected" rejection emits `acl/change-role:lastAuthorityProtected`, **not** `acl/revoke:lastAuthorityProtected` even though the related rule is canonically declared on `acl/revoke`. A client dispatching on `payload.code` expects the slug to identify the request's own type; cross-slug codes break that contract.
 
-Per [SPEC.md §8.5](SPEC.md#85-extension-by-individual-trust-task-specifications), a consumer that does not recognize an extended `code` treats the error as `task_failed`, so maintainer-minted codes degrade gracefully for clients that only know the canonical set.
+Per [SPEC.md §8.5](SPEC.md#85-extension-by-individual-trust-task-specifications), a consumer that does not recognize an extended `code` treats the error as `taskFailed`, so maintainer-minted codes degrade gracefully for clients that only know the canonical set.
 
 ## Build and validate locally
 

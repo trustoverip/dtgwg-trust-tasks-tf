@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Document version** | 0.1 |
+| **Document version** | 0.2 |
 | **Date** | 2026-05-18 |
 | **This version** | `https://trustoverip.github.io/dtgwg-trust-tasks-tf/SPEC.html` |
 | **Latest published version** | None — this document has not yet been published as a Working Group Deliverable. |
@@ -48,6 +48,7 @@ This document is governed by the [Trust Over IP Foundation Patent and Copyright 
 12. [References](#12-references)
 13. [Acknowledgments](#13-acknowledgments)
 14. [Appendix A — Example Trust Task specification](#appendix-a--example-trust-task-specification)
+15. [Appendix B — Changelog](#appendix-b--changelog)
 
 ---
 
@@ -208,7 +209,7 @@ The framework reserves the following normative rules for any `ext` member, in an
 2. Each *immediate* key of `ext` **MUST** match the reverse-DNS grammar `^[a-z][a-z0-9-]*(\.[a-z0-9-]+)+$` — lowercase, at least one dot. Examples: `vnd.affinidi.webvh`, `org.example.acl`. Bare keys without a namespace are non-conforming.
 3. The structure under each namespace is opaque to the framework. Producers MAY place any JSON value the namespace's controller chooses to define.
 4. A *producer* **MUST NOT** rely on any framework-level meaning for the contents of any `ext.*` namespace.
-5. A *consumer* **MUST** ignore namespaces it does not recognize, consistent with the unrecognized-member rule of [§7.2](#72-consumer-requirements). A *consumer* **MAY** require its own namespace as a matter of local policy and reject documents lacking that namespace with `malformed_request`.
+5. A *consumer* **MUST** ignore namespaces it does not recognize, consistent with the unrecognized-member rule of [§7.2](#72-consumer-requirements). A *consumer* **MAY** require its own namespace as a matter of local policy and reject documents lacking that namespace with `malformedRequest`.
 6. The framework reserves **no** `ext.*` namespace today. *Trust Task specifications* **MUST NOT** define cross-specification semantics for any `ext` key; ecosystem semantics belong to the namespace controller.
 
 A *Trust Task specification* opts into `ext` at a given object level by including a property named `ext` (typically a `$ref` to the framework's published `Ext` `$def`) and adjusting that level's `additionalProperties` declaration accordingly. Specifications that do not include `ext` at a given level reject the member at that level under their existing `additionalProperties: false`.
@@ -275,7 +276,7 @@ A *Trust Task document* **MAY** identify the parties involved by including the `
 
 The framework does not constrain the VID scheme used: a DID, an X.509 subject, an OIDC subject identifier, a key thumbprint, or any other identifier whose controller is verifiable under the *consumer*'s trust framework is acceptable.
 
-A *VID* is compared by exact string equality wherever this framework requires a VID-to-VID comparison (notably the in-band-vs-transport cross-check in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), the recipient-enforcement rule in [§7.2](#72-consumer-requirements) item 5, and the proof-binding rule in [§4.7](#47-proof)). *Producers* **SHOULD** emit *VID*s in their canonical form for the scheme in use — no leading or trailing whitespace, no normalization of case-sensitive segments, and (for schemes that admit equivalent forms) the form that the scheme's authority designates as canonical. A *consumer* **MAY** reject a *Trust Task document* whose `issuer`, `recipient`, or any *VID*-typed `payload` member is not in canonical form with `malformed_request`; a *consumer* that accepts non-canonical input **MUST NOT** silently normalize before applying any framework rule that compares the value — normalization changes the string, and the framework's comparisons are over the unchanged bytes.
+A *VID* is compared by exact string equality wherever this framework requires a VID-to-VID comparison (notably the in-band-vs-transport cross-check in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), the recipient-enforcement rule in [§7.2](#72-consumer-requirements) item 5, and the proof-binding rule in [§4.7](#47-proof)). *Producers* **SHOULD** emit *VID*s in their canonical form for the scheme in use — no leading or trailing whitespace, no normalization of case-sensitive segments, and (for schemes that admit equivalent forms) the form that the scheme's authority designates as canonical. A *consumer* **MAY** reject a *Trust Task document* whose `issuer`, `recipient`, or any *VID*-typed `payload` member is not in canonical form with `malformedRequest`; a *consumer* that accepts non-canonical input **MUST NOT** silently normalize before applying any framework rule that compares the value — normalization changes the string, and the framework's comparisons are over the unchanged bytes.
 
 Both members are **OPTIONAL**. Their purpose is to let the parties be identified in-band where the transport in use does not already convey strong, authenticated party identity — for example, an unauthenticated HTTP POST, a public message queue, or paper hand-off.
 
@@ -317,7 +318,7 @@ When a *Trust Task document* carries a `proof` member, the document **MUST** als
 
 This rule exists because a *Data Integrity Proof* covers the signed bytes — the *issuer*, *payload*, and other framework members — but does **not** cover any transport-derived identity. A document signed without an in-band `recipient` therefore provides no cryptographic binding between the *producer*'s assertion and the intended audience: an attacker who obtains the document — from a *consumer*'s storage, an intermediate cache, or an exfiltration — can replay the bytes to a different *consumer* without any signal that the original *producer* did not intend that audience to act upon them. A consumer receiving such a replayed document would otherwise verify the proof successfully, observe that no `recipient` constrains the assertion, and apply the producer's claim to its own context.
 
-A *consumer* receiving a `proof`-carrying document with no in-band `recipient`, where the originating *Trust Task specification* is not a *bearer specification*, **MUST** reject the document with a `malformed_request` *error response* (see [§8](#8-error-responses)).
+A *consumer* receiving a `proof`-carrying document with no in-band `recipient`, where the originating *Trust Task specification* is not a *bearer specification*, **MUST** reject the document with a `malformedRequest` *error response* (see [§8](#8-error-responses)).
 
 Specifications that declare `proof` as **REQUIRED** (see [§7.3](#73-specification-requirements) item 8) implicitly require `recipient` in-band for all non-bearer cases; the audience-binding rule and the proof requirement combine to ensure the document is self-contained for both producer identity and intended audience.
 
@@ -369,16 +370,34 @@ The framework places no constraint on the form of a `threadId` beyond requiring 
 > ```json
 > {
 >   "id": "8a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
->   "type": "https://trusttasks.org/spec/trust-task-error/0.1",
+>   "type": "https://trusttasks.org/spec/trust-task-error/0.2",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
 >   "issuer": "did:web:bank.example",
 >   "recipient": "did:web:verifier.example",
 >   "issuedAt": "2026-04-12T09:33:00Z",
->   "payload": { "code": "proof_required", "retryable": false }
+>   "payload": { "code": "proofRequired", "retryable": false }
 > }
 > ```
 >
 > Both documents now share `threadId = 4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2`; any subsequent document in this exchange — for example, a retry with a fresh `id` and a valid `proof` — would carry the same `threadId`.
+
+### 4.10 Naming conventions
+
+JSON member names and enumerated string values in *Trust Task documents* follow the casing rules below, so that documents are consistent across specifications both for human readers and for code generators.
+
+1. **Framework-defined members.** Every member defined by this framework — `id`, `threadId`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `proof`, and the members of the error payload in [§8.2](#82-error-payload) — **MUST** be named in **lowerCamelCase**. The sole exception is `@context`, which is named as required by JSON-LD.
+
+2. **Framework-defined values.** Enumerated string values defined by this framework — notably the standard error `code` identifiers of [§8.3](#83-standard-error-codes) — **MUST** be expressed in **lowerCamelCase**.
+
+3. **Payload member names.** A *Trust Task specification* **SHOULD** name the members of its `payload` in lowerCamelCase. A specification **MAY** deviate only where it embeds a member whose name is fixed by an external vocabulary (for example, a field copied verbatim from a WebAuthn or JOSE structure), and it **SHOULD** confine such foreign naming to the embedded sub-object.
+
+4. **Specification-defined values.** String values drawn from a closed set that a *Trust Task specification* itself defines — statuses, kinds, decisions, event types, extended error `code` identifiers — **SHOULD** be expressed in lowerCamelCase (for example, `cacheAndKeys`, `stepUp`, `proofInvalid`).
+
+5. **Externally-owned values.** A value whose canonical form is fixed by an external specification **MUST** be carried verbatim and **MUST NOT** be re-cased, because the framework compares such values by exact string equality (see [§4.8](#48-the-issuer-and-recipient-members)). Examples include WebAuthn enumerations (`public-key`, `cross-platform`), JOSE algorithm identifiers (`EdDSA`, `ES256`), cookie `SameSite` values (`Lax`, `Strict`), and W3C *Data Integrity* type and purpose values (`DataIntegrityProof`, `assertionMethod`).
+
+6. **Out of scope.** This section does not govern *slugs* (lowercase, hyphen-separated; [§6.1](#61-type-uri)) or `ext` namespace keys (reverse-DNS; [§4.5.1](#451-the-ext-extension-member)); each retains its own grammar.
+
+A change to the casing of an existing member name or specification-defined value is a breaking change and follows the versioning rules of [§5](#5-versioning); the re-casing introduced in framework version 0.2 is recorded in [Appendix B](#appendix-b--changelog).
 
 ## 5. Versioning
 
@@ -402,11 +421,13 @@ A change to a *Trust Task specification* **MUST** be classified as either backwa
 
 Implementations of a given *Trust Task specification* at version `M.N` **MUST** accept documents conforming to any version `M.K` where `K ≤ N`.
 
-Forward minor-version compatibility is also intended: because a `MINOR` increment is by definition backwards-compatible, an implementation at `M.N` **SHOULD** accept a document at `M.K` where `K > N`, provided it can ignore any payload members it does not recognize and the document otherwise validates against the framework schema and the `M.N` payload schema known to the implementation. A *consumer* that elects not to support forward minor-version processing **MUST** reject such documents with an `unsupported_version` *error response* (see [§8.3](#83-standard-error-codes)).
+Forward minor-version compatibility is also intended: because a `MINOR` increment is by definition backwards-compatible, an implementation at `M.N` **SHOULD** accept a document at `M.K` where `K > N`, provided it can ignore any payload members it does not recognize and the document otherwise validates against the framework schema and the `M.N` payload schema known to the implementation. A *consumer* that elects not to support forward minor-version processing **MUST** reject such documents with an `unsupportedVersion` *error response* (see [§8.3](#83-standard-error-codes)).
 
-A `MAJOR` mismatch is never forward-compatible: a *consumer* at `M.N` **MUST** reject any document whose *Type URI* carries a `MAJOR` segment it does not implement, returning `unsupported_version` where the transport permits a response.
+A `MAJOR` mismatch is never forward-compatible: a *consumer* at `M.N` **MUST** reject any document whose *Type URI* carries a `MAJOR` segment it does not implement, returning `unsupportedVersion` where the transport permits a response.
 
 *This paragraph is non-normative.* Consumers that implement forward-minor compatibility typically route documents by matching the *Type URI*'s slug and `MAJOR` segment and selecting the highest `MINOR` they implement. A consumer that routes by exact-URI equality (slug + `MAJOR.MINOR`) is conformant — strict matching is permitted by [§5.2](#52-compatibility-rules) — but precludes the forward-minor SHOULD; downstream implementations choosing strict matching SHOULD document the trade-off.
+
+While a *Trust Task specification* — or a *shared schema component* ([§6.6](#66-shared-schema-components)) — is at `draft` status ([§5.3](#53-maturity-levels)), its schema and prose **MAY** change without notice. Accordingly, a breaking change to a `draft` artifact **MAY** be released as a `MINOR` increment rather than a `MAJOR` one. Once an artifact reaches `candidate`, `standard`, or `retired`, the classification above applies strictly: every breaking change **MUST** increment `MAJOR`.
 
 ### 5.3 Maturity levels
 
@@ -440,6 +461,22 @@ A `status` value **MUST** change only along one of the transitions below:
 A specification's current status is recorded in its front matter and reflected in the registry at <https://trusttasks.org/>. The same lifecycle applies to this framework specification itself.
 
 The process by which a slug is assigned, by which a specification enters the registry, and by which its status is updated is governed by the registry policy maintained alongside the registry at <https://trusttasks.org/>. That policy is out of scope for this framework specification.
+
+### 5.4 Migrating between versions
+
+*This section is non-normative.*
+
+When a *Trust Task specification* makes a breaking change — including adopting a new version of a *shared schema component* ([§6.6](#66-shared-schema-components)) — implementers are encouraged to migrate using an expand-then-contract sequence that keeps both versions interoperable throughout, so that no single deployment step requires producers and consumers to change in lockstep:
+
+1. **Author the new version.** Publish the new specification version — `M.(N+1)` for a backwards-compatible change, or `(M+1).0` for a breaking change at non-`draft` status (a breaking change at `draft` MAY use a `MINOR` increment per [§5.2](#52-compatibility-rules)). If the change is driven by a shared schema, publish the new shared schema component version first and re-pin the specification's `$ref` to it (see the coupling rule below). The previous specification version remains published and unchanged.
+
+2. **Update receivers first.** Deploy *consumer* support for the new version alongside the old, so a *consumer* accepts documents of both the old and the new version. Because no *producer* is emitting the new version yet, this step is safe to roll out on its own. For a `MINOR` increment, a forward-minor-compatible consumer ([§5.2](#52-compatibility-rules)) may already accept the new version with no code change; for a `MAJOR` increment the consumer **must** add explicit support before any producer emits it.
+
+3. **Update senders.** Once receivers across the deployment accept the new version, deploy *producer* support so producers begin emitting the new version. Traffic shifts to the new version while consumers continue to accept any stragglers still on the old one.
+
+4. **Retire the old version.** After traffic has fully migrated and any applicable stability window has elapsed, transition the old version to `retired` ([§5.3](#53-maturity-levels)) and declare `supersededBy` pointing at the new version. Producers stop emitting the old version; consumers may drop support for it on their own schedule.
+
+**Coupling of schema and specification versions.** A *Trust Task specification* and its payload JSON Schema are a single versioned artifact — the schema's `$id` is the specification's *Type URI* ([§6.3](#63-schema-scope)) — so any change to the payload schema is, by definition, a new specification version. A *shared schema component* ([§6.6](#66-shared-schema-components)) versions independently, but a specification **cannot adopt a new shared schema component version without issuing a new version of itself**: re-pinning a `$ref` changes the specification's effective wire contract. A specification **MAY** instead remain pinned to the older component version and not bump.
 
 ## 6. Namespace
 
@@ -535,6 +572,20 @@ The following rules apply to *Trust Task specifications* that are not published 
 
 Private *Trust Task specifications* are full *Trust Task specifications* for the purposes of conformance: a producer or consumer that satisfies §7 against a private spec is a *conforming producer* or *conforming consumer* of that spec, exactly as it would be for a registry-published one.
 
+### 6.6 Shared schema components
+
+A *Trust Task specification*'s payload JSON Schema **MAY** reference reusable schema fragments — *shared schema components* — that several specifications have in common (for example, an access-control entry, a device binding, a sealed-envelope shape, or a synchronization event). Shared schema components are an authoring convenience and a consistency mechanism. They are **not** independently published *Type URIs*: a *Trust Task document*'s `type` **MUST NOT** resolve to a shared schema component, and a shared schema component is never the unit a document conforms to — only a specification is.
+
+A shared schema component is nonetheless a *versioned artifact* in its own right, governed by the following rules.
+
+1. **Versioning.** A shared schema component carries a `MAJOR.MINOR` version and follows the same compatibility rules as a specification ([§5.2](#52-compatibility-rules)), including the `draft` caveat. A breaking change to a shared schema component — re-casing an enumerated value, removing or renaming a `$def`, narrowing a constraint — **MUST** be published as a new version of that component. The prior version remains in place for the specifications still pinned to it.
+
+2. **Pinning.** A consuming specification **MUST** reference a shared schema component at a specific version. Resolving a reference to "the latest" version of a component is non-conformant, because a later change to the component would otherwise alter an already-published specification's wire contract silently.
+
+3. **Coupling to specification versions.** Because a consuming specification pins a specific component version, adopting a new component version requires the consuming specification to publish a new version of itself (see [§5.4](#54-migrating-between-versions)). A component version bump therefore never changes an already-published specification underfoot; the new component values become observable only through a new specification version that re-pins to them.
+
+4. **Lifecycle and discovery.** A shared schema component **SHOULD** declare its own `status` ([§5.3](#53-maturity-levels)) and **MAY** declare `supersededBy` when retired. The registry **SHOULD** surface shared schema components and their versions alongside specifications, so that implementers can see which specification versions depend on which component versions.
+
 ## 7. Minimum requirements
 
 ### 7.1 Producer requirements
@@ -558,16 +609,16 @@ A *conforming consumer* **MUST**:
 2. Validate the document's `payload` member against the JSON Schema obtained by content-negotiating the document's `type` member for `application/schema+json`.
 3. Reject any document whose `type` it does not recognize, unless the consumer's policy explicitly permits forward-compatible processing under [§5.2](#52-compatibility-rules).
 4. Honor the document's expiry where present: if `expiresAt` is set and `now ≥ expiresAt` relative to the *consumer*'s clock (with the optional skew tolerance permitted in [§4.2](#42-top-level-members)), treat the document as expired and not act upon it.
-5. Reject any document whose `recipient` member is set and does not identify the *consumer*'s own party. Where the *Trust Task specification* declares `recipient` as **REQUIRED** (see [§7.3](#73-specification-requirements) item 5), reject any document lacking an in-band `recipient` with `malformed_request`.
+5. Reject any document whose `recipient` member is set and does not identify the *consumer*'s own party. Where the *Trust Task specification* declares `recipient` as **REQUIRED** (see [§7.3](#73-specification-requirements) item 5), reject any document lacking an in-band `recipient` with `malformedRequest`.
 6. Reject any document for which an in-band `issuer` or `recipient` member is inconsistent with an authenticated identity derived from the transport for the same party.
-7. If the document carries a `proof` member, verify it per [§4.7](#47-proof) against the in-band `issuer` and reject the document with `proof_invalid` on verification failure. Independently, if the *Trust Task specification* identified by `type` declares `proof` as **REQUIRED** (see [§7.3](#73-specification-requirements) item 8) and no `proof` is present, reject the document with `proof_required`.
-8. If the document carries a `proof` member and no in-band `recipient`, and the *Trust Task specification* identified by `type` is **not** a *bearer specification* ([§4.8.3](#483-bearer-specifications)), reject the document with `malformed_request`. This enforces the audience-binding rule of [§4.8.2](#482-audience-binding).
+7. If the document carries a `proof` member, verify it per [§4.7](#47-proof) against the in-band `issuer` and reject the document with `proofInvalid` on verification failure. Independently, if the *Trust Task specification* identified by `type` declares `proof` as **REQUIRED** (see [§7.3](#73-specification-requirements) item 8) and no `proof` is present, reject the document with `proofRequired`.
+8. If the document carries a `proof` member and no in-band `recipient`, and the *Trust Task specification* identified by `type` is **not** a *bearer specification* ([§4.8.3](#483-bearer-specifications)), reject the document with `malformedRequest`. This enforces the audience-binding rule of [§4.8.2](#482-audience-binding).
 
 For each of the rules in this section that references the `issuer` or `recipient` party, the in-band member value is authoritative when present and the transport-derived identity is a cross-check; when the in-band member is absent the *consumer* **MAY** derive the value from the transport. This precedence is defined normatively in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity).
 
 A *conforming consumer* **SHOULD** preserve, but **MUST NOT** act upon, members it does not recognize. A *consumer* that does not implement JSON-LD processing **MUST** ignore the `@context` member.
 
-For documents that carry an `ext` member (see [§4.5.1](#451-the-ext-extension-member)), a *conforming consumer* **MUST** ignore every `ext` immediate-key namespace it does not recognize — the unrecognized-namespace rule is the same "preserve but MUST NOT act upon" rule as for unrecognized top-level members, applied at the `ext` level. A *consumer* **MAY** require one or more specific namespaces under `ext` as a matter of local policy and **MUST** reject a document missing a required namespace with `malformed_request`; *consumers* applying such a policy **SHOULD** publish the requirement via discovery ([§11](#11-discovery-and-capability-negotiation)) so *producers* can satisfy it before the wire trip.
+For documents that carry an `ext` member (see [§4.5.1](#451-the-ext-extension-member)), a *conforming consumer* **MUST** ignore every `ext` immediate-key namespace it does not recognize — the unrecognized-namespace rule is the same "preserve but MUST NOT act upon" rule as for unrecognized top-level members, applied at the `ext` level. A *consumer* **MAY** require one or more specific namespaces under `ext` as a matter of local policy and **MUST** reject a document missing a required namespace with `malformedRequest`; *consumers* applying such a policy **SHOULD** publish the requirement via discovery ([§11](#11-discovery-and-capability-negotiation)) so *producers* can satisfy it before the wire trip.
 
 When a *consumer* rejects a *Trust Task document* under any rule in this section, and the transport in use supports a response from *consumer* to *producer*, the *consumer* **SHOULD** return an *error response* conforming to [§8](#8-error-responses).
 
@@ -579,7 +630,7 @@ A *conforming Trust Task specification* **MUST** declare each of the following. 
 2. **Version** — the `MAJOR.MINOR` version of this specification, satisfying [§5.1](#51-scheme).
 3. **Target framework version** — the `MAJOR.MINOR` version of this framework specification that the *Trust Task specification* targets. A *consumer* uses this declared value to select the framework schema under which the outer document is validated (see [§7.2](#72-consumer-requirements), item 1).
 4. **Maturity level** — one of `draft`, `candidate`, `standard`, or `retired`, satisfying [§5.3](#53-maturity-levels). A specification whose status is `retired` **SHOULD** also declare a `supersededBy` value (item 11) pointing at the successor.
-5. **Parties** — the role of each *party* expected in a document conforming to this specification, the *VID* schemes accepted for each, and whether each of the `issuer` and `recipient` members is **REQUIRED**, **RECOMMENDED**, or **OPTIONAL** in a document. The defaults from [§4.8](#48-the-issuer-and-recipient-members) apply if the specification is silent, but explicit declaration is **RECOMMENDED**. A **REQUIRED** declaration is enforceable: a *consumer* **MUST** reject documents lacking an in-band member declared **REQUIRED** with `malformed_request` (see [§7.2](#72-consumer-requirements) item 5). **RECOMMENDED** and **OPTIONAL** declarations are advisory and impose no rejection obligation.
+5. **Parties** — the role of each *party* expected in a document conforming to this specification, the *VID* schemes accepted for each, and whether each of the `issuer` and `recipient` members is **REQUIRED**, **RECOMMENDED**, or **OPTIONAL** in a document. The defaults from [§4.8](#48-the-issuer-and-recipient-members) apply if the specification is silent, but explicit declaration is **RECOMMENDED**. A **REQUIRED** declaration is enforceable: a *consumer* **MUST** reject documents lacking an in-band member declared **REQUIRED** with `malformedRequest` (see [§7.2](#72-consumer-requirements) item 5). **RECOMMENDED** and **OPTIONAL** declarations are advisory and impose no rejection obligation. A specification identifies which party fills each framework member by tagging that party `issuer` or `recipient`; a party named only in the *payload* — neither the document's `issuer` nor its `recipient` — carries no such tag. The requirement of the party tagged `recipient` governs the `recipient` member of a request document; because a response document swaps the parties ([§4.4.1](#441-request-and-response-variants)), the requirement of the party tagged `issuer` governs the `recipient` member of a response.
 6. **Outcome** — a non-normative prose statement of what successful execution of the task achieves between the parties. This is the human-readable counterpart to the payload schema.
 7. **Payload JSON Schema** — a normative JSON Schema for the `payload` member that:
    1. Is a valid JSON Schema document under [[JSON-SCHEMA-2020-12]].
@@ -617,11 +668,11 @@ https://trusttasks.org/spec/trust-task-error/<MAJOR.MINOR>
 
 An *error response* is a *Trust Task document* whose `type` is the URI above. Its `payload` carries the standard error structure defined in [§8.2](#82-error-payload). The `id` member of an *error response* identifies the error instance and **MUST NOT** be reused; correlation back to the original task being responded to is carried by the framework's `threadId` member ([§4.9](#49-the-threadid-member)).
 
-The *error response*'s `issuer` is the *consumer* that emitted it (the *reporting consumer* in the conformance language of the `trust-task-error` specification at [§8.6](#86-reserved-response-type-slugs)). Its `recipient` is the party the *consumer* wishes to inform of the failure. For most rejections — `expired`, `unsupported_type`, `unsupported_version`, `proof_required`, `proof_invalid`, `task_failed`, and the rest of [§8.3](#83-standard-error-codes) — that party is the *original producer* as carried in the rejected document's in-band `issuer` member.
+The *error response*'s `issuer` is the *consumer* that emitted it (the *reporting consumer* in the conformance language of the `trust-task-error` specification at [§8.6](#86-reserved-response-type-slugs)). Its `recipient` is the party the *consumer* wishes to inform of the failure. For most rejections — `expired`, `unsupportedType`, `unsupportedVersion`, `proofRequired`, `proofInvalid`, `taskFailed`, and the rest of [§8.3](#83-standard-error-codes) — that party is the *original producer* as carried in the rejected document's in-band `issuer` member.
 
-The exception is `identity_mismatch` (and any rejection raised in the same evaluation step that surfaced the mismatch): under such a rejection the rejected document's in-band `issuer` is by definition the contested identity, and **MUST NOT** be used as the error response's `recipient`. A *consumer* that emits an error response under `identity_mismatch` **MUST** address the response to the transport-authenticated sender of the rejected document, and **MUST NOT** address it to the in-band `issuer`. Where no transport-authenticated sender is available, the *consumer* **SHOULD NOT** emit an error response at all — sending one to the contested in-band identity would constitute an oracle, and (in any transport that signs error responses) would compel the *consumer* to emit a signed document about a party that did not in fact participate in the exchange.
+The exception is `identityMismatch` (and any rejection raised in the same evaluation step that surfaced the mismatch): under such a rejection the rejected document's in-band `issuer` is by definition the contested identity, and **MUST NOT** be used as the error response's `recipient`. A *consumer* that emits an error response under `identityMismatch` **MUST** address the response to the transport-authenticated sender of the rejected document, and **MUST NOT** address it to the in-band `issuer`. Where no transport-authenticated sender is available, the *consumer* **SHOULD NOT** emit an error response at all — sending one to the contested in-band identity would constitute an oracle, and (in any transport that signs error responses) would compel the *consumer* to emit a signed document about a party that did not in fact participate in the exchange.
 
-The *consumer* **MUST** likewise sanitize the `payload.message` member of an `identity_mismatch` error response: a free-text message that reveals the *consumer*'s expected transport-authenticated identity, or the contested in-band value, leaks identity information to a possibly hostile sender (see [§10](#10-security-and-privacy-considerations)). The standard wire form for this code is the code identifier alone, optionally accompanied by a non-identifying message (e.g. `"identity_mismatch: in-band identity does not match transport-derived identity"`).
+The *consumer* **MUST** likewise sanitize the `payload.message` member of an `identityMismatch` error response: a free-text message that reveals the *consumer*'s expected transport-authenticated identity, or the contested in-band value, leaks identity information to a possibly hostile sender (see [§10](#10-security-and-privacy-considerations)). The standard wire form for this code is the code identifier alone, optionally accompanied by a non-identifying message (e.g. `"identityMismatch: in-band identity does not match transport-derived identity"`).
 
 ### 8.2 Error payload
 
@@ -640,7 +691,7 @@ The `payload` of an *error response* has the following members. The correlation 
 > ```json
 > {
 >   "id": "9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
->   "type": "https://trusttasks.org/spec/trust-task-error/0.1",
+>   "type": "https://trusttasks.org/spec/trust-task-error/0.2",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
 >   "issuer": "did:web:bank.example",
 >   "recipient": "did:web:verifier.example",
@@ -667,18 +718,18 @@ The framework defines the error codes listed below. A *conforming consumer* **MU
 
 | Code | Meaning | Default `retryable` |
 |---|---|---|
-| `malformed_request` | The document did not validate against the framework schema or the task-specific payload schema. | `false` |
-| `unsupported_type` | The *consumer* does not recognize the `type` URI. | `false` |
-| `unsupported_version` | The `type` URI was recognized but its `MAJOR.MINOR` version is not supported. | `false` |
+| `malformedRequest` | The document did not validate against the framework schema or the task-specific payload schema. | `false` |
+| `unsupportedType` | The *consumer* does not recognize the `type` URI. | `false` |
+| `unsupportedVersion` | The `type` URI was recognized but its `MAJOR.MINOR` version is not supported. | `false` |
 | `expired` | The document's `expiresAt` was in the past at the time of evaluation. | `false` |
-| `proof_required` | A `proof` was required (by the *Trust Task specification* or *consumer* policy) and was missing. | `false` |
-| `proof_invalid` | A `proof` was present but failed verification. | `false` |
-| `permission_denied` | The requesting *party* is not authorized to invoke this task. | `false` |
-| `wrong_recipient` | The document's `recipient` does not identify the receiving *consumer*. | `false` |
-| `identity_mismatch` | An in-band `issuer` or `recipient` value is inconsistent with the corresponding transport-authenticated identity. | `false` |
-| `task_failed` | The *recipient party* attempted the task and could not complete it; further detail **SHOULD** appear in `details`. | varies |
+| `proofRequired` | A `proof` was required (by the *Trust Task specification* or *consumer* policy) and was missing. | `false` |
+| `proofInvalid` | A `proof` was present but failed verification. | `false` |
+| `permissionDenied` | The requesting *party* is not authorized to invoke this task. | `false` |
+| `wrongRecipient` | The document's `recipient` does not identify the receiving *consumer*. | `false` |
+| `identityMismatch` | An in-band `issuer` or `recipient` value is inconsistent with the corresponding transport-authenticated identity. | `false` |
+| `taskFailed` | The *recipient party* attempted the task and could not complete it; further detail **SHOULD** appear in `details`. | varies |
 | `unavailable` | The *recipient party* is temporarily unable to process the task. | `true` |
-| `internal_error` | The *recipient party* encountered an unexpected internal failure. | `true` |
+| `internalError` | The *recipient party* encountered an unexpected internal failure. | `true` |
 
 The "Default `retryable`" column gives the value an emitter of an error response **SHOULD** use unless task-specific knowledge dictates otherwise. The actual `retryable` value carried in a given *error response* is authoritative.
 
@@ -688,17 +739,17 @@ In this specification, "retrying" means re-sending a *Trust Task document* bit-f
 
 A *party* that receives an *error response* **MUST NOT** retry the original *Trust Task document* if `retryable` is `false`. When `retryable` is `true`, the party **SHOULD** wait at least until any `retryAfter` value before retrying, and **SHOULD** apply backoff appropriate to the transport in use.
 
-A `false` value of `retryable` represents a hard failure for that specific document. It does not prohibit the *producer* from issuing a *new* *Trust Task document* — that is, a document with a fresh `id` (and **SHOULD** the same `threadId` to preserve correlation) — addressing the cause of the failure. For example, after receiving an *error response* of `code = proof_invalid` with `retryable = false`, the *producer* **MUST NOT** re-send the failed document, but **MAY** issue a new document carrying a valid `proof`.
+A `false` value of `retryable` represents a hard failure for that specific document. It does not prohibit the *producer* from issuing a *new* *Trust Task document* — that is, a document with a fresh `id` (and **SHOULD** the same `threadId` to preserve correlation) — addressing the cause of the failure. For example, after receiving an *error response* of `code = proofInvalid` with `retryable = false`, the *producer* **MUST NOT** re-send the failed document, but **MAY** issue a new document carrying a valid `proof`.
 
 ### 8.5 Extension by individual Trust Task specifications
 
-An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` separated from the local code by a colon, e.g. `kyc-handoff:document_revoked`. The `<slug>` **MUST** be the slug of the specification under which the *error response* is emitted — that is, the slug of the *request* the *error response* refers to — never that of a related or referenced specification. A *consumer* of `acl/change-role` that needs to surface a rejection borrowed conceptually from `acl/revoke` therefore emits `acl/change-role:<local>`, not `acl/revoke:<local>`. Extended codes **MUST NOT** shadow any code listed in [§8.3](#83-standard-error-codes).
+An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` separated from the local code by a colon, e.g. `kyc-handoff:documentRevoked`. The `<slug>` **MUST** be the slug of the specification under which the *error response* is emitted — that is, the slug of the *request* the *error response* refers to — never that of a related or referenced specification. A *consumer* of `acl/change-role` that needs to surface a rejection borrowed conceptually from `acl/revoke` therefore emits `acl/change-role:<local>`, not `acl/revoke:<local>`. Extended codes **MUST NOT** shadow any code listed in [§8.3](#83-standard-error-codes).
 
-A *consumer* (not only the spec author) **MAY** mint additional slug-namespaced codes for invariants the specification did not enumerate, provided the namespacing rule above is honoured. The framework's fallback-to-`task_failed` rule for unrecognized extended codes (see the third paragraph below) keeps these consumer-minted codes interoperable with clients that only implement the canonical set.
+A *consumer* (not only the spec author) **MAY** mint additional slug-namespaced codes for invariants the specification did not enumerate, provided the namespacing rule above is honoured. The framework's fallback-to-`taskFailed` rule for unrecognized extended codes (see the third paragraph below) keeps these consumer-minted codes interoperable with clients that only implement the canonical set.
 
 An individual *Trust Task specification* **MAY** also define the structure of `details` for its own error responses. Where it does so, the specification **MUST** state which `code` values may carry a `details` object and **MUST** provide a JSON Schema fragment describing the `details` shape for each.
 
-A *consumer* that does not recognize an extended `code` **SHOULD** treat the error as if its code were `task_failed` and **MUST** still honor the `retryable` and `retryAfter` members.
+A *consumer* that does not recognize an extended `code` **SHOULD** treat the error as if its code were `taskFailed` and **MUST** still honor the `retryable` and `retryAfter` members.
 
 The `details` member defined here is distinct from the `ext` extension member defined in [§4.5.1](#451-the-ext-extension-member). `details` carries *task-specific structured data tied to a specific error `code`*, defined by the spec author; its shape is constrained by the JSON Schema fragment the specification publishes for each carrying code. `ext` carries *vendor-namespaced extension data at payload or nested-object level*, defined by the ecosystem; its namespace structure is opaque to the framework. Both members **MAY** appear on the same *error response* and serve different purposes — implementations **MUST NOT** treat them as interchangeable.
 
@@ -707,13 +758,13 @@ The `details` member defined here is distinct from the `ext` extension member de
 > ```json
 > {
 >   "id": "c4d2f713-9a8e-4d04-b29c-2f1b0b4cbe71",
->   "type": "https://trusttasks.org/spec/trust-task-error/0.1",
+>   "type": "https://trusttasks.org/spec/trust-task-error/0.2",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
 >   "issuer": "did:web:bank.example",
 >   "recipient": "did:web:verifier.example",
 >   "issuedAt": "2026-05-16T14:22:00Z",
 >   "payload": {
->     "code": "kyc-handoff:document_revoked",
+>     "code": "kyc-handoff:documentRevoked",
 >     "message": "Passport used in verification was revoked by the issuing authority on 2026-05-10.",
 >     "retryable": false,
 >     "details": {
@@ -724,7 +775,7 @@ The `details` member defined here is distinct from the `ext` extension member de
 > }
 > ```
 >
-> A *consumer* implementing the `kyc-handoff` *Trust Task specification* interprets the extended `code` per that specification's declarations (see [§7.3](#73-specification-requirements), item 9). A *consumer* that does not implement `kyc-handoff` treats the error as if `code = task_failed`, retains `retryable = false`, and ignores the contents of `details`.
+> A *consumer* implementing the `kyc-handoff` *Trust Task specification* interprets the extended `code` per that specification's declarations (see [§7.3](#73-specification-requirements), item 9). A *consumer* that does not implement `kyc-handoff` treats the error as if `code = taskFailed`, retains `retryable = false`, and ignores the contents of `details`.
 
 ### 8.6 Reserved response-type slugs
 
@@ -735,7 +786,7 @@ The framework reserves the following additional response-type *Trust Task specif
 | `trust-task-ok` | Success with metadata — acknowledging that a task was performed and conveying any resulting references, receipts, or transient state. |
 | `trust-task-next-step` | A recipient-suggested continuation — indicating that the original task was understood but cannot complete in isolation, together with the next *Trust Task* the *recipient party* expects in order to proceed. |
 
-The payload structures of these specifications are out of scope for this revision and will be specified in a future revision of this framework. Implementations encountering a *Trust Task document* of either reserved type before the corresponding specification is published **MAY** ignore the document or **MAY** return an `unsupported_version` *error response*.
+The payload structures of these specifications are out of scope for this revision and will be specified in a future revision of this framework. Implementations encountering a *Trust Task document* of either reserved type before the corresponding specification is published **MAY** ignore the document or **MAY** return an `unsupportedVersion` *error response*.
 
 ## 9. Transport bindings
 
@@ -772,13 +823,13 @@ A *transport binding* published through the framework's registry is identified b
 https://trusttasks.org/binding/<slug>/<MAJOR.MINOR>
 ```
 
-`<slug>` follows the same lowercase, hyphenated grammar as a Trust Task slug ([§6.1](#61-type-uri)); `<MAJOR.MINOR>` follows the version grammar of [§5.1](#51-version-format). Additional path segments under a binding URI — for example `https://trusttasks.org/binding/didcomm/0.1/envelope` — identify resources internal to the binding's own vocabulary (envelope `type` values, schema URIs, status mappings, and similar). Those segments are defined by the *transport binding* specification, not by this framework.
+`<slug>` follows the same lowercase, hyphenated grammar as a Trust Task slug ([§6.1](#61-type-uri)); `<MAJOR.MINOR>` follows the version grammar of [§5.1](#51-scheme). Additional path segments under a binding URI — for example `https://trusttasks.org/binding/didcomm/0.1/envelope` — identify resources internal to the binding's own vocabulary (envelope `type` values, schema URIs, status mappings, and similar). Those segments are defined by the *transport binding* specification, not by this framework.
 
-The `/binding/` subtree and the `/spec/` subtree of [§6.1](#61-type-uri) are **structurally disjoint**. A *Type URI* — the value carried in a *Trust Task document*'s `type` member ([§4.4](#44-the-type-member)) — is always rooted at `/spec/<slug>/<MAJOR.MINOR>` and **MUST NOT** be rooted at `/binding/...`. A *consumer* that receives a *Trust Task document* whose `type` is a URI under `/binding/` **MUST** reject it with `malformed_request` per [§8.3](#83-standard-error-codes). The Type URI grammar of [§6.1](#61-type-uri) already excludes the `/binding/` path; this rule is stated explicitly so implementers and reviewers can see the namespace boundary at a glance and so that documents which somehow construct a `/binding/...` `type` value have a defined disposition rather than relying on grammar mismatch alone.
+The `/binding/` subtree and the `/spec/` subtree of [§6.1](#61-type-uri) are **structurally disjoint**. A *Type URI* — the value carried in a *Trust Task document*'s `type` member ([§4.4](#44-the-type-member)) — is always rooted at `/spec/<slug>/<MAJOR.MINOR>` and **MUST NOT** be rooted at `/binding/...`. A *consumer* that receives a *Trust Task document* whose `type` is a URI under `/binding/` **MUST** reject it with `malformedRequest` per [§8.3](#83-standard-error-codes). The Type URI grammar of [§6.1](#61-type-uri) already excludes the `/binding/` path; this rule is stated explicitly so implementers and reviewers can see the namespace boundary at a glance and so that documents which somehow construct a `/binding/...` `type` value have a defined disposition rather than relying on grammar mismatch alone.
 
 A *transport binding* specification published through the registry **SHOULD** live at `bindings/<slug>/<MAJOR.MINOR>/spec.md` in the framework's source tree, paralleling the `specs/<slug>/<MAJOR.MINOR>/` layout for *Trust Task specifications*. The grammar and content requirements for *transport binding* specifications are defined in [§9.1](#91-what-a-transport-binding-specifies).
 
-The reservation rule of [§6.5](#65-private-extensions) — that private specifications **MUST NOT** be served from the `https://trusttasks.org/` authority — applies to private transport bindings equivalently: a private transport binding **MUST** use an authority the publisher controls and **MUST NOT** claim to identify a resource at `https://trusttasks.org/binding/...`.
+The reservation rule of [§6.5](#65-private-and-unpublished-trust-task-specifications) — that private specifications **MUST NOT** be served from the `https://trusttasks.org/` authority — applies to private transport bindings equivalently: a private transport binding **MUST** use an authority the publisher controls and **MUST NOT** claim to identify a resource at `https://trusttasks.org/binding/...`.
 
 ## 10. Security and Privacy Considerations
 
@@ -792,7 +843,7 @@ Because *Trust Task documents* are self-contained, a captured document remains e
 
 ### 10.1 Cross-recipient replay
 
-A *Trust Task document* signed without an in-band `recipient` provides no cryptographic binding between the *producer*'s assertion and the intended audience. An attacker who obtains such a document — from a *consumer*'s storage, an intermediate cache, or an exfiltration — can replay the bytes to a different *consumer*; the proof verifies against the original *producer*'s VID, and a recipient who does not know the *producer*'s out-of-band intent has no signal that the assertion was not made to them. The audience-binding rule of [§4.8.2](#482-audience-binding) is the primary defence: when `proof` is present, `recipient` is also required in-band, and consumers reject any document that violates this rule with `malformed_request`. *Bearer specifications* ([§4.8.3](#483-bearer-specifications)) are the only specifications for which a `proof`-carrying document without an in-band `recipient` is conformant; bearer status is an intentional, normative property of the specification, not a consumer-side flag.
+A *Trust Task document* signed without an in-band `recipient` provides no cryptographic binding between the *producer*'s assertion and the intended audience. An attacker who obtains such a document — from a *consumer*'s storage, an intermediate cache, or an exfiltration — can replay the bytes to a different *consumer*; the proof verifies against the original *producer*'s VID, and a recipient who does not know the *producer*'s out-of-band intent has no signal that the assertion was not made to them. The audience-binding rule of [§4.8.2](#482-audience-binding) is the primary defence: when `proof` is present, `recipient` is also required in-band, and consumers reject any document that violates this rule with `malformedRequest`. *Bearer specifications* ([§4.8.3](#483-bearer-specifications)) are the only specifications for which a `proof`-carrying document without an in-band `recipient` is conformant; bearer status is an intentional, normative property of the specification, not a consumer-side flag.
 
 Replay of the same document by the *original* recipient back into the same *consumer* (within transport bounds) is also possible. The framework requires *producers* to mint unique `id` values ([§4.3](#43-the-id-member)) so consumers can implement an idempotency cache keyed on `id`; consumers handling assertions whose effect persists between exchanges **SHOULD** maintain such a cache for the lifetime of the assertion's relevance.
 
@@ -808,7 +859,7 @@ This consideration does **not** apply when the schema is embedded with the *cons
 
 ### 10.4 Error-response identity leakage
 
-A *consumer* emitting an *error response* under [§8](#8-error-responses) **MUST** treat the error response's `payload.message` as a wire-exposed value. Free-text messages that reveal the *consumer*'s expected transport-authenticated identity, the contested in-band value of a mismatched party, or other consumer-internal state convert each error response into an identity-probing oracle for an unauthenticated *producer*. The rule for `identity_mismatch` is stated in [§8.1](#81-the-trust-task-error-specification); the same principle applies to every standard code: error messages **SHOULD** be derived from the code identifier and the *Trust Task specification*'s public vocabulary, not from consumer-side authentication context.
+A *consumer* emitting an *error response* under [§8](#8-error-responses) **MUST** treat the error response's `payload.message` as a wire-exposed value. Free-text messages that reveal the *consumer*'s expected transport-authenticated identity, the contested in-band value of a mismatched party, or other consumer-internal state convert each error response into an identity-probing oracle for an unauthenticated *producer*. The rule for `identityMismatch` is stated in [§8.1](#81-the-trust-task-error-specification); the same principle applies to every standard code: error messages **SHOULD** be derived from the code identifier and the *Trust Task specification*'s public vocabulary, not from consumer-side authentication context.
 
 ## 11. Discovery and capability negotiation
 
@@ -866,7 +917,7 @@ A response with `"supportedTypes": []` is conformant and means "I support nothin
 
 ### 11.4 Status of the response
 
-A *discovery response* is **advisory**. A *Type URI*'s presence is a hint that the responder will accept a *Trust Task document* of that type, not a binding commitment: the responder may have revoked support, may apply per-document permissions, or may itself receive a `proof_invalid` or `permission_denied` at the point of acting on a subsequent request. Every subsequent exchange runs the full [§7.2](#72-consumer-requirements) pipeline; discovery only narrows what the discoverer chooses to send.
+A *discovery response* is **advisory**. A *Type URI*'s presence is a hint that the responder will accept a *Trust Task document* of that type, not a binding commitment: the responder may have revoked support, may apply per-document permissions, or may itself receive a `proofInvalid` or `permissionDenied` at the point of acting on a subsequent request. Every subsequent exchange runs the full [§7.2](#72-consumer-requirements) pipeline; discovery only narrows what the discoverer chooses to send.
 
 ### 11.5 Privacy considerations
 
@@ -950,7 +1001,7 @@ Served at the *Type URI* under content negotiation for `application/schema+json`
 
 | Code | Meaning | Default `retryable` | `details` shape |
 |---|---|---|---|
-| `kyc-handoff:document_revoked` | A breeder document used in the verification was revoked by its issuing authority after the verification completed. | `false` | `{ "documentRef": <string>, "revokedAt": <RFC3339 date-time> }` |
+| `kyc-handoff:documentRevoked` | A breeder document used in the verification was revoked by its issuing authority after the verification completed. | `false` | `{ "documentRef": <string>, "revokedAt": <RFC3339 date-time> }` |
 
 The `details` JSON Schema fragment for this code is:
 
@@ -1000,3 +1051,20 @@ This document carries a `proof` member because the specification declares `proof
 4. Confirms `expiresAt` is in the future and `recipient` matches the consumer's own *VID*.
 
 If any step fails, the *consumer* returns an *error response* per [§8](#8-error-responses).
+
+## Appendix B — Changelog
+
+*This appendix is non-normative.*
+
+### 0.2
+
+* **Naming conventions ([§4.10](#410-naming-conventions)).** Added a normative section defining casing: framework-defined members and values use **lowerCamelCase**; payload member names and specification-defined enumerated values **SHOULD** use lowerCamelCase; externally-owned values (WebAuthn, JOSE, `SameSite`, W3C *Data Integrity*, …) are carried verbatim.
+* **Standard error codes re-cased ([§8.3](#83-standard-error-codes)).** The standard error `code` identifiers are now lowerCamelCase: `malformedRequest`, `unsupportedType`, `unsupportedVersion`, `proofRequired`, `proofInvalid`, `permissionDenied`, `wrongRecipient`, `identityMismatch`, `taskFailed`, `internalError` (the single-word codes `expired`, `unavailable` are unchanged). This is a breaking change carried by `trust-task-error/0.2`; the snake_case `0.1` codes remain valid for documents whose `type` resolves to a `0.1` specification.
+* **Shared schema components ([§6.6](#66-shared-schema-components)).** Added a section giving shared schema fragments first-class, independently-versioned status, with a mandatory version-pinning rule and the schema/specification version-coupling rule.
+* **Migration guidance ([§5.4](#54-migrating-between-versions)).** Added the non-normative receiver-before-sender (expand/contract) migration sequence and the coupling of schema and specification versions.
+* **Draft version caveat ([§5.2](#52-compatibility-rules)).** Clarified that a breaking change to a `draft` artifact MAY be released as a `MINOR` increment.
+* Affected `0.1` specifications were re-published as `0.2` with lowerCamelCase enumerated values; `0.1` remains served unchanged for backwards compatibility and will be `retired` once consumers have migrated.
+
+### 0.1
+
+* Initial working draft of the Trust Tasks framework.
