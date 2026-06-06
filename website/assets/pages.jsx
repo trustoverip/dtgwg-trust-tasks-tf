@@ -86,6 +86,30 @@ function injectHeadingIds(html) {
 /* ============================================================
    HOME
    ============================================================ */
+// Collapse a task list to one entry per slug — the latest non-retired version
+// — so coexisting 0.1/0.2 specs count and display as one distinct Trust Task.
+function latestPerSlug(tasks) {
+  const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+  const bySlug = new Map();
+  for (const t of tasks) {
+    const prev = bySlug.get(t.slug);
+    if (!prev) { bySlug.set(t.slug, t); continue; }
+    const pr = prev.status === "retired", tr = t.status === "retired";
+    if (pr !== tr) { if (pr) bySlug.set(t.slug, t); continue; }
+    if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
+  }
+  return [...bySlug.values()];
+}
+
+// Distinct-slug count per category (not per version).
+function countSlugsByCategory(tasks) {
+  const sets = {};
+  for (const t of tasks) (sets[t.category] ||= new Set()).add(t.slug);
+  const out = {};
+  for (const k in sets) out[k] = sets[k].size;
+  return out;
+}
+
 function HomePage({ tweaks, setRoute }) {
   const stats = window.TT_STATS;
   const [q, setQ] = useS("");
@@ -105,11 +129,7 @@ function HomePage({ tweaks, setRoute }) {
   }, []);
 
   // category counts
-  const counts = useM(() => {
-    const c = {};
-    window.TT_TASKS.forEach(t => { c[t.category] = (c[t.category] || 0) + 1; });
-    return c;
-  }, []);
+  const counts = useM(() => countSlugsByCategory(window.TT_TASKS), []);
 
   // 10 newest specs (by created date, desc)
   const newestSpecs = useM(() => {
@@ -137,13 +157,13 @@ function HomePage({ tweaks, setRoute }) {
   // filtered preview results
   const results = useM(() => {
     const ql = q.trim().toLowerCase();
-    return window.TT_TASKS.filter(t => {
+    return latestPerSlug(window.TT_TASKS.filter(t => {
       if (activeCat && t.category !== activeCat) return false;
       if (activeKw && !t.keywords.includes(activeKw)) return false;
       if (!ql) return true;
       const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.slug).toLowerCase();
       return hay.includes(ql);
-    });
+    }));
   }, [q, activeCat, activeKw]);
 
   const heroLayout = tweaks.heroLayout || "split";
@@ -444,11 +464,7 @@ function RegistryPage({ initial, setRoute }) {
   const [activeKw, setActiveKw] = useS(initial?.kw || null);
   const [activeStatus, setActiveStatus] = useS(null);
 
-  const counts = useM(() => {
-    const c = {};
-    window.TT_TASKS.forEach(t => { c[t.category] = (c[t.category] || 0) + 1; });
-    return c;
-  }, []);
+  const counts = useM(() => countSlugsByCategory(window.TT_TASKS), []);
 
   const allKeywords = useM(() => {
     const kws = {};
@@ -466,22 +482,9 @@ function RegistryPage({ initial, setRoute }) {
       const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.slug).toLowerCase();
       return hay.includes(ql);
     });
-    // Collapse to one card per slug — the latest (highest MAJOR.MINOR) version,
-    // preferring a non-retired version. Older and retired versions stay reachable
-    // from the spec page's version switcher, so they never clutter this list.
-    const cmpVer = (a, b) => {
-      const pa = a.split(".").map(Number), pb = b.split(".").map(Number);
-      return (pa[0] - pb[0]) || (pa[1] - pb[1]);
-    };
-    const bySlug = new Map();
-    for (const t of filtered) {
-      const prev = bySlug.get(t.slug);
-      if (!prev) { bySlug.set(t.slug, t); continue; }
-      const prevRetired = prev.status === "retired", tRetired = t.status === "retired";
-      if (prevRetired !== tRetired) { if (prevRetired) bySlug.set(t.slug, t); continue; }
-      if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
-    }
-    return [...bySlug.values()];
+    // Collapse to one card per slug — the latest non-retired version. Older and
+    // retired versions stay reachable from the spec page's version switcher.
+    return latestPerSlug(filtered);
   }, [q, activeCat, activeKw, activeStatus]);
 
   const onClear = () => { setQ(""); setActiveCat(null); setActiveKw(null); setActiveStatus(null); };
@@ -1196,11 +1199,7 @@ function SpecPage({ slug, version, id, setRoute }) {
    CATEGORIES
    ============================================================ */
 function CategoriesPage({ setRoute }) {
-  const counts = useM(() => {
-    const c = {};
-    window.TT_TASKS.forEach(t => { c[t.category] = (c[t.category] || 0) + 1; });
-    return c;
-  }, []);
+  const counts = useM(() => countSlugsByCategory(window.TT_TASKS), []);
   return (
     <React.Fragment>
       <PageHero

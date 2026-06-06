@@ -388,7 +388,18 @@ function emitTasks(tasks, shared) {
   const mid = ';\n\nwindow.TT_SHARED = ';
   const footer = ';\n\n/* derived counts */\n' + `
 window.TT_STATS = (function () {
-  const tasks = window.TT_TASKS;
+  // Count distinct Trust Tasks (one entry per slug — the latest non-retired
+  // version), not how many versions exist, so coexisting 0.1/0.2 don't inflate.
+  const cmpVer = (a, b) => { const pa = a.split('.').map(Number), pb = b.split('.').map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+  const bySlug = new Map();
+  for (const t of window.TT_TASKS) {
+    const prev = bySlug.get(t.slug);
+    if (!prev) { bySlug.set(t.slug, t); continue; }
+    const pr = prev.status === 'retired', tr = t.status === 'retired';
+    if (pr !== tr) { if (pr) bySlug.set(t.slug, t); continue; }
+    if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
+  }
+  const tasks = [...bySlug.values()];
   const byStatus = tasks.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
   const orgs = new Set();
   tasks.forEach(t => t.authors.forEach(a => orgs.add(a)));
