@@ -176,7 +176,7 @@ function HomePage({ tweaks, setRoute }) {
                   id="tt-home-search"
                   ref={inputRef}
                   type="search"
-                  placeholder="Search 6 specifications — try “credential”, “consent”, “payment”…"
+                  placeholder="Search specifications — try “credential”, “consent”, “payment”…"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") setRoute({ name: "registry", q, cat: activeCat, kw: activeKw }); }}
@@ -458,7 +458,7 @@ function RegistryPage({ initial, setRoute }) {
 
   const results = useM(() => {
     const ql = q.trim().toLowerCase();
-    return window.TT_TASKS.filter(t => {
+    const filtered = window.TT_TASKS.filter(t => {
       if (activeCat && t.category !== activeCat) return false;
       if (activeKw && !t.keywords.includes(activeKw)) return false;
       if (activeStatus && t.status !== activeStatus) return false;
@@ -466,6 +466,22 @@ function RegistryPage({ initial, setRoute }) {
       const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.slug).toLowerCase();
       return hay.includes(ql);
     });
+    // Collapse to one card per slug — the latest (highest MAJOR.MINOR) version,
+    // preferring a non-retired version. Older and retired versions stay reachable
+    // from the spec page's version switcher, so they never clutter this list.
+    const cmpVer = (a, b) => {
+      const pa = a.split(".").map(Number), pb = b.split(".").map(Number);
+      return (pa[0] - pb[0]) || (pa[1] - pb[1]);
+    };
+    const bySlug = new Map();
+    for (const t of filtered) {
+      const prev = bySlug.get(t.slug);
+      if (!prev) { bySlug.set(t.slug, t); continue; }
+      const prevRetired = prev.status === "retired", tRetired = t.status === "retired";
+      if (prevRetired !== tRetired) { if (prevRetired) bySlug.set(t.slug, t); continue; }
+      if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
+    }
+    return [...bySlug.values()];
   }, [q, activeCat, activeKw, activeStatus]);
 
   const onClear = () => { setQ(""); setActiveCat(null); setActiveKw(null); setActiveStatus(null); };
@@ -533,7 +549,7 @@ function RegistryPage({ initial, setRoute }) {
             <div>
               <div className="tt-results-bar">
                 <div className="tt-results-bar__count">
-                  <b>{results.length}</b> of {window.TT_TASKS.length} specifications
+                  <b>{results.length}</b> of {new Set(window.TT_TASKS.map(t => t.slug)).size} specifications
                   {activeCat && <> · category <b>{catName(activeCat)}</b></>}
                   {activeStatus && <> · status <b>{activeStatus}</b></>}
                   {activeKw && <> · keyword <b>{activeKw}</b></>}
@@ -756,6 +772,32 @@ function SchemaPage({ slug, setRoute }) {
           <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{rec.description}</p>
         )}
 
+        {(() => {
+          // Sibling versions of this shared component: same base identity
+          // (everything but the MAJOR.MINOR segment), different version.
+          const parse = (sl) => { const m = sl.match(/^(.*)\/(\d+\.\d+)\/(.*)$/); return m ? { base: m[1] + "//" + m[3], ver: m[2] } : null; };
+          const self = parse(rec.slug);
+          if (!self) return null;
+          const versions = (window.TT_SHARED || [])
+            .map(s => { const p = parse(s.slug); return p && p.base === self.base ? { ver: p.ver, slug: s.slug } : null; })
+            .filter(Boolean)
+            .sort((a, b) => { const pa = a.ver.split(".").map(Number), pb = b.ver.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); });
+          if (versions.length < 2) return null;
+          return (
+            <div style={{ marginBottom: "var(--tt-space-5)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)" }}>
+              <span style={{ color: "var(--tt-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "var(--tt-text-xs)", marginRight: "var(--tt-space-3)" }}>Versions</span>
+              {versions.map((v, i) => (
+                <React.Fragment key={v.ver}>
+                  {i > 0 && <span style={{ color: "var(--tt-text-muted)" }}> · </span>}
+                  {v.ver === self.ver
+                    ? <b>v{v.ver}</b>
+                    : <a href={`/schema/${v.slug}`} onClick={(e) => { e.preventDefault(); setRoute({ name: "schema", slug: v.slug }); window.scrollTo(0, 0); }}>v{v.ver}</a>}
+                </React.Fragment>
+              ))}
+            </div>
+          );
+        })()}
+
         {schemaIdLink && (
           <div
             className="tt-type-uri"
@@ -888,13 +930,22 @@ function SchemasIndexPage({ setRoute }) {
       />
       <section className="container">
         {groups.map(g => {
-          const items = catalog.filter(s => s.kind === g.id);
+          // Collapse to one card per shared component — the latest version.
+          // Older versions stay reachable from the detail page's version switcher.
+          const parseV = (sl) => { const m = sl.match(/^(.*)\/(\d+\.\d+)\/(.*)$/); return m ? { base: m[1] + "//" + m[3], ver: m[2] } : { base: sl, ver: "0.0" }; };
+          const cmpV = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+          const byBase = new Map();
+          for (const s of catalog.filter(x => x.kind === g.id)) {
+            const p = parseV(s.slug), prev = byBase.get(p.base);
+            if (!prev || cmpV(p.ver, parseV(prev.slug).ver) > 0) byBase.set(p.base, s);
+          }
+          const items = [...byBase.values()].sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
           if (items.length === 0) return null;
           return (
             <div key={g.id} style={{ marginBottom: "var(--tt-space-7)" }}>
               <h2 style={{ marginBottom: "var(--tt-space-2)" }}>{g.label}</h2>
               <p style={{ color: "var(--tt-text-muted)", marginTop: 0, marginBottom: "var(--tt-space-5)" }}>{g.desc}</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "var(--tt-space-4)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(440px, 1fr))", gap: "var(--tt-space-4)" }}>
                 {items.map(rec => {
                   const refs = (usedBy[rec.slug] || []).length;
                   return (
@@ -1054,7 +1105,21 @@ function SpecPage({ slug, version, id, setRoute }) {
         <h2 id="metadata">Metadata</h2>
         <dl className="tt-meta-grid">
           <dt>Slug</dt><dd>{task.slug}</dd>
-          <dt>Version</dt><dd>{task.version}</dd>
+          <dt>Version</dt>
+          <dd>
+            {window.TT_TASKS
+              .filter(t => t.slug === task.slug)
+              .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); })
+              .map((v, i) => (
+                <React.Fragment key={v.version}>
+                  {i > 0 && <span style={{ color: "var(--tt-text-muted)" }}> · </span>}
+                  {v.version === task.version
+                    ? <b>v{v.version}</b>
+                    : <a href={`/spec/${v.slug}/${v.version}`} onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: v.slug, version: v.version }); window.scrollTo(0, 0); }}>v{v.version}</a>}
+                  {v.status === "retired" && <span style={{ fontSize: "0.8em", color: "var(--tt-text-muted)" }}> (retired)</span>}
+                </React.Fragment>
+              ))}
+          </dd>
           <dt>Type URI</dt><dd><code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{typeURI}</code></dd>
           <dt>Target framework</dt><dd>{task.targetFrameworkVersion ? `trust-task/${task.targetFrameworkVersion}` : "—"}</dd>
           <dt>Parties</dt><dd>{task.parties.join(" ↔ ")}</dd>
@@ -1178,7 +1243,7 @@ function AboutPage() {
         lede="A specification framework for the verifiable work that happens between two or more parties — self-contained, transport-agnostic, JSON-based."
       />
       <section>
-        <div className="container container--narrow">
+        <div className="container">
           <h2>Three properties.</h2>
           <p className="lead">Every Trust Task definition adheres to three properties. They are non-negotiable; together they make the task portable, durable, and unambiguous.</p>
 
@@ -1244,7 +1309,7 @@ function EcosystemPage({ setRoute }) {
       />
 
       <section>
-        <div className="container container--narrow">
+        <div className="container">
           <h2>How the layers fit.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
             Each project is independently usable; together they're a complete stack.
@@ -1366,7 +1431,7 @@ function ContributingPage() {
         lede="The registry grows through proposal, review, and ratification — entirely in the open, on GitHub. Here's the path from idea to published spec."
       />
       <section>
-        <div className="container container--narrow">
+        <div className="container">
           <h2>The lifecycle.</h2>
           <ol style={{ paddingLeft: "1.2em", lineHeight: 1.9, color: "var(--tt-text-muted)" }}>
             <li><b style={{ color: "var(--tt-text)" }}>Propose.</b> Open an issue on the <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues" target="_blank" rel="noreferrer">repository</a> describing the task: parties, motivation, prior art. The task force triages within two weeks.</li>
@@ -1425,7 +1490,7 @@ function GlossaryPage() {
         lede="Working definitions of recurring concepts. Where these conflict with a specification's local definition, the local definition wins."
       />
       <section>
-        <div className="container container--narrow">
+        <div className="container">
           <dl className="tt-glossary">
             {terms.map(([term, def]) => (
               <div key={term}>
@@ -1490,7 +1555,7 @@ function FrameworkSpecPage({ setRoute }) {
       </PageHero>
 
       <section style={{ paddingBlock: "var(--tt-space-6)" }}>
-        <div className="container container--narrow">
+        <div className="container">
           {error && (
             <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
               <b>Couldn't load the specification.</b><br />
@@ -1781,7 +1846,7 @@ let verifier = Verifier::with_resolver(resolver);`;
 
       {/* QUICKSTART */}
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
-        <div className="container container--narrow">
+        <div className="container">
           <span className="eyebrow">Quickstart</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Add to your Cargo.toml.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
@@ -1803,7 +1868,7 @@ let verifier = Verifier::with_resolver(resolver);`;
 
       {/* HTTPS BINDING */}
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
-        <div className="container container--narrow">
+        <div className="container">
           <span className="eyebrow">HTTPS transport</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Typed server and client.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
@@ -1831,7 +1896,7 @@ let verifier = Verifier::with_resolver(resolver);`;
 
       {/* DIDCOMM BINDING */}
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
-        <div className="container container--narrow">
+        <div className="container">
           <span className="eyebrow">DIDComm v2.1 transport</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Authcrypt'd over JWEs.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
@@ -1853,7 +1918,7 @@ let verifier = Verifier::with_resolver(resolver);`;
 
       {/* PROOF VERIFICATION */}
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
-        <div className="container container--narrow">
+        <div className="container">
           <span className="eyebrow">Proof verification</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>W3C Data Integrity via Affinidi.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
@@ -1876,7 +1941,7 @@ let verifier = Verifier::with_resolver(resolver);`;
 
       {/* ADDING A SPEC */}
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
-        <div className="container container--narrow">
+        <div className="container">
           <span className="eyebrow">Extending the library</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Adding your own Trust Task spec.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
@@ -1899,7 +1964,7 @@ git diff --exit-code trust-tasks-rs/src/specs   # CI gate: codegen is idempotent
 
       {/* STATUS */}
       <section style={{ paddingBlock: "var(--tt-space-7)", borderTop: "1px solid var(--tt-line)" }}>
-        <div className="container container--narrow">
+        <div className="container">
           <span className="eyebrow">Status</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Pre-publication.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
