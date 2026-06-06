@@ -151,6 +151,56 @@ function collapseContext(lines, ctx = 3) {
 
 const DIFF_ADD = "#0f7b6c", DIFF_DEL = "#c0392b";
 
+// ── Schema $ref resolution, so a diff shows the EFFECTIVE schema (with shared
+// definitions inlined) instead of opaque $ref pointers + version-bump noise. ──
+
+let _sharedMap = null;
+function sharedSchemaMap() {
+  if (!_sharedMap) {
+    _sharedMap = {};
+    for (const s of (window.TT_SHARED || [])) {
+      if (s.sourcePath && s.schema) _sharedMap[s.sourcePath] = { schema: s.schema, baseDir: s.sourcePath.replace(/\/[^/]+$/, "") };
+    }
+  }
+  return _sharedMap;
+}
+// Normalize a relative $ref path (from a file at baseDir) to an absolute /specs/… path.
+function resolveRefPath(baseDir, rel) {
+  const st = [];
+  for (const p of (baseDir + "/" + rel).split("/")) { if (p === "" || p === ".") continue; if (p === "..") st.pop(); else st.push(p); }
+  return "/" + st.join("/");
+}
+// Deep-inline every $ref (internal + into shared schemas), cycle-guarded, and
+// drop the version-only `$id`. Returns a self-contained schema for diffing.
+function resolveSchema(root, rootBaseDir) {
+  const shared = sharedSchemaMap();
+  function deref(node, doc, base, stack) {
+    if (Array.isArray(node)) return node.map(n => deref(n, doc, base, stack));
+    if (node && typeof node === "object") {
+      if (typeof node.$ref === "string") {
+        const [file, frag = ""] = node.$ref.split("#");
+        let tdoc = doc, tbase = base;
+        if (file !== "") { const hit = shared[resolveRefPath(base, file)]; if (!hit) return { ...node }; tdoc = hit.schema; tbase = hit.baseDir; }
+        let def = tdoc;
+        for (const seg of frag.split("/").filter(Boolean)) def = def && def[seg.replace(/~1/g, "/").replace(/~0/g, "~")];
+        if (def === undefined) return { ...node };
+        const key = (file === "" ? base : resolveRefPath(base, file)) + "#" + frag;
+        if (stack.has(key)) return { description: "(recursive $ref)" };
+        const ns = new Set(stack); ns.add(key);
+        const { $ref, ...sib } = node;
+        return { ...deref(def, tdoc, tbase, ns), ...deref(sib, doc, base, ns) };
+      }
+      const out = {};
+      for (const [k, v] of Object.entries(node)) out[k] = deref(v, doc, base, stack);
+      return out;
+    }
+    return node;
+  }
+  const r = deref(root, root, rootBaseDir, new Set());
+  if (r && typeof r === "object") delete r.$id;
+  return r;
+}
+
 // A version picker for one side of a diff.
 function VersionSelect({ versions, value, onChange }) {
   return (
@@ -166,9 +216,10 @@ function VersionSelect({ versions, value, onChange }) {
   );
 }
 
-// Renders a GitHub-style diff of two JSON values (a payload schema across two
-// versions). Shown on demand from the spec page.
-function SchemaDiff({ before, after, fromVer, toVer }) {
+// Renders a GitHub-style diff of two JSON schemas. `before`/`after` should be
+// the fully *resolved* schemas (shared $refs inlined) so the diff shows real
+// content, not opaque pointers. Shown on demand from the spec / schema pages.
+function SchemaDiff({ before, after, fromVer, toVer, label = "Resolved schema" }) {
   if (before == null || after == null) return null;
   if (fromVer === toVer) {
     return <p style={{ color: "var(--tt-text-muted)" }}>Pick two different versions to compare.</p>;
@@ -181,14 +232,14 @@ function SchemaDiff({ before, after, fromVer, toVer }) {
   if (adds === 0 && dels === 0) {
     return (
       <p style={{ color: "var(--tt-text-muted)" }}>
-        The <code>payload</code> schema is identical between v{fromVer} and v{toVer} — the differences are elsewhere (prose, error codes, or front matter).
+        The effective schema is identical between v{fromVer} and v{toVer} — only the version pins differ (and any changes live in the prose, error codes, or front matter, not the payload structure).
       </p>
     );
   }
   return (
     <div style={{ marginTop: "var(--tt-space-3)" }}>
       <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)" }}>
-        Payload schema · v{fromVer} → v{toVer} ·{" "}
+        {label} · v{fromVer} → v{toVer} ·{" "}
         <span style={{ color: DIFF_ADD }}>+{adds}</span>{" "}
         <span style={{ color: DIFF_DEL }}>−{dels}</span>
       </div>
@@ -844,6 +895,32 @@ function SchemaPage({ slug, setRoute }) {
     if (target) requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
   }, [slug, !!rec]);
 
+  // Version diff state (hooks run unconditionally, before the !rec return).
+  const [showDiff, setShowDiff] = useS(false);
+  const [diffFrom, setDiffFrom] = useS("");
+  const [diffTo, setDiffTo] = useS("");
+  const parseV = (sl) => { const m = sl.match(/^(.*)\/(\d+\.\d+)\/(.*)$/); return m ? { base: m[1] + "//" + m[3], ver: m[2] } : null; };
+  const selfV = rec ? parseV(rec.slug) : null;
+  const schemaVersions = selfV
+    ? (window.TT_SHARED || [])
+        .map(s => { const p = parseV(s.slug); return p && p.base === selfV.base ? { version: p.ver, slug: s.slug } : null; })
+        .filter(Boolean)
+        .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); })
+    : [];
+  useE(() => {
+    if (!selfV) return;
+    const i = schemaVersions.findIndex(v => v.version === selfV.ver);
+    setDiffFrom(i > 0 ? schemaVersions[i - 1].version : selfV.ver);
+    setDiffTo(selfV.ver);
+  }, [slug]);
+  const resolveSharedVersion = (ver) => {
+    const v = schemaVersions.find(x => x.version === ver);
+    const r = v && (window.TT_SHARED || []).find(s => s.slug === v.slug);
+    return r ? resolveSchema(r.schema, r.sourcePath.replace(/\/[^/]+$/, "")) : undefined;
+  };
+  const fromSchema = useM(() => resolveSharedVersion(diffFrom), [slug, diffFrom]);
+  const toSchema = useM(() => resolveSharedVersion(diffTo), [slug, diffTo]);
+
   if (!rec) {
     return (
       <section className="container">
@@ -948,6 +1025,29 @@ function SchemaPage({ slug, setRoute }) {
 
         <h2 id="schema">JSON Schema</h2>
         <CodeBlock json={rec.schema} />
+
+        {schemaVersions.length > 1 && (
+          <div style={{ marginTop: "var(--tt-space-4)" }}>
+            <button
+              className="btn btn--ghost"
+              aria-expanded={showDiff}
+              onClick={() => setShowDiff(!showDiff)}
+            >
+              {showDiff ? "Hide" : "Compare"} schema versions {showDiff ? "↑" : "↓"}
+            </button>
+            {showDiff && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--tt-space-3)", flexWrap: "wrap", margin: "var(--tt-space-4) 0 var(--tt-space-2)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)" }}>
+                  <span style={{ color: "var(--tt-text-muted)" }}>Compare</span>
+                  <VersionSelect versions={schemaVersions} value={diffFrom} onChange={setDiffFrom} />
+                  <span style={{ color: "var(--tt-text-muted)" }}>→</span>
+                  <VersionSelect versions={schemaVersions} value={diffTo} onChange={setDiffTo} />
+                </div>
+                <SchemaDiff before={fromSchema} after={toSchema} fromVer={diffFrom} toVer={diffTo} label="Schema" />
+              </div>
+            )}
+          </div>
+        )}
 
         <h2 id="used-by">Used by</h2>
         {usedBy.length === 0 ? (
@@ -1126,8 +1226,14 @@ function SpecPage({ slug, version, id, setRoute }) {
     setDiffFrom(prevTask ? prevTask.version : task.version);
     setDiffTo(task.version);
   }, [task.slug, task.version]);
-  const fromSchema = (versions.find(v => v.version === diffFrom) || {}).schema;
-  const toSchema = (versions.find(v => v.version === diffTo) || {}).schema;
+  // Resolve each side's schema ($refs inlined) so the diff shows effective
+  // content, not $ref pointers + version noise. Memoized per selected version.
+  const resolveForVersion = (ver) => {
+    const t = versions.find(v => v.version === ver);
+    return t ? resolveSchema(t.schema, t.schemaPath.replace(/\/[^/]+$/, "")) : undefined;
+  };
+  const fromSchema = useM(() => resolveForVersion(diffFrom), [task.slug, diffFrom]);
+  const toSchema = useM(() => resolveForVersion(diffTo), [task.slug, diffTo]);
 
   useE(() => {
     if (!task.prosePath) {
