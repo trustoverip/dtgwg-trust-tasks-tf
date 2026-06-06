@@ -143,6 +143,20 @@ impl HttpsServerBuilder {
             // Downcast payload to P.
             let typed = downcast::<P>(doc)?;
 
+            // SPEC §7.2 item 5b — recipient-REQUIRED enforcement. When the spec
+            // declares its `recipient` member REQUIRED, the audience must be
+            // carried in-band (not merely transport-derived), so a document with
+            // no in-band `recipient` is malformed. Mirrors the library
+            // `consume_inbound` path; checked before the proof gate per §7.2
+            // ordering.
+            if typed.recipient.is_none() && P::IS_RECIPIENT_REQUIRED {
+                return Err(RejectReason::MalformedRequest {
+                    reason: "specification declares recipient REQUIRED but the document \
+                             carries no in-band recipient"
+                        .to_string(),
+                });
+            }
+
             // SPEC §7.2 item 7 — proof-required enforcement. The server
             // has no in-band verifier, but a *spec* may still oblige
             // every conforming consumer to refuse proofless documents
@@ -431,10 +445,14 @@ fn reject_response(
     request: Option<&TrustTask<Value>>,
     reason: RejectReason,
 ) -> Response {
-    let status = status_for_code(&reason.code().into());
-    let status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
-
+    // Status follows the error document actually emitted, not the inbound
+    // reason. The suppressed identity-mismatch path rewrites the body to a
+    // generic `malformedRequest` (SPEC §10.4); the status MUST match so it is
+    // indistinguishable from a plain parse failure (no 403-vs-400 oracle for an
+    // unauthenticated prober).
     let error_doc = build_error_response(handler, request, reason);
+    let status = status_for_code(&error_doc.payload.code);
+    let status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
     let body = serde_json::to_vec(&error_doc).expect("serialise error response");
     (status, [(header::CONTENT_TYPE, "application/json")], body).into_response()
 }
