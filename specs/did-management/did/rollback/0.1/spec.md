@@ -12,8 +12,10 @@ authors:
 parties:
   - role: DID owner
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Rollback is destructive (entries above the target are discarded); the maintainer SHOULD retain a signed record of who authorised the revert and at what point in the chain.

@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Disabling a domain has a fleet-wide effect; the maintainer SHOULD retain a signed record.

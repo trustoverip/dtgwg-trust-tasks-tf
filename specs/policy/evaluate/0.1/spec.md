@@ -16,8 +16,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Read-only dry-run, no state change. Recommended for attribution.

@@ -17,8 +17,10 @@ authors:
 parties:
   - role: vault maintainer
     requirement: REQUIRED
+    member: issuer
   - role: device
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Wipe is destructive and irreversible from the target's perspective. The maintainer's authority MUST be verifiable so the target can confirm the wipe is genuine before executing it (defence against an attacker who has captured the transport channel attempting to silently wipe legitimate Companions).

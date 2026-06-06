@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Changing authority
     requirement: REQUIRED
+    member: issuer
   - role: ACL maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Role changes are the highest-impact ACL operation — promotions can extend privilege; demotions can withdraw it. A non-repudiable, transport-independent record of the change is necessary for audit, dispute resolution, and downstream parties that retained the prior grant.

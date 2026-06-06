@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-didcomm"
-version = "0.1.4"
+version = "0.2.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -11,7 +11,7 @@ categories = ["network-programming", "cryptography"]
 publish = true
 
 [dependencies]
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.1" }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.2" }
 affinidi-messaging-didcomm = "0.15"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

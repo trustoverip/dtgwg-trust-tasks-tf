@@ -17,8 +17,10 @@ authors:
 parties:
   - role: Prospective DID owner
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: An availability probe is short-lived and consumed over an authenticated transport; a reservation outcome may be retained but the reservation's evidentiary record is the subsequent register/publish, not this check.

@@ -27,7 +27,7 @@ export interface StepUpFloor {
    */
   mode: "none" | "self" | "delegated" | "delegated-any";
   /**
-   * Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. When `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke), a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.
+   * Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.
    */
   allowAal1IfNonEscalating?: boolean;
 }

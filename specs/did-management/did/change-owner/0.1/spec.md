@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Current DID owner
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: A change-owner irrevocably removes the prior owner's authority on the slot. The maintainer SHOULD retain a signed evidentiary record.

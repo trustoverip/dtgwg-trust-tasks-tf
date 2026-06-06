@@ -284,9 +284,11 @@ pub struct Response {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/webvh/witness/publish/0.1";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/webvh/witness/publish/0.1#response";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
@@ -314,5 +316,45 @@ mod conformance {
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
         let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
+    }
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[
+            (
+                "Empty payload omits required member(s): mnemonic, witness.",
+                "{}",
+            ),
+            (
+                "Unknown top-level member is rejected (additionalProperties: false).",
+                "{\n  \"__notARealMember__\": true\n}",
+            ),
+            (
+                "Required member `mnemonic` has the wrong type (expected string).",
+                "{\n  \"mnemonic\": 12345\n}",
+            ),
+        ];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
     }
 }

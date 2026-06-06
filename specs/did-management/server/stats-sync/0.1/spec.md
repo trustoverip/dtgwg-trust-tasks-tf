@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Hosting server (Service role)
     requirement: REQUIRED
+    member: issuer
   - role: Control plane
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Stats are operational, not adjudicative; transport authentication suffices for most uses, but a proof becomes valuable when stats feed billing.

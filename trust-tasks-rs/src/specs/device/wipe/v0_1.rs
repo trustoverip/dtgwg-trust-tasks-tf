@@ -664,12 +664,60 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseScope {
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/wipe/0.1";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/wipe/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
     const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.\",\n      \"properties\": {\n        \"completedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceId\": {\n          \"type\": \"string\"\n        },\n        \"diagnostics\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cacheBytesWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"keysWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"osHooksInvoked\": {\n              \"description\": \"OS-level revocation hooks the target managed to invoke (e.g. \\\"navigator.credentials.preventSilentAccess\\\", \\\"ASCredentialIdentityStore.removeAllCredentialIdentities\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            },\n            \"partialReasons\": {\n              \"description\": \"Free-form reasons why the wipe was partial (e.g. \\\"os-keychain-unavailable\\\", \\\"extension-storage-quota-exceeded\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"scope\": {\n          \"enum\": [\n            \"cache\",\n            \"cache-and-keys\",\n            \"full\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"scope\",\n        \"completedAt\"\n      ],\n      \"title\": \"Device Wipe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/device/wipe/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.\",\n  \"properties\": {\n    \"deviceId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"issuedAt\": {\n      \"description\": \"Wipe-issuance timestamp; identical to the document's `issuedAt`, repeated here so the body is self-contained for offline-queued delivery.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"scope\": {\n      \"description\": \"How aggressively the target should wipe:\\n- `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.\\n- `cache-and-keys` — discard cache + device-local key material; consumer must re-onboard.\\n- `full` — `cache-and-keys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.\",\n      \"enum\": [\n        \"cache\",\n        \"cache-and-keys\",\n        \"full\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"deviceId\",\n    \"scope\",\n    \"reason\"\n  ],\n  \"title\": \"Device Wipe — payload\",\n  \"type\": \"object\"\n}\n";
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[
+            (
+                "Empty payload omits required member(s): deviceId, scope, reason.",
+                "{}",
+            ),
+            (
+                "Unknown top-level member is rejected (additionalProperties: false).",
+                "{\n  \"__notARealMember__\": true\n}",
+            ),
+            (
+                "Required member `deviceId` has the wrong type (expected string).",
+                "{\n  \"deviceId\": 12345\n}",
+            ),
+        ];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

@@ -15,8 +15,10 @@ authors:
 parties:
   - role: device
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Heartbeat is frequent and low-stakes; transport-level auth is sufficient. Recommended for non-session-bound transports for attribution.

@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Binding a passkey to a subject is a high-trust assertion. Requiring a verified proof on the start ceremony prevents an opportunistic actor with a captured token from registering a credential they control against the legitimate subject's VID.

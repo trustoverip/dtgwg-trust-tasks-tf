@@ -16,8 +16,10 @@ authors:
 parties:
   - role: DID owner
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: A publish is an evidentiary record of which log content was uploaded by which owner against which slot; the maintainer SHOULD be able to demonstrate, after the fact, that the upload was authorised.

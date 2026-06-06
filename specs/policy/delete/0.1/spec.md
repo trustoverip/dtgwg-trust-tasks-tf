@@ -14,8 +14,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Removing a policy changes the maintainer's security posture; producer identity MUST be verifiable for audit.

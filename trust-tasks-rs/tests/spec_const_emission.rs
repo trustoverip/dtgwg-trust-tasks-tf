@@ -42,6 +42,12 @@ const _: () = assert!(!<show::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
 const _: () = assert!(!<trust_task_discovery::v0_1::Payload as Payload>::IS_PROOF_REQUIRED);
 const _: () = assert!(!<trust_task_discovery::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
 
+// ─── IS_RECIPIENT_REQUIRED ─────────────────────────────────────────────
+// acl/grant declares both parties REQUIRED, so request and response both set
+// the const (the response's recipient is the request's issuer — also REQUIRED).
+const _: () = assert!(<grant::v0_1::Payload as Payload>::IS_RECIPIENT_REQUIRED);
+const _: () = assert!(<grant::v0_1::Response as Payload>::IS_RECIPIENT_REQUIRED);
+
 // ─── IS_BEARER ─────────────────────────────────────────────────────────
 //
 // No spec in this registry declares `bearer: true` in front matter, so

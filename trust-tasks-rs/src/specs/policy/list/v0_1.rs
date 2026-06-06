@@ -706,11 +706,49 @@ pub mod defaults {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/list/0.1";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/list/0.1#response";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
     const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PolicyModule\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"appliesTo\": {\n          \"description\": \"List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"default\": true,\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"description\": \"Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name (e.g. \\\"default vault policy\\\", \\\"bank-site step-up\\\").\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"priority\": {\n          \"description\": \"When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.\",\n          \"maximum\": 1000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"module\",\n        \"version\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"PolicyModule\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"policies\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PolicyModule\"\n          },\n          \"type\": \"array\"\n        },\n        \"truncated\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"policies\",\n        \"truncated\"\n      ],\n      \"title\": \"Policy List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/policy/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"type\": \"string\"\n    },\n    \"enabledOnly\": {\n      \"default\": false,\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"pageSize\": {\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"Policy List — payload\",\n  \"type\": \"object\"\n}\n";
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[(
+            "Unknown top-level member is rejected (additionalProperties: false).",
+            "{\n  \"__notARealMember__\": true\n}",
+        )];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

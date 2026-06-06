@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/proxy-login/0.2",
+  "title": "Vault Proxy-Login — payload",
+  "description": "Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entryId"],
+  "properties": {
+    "entryId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Vault entry id to log in with."
+    },
+    "target": {
+      "$ref": "../../_shared/0.2/vault-entry.schema.json#/$defs/SiteTarget",
+      "description": "Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target)."
+    },
+    "consumerContext": {
+      "$ref": "../../_shared/0.2/consumer-context.schema.json#/$defs/ConsumerContext",
+      "description": "Caller's situational context — fed to the maintainer's policy engine to decide proxy vs fill, require step-up, etc. Producers populate what they can observe; fields are advisory and the maintainer MUST cross-check anything security-relevant against its own state."
+    },
+    "stepUpProof": {
+      "$ref": "../../_shared/0.2/consumer-context.schema.json#/$defs/StepUpProof",
+      "description": "Optional — included on retry after a prior proxy-login attempt returned `stepUpRequired`."
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field."
+    },
+    "ttlSecondsHint": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 86400,
+      "description": "Optional caller-preferred session TTL in seconds. The maintainer caps server-side per its policy; a higher hint MUST be silently truncated rather than rejected. Drivers that have a fixed-TTL bearer (e.g. SIOP id_tokens with their own `exp`) MUST NOT extend beyond the underlying credential's lifetime regardless of hint."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Proxy-Login — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sealedSessionBlob"],
+      "properties": {
+        "sealedSessionBlob": {
+          "$ref": "../../_shared/0.2/sealed-envelope.schema.json#/$defs/SealedEnvelope",
+          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

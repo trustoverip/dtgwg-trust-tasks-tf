@@ -12,8 +12,10 @@ authors:
 parties:
   - role: DID owner
     requirement: REQUIRED
+    member: issuer
   - role: Hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: The witness proof object inside `payload.witness` carries its own cryptographic signature from the witness oracle; an outer Trust Task `proof` becomes valuable only when the request is replayed for audit and is not strictly required when the producer is bound by an authenticated transport.

@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Caller (any authenticated principal)
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: The result is a caller-scoped view of public-by-domain-name configuration; the maintainer authenticates the producer via the transport-layer session and a proof becomes valuable only when the response is replayed for audit.

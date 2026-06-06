@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: The framework `proof` is the authentication. Without a verified proof binding the document to the subject's VID, the auth service has no basis to issue a session.

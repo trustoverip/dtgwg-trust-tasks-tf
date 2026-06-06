@@ -1,6 +1,6 @@
 {
   "name": "trust-tasks",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Build tooling for the Trust Tasks framework specification and registry website.",

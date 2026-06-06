@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use axum::body::Bytes;
-use axum::extract::State;
+use axum::extract::{DefaultBodyLimit, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
@@ -28,6 +28,12 @@ use uuid::Uuid;
 use crate::auth::{Auth, BearerAuth};
 use crate::handler::HttpsHandler;
 use crate::status::status_for_code;
+
+/// Maximum accepted request-body size (SPEC §10.2). Trust Task payloads are
+/// small; 256 KiB is generous headroom while bounding pre-auth memory use.
+/// Callers needing a different bound can rebuild the router with their own
+/// [`DefaultBodyLimit`] layer.
+const MAX_BODY_BYTES: usize = 256 * 1024;
 
 /// Context handed to every spec handler — the transport-authenticated
 /// peer (when present), convenience accessors for the inbound
@@ -239,9 +245,18 @@ impl HttpsServer {
 
     /// Build the axum [`Router`] without starting a listener — useful for
     /// integration tests that want to spawn the app inline.
+    ///
+    /// The router applies an explicit `DefaultBodyLimit` of
+    /// `MAX_BODY_BYTES` (256 KiB) as an audited DoS control (SPEC §10.2): the body is
+    /// buffered and parsed *before* authentication, so an unbounded body would
+    /// otherwise be a pre-auth memory-exhaustion vector. JSON nesting depth is
+    /// separately bounded by `serde_json`'s default 128-level recursion limit,
+    /// so a pathologically nested body within the size budget fails to parse
+    /// (→ `malformedRequest`) rather than overflowing the stack.
     pub fn into_router(self) -> Router {
         Router::new()
             .route("/trust-tasks", post(dispatch_handler))
+            .layer(DefaultBodyLimit::max(MAX_BODY_BYTES))
             .with_state(self.state)
     }
 
@@ -438,7 +453,7 @@ fn build_error_response(
             // outbound recipient correctly).
             match h.reject(req, new_id.clone(), reason.clone()) {
                 Some(resp) => resp,
-                None => suppressed_error_response(&new_id, reason),
+                None => suppressed_error_response(&new_id),
             }
         }
         (_, Some(req)) => req.reject_with(new_id, reason),
@@ -448,7 +463,7 @@ fn build_error_response(
             // a TrustTask at all.
             let mut doc = TrustTask::new(
                 new_id,
-                trust_tasks_rs::TypeUri::canonical("trust-task-error", 0, 1)
+                trust_tasks_rs::TypeUri::canonical("trust-task-error", 0, 2)
                     .expect("framework type URI"),
                 ErrorPayload::from(reason),
             );
@@ -460,28 +475,25 @@ fn build_error_response(
 
 /// When `TransportHandler::reject` returns `None` (no transport-
 /// authenticated sender under identity_mismatch), the framework rule
-/// (SPEC §8.1) is that the consumer SHOULD NOT emit a response.
-/// HTTP, however, gives us no way to "not emit" — the TCP connection
-/// already exists and the peer is waiting for a status line. We
-/// produce a `trust-task-error/0.1` document with no `recipient`
-/// member set; the peer at the other end of the TCP socket *does*
-/// receive it (HTTP carries the bytes regardless of the in-band
-/// `recipient`), but the document itself is unaddressed and the body
-/// names no consumer-side identity. The status line + Content-Type
-/// header are unavoidable.
+/// (SPEC §8.1) is that the consumer SHOULD NOT emit a response. HTTP
+/// gives us no way to "not emit" — the TCP connection already exists and
+/// the peer is waiting for a status line. We therefore emit the *same*
+/// generic `malformedRequest`/400 that a body parse failure produces.
 ///
-/// Note that this is the safer of the two HTTP-shaped options — the
-/// alternative (drop the connection) loses diagnostic value for
-/// honest peers caught by a transient identity glitch. The body
-/// stays terse and the message cites the spec.
-fn suppressed_error_response(new_id: &str, reason: RejectReason) -> ErrorResponse {
+/// Crucially we MUST NOT echo the `identityMismatch` code or status here
+/// (SPEC §10.4): an unauthenticated prober who POSTs a spoofed in-band
+/// identity would otherwise learn, from the code + 4xx, that this consumer
+/// performs the cross-check and that the identity was contested — an
+/// identity-probing oracle. Collapsing to the indistinguishable generic
+/// rejection removes that signal; the diagnostic loss for honest peers is
+/// the deliberate, safer trade.
+fn suppressed_error_response(new_id: &str) -> ErrorResponse {
     let mut doc = TrustTask::new(
         new_id.to_string(),
-        trust_tasks_rs::TypeUri::canonical("trust-task-error", 0, 1).expect("framework type URI"),
-        ErrorPayload::from(reason).with_message(
-            "identity_mismatch with no transport-authenticated sender — \
-             response not addressed (SPEC §8.1)",
-        ),
+        trust_tasks_rs::TypeUri::canonical("trust-task-error", 0, 2).expect("framework type URI"),
+        ErrorPayload::from(RejectReason::MalformedRequest {
+            reason: String::new(),
+        }),
     );
     doc.issued_at = Some(chrono::Utc::now());
     doc

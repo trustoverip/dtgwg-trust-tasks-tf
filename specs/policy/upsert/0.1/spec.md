@@ -16,8 +16,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Policy changes alter the maintainer's security posture for every subsequent request. The producer's identity MUST be verifiable for audit and to prevent stealth modifications.

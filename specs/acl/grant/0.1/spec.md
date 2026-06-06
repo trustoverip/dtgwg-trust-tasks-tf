@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Granting authority
     requirement: REQUIRED
+    member: issuer
   - role: ACL maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: A grant is an evidentiary record that may be replayed by an auditor, used by a downstream service to corroborate authorization decisions, or relied on after the original transport has closed; transport-independent integrity is required.

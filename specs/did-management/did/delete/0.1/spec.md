@@ -12,8 +12,10 @@ authors:
 parties:
   - role: DID owner
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: A delete is an evidentiary record of authorised removal; auditors retain the document to corroborate the action.

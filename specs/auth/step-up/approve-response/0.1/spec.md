@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Approver
     requirement: REQUIRED
+    member: issuer
   - role: Relying party
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Exactly one cryptographic gate MUST back the elevation. For `evidence.kind = did-signed` (the default when `evidence` is absent) the gate IS the framework proof — a signature from the subject's authoritative key — so proof is mandatory in that case. For `evidence.kind = webauthn` the gate is the carried WebAuthn assertion over the challenge, and the framework proof MAY be omitted; WebAuthn supplies its own audience binding via rpId/origin. The requirement is therefore RECOMMENDED at the spec level and made conditional in the conformance rules below.

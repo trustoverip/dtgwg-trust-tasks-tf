@@ -12,8 +12,10 @@ authors:
 parties:
   - role: DID owner
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Enable is an evidentiary state transition; restoring a suspended DID has real downstream consequences (resolution traffic resumes, witness watchers re-engage) so the maintainer SHOULD retain a signed record of the change.

@@ -16,8 +16,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Delete is destructive and silently propagates to every Companion cache via sync. The producer's identity MUST be verifiable so the maintainer can attribute the deletion to a specific consumer in the audit log.

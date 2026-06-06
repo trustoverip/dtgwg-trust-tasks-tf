@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Revoking party
     requirement: REQUIRED
+    member: issuer
   - role: ACL maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: A revocation is the evidentiary counterpart to a grant; the maintainer, the former subject, and any downstream party that retained the grant document need to be able to verify, after the fact, that the revocation was authorized.

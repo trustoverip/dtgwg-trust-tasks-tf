@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Querying party
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: List is read-only; integrity is usually carried by the transport.

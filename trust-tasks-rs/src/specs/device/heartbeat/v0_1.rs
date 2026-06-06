@@ -451,11 +451,49 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseSyncHint {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/heartbeat/0.1";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/heartbeat/0.1#response";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
     const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueuedOperation\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"description\": \"Discriminator. The framework currently supports wipe; future versions may add others.\",\n          \"enum\": [\n            \"wipe\",\n            \"policy-reload\",\n            \"config-update\"\n          ],\n          \"type\": \"string\"\n        },\n        \"task\": {\n          \"description\": \"The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"task\"\n      ],\n      \"title\": \"QueuedOperation\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"queuedOperations\": {\n          \"description\": \"Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/QueuedOperation\"\n          },\n          \"type\": \"array\"\n        },\n        \"serverTime\": {\n          \"description\": \"Authoritative timestamp — consumers MAY use to detect clock drift.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"syncHint\": {\n          \"description\": \"Tells the consumer whether to call vault/sync.\",\n          \"enum\": [\n            \"up-to-date\",\n            \"sync-due\",\n            \"full-resync-required\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverTime\"\n      ],\n      \"title\": \"Device Heartbeat — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/device/heartbeat/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"platform\": {\n      \"description\": \"Updated platform descriptor if it changed since registration (e.g. browser updated).\",\n      \"type\": \"string\"\n    },\n    \"vaultSeq\": {\n      \"description\": \"Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"Device Heartbeat — payload\",\n  \"type\": \"object\"\n}\n";
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[(
+            "Unknown top-level member is rejected (additionalProperties: false).",
+            "{\n  \"__notARealMember__\": true\n}",
+        )];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

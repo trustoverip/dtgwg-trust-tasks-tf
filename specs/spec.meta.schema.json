@@ -96,6 +96,11 @@
           "requirement": {
             "type": "string",
             "enum": ["REQUIRED", "RECOMMENDED", "OPTIONAL"]
+          },
+          "member": {
+            "type": "string",
+            "enum": ["issuer", "recipient"],
+            "description": "Which framework document member (SPEC §4.8) this party fills, when it maps to one. Omit for a party that is named in the payload but is neither the document's `issuer` nor its `recipient`. At most one party may declare `member: issuer` and at most one `member: recipient`. A party declared `member: recipient` with `requirement: REQUIRED` obliges consumers to reject a document lacking an in-band `recipient` (SPEC §7.2 item 5)."
           }
         }
       },
@@ -123,8 +128,8 @@
         "properties": {
           "code": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-z0-9_]*$",
-            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:document_revoked' or 'acl/grant:permission_denied'. The namespace portion before the colon MUST equal the spec's slug."
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-zA-Z0-9_]*$",
+            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:documentRevoked' (framework 0.2 lowerCamelCase, SPEC §4.10) or 'acl/grant:permission_denied' (frozen 0.1 snake_case). The local part accepts both casings so 0.1 and 0.2 specs validate against the same schema; the namespace portion before the colon MUST equal the spec's slug."
           },
           "meaning": { "type": "string", "minLength": 1 },
           "retryable": { "type": "boolean" },

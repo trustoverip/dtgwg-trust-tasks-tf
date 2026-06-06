@@ -66,6 +66,28 @@ fn unregistered_type_uri_rejects_as_unsupported_type() {
 }
 
 #[test]
+fn known_slug_at_unregistered_version_rejects_as_unsupported_version() {
+    // `acl/grant` is registered at 0.1; a document for `acl/grant/0.2` has a
+    // recognized slug but an unregistered MAJOR.MINOR → unsupportedVersion
+    // (SPEC §5.2 / §8.3), distinct from the unknown-slug unsupportedType.
+    let dispatcher = make_dispatcher();
+    let mut doc = TrustTask::new(
+        "req-ver",
+        TypeUri::canonical("acl/grant", 0, 2).unwrap(),
+        serde_json::json!({ "entry": { "subject": "did:web:alice.example", "role": "admin" } }),
+    );
+    doc.issuer = Some("did:web:org.example".into());
+
+    let err = dispatcher.dispatch(doc).unwrap_err();
+    match err {
+        RejectReason::UnsupportedVersion { type_uri } => {
+            assert_eq!(type_uri, "https://trusttasks.org/spec/acl/grant/0.2");
+        }
+        other => panic!("expected UnsupportedVersion, got {other:?}"),
+    }
+}
+
+#[test]
 fn payload_mismatch_rejects_as_malformed_request() {
     let dispatcher = make_dispatcher();
 

@@ -16,8 +16,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Release transfers long-term secret material to the consumer. Even though wrapped in HPKE, the consumer becomes the secret's custodian for the TTL window. The producer's identity MUST be verifiable for audit and so policy can enforce per-consumer release rules.

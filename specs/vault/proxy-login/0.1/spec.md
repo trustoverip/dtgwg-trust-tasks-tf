@@ -17,8 +17,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Proxy-login causes the maintainer to authenticate as the holder at a third party — a high-trust, audited action. The consumer's identity MUST be verifiable so the maintainer can attribute every session it creates on the holder's behalf to a specific Companion or Service.

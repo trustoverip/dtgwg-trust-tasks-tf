@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Adding a hosting domain enables every downstream operation under that domain. The maintainer SHOULD retain a signed record of who created the domain.

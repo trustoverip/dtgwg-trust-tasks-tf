@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Health probe initiator
     requirement: REQUIRED
+    member: issuer
   - role: Health probe responder
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Health checks are routine and transport-authenticated; a proof becomes valuable only if a participant retains the probe history for SLA evidence.

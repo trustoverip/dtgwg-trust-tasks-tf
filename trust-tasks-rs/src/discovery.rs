@@ -40,10 +40,10 @@ use crate::type_uri::TypeUri;
 /// Optional framework version this registry advertises in its discovery
 /// responses. Per SPEC §4.5.1 + §5.2 + the `trust-task-discovery/0.1` spec,
 /// the response payload's `frameworkVersion` is OPTIONAL in 0.1 and
-/// RECOMMENDED in future revisions. The default is `"0.1"` because that's
+/// RECOMMENDED in future revisions. The default is `"0.2"` because that's
 /// the framework version this crate targets; callers MAY override or
 /// clear it.
-const DEFAULT_FRAMEWORK_VERSION: &str = "0.1";
+const DEFAULT_FRAMEWORK_VERSION: &str = "0.2";
 
 /// Match a single glob `pattern` against a `slug`, per the
 /// `trust-task-discovery/0.1` pattern grammar:
@@ -243,13 +243,14 @@ impl DiscoveryRegistry {
             .map(|uri| self.entry_for(uri))
             .collect();
 
+        // A `framework_version` override that doesn't match the MAJOR.MINOR
+        // pattern is omitted rather than panicking on this caller-supplied
+        // value — building a discovery response (which is advisory) must not
+        // abort on a malformed setter argument.
         let framework_version = self
             .framework_version
             .as_deref()
-            .map(|v| {
-                v.parse::<wire::ResponseFrameworkVersion>()
-                    .expect("framework_version was set to a value that does not match the spec's MAJOR.MINOR pattern")
-            });
+            .and_then(|v| v.parse::<wire::ResponseFrameworkVersion>().ok());
 
         wire::Response {
             supported_types,
@@ -260,16 +261,10 @@ impl DiscoveryRegistry {
     fn entry_for(&self, uri: &str) -> wire::ResponseSupportedTypesItem {
         match self.required_ext.get(uri) {
             Some(namespaces) if !namespaces.is_empty() => {
+                // Namespaces that don't match the reverse-DNS pattern are
+                // skipped rather than panicking on caller-supplied input.
                 let required_ext: Vec<wire::ResponseSupportedTypesItemObjectRequiredExtItem> =
-                    namespaces
-                        .iter()
-                        .map(|ns| {
-                            ns.parse().expect(
-                                "required_ext namespace must match the reverse-DNS pattern; \
-                                 was set via with_required_ext / require_ext",
-                            )
-                        })
-                        .collect();
+                    namespaces.iter().filter_map(|ns| ns.parse().ok()).collect();
                 wire::ResponseSupportedTypesItem::Object {
                     type_: uri.to_string(),
                     required_ext: Some(required_ext),
@@ -415,11 +410,11 @@ mod tests {
         let response = registry.respond_to(&nothing);
         assert!(response.supported_types.is_empty());
 
-        // frameworkVersion defaults to "0.1".
+        // frameworkVersion defaults to the framework version this crate targets.
         let response = registry.respond_to(&wire::Payload { patterns: vec![] });
         assert_eq!(
             response.framework_version.as_ref().map(|v| v.to_string()),
-            Some("0.1".to_string())
+            Some("0.2".to_string())
         );
     }
 
@@ -438,6 +433,15 @@ mod tests {
             response.framework_version.as_ref().map(|v| v.to_string()),
             Some("0.2".to_string())
         );
+    }
+
+    #[test]
+    fn malformed_framework_version_override_is_omitted_not_panicked() {
+        // A caller-supplied override that doesn't match MAJOR.MINOR must not
+        // panic when the response is built (M6); the field is simply omitted.
+        let registry = DiscoveryRegistry::new().framework_version("not-a-version");
+        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        assert!(response.framework_version.is_none());
     }
 
     #[test]

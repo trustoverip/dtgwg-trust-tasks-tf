@@ -19,8 +19,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
   - role: Invitee
     requirement: REQUIRED
 proofRequirement:

@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Re-enabling a domain has a fleet-wide effect symmetric to `domain/disable`; the maintainer SHOULD retain a signed record.

@@ -114,6 +114,38 @@ impl ProofVerifier for Verifier {
             obj.remove("proof");
         }
 
+        // ─── 3b. Bind the proof to the in-band issuer (SPEC §4.7 / §4.8 /
+        //        §7.2 item 7). A valid signature proves only that *some* key
+        //        signed the document; authenticity additionally requires that
+        //        key to be controlled by the document's declared `issuer`.
+        //        Without this check an attacker signs with their own key under
+        //        their own DID while claiming any `issuer`, and every
+        //        downstream authorization keyed on the issuer runs for a
+        //        spoofed identity. Compare the verificationMethod's DID (the
+        //        portion before `#`) to `issuer` by exact string equality — no
+        //        normalization, per §4.8. For the rare DID method whose
+        //        controller differs from the VM's own DID this is conservative
+        //        (it rejects rather than trusting an unverified delegation).
+        match doc_value.get("issuer").and_then(|v| v.as_str()) {
+            None => {
+                return Err(VerificationError::IssuerMismatch(
+                    "document carries a proof but no in-band issuer to bind it to".to_string(),
+                ));
+            }
+            Some(issuer) => {
+                let vm_did = proof
+                    .verification_method
+                    .split('#')
+                    .next()
+                    .unwrap_or(&proof.verification_method);
+                if vm_did != issuer {
+                    return Err(VerificationError::IssuerMismatch(format!(
+                        "verificationMethod is controlled by {vm_did}, not the document issuer {issuer}"
+                    )));
+                }
+            }
+        }
+
         // ─── 4. Hand to Affinidi.
         parsed_proof
             .verify(&doc_value, &*self.resolver, self.options.clone())

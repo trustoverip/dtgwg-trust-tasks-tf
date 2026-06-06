@@ -17,8 +17,10 @@ authors:
 parties:
   - role: vault maintainer
     requirement: REQUIRED
+    member: issuer
   - role: push gateway
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Authorization binds to the caller's authenticated identity — the gateway accepts the update only from the handle's controller VTA. Over the DIDComm binding the authcrypt sender provides that identity intrinsically; over HTTPS the caller carries a did-signed proof. Proof is therefore RECOMMENDED (redundant on DIDComm, the auth anchor on HTTPS).

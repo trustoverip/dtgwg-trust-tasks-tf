@@ -1188,10 +1188,12 @@ impl<'de> ::serde::Deserialize<'de> for SessionSubject {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/step-up/approve-response/0.1";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str =
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {

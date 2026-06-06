@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Control plane
     requirement: REQUIRED
+    member: issuer
   - role: Hosting server (Service role)
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Sync messages travel between trusted infrastructure nodes already bound by Service-role authentication on the receiving server; a transport-independent proof is valuable for audit replay but not required for steady-state replication.

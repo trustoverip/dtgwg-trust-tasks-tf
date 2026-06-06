@@ -17,8 +17,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: The response carries the consumer's view of "who the producer is" — roles, scopes, session metadata. A proof on the request ties the introspection to the subject's signing key, preventing a token-bearing intermediary from harvesting a different subject's claims.

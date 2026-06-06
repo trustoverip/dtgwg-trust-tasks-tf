@@ -73,6 +73,24 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// impl if its trust posture requires it.
     const IS_PROOF_REQUIRED: bool = false;
 
+    /// Whether the originating *Trust Task specification* obliges a *consumer*
+    /// to reject a document that arrives without an in-band `recipient`, per
+    /// SPEC.md §7.2 item 5 and §7.3 item 5 (the party filling the `recipient`
+    /// member is declared `REQUIRED`).
+    ///
+    /// Defaults to `false`. The codegen emits an explicit
+    /// `const IS_RECIPIENT_REQUIRED: bool = true;` override only when the
+    /// spec's front matter declares the relevant party (the one carrying
+    /// `member: recipient`) as `requirement: REQUIRED`. Because a response
+    /// document swaps the parties, the `Response` impl's value tracks the
+    /// *issuer* party's requirement instead.
+    ///
+    /// When `true`, a document whose in-band `recipient` is absent is rejected
+    /// with `malformedRequest` — the audience must be carried in-band (not
+    /// merely transport-derived) so the document is self-contained (§4.8).
+    /// Consumers consult this via [`crate::consume_inbound`].
+    const IS_RECIPIENT_REQUIRED: bool = false;
+
     /// Parsed form of [`TYPE_URI`](Self::TYPE_URI).
     ///
     /// The default implementation calls [`str::parse`] and panics on a

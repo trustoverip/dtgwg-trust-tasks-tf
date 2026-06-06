@@ -17,8 +17,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation is an evidentiary event that affects every device or process holding a token for this subject. Requiring a verified proof prevents an attacker who has captured one token from invalidating other sessions (denial-of-service via revocation) without controlling the subject's signing key.

@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Empty payload omits required member(s): handle, policy.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "Required member `handle` has the wrong type (expected string).",
+    "payload": {
+      "handle": 12345
+    }
+  }
+]

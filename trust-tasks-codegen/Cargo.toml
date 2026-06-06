@@ -19,6 +19,10 @@ serde_json = "1"
 serde_yaml = "0.9"
 toml = "1"
 typify = "0.6"
+# Pinned to 0.8 by `typify`: this crate hands typify a `schemars::RootSchema`,
+# so our schemars major must match typify's. typify (through 0.7) still depends
+# on schemars 0.8, so schemars 1.x is not adoptable here until typify migrates.
+# This is a `publish = false` build tool with no security advisory on schemars.
 schemars = "0.8"
 prettyplease = "0.2"
 syn = { version = "2", features = ["full"] }

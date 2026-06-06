@@ -1285,11 +1285,49 @@ impl<'de> ::serde::Deserialize<'de> for UsageRecordSessionId {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vault/usage/0.1";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vault/usage/0.1#response";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
     const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"truncated\": {\n          \"type\": \"boolean\"\n        },\n        \"uses\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/UsageRecord\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"uses\",\n        \"truncated\"\n      ],\n      \"title\": \"Vault Usage — response payload\",\n      \"type\": \"object\"\n    },\n    \"UsageRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"consumerDid\": {\n          \"description\": \"DID of the Companion/Service that initiated the use.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"deviceId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"entryId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"errorCode\": {\n          \"description\": \"Trust Task error code when outcome is a failure.\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"enum\": [\n            \"proxy-login\",\n            \"release\"\n          ],\n          \"type\": \"string\"\n        },\n        \"occurredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"outcome\": {\n          \"enum\": [\n            \"allowed\",\n            \"denied\",\n            \"step_up_required\",\n            \"step_up_satisfied\",\n            \"target_unreachable\",\n            \"credential_rejected\",\n            \"policy_deny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"policyDecisionId\": {\n          \"description\": \"Pointer to the policy evaluation record for forensic detail.\",\n          \"type\": \"string\"\n        },\n        \"sessionId\": {\n          \"description\": \"For successful proxy-logins, the maintainer-assigned session id; absent for releases and for failures.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"entryId\",\n        \"contextId\",\n        \"consumerDid\",\n        \"kind\",\n        \"outcome\",\n        \"occurredAt\"\n      ],\n      \"title\": \"UsageRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/usage/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Consumer queries the maintainer's audit log of recent vault uses (proxy-logins, releases). Drives UIs like \\\"recent activity\\\" and \\\"which AI agent has been using my GitHub credential\\\". Read-only.\",\n  \"properties\": {\n    \"byConsumer\": {\n      \"description\": \"Optional filter — usage by this consumer DID only. Useful for \\\"what has AI agent X been doing on my behalf\\\".\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"Optional filter — usage within this trust context only.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"type\": \"string\"\n    },\n    \"entryId\": {\n      \"description\": \"Optional filter — usage for this entry only.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"kindFilter\": {\n      \"items\": {\n        \"enum\": [\n          \"proxy-login\",\n          \"release\"\n        ],\n        \"type\": \"string\"\n      },\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"pageSize\": {\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"since\": {\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"until\": {\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Vault Usage — payload\",\n  \"type\": \"object\"\n}\n";
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[(
+            "Unknown top-level member is rejected (additionalProperties: false).",
+            "{\n  \"__notARealMember__\": true\n}",
+        )];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

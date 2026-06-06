@@ -17,8 +17,10 @@ authors:
 parties:
   - role: device
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Registration binds a device identity to operator-significant capabilities. The producer's identity MUST be verifiable so the maintainer can attribute the registration to a specific consumer key (the one the operator authorised in provision-integration).

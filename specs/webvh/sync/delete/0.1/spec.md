@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Control plane
     requirement: REQUIRED
+    member: issuer
   - role: Hosting server (Service role)
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Same trust model as `webvh/sync/update` — Service-role authentication binds the producer; a transport-independent proof is useful for audit but not required for steady-state replication.

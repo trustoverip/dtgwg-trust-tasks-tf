@@ -19,8 +19,10 @@ authors:
 parties:
   - role: device
     requirement: REQUIRED
+    member: issuer
   - role: push gateway
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Over the DIDComm binding the authcrypt sender authenticates the registering device intrinsically, so a document proof is redundant. Over the HTTPS binding a caller MAY carry a did-signed proof. Registration is low-stakes — the issued handle is opaque and useless until the device's VTA provisions a trigger allowlist for it (push/provision) — so proof is RECOMMENDED, not REQUIRED.

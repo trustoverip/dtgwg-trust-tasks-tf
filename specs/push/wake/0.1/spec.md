@@ -17,8 +17,10 @@ authors:
 parties:
   - role: trigger
     requirement: REQUIRED
+    member: issuer
   - role: push gateway
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: The gateway authorizes the wake against the handle's allowlist, so the trigger's authenticated identity is load-bearing. Over the DIDComm binding the authcrypt sender provides it intrinsically; over HTTPS the caller carries a did-signed proof. A spoofed/replayed wake is harmless (a contentless doorbell — the device connects and finds the same or empty queue), so proof is RECOMMENDED, not REQUIRED.

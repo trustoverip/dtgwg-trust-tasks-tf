@@ -18,8 +18,10 @@ authors:
 parties:
   - role: DID owner
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A register is an evidentiary record of who claimed which path on which host; transport-independent integrity is valuable for audit but not strictly required when an authenticated transport already binds the producer's identity.

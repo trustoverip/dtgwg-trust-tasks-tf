@@ -17,8 +17,10 @@ authors:
 parties:
   - role: Querying party
     requirement: REQUIRED
+    member: issuer
   - role: ACL maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A single-entry lookup is typically short-lived and consumed over an authenticated transport; a proof becomes valuable when the answer is retained, replayed, or relied upon by a third party.

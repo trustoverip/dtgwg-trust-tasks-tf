@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service (control plane)
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Unassignment changes fleet routing; record retention helps cross-instance debugging.

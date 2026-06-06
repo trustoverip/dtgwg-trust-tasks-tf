@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: ACL maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Setting this policy changes the security posture of every gated operation on the maintainer. Without a verified proof an attacker holding a single captured token could weaken or disable the step-up gate it is meant to defend, then proceed unchallenged.

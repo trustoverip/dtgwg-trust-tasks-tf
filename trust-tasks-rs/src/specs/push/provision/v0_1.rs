@@ -459,11 +459,59 @@ impl<'de> ::serde::Deserialize<'de> for WakeTriggerPolicyAllowedTriggersItem {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/push/provision/0.1";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/push/provision/0.1#response";
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
     const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n          \"description\": \"The effective allowlist the gateway recorded.\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"policy\"\n      ],\n      \"title\": \"Push Provision — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeTriggerPolicy\": {\n      \"additionalProperties\": false,\n      \"description\": \"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\n      \"properties\": {\n        \"allowedTriggers\": {\n          \"description\": \"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"allowedTriggers\"\n      ],\n      \"title\": \"WakeTriggerPolicy\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/push/provision/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The controller VTA sets a wake handle's trigger allowlist on the push gateway — the DIDs permitted to wake the device. The gateway accepts it only from the handle's recorded controller VTA and enforces it on every push/wake. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"handle\": {\n      \"description\": \"The opaque gateway-issued handle (from push/register) whose allowlist is being set.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"policy\": {\n      \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n      \"description\": \"The trigger allowlist the VTA computed by its own policy — the DIDs permitted to wake this handle (typically the device's mediator and/or the VTA itself). Empty disables waking.\"\n    }\n  },\n  \"required\": [\n    \"handle\",\n    \"policy\"\n  ],\n  \"title\": \"Push Provision — payload\",\n  \"type\": \"object\"\n}\n";
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[
+            (
+                "Empty payload omits required member(s): handle, policy.",
+                "{}",
+            ),
+            (
+                "Unknown top-level member is rejected (additionalProperties: false).",
+                "{\n  \"__notARealMember__\": true\n}",
+            ),
+            (
+                "Required member `handle` has the wrong type (expected string).",
+                "{\n  \"handle\": 12345\n}",
+            ),
+        ];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

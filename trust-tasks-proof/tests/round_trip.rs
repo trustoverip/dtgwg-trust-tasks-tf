@@ -165,6 +165,64 @@ async fn unknown_verification_method_surfaces_resolver_error() {
 }
 
 #[tokio::test]
+async fn issuer_not_controlling_verification_method_is_rejected() {
+    // The impersonation attack: an attacker signs with their OWN key, under
+    // their OWN DID, but sets `issuer` to a different (trusted) party. The
+    // signature is cryptographically valid over the spoofed-issuer document,
+    // yet the verificationMethod is not controlled by the claimed issuer.
+    // SPEC §4.7/§4.8/§7.2-item-7 require this to be rejected — otherwise every
+    // downstream authorization keyed on `issuer` runs for a spoofed identity.
+    let vm = "did:web:attacker.example#key-0";
+    let (secret, resolver) = keypair_with_resolver(vm);
+
+    let mut doc = TrustTask::for_payload(
+        "urn:uuid:test-spoof",
+        DemoPayload {
+            subject: "did:example:alice".into(),
+            claim: "loa2".into(),
+        },
+    );
+    doc.issuer = Some("did:web:victim.example".into()); // ≠ controller of `vm`
+    doc.recipient = Some("did:example:bank".into());
+    doc.issued_at = Some(chrono::Utc::now());
+    let body = serde_json::to_value(&doc).unwrap();
+    let proof = DataIntegrityProof::sign(&body, &secret, SignOptions::new())
+        .await
+        .expect("sign");
+    doc.proof =
+        Some(serde_json::from_value::<Proof>(serde_json::to_value(&proof).unwrap()).unwrap());
+
+    let err = Verifier::with_resolver(resolver)
+        .verify(&doc)
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(err, VerificationError::IssuerMismatch(_)),
+        "expected IssuerMismatch for issuer≠verificationMethod, got {err:?}"
+    );
+}
+
+#[tokio::test]
+async fn proof_present_without_issuer_is_rejected() {
+    // A proof with no in-band `issuer` has nothing to bind to; it must not
+    // verify (the issuer binding is checked before the signature, so this
+    // holds regardless of the signature's own validity).
+    let vm = "did:web:org.example#key-0";
+    let (secret, resolver) = keypair_with_resolver(vm);
+    let mut doc = signed_doc(vm, &secret).await;
+    doc.issuer = None;
+
+    let err = Verifier::with_resolver(resolver)
+        .verify(&doc)
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(err, VerificationError::IssuerMismatch(_)),
+        "expected IssuerMismatch for proof-without-issuer, got {err:?}"
+    );
+}
+
+#[tokio::test]
 async fn type_uri_constant_is_well_formed() {
     // Sanity: the demo Payload's Type URI parses as a TypeUri.
     let _: TypeUri = DemoPayload::TYPE_URI.parse().expect("Type URI parses");

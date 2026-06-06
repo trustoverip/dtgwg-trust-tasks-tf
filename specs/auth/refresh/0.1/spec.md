@@ -17,8 +17,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: OPTIONAL
   rationale: The refreshToken itself is the secret; a proof on the document is redundant when the transport binds the producer's identity end-to-end (the typical case for refresh, which is called by an already-authenticated client). Consumers retaining refresh exchanges for audit MAY require a proof.

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/release/0.2",
+  "title": "Vault Release — payload",
+  "description": "Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:not_proxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entryId"],
+  "properties": {
+    "entryId": { "type": "string", "minLength": 1 },
+    "target": {
+      "$ref": "../../_shared/0.2/vault-entry.schema.json#/$defs/SiteTarget",
+      "description": "Optional — for entries with multiple targets, indicates which one the consumer is acting against. The maintainer's policy may decide release based on the target (e.g. release for web origin allowed, release for iOS app denied)."
+    },
+    "consumerContext": {
+      "$ref": "../../_shared/0.2/consumer-context.schema.json#/$defs/ConsumerContext",
+      "description": "Caller's situational context — fed to the policy engine."
+    },
+    "stepUpProof": {
+      "$ref": "../../_shared/0.2/consumer-context.schema.json#/$defs/StepUpProof",
+      "description": "Step-up proof on retry after step_up_required."
+    },
+    "ttlSecondsHint": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600,
+      "description": "Consumer's requested cache TTL for the released secret. The maintainer MAY cap this; the consumer MUST honour the maintainer's decision."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Release — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sealedSecret", "secretKind", "ttlSeconds"],
+      "properties": {
+        "sealedSecret": {
+          "$ref": "../../_shared/0.2/sealed-envelope.schema.json#/$defs/SealedEnvelope",
+          "description": "Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelope_unsupported`."
+        },
+        "secretKind": {
+          "$ref": "../../_shared/0.2/vault-entry.schema.json#/$defs/SecretKind",
+          "description": "Discriminator so the consumer can pre-allocate the right type before unsealing."
+        },
+        "ttlSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600,
+          "description": "Cache TTL the consumer MUST enforce — wipe the cleartext after this many seconds, even if the user has not finished interacting with it."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

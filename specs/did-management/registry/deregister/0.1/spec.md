@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: Control plane
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Deregister cuts the instance off from outbound fleet messages. The maintainer SHOULD retain a signed record of the change.

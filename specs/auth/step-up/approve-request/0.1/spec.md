@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Relying party
     requirement: REQUIRED
+    member: issuer
   - role: Approver
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: The reason text is shown to the user as the basis of their consent decision. A proof binds the request to the relying party so a downstream attacker cannot intercept the channel and substitute a different reason.

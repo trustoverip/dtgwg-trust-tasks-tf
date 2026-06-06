@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Administrator
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service (control plane)
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Assignment shapes the fleet's traffic routing; an evidentiary record is valuable for cross-instance debugging.

@@ -6,8 +6,10 @@
 //! trait through which concrete transports (REST, DIDComm, ...) plug in their
 //! identity, integrity, and freshness semantics.
 //!
-//! The crate tracks the `SPEC.md` framework at version `0.1`. See the spec
-//! sections referenced from each item for the normative text.
+//! The crate tracks the `SPEC.md` framework at version `0.2` (lowerCamelCase
+//! member and value naming, §4.10); it emits `trust-task-error/0.2` and still
+//! parses the `0.1` snake_case error codes for backwards compatibility. See the
+//! spec sections referenced from each item for the normative text.
 //!
 //! [Trust Tasks]: https://trusttasks.org/
 

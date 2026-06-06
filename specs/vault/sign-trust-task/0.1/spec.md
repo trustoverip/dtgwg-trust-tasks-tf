@@ -17,8 +17,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Sign-trust-task causes the maintainer to sign an arbitrary Trust Task envelope as the holder's principal DID — equivalent in power to a session-mint, performed inline whenever the consumer needs to issue a follow-up task in an already-authenticated session. The consumer's identity MUST be verifiable so every signature the maintainer produces is attributable to a specific Companion or Service.

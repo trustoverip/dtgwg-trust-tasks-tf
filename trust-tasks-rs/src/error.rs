@@ -1,4 +1,6 @@
-//! Error-response payload for the `trust-task-error/0.1` framework spec.
+//! Error-response payload for the `trust-task-error` framework spec. The SDK
+//! emits the `0.2` form (lowerCamelCase codes); the parser also accepts the
+//! `0.1` snake_case codes so a `0.2` consumer can read a `0.1` peer.
 //!
 //! Models the structure defined in SPEC.md §8.2 and §8.3. The set of standard
 //! codes is encoded as the [`StandardCode`] enum; task-specific extensions
@@ -17,7 +19,7 @@ use thiserror::Error;
 
 use crate::transport::ConsistencyError;
 
-/// The `payload` of a `trust-task-error/0.1` document, per SPEC.md §8.2.
+/// The `payload` of a `trust-task-error/0.2` document, per SPEC.md §8.2.
 ///
 /// Correlation back to the document this error reports on is carried at the
 /// framework level by the `threadId` member of the surrounding
@@ -215,21 +217,25 @@ impl StandardCode {
         )
     }
 
-    /// The wire-form snake_case string for this code.
+    /// The wire-form string this code is emitted as.
+    ///
+    /// As of framework 0.2 the standard codes are lowerCamelCase (SPEC.md
+    /// §8.3 / Appendix B). `parse_standard` still accepts the framework
+    /// 0.1 snake_case spellings so a 0.2 consumer can read a 0.1 peer.
     pub fn as_str(self) -> &'static str {
         match self {
-            StandardCode::MalformedRequest => "malformed_request",
-            StandardCode::UnsupportedType => "unsupported_type",
-            StandardCode::UnsupportedVersion => "unsupported_version",
+            StandardCode::MalformedRequest => "malformedRequest",
+            StandardCode::UnsupportedType => "unsupportedType",
+            StandardCode::UnsupportedVersion => "unsupportedVersion",
             StandardCode::Expired => "expired",
-            StandardCode::ProofRequired => "proof_required",
-            StandardCode::ProofInvalid => "proof_invalid",
-            StandardCode::PermissionDenied => "permission_denied",
-            StandardCode::WrongRecipient => "wrong_recipient",
-            StandardCode::IdentityMismatch => "identity_mismatch",
-            StandardCode::TaskFailed => "task_failed",
+            StandardCode::ProofRequired => "proofRequired",
+            StandardCode::ProofInvalid => "proofInvalid",
+            StandardCode::PermissionDenied => "permissionDenied",
+            StandardCode::WrongRecipient => "wrongRecipient",
+            StandardCode::IdentityMismatch => "identityMismatch",
+            StandardCode::TaskFailed => "taskFailed",
             StandardCode::Unavailable => "unavailable",
-            StandardCode::InternalError => "internal_error",
+            StandardCode::InternalError => "internalError",
         }
     }
 }
@@ -485,18 +491,21 @@ impl From<RejectReason> for ErrorPayload {
 
 fn parse_standard(s: &str) -> Result<StandardCode, ParseCodeError> {
     Ok(match s {
-        "malformed_request" => StandardCode::MalformedRequest,
-        "unsupported_type" => StandardCode::UnsupportedType,
-        "unsupported_version" => StandardCode::UnsupportedVersion,
+        // Framework 0.2 lowerCamelCase spellings (emitted form) and the
+        // framework 0.1 snake_case spellings are both accepted, so a 0.2
+        // consumer can still read an error response from a 0.1 peer.
+        "malformedRequest" | "malformed_request" => StandardCode::MalformedRequest,
+        "unsupportedType" | "unsupported_type" => StandardCode::UnsupportedType,
+        "unsupportedVersion" | "unsupported_version" => StandardCode::UnsupportedVersion,
         "expired" => StandardCode::Expired,
-        "proof_required" => StandardCode::ProofRequired,
-        "proof_invalid" => StandardCode::ProofInvalid,
-        "permission_denied" => StandardCode::PermissionDenied,
-        "wrong_recipient" => StandardCode::WrongRecipient,
-        "identity_mismatch" => StandardCode::IdentityMismatch,
-        "task_failed" => StandardCode::TaskFailed,
+        "proofRequired" | "proof_required" => StandardCode::ProofRequired,
+        "proofInvalid" | "proof_invalid" => StandardCode::ProofInvalid,
+        "permissionDenied" | "permission_denied" => StandardCode::PermissionDenied,
+        "wrongRecipient" | "wrong_recipient" => StandardCode::WrongRecipient,
+        "identityMismatch" | "identity_mismatch" => StandardCode::IdentityMismatch,
+        "taskFailed" | "task_failed" => StandardCode::TaskFailed,
         "unavailable" => StandardCode::Unavailable,
-        "internal_error" => StandardCode::InternalError,
+        "internalError" | "internal_error" => StandardCode::InternalError,
         // A bare token that doesn't match a standard code is treated as a
         // malformed extension (extensions require a colon-namespaced slug).
         other => return Err(ParseCodeError::InvalidLocal(other.to_string())),
@@ -539,9 +548,12 @@ fn validate_segment(seg: &str) -> Option<()> {
 }
 
 fn validate_local(local: &str) -> Result<(), ()> {
-    // Per spec.meta.schema.json: ^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$
-    // for the prefix, and the local portion follows the same rule but
-    // additionally permits underscores. We use that relaxed local grammar.
+    // The local portion of an extended code (`<slug>:<local>`) must start with
+    // a lowercase letter, then permits letters, digits, and underscores —
+    // matching the `errorCodes` pattern in spec.meta.schema.json. Uppercase is
+    // accepted so framework 0.2 lowerCamelCase locals (e.g. `documentRevoked`)
+    // parse; underscores are accepted so frozen framework 0.1 snake_case locals
+    // (e.g. `document_revoked`) still parse.
     let mut chars = local.chars();
     let first = chars.next().ok_or(())?;
     if !first.is_ascii_lowercase() {
@@ -549,7 +561,7 @@ fn validate_local(local: &str) -> Result<(), ()> {
     }
     for c in chars {
         match c {
-            'a'..='z' | '0'..='9' | '_' => {}
+            'a'..='z' | 'A'..='Z' | '0'..='9' | '_' => {}
             _ => return Err(()),
         }
     }
@@ -581,6 +593,49 @@ mod tests {
             assert_eq!(parsed, TrustTaskCode::Standard(code));
             assert_eq!(parsed.to_string(), wire);
         }
+    }
+
+    #[test]
+    fn parses_legacy_snake_case_codes_and_re_emits_camel() {
+        // Framework 0.1 emitted snake_case codes; a 0.2 consumer must still
+        // parse those (lenient parse) while re-emitting the 0.2 camelCase form
+        // so the wire moves forward. This pins the whole 0.1-compat arm of
+        // `parse_standard`, which was otherwise untested.
+        let legacy = [
+            ("malformed_request", StandardCode::MalformedRequest),
+            ("unsupported_type", StandardCode::UnsupportedType),
+            ("unsupported_version", StandardCode::UnsupportedVersion),
+            ("proof_required", StandardCode::ProofRequired),
+            ("proof_invalid", StandardCode::ProofInvalid),
+            ("permission_denied", StandardCode::PermissionDenied),
+            ("wrong_recipient", StandardCode::WrongRecipient),
+            ("identity_mismatch", StandardCode::IdentityMismatch),
+            ("task_failed", StandardCode::TaskFailed),
+            ("internal_error", StandardCode::InternalError),
+        ];
+        for (snake, code) in legacy {
+            let parsed: TrustTaskCode = snake.parse().unwrap();
+            assert_eq!(parsed, TrustTaskCode::Standard(code), "parse {snake}");
+            // Re-emits the 0.2 camelCase spelling, not the snake input.
+            assert_eq!(parsed.to_string(), code.as_str());
+            assert_ne!(
+                parsed.to_string(),
+                snake,
+                "{snake} should re-emit as camelCase"
+            );
+        }
+    }
+
+    #[test]
+    fn deserializes_legacy_snake_error_payload_and_re_emits_camel() {
+        // A trust-task-error/0.1 payload with a snake_case code deserializes,
+        // its code resolves to the camelCase StandardCode, and re-serializing
+        // emits the 0.2 spelling.
+        let payload: ErrorPayload =
+            serde_json::from_str(r#"{"code":"proof_invalid","retryable":false}"#).unwrap();
+        assert_eq!(payload.code, StandardCode::ProofInvalid.into());
+        let out = serde_json::to_value(&payload).unwrap();
+        assert_eq!(out["code"], "proofInvalid");
     }
 
     #[test]

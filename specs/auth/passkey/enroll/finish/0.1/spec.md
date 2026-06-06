@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: The producer is asserting "I, $subject, control a fresh passkey that should be bound to my VID for future authentication." The framework proof ties that assertion to the same key that signed the matching start.

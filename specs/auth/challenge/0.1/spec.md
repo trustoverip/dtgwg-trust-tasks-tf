@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: OPTIONAL
   rationale: A challenge request is a public, write-once nudge — no evidentiary value attaches to it. The auth service returns its result regardless of who asked, because nothing of value is granted until the subsequent authenticate document, which IS proof-required.

@@ -16,8 +16,10 @@ authors:
 parties:
   - role: vault maintainer
     requirement: REQUIRED
+    member: issuer
   - role: vault consumer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: A push event causes the consumer to mutate cache state (apply an upsert, wipe a tombstone, surface a device-disabled warning). The maintainer's authority MUST be verifiable so the consumer cannot be tricked by a mediator or man-in-the-middle into mutating cache against a spoofed event.

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/device/register/0.2",
+  "title": "Device Register — payload",
+  "description": "Public discovery surface that wraps the maintainer's existing two-phase enrolment (provision-integration → acl/swap-key). A new Companion or Service hands the maintainer its long-term VTA-derived key, its consumer kind, display name, and an optional device attestation; the maintainer creates the DeviceBinding and returns it. Phase 1 (provision-integration) is assumed to have already happened — this task is the post-bootstrap claim step.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["consumerKind", "displayName"],
+  "properties": {
+    "consumerKind": { "$ref": "../../_shared/0.2/device-binding.schema.json#/$defs/ConsumerKind" },
+    "displayName": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "platform": { "type": "string" },
+    "attestation": { "$ref": "../../_shared/0.2/device-binding.schema.json#/$defs/DeviceAttestation" },
+    "keyCustody": {
+      "$ref": "../../_shared/0.2/device-binding.schema.json#/$defs/KeyCustody",
+      "description": "OPTIONAL. How the device custodies its private keys (tier + algorithms). RECOMMENDED for mobile Companions. Maintainer policy input — see docs/design-notes/mobile-key-custody-profile.md."
+    },
+    "hpkePublicKey": {
+      "type": "string",
+      "minLength": 1,
+      "description": "X25519 public key (did:key form) the maintainer will use to HPKE-seal sensitive payloads to this device (sealed secrets, session blobs, sync events). REQUIRED — every Companion/Service needs a recipient key."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Register — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binding"],
+      "properties": {
+        "binding": { "$ref": "../../_shared/0.2/device-binding.schema.json#/$defs/DeviceBinding" },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

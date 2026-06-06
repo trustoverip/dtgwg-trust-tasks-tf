@@ -17,8 +17,10 @@ authors:
 parties:
   - role: Approver
     requirement: REQUIRED
+    member: issuer
   - role: Relying party
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: The proof IS the consent record. Without a verified signature from the subject's authoritative key, the relying party has no evidence the user actually approved.

@@ -686,12 +686,50 @@ impl<'de> ::serde::Deserialize<'de> for WakeTriggerPolicyAllowedTriggersItem {
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/set-wake/0.1";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/set-wake/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
     const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"pushCapable\": {\n          \"description\": \"Whether the device now has a usable wake channel (true after a successful set, false after a clear).\",\n          \"type\": \"boolean\"\n        },\n        \"triggerPolicy\": {\n          \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n          \"description\": \"The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared.\"\n        }\n      },\n      \"required\": [\n        \"pushCapable\"\n      ],\n      \"title\": \"Device Set Wake — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeHandle\": {\n      \"additionalProperties\": false,\n      \"description\": \"An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.\",\n      \"properties\": {\n        \"gateway\": {\n          \"description\": \"The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"handle\": {\n          \"description\": \"Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"gateway\",\n        \"handle\"\n      ],\n      \"title\": \"WakeHandle\",\n      \"type\": \"object\"\n    },\n    \"WakeTriggerPolicy\": {\n      \"additionalProperties\": false,\n      \"description\": \"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\n      \"properties\": {\n        \"allowedTriggers\": {\n          \"description\": \"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"allowedTriggers\"\n      ],\n      \"title\": \"WakeTriggerPolicy\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/device/set-wake/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A device conveys to its VTA the opaque WakeHandle it obtained from a push gateway, so the VTA can own the trigger allowlist and provision the gateway. Carries no platform push token — only the handle. Present `wakeHandle` sets/replaces the wake channel; absent clears it (device becomes non-wakeable). Idempotent; re-issued on token rotation. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"pushPlatform\": {\n      \"description\": \"OPTIONAL, advisory. The abstract platform behind the handle, for device/list visibility only. The VTA never sees the token; this is a non-authoritative hint.\",\n      \"enum\": [\n        \"apns\",\n        \"fcm\",\n        \"webpush\"\n      ],\n      \"type\": \"string\"\n    },\n    \"suggestedTriggers\": {\n      \"description\": \"OPTIONAL, advisory. DIDs the device suggests as wake triggers (e.g. its mediator). The VTA owns the allowlist and MAY ignore this entirely — it is a hint, not an instruction.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"wakeHandle\": {\n      \"$ref\": \"#/$defs/WakeHandle\",\n      \"description\": \"OPTIONAL. The opaque gateway-issued handle for this device's push channel. Omit to clear the wake channel (the VTA empties the gateway allowlist; the device becomes non-wakeable).\"\n    }\n  },\n  \"title\": \"Device Set Wake — payload\",\n  \"type\": \"object\"\n}\n";
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[(
+            "Unknown top-level member is rejected (additionalProperties: false).",
+            "{\n  \"__notARealMember__\": true\n}",
+        )];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

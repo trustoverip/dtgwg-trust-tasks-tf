@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/sync/_shared/0.2/sync-event",
+  "title": "SyncEvent — shared definition for server-pushed sync notifications",
+  "description": "Canonical event union referenced by sync/event/0.1 (the push-notification task) and by vault/sync/0.1 (the request-response catch-up task). Both deliver the same event shapes; the difference is only the transport (push vs pull).",
+  "$defs": {
+    "SyncEvent": {
+      "title": "SyncEvent",
+      "oneOf": [
+        { "$ref": "#/$defs/VaultUpsertedEvent" },
+        { "$ref": "#/$defs/VaultDeletedEvent" },
+        { "$ref": "#/$defs/AclChangedEvent" },
+        { "$ref": "#/$defs/PolicyChangedEvent" }
+      ]
+    },
+    "VaultUpsertedEvent": {
+      "title": "VaultUpsertedEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "seq", "occurredAt", "entry"],
+      "properties": {
+        "kind": { "const": "vaultUpserted" },
+        "seq": { "type": "integer", "minimum": 1 },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "entry": { "$ref": "../../../vault/_shared/0.2/vault-entry.schema.json#/$defs/VaultEntry" }
+      }
+    },
+    "VaultDeletedEvent": {
+      "title": "VaultDeletedEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "seq", "occurredAt", "id", "contextId", "graceUntil"],
+      "properties": {
+        "kind": { "const": "vaultDeleted" },
+        "seq": { "type": "integer", "minimum": 1 },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "id": { "type": "string" },
+        "contextId": { "type": "string" },
+        "graceUntil": { "type": "string", "format": "date-time" }
+      }
+    },
+    "AclChangedEvent": {
+      "title": "AclChangedEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "seq", "occurredAt", "subject", "change"],
+      "properties": {
+        "kind": { "const": "aclChanged" },
+        "seq": { "type": "integer", "minimum": 1 },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "subject": { "type": "string", "description": "DID of the consumer whose ACL entry changed." },
+        "change": {
+          "type": "string",
+          "enum": ["granted", "revoked", "roleChanged", "swapped", "deviceDisabled", "deviceWiped"]
+        }
+      }
+    },
+    "PolicyChangedEvent": {
+      "title": "PolicyChangedEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "seq", "occurredAt", "policyId", "change"],
+      "properties": {
+        "kind": { "const": "policyChanged" },
+        "seq": { "type": "integer", "minimum": 1 },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "policyId": { "type": "string" },
+        "change": { "type": "string", "enum": ["created", "updated", "deleted"] }
+      }
+    }
+  }
+}

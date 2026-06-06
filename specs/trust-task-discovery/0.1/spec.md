@@ -16,8 +16,10 @@ authors:
 parties:
   - role: Discoverer
     requirement: REQUIRED
+    member: issuer
   - role: Responder
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: OPTIONAL
   rationale: A discovery exchange is non-authoritative metadata exchange between parties that have already authenticated through the transport. The responder's list is advisory — the discoverer still validates each subsequent task per [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements). A `proof` adds little beyond what the transport binding already provides and may be omitted.

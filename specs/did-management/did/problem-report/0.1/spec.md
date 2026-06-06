@@ -12,8 +12,10 @@ authors:
 parties:
   - role: DID hosting service
     requirement: REQUIRED
+    member: issuer
   - role: DID owner
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A problem report is informational rather than evidentiary; the consumer's session usually authenticates the receiver, but a proof becomes valuable when the report is retained for ticket-tracking.

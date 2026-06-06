@@ -17,8 +17,10 @@ authors:
 parties:
   - role: vault consumer
     requirement: REQUIRED
+    member: issuer
   - role: vault maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Upsert is the canonical state-changing task on the vault; it can introduce credentials that other Companions will later trust and use. The producer's identity MUST be verifiable so the maintainer can attribute the change to a specific consumer and so the audit log records who introduced or rotated the credential.

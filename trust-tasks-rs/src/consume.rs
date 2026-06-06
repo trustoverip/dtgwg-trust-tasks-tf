@@ -181,9 +181,28 @@ where
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
     Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
-    // §7.2 items 4 + 5 — expiry and recipient enforcement.
+    // §7.2 items 4 + 5a — expiry and wrong-recipient enforcement.
     if let Err(reason) = doc.validate_basic(now, my_vid) {
         return route_rejection(transport, &doc, reason, error_id_factory);
+    }
+
+    // §7.2 item 5b — recipient-REQUIRED enforcement. When the spec declares its
+    // `recipient` member REQUIRED, a document lacking an in-band `recipient` is
+    // malformed: the audience must be carried in-band, not merely transport-
+    // derived, so the document is self-contained (§4.8 / §7.3 item 5). This is
+    // a per-spec rule, so it is checked here (where `P` is in scope) rather than
+    // in the type-erased `validate_basic`.
+    if doc.recipient.is_none() && P::IS_RECIPIENT_REQUIRED {
+        return route_rejection(
+            transport,
+            &doc,
+            RejectReason::MalformedRequest {
+                reason: "specification declares recipient REQUIRED but the document \
+                         carries no in-band recipient"
+                    .to_string(),
+            },
+            error_id_factory,
+        );
     }
 
     // §7.2 item 6 — in-band vs transport-derived identity cross-check.
@@ -432,6 +451,41 @@ mod tests {
     /// SPEC §7.2 item 7 — IS_PROOF_REQUIRED is authoritative regardless
     /// of policy. acl::grant is REQUIRED in front matter, so codegen
     /// set IS_PROOF_REQUIRED=true.
+    #[tokio::test]
+    async fn recipient_required_fires_when_in_band_recipient_absent() {
+        // acl/grant declares its recipient party REQUIRED, so a document with
+        // no in-band recipient is malformed (§7.2 item 5b). This check runs
+        // before the proof check, so it wins even though grant also requires a
+        // proof — and the handler must not run.
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = TrustTask::for_payload("req-rr", grant_payload());
+        doc.issuer = Some("did:web:org.example".into());
+        // No recipient, no proof.
+
+        let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-rr".to_string(),
+            |_req, _parties| async move {
+                panic!("handler must not run when recipient_required fires");
+                #[allow(unreachable_code)]
+                Ok::<TrustTask<grant::Response>, ErrorResponse>(unreachable!())
+            },
+        )
+        .await;
+
+        match outcome {
+            ConsumeOutcome::Rejected(err) => {
+                assert_eq!(err.payload.code, StandardCode::MalformedRequest.into());
+            }
+            other => panic!("expected Rejected(MalformedRequest), got {other:?}"),
+        }
+    }
+
     #[tokio::test]
     async fn proof_required_fires_for_spec_with_required_proof() {
         let transport = NoopHandler::new();
@@ -706,7 +760,7 @@ mod tests {
         let transport = InMemoryHandler::new()
             .with_local("did:web:maintainer.example")
             .with_peer("did:web:org.example");
-        let doc = TrustTask::for_payload(
+        let mut doc = TrustTask::for_payload(
             "req-rp-1",
             list::Payload {
                 role: None,
@@ -717,7 +771,12 @@ mod tests {
                 ext: None,
             },
         );
-        // Note: no doc.issuer, no doc.recipient — transport must fill in.
+        // acl/list declares its recipient party REQUIRED, so `recipient` must be
+        // carried in-band (§7.2 item 5b) — the consumer cross-checks it against
+        // the transport-authenticated local VID. `issuer` is omitted and is the
+        // member filled from the transport-authenticated peer (§4.8.1), which is
+        // the behaviour under test.
+        doc.recipient = Some("did:web:maintainer.example".into());
 
         let outcome: ConsumeOutcome<list::Response> =
             consume_inbound::<_, _, _, StubVerifier, _, _>(

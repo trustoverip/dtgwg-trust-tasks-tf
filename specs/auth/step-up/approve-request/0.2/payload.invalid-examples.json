@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Missing required subject.",
+    "payload": {
+      "sessionId": "ec5d3c89",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Confirm transfer"
+    }
+  },
+  {
+    "note": "Missing required reason — approver MUST surface a user-readable rationale.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ"
+    }
+  },
+  {
+    "note": "Challenge too short.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "short",
+      "reason": "Confirm transfer"
+    }
+  }
+]

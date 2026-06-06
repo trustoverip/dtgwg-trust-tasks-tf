@@ -18,8 +18,10 @@ authors:
 parties:
   - role: ACL holder
     requirement: REQUIRED
+    member: issuer
   - role: ACL maintainer
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Swap-key is a high-trust mutation — the holder is changing which key controls future access to their resources. Without a verified proof the maintainer cannot tell the swap apart from a hostile takeover by an attacker who has captured a single access token.

@@ -12,8 +12,10 @@ authors:
 parties:
   - role: Hosting server (Service role)
     requirement: REQUIRED
+    member: issuer
   - role: Control plane
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A register is a fleet-membership announcement. The maintainer authenticates the producer via the transport-layer Service-role binding; a proof becomes valuable when the registration is replayed for audit but isn't strictly required.

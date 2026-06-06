@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/device/heartbeat/0.2",
+  "title": "Device Heartbeat — payload",
+  "description": "Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "platform": {
+      "type": "string",
+      "description": "Updated platform descriptor if it changed since registration (e.g. browser updated)."
+    },
+    "vaultSeq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Heartbeat — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serverTime"],
+      "properties": {
+        "serverTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Authoritative timestamp — consumers MAY use to detect clock drift."
+        },
+        "queuedOperations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/QueuedOperation" },
+          "description": "Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op."
+        },
+        "syncHint": {
+          "type": "string",
+          "enum": ["upToDate", "syncDue", "fullResyncRequired"],
+          "description": "Tells the consumer whether to call vault/sync."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "QueuedOperation": {
+      "title": "QueuedOperation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "task"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["wipe", "policyReload", "configUpdate"],
+          "description": "Discriminator. The framework currently supports wipe; future versions may add others."
+        },
+        "task": {
+          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally."
+        }
+      }
+    }
+  }
+}

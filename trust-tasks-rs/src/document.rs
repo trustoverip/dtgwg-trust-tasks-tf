@@ -313,10 +313,11 @@ impl<P> TrustTask<P> {
 }
 
 pub(crate) fn trust_task_error_type_uri() -> TypeUri {
-    // The `trust-task-error/0.1` slug is a framework-defined reserved name,
-    // so `TypeUri::canonical` accepts it.
-    TypeUri::canonical("trust-task-error", 0, 1)
-        .expect("trust-task-error/0.1 is a valid framework Type URI")
+    // The `trust-task-error` slug is a framework-defined reserved name, so
+    // `TypeUri::canonical` accepts it. Framework 0.2 carries the lowerCamelCase
+    // standard codes (SPEC.md §8.3 / Appendix B); the SDK emits the 0.2 spec.
+    TypeUri::canonical("trust-task-error", 0, 2)
+        .expect("trust-task-error/0.2 is a valid framework Type URI")
 }
 
 impl fmt::Display for ErrorResponse {

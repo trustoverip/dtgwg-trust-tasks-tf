@@ -16,8 +16,10 @@ authors:
 parties:
   - role: Querying party
     requirement: REQUIRED
+    member: issuer
   - role: DID hosting service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A single-record lookup is typically short-lived and consumed over an authenticated transport; a proof becomes valuable when the answer is retained or relied on by a third party.

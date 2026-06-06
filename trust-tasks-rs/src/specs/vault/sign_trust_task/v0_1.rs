@@ -1146,12 +1146,60 @@ impl<'de> ::serde::Deserialize<'de> for UnsignedTrustTaskEnvelopeThreadId {
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vault/sign-trust-task/0.1";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vault/sign-trust-task/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
     const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"ConsumerContext\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deviceId\": {\n          \"description\": \"Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastUserVerificationAt\": {\n          \"description\": \"Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"networkClass\": {\n          \"description\": \"Producer-supplied network classification. Advisory.\",\n          \"enum\": [\n            \"unknown\",\n            \"home\",\n            \"corp\",\n            \"public\",\n            \"vpn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"ConsumerContext\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"signedEnvelope\": {\n          \"description\": \"The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.\",\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"issuedAt\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"signedEnvelope\"\n      ],\n      \"title\": \"Vault Sign Trust Task — response payload\",\n      \"type\": \"object\"\n    },\n    \"StepUpProof\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"challengeId\": {\n          \"description\": \"Maintainer-issued challenge id the proof responds to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"enum\": [\n            \"webauthn-uv\",\n            \"push-approval\",\n            \"totp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"proof\",\n        \"challengeId\"\n      ],\n      \"title\": \"StepUpProof\",\n      \"type\": \"object\"\n    },\n    \"UnsignedTrustTaskEnvelope\": {\n      \"$anchor\": \"unsigned-envelope\",\n      \"description\": \"Permissive shape for an unsigned Trust Task document — the framework-required members MUST be present, and `proof` MUST NOT be. The maintainer does not validate the inner `payload` against the embedded `type`'s schema; that validation is the recipient's responsibility.\",\n      \"not\": {\n        \"required\": [\n          \"proof\"\n        ]\n      },\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"Optional inner-task expiry. The maintainer rejects with `envelope_expired` when this is in the past at sign time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Envelope identifier. Set by the producer of the inner task.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"Producer's wall-clock when the inner task was constructed. Maintainer copies through; the proof's `created` is the maintainer's wall-clock at signing.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"Issuer DID of the inner task. MUST equal the vault entry's principalDid — the maintainer rejects mismatches with `envelope_issuer_mismatch` rather than overwriting.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"Inner task's payload object. Opaque to the maintainer — passed through unchanged into the signed envelope.\"\n        },\n        \"recipient\": {\n          \"description\": \"Recipient DID — the relying party / audience the signed envelope will be delivered to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"threadId\": {\n          \"description\": \"Optional thread/correlation id, per framework §4.x.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"description\": \"Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`).\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\"\n      ],\n      \"title\": \"Unsigned Trust Task envelope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/sign-trust-task/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `did-self-issued` or `didcomm-peer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.1`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.\",\n  \"properties\": {\n    \"consumerContext\": {\n      \"$ref\": \"#/$defs/ConsumerContext\",\n      \"description\": \"Caller's situational context — fed to the policy engine.\"\n    },\n    \"entryId\": {\n      \"description\": \"Identifier of the vault entry whose principal will sign. The maintainer rejects with `not_signable` when `entry.secretKind` is not `did-self-issued` or `didcomm-peer` (other kinds have no DID-based signing identity).\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"stepUpProof\": {\n      \"$ref\": \"#/$defs/StepUpProof\",\n      \"description\": \"Step-up proof on retry after `step_up_required`.\"\n    },\n    \"unsignedEnvelope\": {\n      \"$ref\": \"#/$defs/UnsignedTrustTaskEnvelope\",\n      \"description\": \"The Trust Task document to sign. MUST satisfy the framework's structural requirements (id/type/issuer/recipient/issuedAt/payload). MUST NOT carry a `proof`. `issuer` MUST equal the referenced entry's principalDid — the maintainer refuses to silently rewrite `issuer` (see `envelope_issuer_mismatch`).\"\n    }\n  },\n  \"required\": [\n    \"entryId\",\n    \"unsignedEnvelope\"\n  ],\n  \"title\": \"Vault Sign Trust Task — payload\",\n  \"type\": \"object\"\n}\n";
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[
+            (
+                "Empty payload omits required member(s): entryId, unsignedEnvelope.",
+                "{}",
+            ),
+            (
+                "Unknown top-level member is rejected (additionalProperties: false).",
+                "{\n  \"__notARealMember__\": true\n}",
+            ),
+            (
+                "Required member `entryId` has the wrong type (expected string).",
+                "{\n  \"entryId\": 12345\n}",
+            ),
+        ];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

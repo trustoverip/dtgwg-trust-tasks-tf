@@ -1,0 +1,207 @@
+[
+  {
+    "note": "Missing required request VP.",
+    "payload": {
+      "context": "default"
+    }
+  },
+  {
+    "note": "Missing required context.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level payload member (additionalProperties: false catches `extras`).",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default",
+      "extras": { "anything": "here" }
+    }
+  },
+  {
+    "note": "assertion outside the enum.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default",
+      "assertion": "attested"
+    }
+  },
+  {
+    "note": "BootstrapRequest.holder is not a did:key.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:web:alice.example",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:web:alice.example#key-1",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default"
+    }
+  },
+  {
+    "note": "BootstrapRequest.nonce wrong length (base64url-no-pad of 16 bytes is exactly 22 chars).",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "short",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default"
+    }
+  },
+  {
+    "note": "ask.type unknown — discriminated union rejects.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "WildGuess", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default"
+    }
+  },
+  {
+    "note": "TemplateBootstrap ask missing required `template`.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "templateBootstrap", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default"
+    }
+  },
+  {
+    "note": "AdminRotation ask missing required `adminTemplate`.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation" },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default"
+    }
+  },
+  {
+    "note": "DataIntegrityProof.proofPurpose must be `authentication`.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "assertionMethod",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default"
+    }
+  }
+]

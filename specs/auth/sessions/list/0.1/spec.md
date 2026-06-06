@@ -17,8 +17,10 @@ authors:
 parties:
   - role: Subject
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: Enumerating active sessions reveals where a subject is signed in (device labels, geographic hints if surfaced via ext). A bearer-token list would let any token-holder harvest a different subject's device fingerprint; requiring a DID-signed proof keeps the enumeration tied to the subject's signing key.

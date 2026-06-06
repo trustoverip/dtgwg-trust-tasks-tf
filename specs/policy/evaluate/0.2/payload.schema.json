@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/evaluate/0.2",
+  "title": "Policy Evaluate — payload",
+  "description": "Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected deny/allow outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input"],
+  "properties": {
+    "input": { "$ref": "../../_shared/0.2/policy.schema.json#/$defs/PolicyInput" },
+    "candidateModule": {
+      "type": "string",
+      "description": "Optional — when supplied, evaluate as if this Rego source were active (e.g. preview a pending upsert). The candidate is layered into the evaluator at the priority specified by `candidatePriority` (default 1000) for this call only."
+    },
+    "candidatePriority": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "default": 1000
+    },
+    "includeTrace": { "type": "boolean", "default": false },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Evaluate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision"],
+      "properties": {
+        "decision": { "$ref": "../../_shared/0.2/policy.schema.json#/$defs/PolicyDecision" },
+        "matchedPolicies": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy."
+        },
+        "trace": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

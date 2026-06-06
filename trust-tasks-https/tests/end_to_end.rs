@@ -616,3 +616,38 @@ async fn permission_denied_from_spec_handler() {
         other => panic!("expected TrustTaskError, got {other:?}"),
     }
 }
+
+// ─── SPEC §10.2 parser hardening (pre-auth DoS controls) ──────────────────
+
+/// An over-limit body is rejected by the router's `DefaultBodyLimit` before
+/// it is buffered, parsed, or authenticated — an audited memory-exhaustion
+/// control (SPEC §10.2). 512 KiB exceeds the 256 KiB cap.
+#[tokio::test]
+async fn oversized_body_is_rejected_before_processing() {
+    let addr = spawn_server().await;
+    let big = vec![b'a'; 512 * 1024];
+    let resp = reqwest::Client::new()
+        .post(format!("http://{addr}/trust-tasks"))
+        .body(big)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), reqwest::StatusCode::PAYLOAD_TOO_LARGE);
+}
+
+/// A pathologically nested JSON body within the size budget exceeds
+/// `serde_json`'s default 128-level recursion limit, so it fails to parse
+/// (→ `malformedRequest`/400) rather than overflowing the stack.
+#[tokio::test]
+async fn deeply_nested_body_fails_to_parse_not_overflow() {
+    let addr = spawn_server().await;
+    let body = "[".repeat(1000) + &"]".repeat(1000);
+    let resp = reqwest::Client::new()
+        .post(format!("http://{addr}/trust-tasks"))
+        .header("content-type", "application/json")
+        .body(body)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), reqwest::StatusCode::BAD_REQUEST);
+}

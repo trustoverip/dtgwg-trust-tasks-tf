@@ -21,7 +21,7 @@
 //! [`RejectReason::MalformedRequest`] when a registered URI is found but the
 //! payload fails to deserialize into the corresponding `P`.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use chrono::Utc;
 use serde_json::Value;
@@ -41,6 +41,11 @@ type BoxedHandler<R> = Box<dyn Fn(TrustTask<Value>) -> Result<R, RejectReason> +
 /// and deserialization-time failures.
 pub struct Dispatcher<R> {
     handlers: HashMap<String, BoxedHandler<R>>,
+    /// Slugs (version-independent) of every registered handler, so an inbound
+    /// document whose slug is known but whose `MAJOR.MINOR` is not registered
+    /// can be distinguished as `unsupportedVersion` rather than
+    /// `unsupportedType` (SPEC §5.2 / §8.3).
+    slugs: HashSet<String>,
 }
 
 impl<R> Default for Dispatcher<R> {
@@ -54,6 +59,7 @@ impl<R> Dispatcher<R> {
     pub fn new() -> Self {
         Self {
             handlers: HashMap::new(),
+            slugs: HashSet::new(),
         }
     }
 
@@ -77,6 +83,7 @@ impl<R> Dispatcher<R> {
             let typed = downcast_payload::<P>(doc)?;
             Ok(handler(typed))
         };
+        self.slugs.insert(P::type_uri().slug().to_string());
         self.handlers
             .insert(canonical_key(&P::type_uri()), Box::new(wrapped));
         self
@@ -87,15 +94,23 @@ impl<R> Dispatcher<R> {
     /// Returns:
     ///
     /// * `Ok(R)` — handler invoked successfully.
-    /// * `Err(RejectReason::UnsupportedType)` — no handler registered for
-    ///   this Type URI; the caller typically converts this into a
-    ///   `trust-task-error/0.1` response via [`TrustTask::reject_with`].
+    /// * `Err(RejectReason::UnsupportedVersion)` — the slug is registered but
+    ///   not at this Type URI's `MAJOR.MINOR` (SPEC §5.2 / §8.3).
+    /// * `Err(RejectReason::UnsupportedType)` — the slug is not registered at
+    ///   all; the caller typically converts this into a `trust-task-error`
+    ///   response via [`TrustTask::reject_with`].
     /// * `Err(RejectReason::MalformedRequest)` — the URI matched but the
     ///   payload failed to deserialize against `P`.
     pub fn dispatch(&self, doc: TrustTask<Value>) -> Result<R, RejectReason> {
         let key = canonical_key(&doc.type_uri);
         match self.handlers.get(&key) {
             Some(handler) => handler(doc),
+            // SPEC §5.2 / §8.3: a recognized slug at an unregistered
+            // `MAJOR.MINOR` is `unsupportedVersion`; an unrecognized slug is
+            // `unsupportedType`.
+            None if self.slugs.contains(doc.type_uri.slug()) => {
+                Err(RejectReason::UnsupportedVersion { type_uri: key })
+            }
             None => Err(RejectReason::UnsupportedType { type_uri: key }),
         }
     }

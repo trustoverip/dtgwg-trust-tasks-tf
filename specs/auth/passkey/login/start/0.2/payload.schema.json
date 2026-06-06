@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/login/start/0.2",
+  "title": "Auth — Passkey Login (start)",
+  "description": "Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer."
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["login", "stepUp"],
+      "description": "Producer-declared intent. `login` issues a new session; `stepUp` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Login Start — response payload",
+      "description": "Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authId", "options"],
+      "properties": {
+        "authId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque server handle correlating this start with the matching finish."
+        },
+        "options": {
+          "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialRequestOptions",
+          "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

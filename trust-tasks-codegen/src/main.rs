@@ -213,6 +213,41 @@ fn read_proof_required_flag(spec_md_path: &Path) -> Result<bool> {
         .unwrap_or(false))
 }
 
+/// Read whether the party filling the framework `member` (`"issuer"` or
+/// `"recipient"`) is declared `requirement: REQUIRED` in the spec's front
+/// matter. Returns `false` when no party carries that `member`, when its
+/// requirement is `RECOMMENDED` / `OPTIONAL`, or when the file is missing. Per
+/// SPEC.md §7.2 item 5 / §7.3 item 5, only `REQUIRED` obliges the consumer to
+/// reject a document lacking that member in-band.
+fn read_member_required_flag(spec_md_path: &Path, member: &str) -> Result<bool> {
+    if !spec_md_path.exists() {
+        return Ok(false);
+    }
+    let text = fs::read_to_string(spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+    let mut lines = text.lines();
+    if lines.next().unwrap_or("").trim() != "---" {
+        return Ok(false);
+    }
+    let mut front_matter = String::new();
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        front_matter.push_str(line);
+        front_matter.push('\n');
+    }
+    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
+    let Some(parties) = value.get("parties").and_then(|v| v.as_sequence()) else {
+        return Ok(false);
+    };
+    Ok(parties.iter().any(|p| {
+        p.get("member").and_then(|v| v.as_str()) == Some(member)
+            && p.get("requirement").and_then(|v| v.as_str()) == Some("REQUIRED")
+    }))
+}
+
 /// Spec.md sections often embed illustrative `trust-task-error` responses
 /// next to the request/response examples. Drop any harvested example whose
 /// top-level `type` does not match this spec's URI — that way the
@@ -500,6 +535,10 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
     let invalid_examples = read_invalid_examples(spec)?;
     let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
     let is_proof_required = read_proof_required_flag(&spec.spec_md_path())?;
+    // Request `recipient` member tracks the recipient party; the response swaps
+    // parties, so its `recipient` member tracks the issuer party (§7.2 item 5).
+    let recipient_required = read_member_required_flag(&spec.spec_md_path(), "recipient")?;
+    let issuer_required = read_member_required_flag(&spec.spec_md_path(), "issuer")?;
     let module_tokens = render_module(
         spec,
         body,
@@ -508,6 +547,8 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
         &invalid_examples,
         is_bearer,
         is_proof_required,
+        recipient_required,
+        issuer_required,
         &raw,
     );
 
@@ -785,6 +826,8 @@ fn render_module(
     invalid_examples: &[InvalidExample],
     is_bearer: bool,
     is_proof_required: bool,
+    recipient_required: bool,
+    issuer_required: bool,
     schema_json: &str,
 ) -> TokenStream {
     let type_uri = spec.type_uri();
@@ -809,12 +852,29 @@ fn render_module(
         quote! {}
     };
 
+    // Per SPEC §7.2 item 5 / §7.3 item 5, a spec whose `recipient` party is
+    // REQUIRED overrides Payload::IS_RECIPIENT_REQUIRED. The request's
+    // `recipient` is the recipient party; the response swaps the parties, so its
+    // `recipient` is the request's issuer — hence the response impl uses the
+    // issuer-party requirement.
+    let req_recipient_const = if recipient_required {
+        quote! { const IS_RECIPIENT_REQUIRED: bool = true; }
+    } else {
+        quote! {}
+    };
+    let resp_recipient_const = if issuer_required {
+        quote! { const IS_RECIPIENT_REQUIRED: bool = true; }
+    } else {
+        quote! {}
+    };
+
     let response_payload_impl = if has_response {
         quote! {
             impl crate::Payload for Response {
                 const TYPE_URI: &'static str = #response_uri;
                 #bearer_const
                 #proof_required_const
+                #resp_recipient_const
             }
         }
     } else {
@@ -844,6 +904,7 @@ fn render_module(
             const TYPE_URI: &'static str = #type_uri;
             #bearer_const
             #proof_required_const
+            #req_recipient_const
         }
 
         #response_payload_impl

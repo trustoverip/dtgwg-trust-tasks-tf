@@ -19,8 +19,10 @@ authors:
 parties:
   - role: Producer
     requirement: REQUIRED
+    member: issuer
   - role: Auth service
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: OPTIONAL
   rationale: The cryptographic gate is the WebAuthn assertion itself; the framework proof adds value only when the producer is signing on behalf of an existing session (step-up against a session held by a different VID). Consumers MAY require it for the step-up flow.

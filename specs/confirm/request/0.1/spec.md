@@ -18,8 +18,10 @@ authors:
 parties:
   - role: Relying party
     requirement: REQUIRED
+    member: issuer
   - role: Approver
     requirement: REQUIRED
+    member: recipient
 proofRequirement:
   requirement: REQUIRED
   rationale: The `reason` is displayed to the user as the basis of consent. A proof binds the request — including the reason — to the relying party's key, so a man-in-the-middle cannot substitute a different reason while leaving the signed envelope intact.

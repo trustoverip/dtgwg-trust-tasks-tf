@@ -146,6 +146,18 @@ mod jwt {
         where
             F: Fn(&C) -> Option<String> + Send + Sync + 'static,
         {
+            // Guardrail against algorithm confusion: an empty `algorithms`
+            // list tells `jsonwebtoken` to accept a token's self-declared
+            // `alg`, enabling HS/RS key-confusion and `alg: none` forgeries.
+            // A verifier MUST pin the exact algorithm(s) it expects; this is a
+            // programming error, so fail loudly at construction rather than
+            // silently accept forged tokens.
+            assert!(
+                !validation.algorithms.is_empty(),
+                "JwtBearerAuth requires Validation to pin at least one algorithm; \
+                 an empty `algorithms` list disables algorithm checking and \
+                 exposes algorithm-confusion attacks"
+            );
             Self {
                 key,
                 validation,
@@ -217,6 +229,33 @@ mod jwt {
                 auth.resolve(&token),
                 Some("did:web:alice.example".to_string())
             );
+        }
+
+        #[test]
+        #[should_panic(expected = "at least one algorithm")]
+        fn empty_validation_algorithms_is_rejected_at_construction() {
+            let mut v = Validation::new(Algorithm::HS256);
+            v.algorithms.clear(); // pins nothing — must not be constructible
+            let _ = JwtBearerAuth::new(DecodingKey::from_secret(b"x"), v, |c: &Claims| {
+                Some(c.sub.clone())
+            });
+        }
+
+        #[test]
+        fn token_with_unexpected_alg_is_rejected() {
+            // Auth pins HS256; a token signed with HS512 must not resolve.
+            let secret = b"test-secret";
+            let token = encode(
+                &Header::new(Algorithm::HS512),
+                &Claims {
+                    sub: "did:web:eve.example".into(),
+                    vid: None,
+                    exp: 10_000_000_000,
+                },
+                &EncodingKey::from_secret(secret),
+            )
+            .unwrap();
+            assert_eq!(auth(secret).resolve(&token), None);
         }
 
         #[test]

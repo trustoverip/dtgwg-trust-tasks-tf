@@ -1,0 +1,12 @@
+[
+  {
+    "note": "Empty payload omits required member(s): event.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  }
+]

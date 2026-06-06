@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/device/set-wake/0.2",
+  "title": "Device Set Wake — payload",
+  "description": "A device conveys to its VTA the opaque WakeHandle it obtained from a push gateway, so the VTA can own the trigger allowlist and provision the gateway. Carries no platform push token — only the handle. Present `wakeHandle` sets/replaces the wake channel; absent clears it (device becomes non-wakeable). Idempotent; re-issued on token rotation. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "wakeHandle": {
+      "$ref": "../../_shared/0.2/device-binding.schema.json#/$defs/WakeHandle",
+      "description": "OPTIONAL. The opaque gateway-issued handle for this device's push channel. Omit to clear the wake channel (the VTA empties the gateway allowlist; the device becomes non-wakeable)."
+    },
+    "pushPlatform": {
+      "type": "string",
+      "enum": ["apns", "fcm", "webpush"],
+      "description": "OPTIONAL, advisory. The abstract platform behind the handle, for device/list visibility only. The VTA never sees the token; this is a non-authoritative hint."
+    },
+    "suggestedTriggers": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "OPTIONAL, advisory. DIDs the device suggests as wake triggers (e.g. its mediator). The VTA owns the allowlist and MAY ignore this entirely — it is a hint, not an instruction."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Set Wake — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pushCapable"],
+      "properties": {
+        "triggerPolicy": {
+          "$ref": "../../_shared/0.2/device-binding.schema.json#/$defs/WakeTriggerPolicy",
+          "description": "The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared."
+        },
+        "pushCapable": {
+          "type": "boolean",
+          "description": "Whether the device now has a usable wake channel (true after a successful set, false after a clear)."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
