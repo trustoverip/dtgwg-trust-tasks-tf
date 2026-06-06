@@ -142,6 +142,41 @@ impl<P> TrustTask<P> {
         Ok(())
     }
 
+    /// Apply the per-spec consumer checks that depend on the payload type's
+    /// codegen-emitted flags — the *typed* subset of SPEC §7.2:
+    ///
+    /// * **item 5b — recipient-REQUIRED** ([`Payload::IS_RECIPIENT_REQUIRED`]):
+    ///   a `recipient`-REQUIRED spec needs the recipient carried in-band, so a
+    ///   document without one is `malformedRequest`.
+    /// * **item 7 clause A — proof-REQUIRED** ([`Payload::IS_PROOF_REQUIRED`]):
+    ///   a `proof`-REQUIRED spec rejects a proofless document with
+    ///   `proofRequired`.
+    /// * **item 8 — audience binding** ([`Self::enforce_audience_binding`]).
+    ///
+    /// This is the single source of truth for the flag-driven §7.2 checks. Both
+    /// the library [`consume_inbound`](crate::consume_inbound) path and any
+    /// binding-specific pipeline (for example the HTTPS server) call it, so the
+    /// two cannot diverge on the check set as new flag-driven rules are added.
+    /// It does **not** include the non-typed checks (expiry, recipient/transport
+    /// cross-check, proof *verification*), which each pipeline applies around
+    /// this call per its own transport model.
+    pub fn enforce_spec_policy(&self) -> Result<(), RejectReason>
+    where
+        P: Payload,
+    {
+        if self.recipient.is_none() && P::IS_RECIPIENT_REQUIRED {
+            return Err(RejectReason::MalformedRequest {
+                reason: "specification declares recipient REQUIRED but the document \
+                         carries no in-band recipient"
+                    .to_string(),
+            });
+        }
+        if self.proof.is_none() && P::IS_PROOF_REQUIRED {
+            return Err(RejectReason::ProofRequired);
+        }
+        self.enforce_audience_binding()
+    }
+
     /// Returns `true` if `expires_at` is set and `now ≥ expiresAt`
     /// (inclusive bound per SPEC.md §4.2). The instant `expiresAt` is
     /// itself treated as expired, matching JWT-style semantics.

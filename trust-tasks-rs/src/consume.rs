@@ -186,25 +186,6 @@ where
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 
-    // §7.2 item 5b — recipient-REQUIRED enforcement. When the spec declares its
-    // `recipient` member REQUIRED, a document lacking an in-band `recipient` is
-    // malformed: the audience must be carried in-band, not merely transport-
-    // derived, so the document is self-contained (§4.8 / §7.3 item 5). This is
-    // a per-spec rule, so it is checked here (where `P` is in scope) rather than
-    // in the type-erased `validate_basic`.
-    if doc.recipient.is_none() && P::IS_RECIPIENT_REQUIRED {
-        return route_rejection(
-            transport,
-            &doc,
-            RejectReason::MalformedRequest {
-                reason: "specification declares recipient REQUIRED but the document \
-                         carries no in-band recipient"
-                    .to_string(),
-            },
-            error_id_factory,
-        );
-    }
-
     // §7.2 item 6 — in-band vs transport-derived identity cross-check.
     let parties = match transport.resolve_parties(&doc) {
         Ok(p) => p,
@@ -217,17 +198,6 @@ where
             );
         }
     };
-
-    // §7.2 item 7, clause A — IS_PROOF_REQUIRED enforcement. Spec-
-    // mandated proof requirement fires regardless of policy.
-    if doc.proof.is_none() && P::IS_PROOF_REQUIRED {
-        return route_rejection(
-            transport,
-            &doc,
-            RejectReason::ProofRequired,
-            error_id_factory,
-        );
-    }
 
     // §7.2 item 7, clause B — apply the consumer's chosen proof policy.
     match (&policy, doc.proof.as_ref()) {
@@ -258,9 +228,12 @@ where
         | (ProofPolicy::AcceptUnverified, _) => {}
     }
 
-    // §7.2 item 8 — audience binding (proof + no recipient on a non-
-    // bearer spec).
-    if let Err(reason) = doc.enforce_audience_binding() {
+    // §7.2 items 5b + 7A + 8 — the flag-driven per-spec checks, in one place
+    // (`TrustTask::enforce_spec_policy`) shared with binding pipelines such as
+    // the HTTPS server, so the typed check set cannot diverge between paths.
+    // The non-typed checks above (expiry, cross-check, proof verification) are
+    // applied per-pipeline; this runs after them.
+    if let Err(reason) = doc.enforce_spec_policy() {
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 

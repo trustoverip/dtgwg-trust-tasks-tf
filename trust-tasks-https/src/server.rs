@@ -143,36 +143,15 @@ impl HttpsServerBuilder {
             // Downcast payload to P.
             let typed = downcast::<P>(doc)?;
 
-            // SPEC §7.2 item 5b — recipient-REQUIRED enforcement. When the spec
-            // declares its `recipient` member REQUIRED, the audience must be
-            // carried in-band (not merely transport-derived), so a document with
-            // no in-band `recipient` is malformed. Mirrors the library
-            // `consume_inbound` path; checked before the proof gate per §7.2
-            // ordering.
-            if typed.recipient.is_none() && P::IS_RECIPIENT_REQUIRED {
-                return Err(RejectReason::MalformedRequest {
-                    reason: "specification declares recipient REQUIRED but the document \
-                             carries no in-band recipient"
-                        .to_string(),
-                });
-            }
-
-            // SPEC §7.2 item 7 — proof-required enforcement. The server
-            // has no in-band verifier, but a *spec* may still oblige
-            // every conforming consumer to refuse proofless documents
-            // (`proofRequirement.requirement: REQUIRED` in front matter
-            // ⇒ codegen-emitted `IS_PROOF_REQUIRED = true`). The
-            // proof-present case is rejected upstream in
-            // `dispatch_handler`; here we close the converse so REQUIRED
-            // specs cannot be processed without a proof simply because
-            // this binding does not verify.
-            if typed.proof.is_none() && P::IS_PROOF_REQUIRED {
-                return Err(RejectReason::ProofRequired);
-            }
-
-            // SPEC §7.2 item 8 — audience binding. This is the first point
-            // where we have a typed payload (and therefore P::IS_BEARER).
-            typed.enforce_audience_binding()?;
+            // SPEC §7.2 items 5b + 7A + 8 — the flag-driven per-spec checks
+            // (recipient-REQUIRED, proof-REQUIRED, audience binding). This is
+            // the first point where the typed payload (and its codegen-emitted
+            // flags) is available. It calls the SAME method as the library
+            // `consume_inbound` path (`TrustTask::enforce_spec_policy`) so the
+            // two pipelines cannot diverge on the check set. The non-typed
+            // checks (expiry, cross-check, proof verification) ran upstream in
+            // `dispatch_handler`.
+            typed.enforce_spec_policy()?;
 
             // Invoke user handler.
             let response_payload = handler(&typed, ctx)?;
