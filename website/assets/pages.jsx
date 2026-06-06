@@ -151,9 +151,28 @@ function collapseContext(lines, ctx = 3) {
 
 const DIFF_ADD = "#0f7b6c", DIFF_DEL = "#c0392b";
 
+// A version picker for one side of a diff.
+function VersionSelect({ versions, value, onChange }) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)", padding: "0.3em 0.6em", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", background: "var(--tt-surface)", color: "var(--tt-text)" }}
+    >
+      {versions.map(v => (
+        <option key={v.version} value={v.version}>v{v.version}{v.status === "retired" ? " (retired)" : ""}</option>
+      ))}
+    </select>
+  );
+}
+
 // Renders a GitHub-style diff of two JSON values (a payload schema across two
 // versions). Shown on demand from the spec page.
 function SchemaDiff({ before, after, fromVer, toVer }) {
+  if (before == null || after == null) return null;
+  if (fromVer === toVer) {
+    return <p style={{ color: "var(--tt-text-muted)" }}>Pick two different versions to compare.</p>;
+  }
   const beforeText = JSON.stringify(before, null, 2);
   const afterText = JSON.stringify(after, null, 2);
   const lines = diffLines(beforeText, afterText);
@@ -1095,13 +1114,20 @@ function SpecPage({ slug, version, id, setRoute }) {
   const [activeSection, setActiveSection] = useS("metadata");
   const [showDiff, setShowDiff] = useS(false);
 
-  // The immediately-previous registered version of this slug, for the schema diff.
-  const prevTask = (() => {
-    const cmp = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
-    return window.TT_TASKS
-      .filter(t => t.slug === task.slug && cmp(t.version, task.version) < 0)
-      .sort((a, b) => cmp(b.version, a.version))[0] || null;
-  })();
+  // All registered versions of this slug (ascending) and the two sides of the
+  // diff, defaulting to (previous → current) for the version being viewed.
+  const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+  const versions = window.TT_TASKS.filter(t => t.slug === task.slug).sort((a, b) => cmpVer(a.version, b.version));
+  const curIdx = versions.findIndex(v => v.version === task.version);
+  const prevTask = curIdx > 0 ? versions[curIdx - 1] : null;
+  const [diffFrom, setDiffFrom] = useS(task.version);
+  const [diffTo, setDiffTo] = useS(task.version);
+  useE(() => {
+    setDiffFrom(prevTask ? prevTask.version : task.version);
+    setDiffTo(task.version);
+  }, [task.slug, task.version]);
+  const fromSchema = (versions.find(v => v.version === diffFrom) || {}).schema;
+  const toSchema = (versions.find(v => v.version === diffTo) || {}).schema;
 
   useE(() => {
     if (!task.prosePath) {
@@ -1239,22 +1265,25 @@ function SpecPage({ slug, version, id, setRoute }) {
         <p>The normative JSON Schema for this Trust Task's <code>payload</code> member (Draft 2020-12). The outer document structure (<code>id</code>, <code>type</code>, <code>issuer</code>, <code>recipient</code>, <code>issuedAt</code>, <code>expiresAt</code>, <code>proof</code>) is defined by the framework specification.</p>
         <CodeBlock json={task.schema} />
 
-        {prevTask && (
+        {versions.length > 1 && (
           <div style={{ marginTop: "var(--tt-space-4)" }}>
             <button
               className="btn btn--ghost"
               aria-expanded={showDiff}
               onClick={() => setShowDiff(!showDiff)}
             >
-              {showDiff ? "Hide" : "Show"} changes from v{prevTask.version} {showDiff ? "↑" : "↓"}
+              {showDiff ? "Hide" : "Compare"} payload-schema versions {showDiff ? "↑" : "↓"}
             </button>
             {showDiff && (
-              <SchemaDiff
-                before={prevTask.schema}
-                after={task.schema}
-                fromVer={prevTask.version}
-                toVer={task.version}
-              />
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--tt-space-3)", flexWrap: "wrap", margin: "var(--tt-space-4) 0 var(--tt-space-2)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)" }}>
+                  <span style={{ color: "var(--tt-text-muted)" }}>Compare</span>
+                  <VersionSelect versions={versions} value={diffFrom} onChange={setDiffFrom} />
+                  <span style={{ color: "var(--tt-text-muted)" }}>→</span>
+                  <VersionSelect versions={versions} value={diffTo} onChange={setDiffTo} />
+                </div>
+                <SchemaDiff before={fromSchema} after={toSchema} fromVer={diffFrom} toVer={diffTo} />
+              </div>
             )}
           </div>
         )}
