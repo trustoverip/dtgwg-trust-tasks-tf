@@ -110,6 +110,87 @@ function countSlugsByCategory(tasks) {
   return out;
 }
 
+// Line-level diff (LCS) between two blocks of text. Returns an array of
+// { t: "same" | "add" | "del", text }. Fine for JSON-schema-sized inputs.
+function diffLines(aText, bText) {
+  const a = aText.split("\n"), b = bText.split("\n");
+  const n = a.length, m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const out = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { out.push({ t: "same", text: a[i] }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ t: "del", text: a[i++] }); }
+    else { out.push({ t: "add", text: b[j++] }); }
+  }
+  while (i < n) out.push({ t: "del", text: a[i++] });
+  while (j < m) out.push({ t: "add", text: b[j++] });
+  return out;
+}
+
+// Collapse long runs of unchanged lines into a single "gap" marker, keeping
+// `ctx` lines of context around each change.
+function collapseContext(lines, ctx = 3) {
+  const keep = new Array(lines.length).fill(false);
+  lines.forEach((l, i) => {
+    if (l.t !== "same")
+      for (let j = Math.max(0, i - ctx); j <= Math.min(lines.length - 1, i + ctx); j++) keep[j] = true;
+  });
+  const out = [];
+  let gap = 0;
+  for (let i = 0; i < lines.length; i++) {
+    if (keep[i]) { if (gap > 0) { out.push({ t: "gap", n: gap }); gap = 0; } out.push(lines[i]); }
+    else gap++;
+  }
+  if (gap > 0) out.push({ t: "gap", n: gap });
+  return out;
+}
+
+const DIFF_ADD = "#0f7b6c", DIFF_DEL = "#c0392b";
+
+// Renders a GitHub-style diff of two JSON values (a payload schema across two
+// versions). Shown on demand from the spec page.
+function SchemaDiff({ before, after, fromVer, toVer }) {
+  const beforeText = JSON.stringify(before, null, 2);
+  const afterText = JSON.stringify(after, null, 2);
+  const lines = diffLines(beforeText, afterText);
+  const adds = lines.filter(l => l.t === "add").length;
+  const dels = lines.filter(l => l.t === "del").length;
+  if (adds === 0 && dels === 0) {
+    return (
+      <p style={{ color: "var(--tt-text-muted)" }}>
+        The <code>payload</code> schema is identical between v{fromVer} and v{toVer} — the differences are elsewhere (prose, error codes, or front matter).
+      </p>
+    );
+  }
+  return (
+    <div style={{ marginTop: "var(--tt-space-3)" }}>
+      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)" }}>
+        Payload schema · v{fromVer} → v{toVer} ·{" "}
+        <span style={{ color: DIFF_ADD }}>+{adds}</span>{" "}
+        <span style={{ color: DIFF_DEL }}>−{dels}</span>
+      </div>
+      <div style={{ overflow: "auto", maxHeight: "34rem", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", lineHeight: 1.6 }}>
+        {collapseContext(lines).map((l, idx) => {
+          if (l.t === "gap")
+            return <div key={idx} style={{ padding: "0.15em 0.9em", color: "var(--tt-text-muted)", background: "var(--tt-surface-elev)" }}>⋯ {l.n} unchanged line{l.n === 1 ? "" : "s"}</div>;
+          const bg = l.t === "add" ? "rgba(15,123,108,0.12)" : l.t === "del" ? "rgba(192,57,43,0.12)" : "transparent";
+          const sign = l.t === "add" ? "+" : l.t === "del" ? "−" : " ";
+          const signColor = l.t === "add" ? DIFF_ADD : l.t === "del" ? DIFF_DEL : "var(--tt-text-muted)";
+          return (
+            <div key={idx} style={{ padding: "0 0.9em", whiteSpace: "pre", background: bg, color: l.t === "same" ? "var(--tt-text-muted)" : "var(--tt-text)" }}>
+              <span style={{ display: "inline-block", width: "1.2em", color: signColor, userSelect: "none" }}>{sign}</span>{l.text}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function HomePage({ tweaks, setRoute }) {
   const stats = window.TT_STATS;
   const [q, setQ] = useS("");
@@ -1012,6 +1093,15 @@ function SpecPage({ slug, version, id, setRoute }) {
   const [proseToc, setProseToc] = useS([]);
   const [proseError, setProseError] = useS(null);
   const [activeSection, setActiveSection] = useS("metadata");
+  const [showDiff, setShowDiff] = useS(false);
+
+  // The immediately-previous registered version of this slug, for the schema diff.
+  const prevTask = (() => {
+    const cmp = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+    return window.TT_TASKS
+      .filter(t => t.slug === task.slug && cmp(t.version, task.version) < 0)
+      .sort((a, b) => cmp(b.version, a.version))[0] || null;
+  })();
 
   useE(() => {
     if (!task.prosePath) {
@@ -1148,6 +1238,26 @@ function SpecPage({ slug, version, id, setRoute }) {
         <h2 id="schema">JSON Schema</h2>
         <p>The normative JSON Schema for this Trust Task's <code>payload</code> member (Draft 2020-12). The outer document structure (<code>id</code>, <code>type</code>, <code>issuer</code>, <code>recipient</code>, <code>issuedAt</code>, <code>expiresAt</code>, <code>proof</code>) is defined by the framework specification.</p>
         <CodeBlock json={task.schema} />
+
+        {prevTask && (
+          <div style={{ marginTop: "var(--tt-space-4)" }}>
+            <button
+              className="btn btn--ghost"
+              aria-expanded={showDiff}
+              onClick={() => setShowDiff(!showDiff)}
+            >
+              {showDiff ? "Hide" : "Show"} changes from v{prevTask.version} {showDiff ? "↑" : "↓"}
+            </button>
+            {showDiff && (
+              <SchemaDiff
+                before={prevTask.schema}
+                after={task.schema}
+                fromVer={prevTask.version}
+                toVer={task.version}
+              />
+            )}
+          </div>
+        )}
 
         <h2 id="uses">Shared Schemas Used</h2>
         <p style={{ color: "var(--tt-text-muted)", marginTop: "calc(-1 * var(--tt-space-3))" }}>
