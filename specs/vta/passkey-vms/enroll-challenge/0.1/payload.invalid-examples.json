@@ -1,0 +1,24 @@
+[
+  {
+    "note": "Missing required `did` — the target DID is mandatory.",
+    "payload": {
+      "label": "MacBook Touch ID"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member (additionalProperties: false catches `challenge` — the challenge is server-issued in the response, never supplied in the request).",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "challenge": "client-should-not-send-this"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule: every immediate child of ext MUST be reverse-DNS namespaced.",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1",
+  "title": "VTA Passkey-VM Enroll Submit — payload",
+  "description": "Finalise passkey enrolment by submitting the WebAuthn registration result for a ceremony opened by vta/passkey-vms/enroll-challenge. The VTA re-derives the Multikey from attestationObject.authData and rejects on mismatch with the browser-claimed publicKeyMultibase — the browser's value is NOT trusted as authoritative. On success the VTA appends the verificationMethod to the DID document via a WebVH log entry. All byte-valued fields are base64url-encoded (no padding).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "ceremonyId",
+    "credentialId",
+    "publicKeyMultibase",
+    "coseAlgorithm",
+    "attestationObject",
+    "clientDataJson",
+    "authenticatorData"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID the new verificationMethod is to be added to. MUST match the DID bound to `ceremonyId` at challenge time — a mismatch is rejected as a cross-DID replay."
+    },
+    "ceremonyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The `ceremonyId` returned by vta/passkey-vms/enroll-challenge. Single-use; consumed by this submission."
+    },
+    "credentialId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "WebAuthn `credential.id` (base64url, no padding). The published verificationMethod `id` fragment is derived as `passkey-<base64url(sha256(credentialId))>`."
+    },
+    "publicKeyMultibase": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Browser-computed W3C Multikey for the credential public key. ADVISORY: the VTA re-derives the Multikey from `attestationObject.authData` and rejects this submission if the values differ (anti-tamper gate). The re-derived key — not this one — is what gets published."
+    },
+    "coseAlgorithm": {
+      "type": "integer",
+      "description": "COSE algorithm identifier of the credential key (e.g. -7 for ES256, -8 for EdDSA). Must be an algorithm the VTA can convert to a Multikey."
+    },
+    "attestationObject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw WebAuthn `attestationObject` — base64url-encoded CBOR. The VTA parses `authData` from this to re-derive the authoritative public key."
+    },
+    "clientDataJson": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw WebAuthn `clientDataJSON` (base64url, no padding). Bound to the ceremony `challenge` during WebAuthn verification."
+    },
+    "authenticatorData": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw WebAuthn `authenticatorData` (base64url, no padding)."
+    },
+    "transports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Transport hints reported by the authenticator (e.g. `internal`, `hybrid`). Advisory; carried through to the published verificationMethod's `webauthnTransports`."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Optional operator-supplied label (e.g. \"MacBook Touch ID\"), carried through to the published verificationMethod."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Passkey-VM Enroll Submit — response payload",
+      "description": "Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verificationMethod", "webvhVersion"],
+      "properties": {
+        "verificationMethod": {
+          "$ref": "../../../_shared/0.1/passkey-vm.schema.json#/$defs/PasskeyVerificationMethod",
+          "description": "The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative."
+        },
+        "webvhVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The WebVH log-entry version that recorded the change (e.g. \"3-Qm…\")."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

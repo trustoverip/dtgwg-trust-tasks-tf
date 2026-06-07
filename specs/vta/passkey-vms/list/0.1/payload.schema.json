@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/passkey-vms/list/0.1",
+  "title": "VTA Passkey-VM List — payload",
+  "description": "List every passkey verificationMethod currently published on a VTA-managed DID. Admin-gated read. The returned entries are the same Multikey verificationMethods that appear in the DID document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID whose passkey verificationMethods to enumerate. The producer MUST hold the admin role on this DID's context."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Passkey-VM List — response payload",
+      "description": "The passkey verificationMethods currently on the DID.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verificationMethods"],
+      "properties": {
+        "verificationMethods": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/passkey-vm.schema.json#/$defs/PasskeyVerificationMethod"
+          },
+          "description": "Every passkey verificationMethod published on the DID. Empty when none are enrolled."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

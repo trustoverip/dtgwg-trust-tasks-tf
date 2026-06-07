@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Missing required `did` — the DID to enumerate is mandatory.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level payload member (additionalProperties: false catches `verificationMethods` — that is a response field, never sent in the request).",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "verificationMethods": []
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule: every immediate child of ext MUST be reverse-DNS namespaced.",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "note": "Missing required `ceremonyId` — submission must reference the open ceremony.",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "credentialId": "AQIDBAUGBwgJCgsMDQ4PEA",
+      "publicKeyMultibase": "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "coseAlgorithm": -7,
+      "attestationObject": "o2NmbXRkbm9uZQ",
+      "clientDataJson": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0",
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4"
+    }
+  },
+  {
+    "note": "`coseAlgorithm` must be an integer (COSE algorithm id), not a string.",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "ceremonyId": "cer_8Q1m2n3o4p5q6r7s",
+      "credentialId": "AQIDBAUGBwgJCgsMDQ4PEA",
+      "publicKeyMultibase": "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "coseAlgorithm": "ES256",
+      "attestationObject": "o2NmbXRkbm9uZQ",
+      "clientDataJson": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0",
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member (additionalProperties: false catches `webvhVersion` — that is a response field, never sent in the request).",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "ceremonyId": "cer_8Q1m2n3o4p5q6r7s",
+      "credentialId": "AQIDBAUGBwgJCgsMDQ4PEA",
+      "publicKeyMultibase": "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "coseAlgorithm": -7,
+      "attestationObject": "o2NmbXRkbm9uZQ",
+      "clientDataJson": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0",
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4",
+      "webvhVersion": "3-QmExample"
+    }
+  }
+]

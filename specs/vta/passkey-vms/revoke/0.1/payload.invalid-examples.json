@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Missing required `fragment` — the verificationMethod to remove is mandatory.",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com"
+    }
+  },
+  {
+    "note": "Missing required `did`.",
+    "payload": {
+      "fragment": "passkey-3q2r1s0tUvWxYz"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member (additionalProperties: false catches `force`).",
+    "payload": {
+      "did": "did:webvh:QmcExampleScid:example.com",
+      "fragment": "passkey-3q2r1s0tUvWxYz",
+      "force": true
+    }
+  }
+]

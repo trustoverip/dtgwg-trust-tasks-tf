@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1",
+  "title": "VTA Passkey-VM Revoke — payload",
+  "description": "Remove a passkey verificationMethod from a VTA-managed DID document via a WebVH log entry. Admin-gated. The VM is identified by its URL fragment (everything after `#` in the verificationMethod id). The success response is an empty object — modelled as an object so future additive fields do not bump the version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did", "fragment"],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID the verificationMethod lives on. The producer MUST hold the admin role on this DID's context."
+    },
+    "fragment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Passkey-VM Revoke — response payload",
+      "description": "Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}
