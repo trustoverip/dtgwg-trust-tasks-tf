@@ -140,13 +140,23 @@ async function emitIndex(generated) {
           .join("") + `_v${slugInfo.version.replace(/\./g, "_")}`;
       lines.push(`export * as ${id} from ${JSON.stringify(rel)};`);
     } else {
-      // Shared module — flat re-export.
+      // Shared module — flat re-export, version-qualified with the same
+      // `_v<major>_<minor>` suffix the task exports above carry. Without
+      // the version the alias is derived from the basename alone, so a
+      // shared schema published at both 0.1 and 0.2 (device-binding,
+      // policy, sync-event, the vault/* shapes, the framework schema)
+      // emits the same identifier twice and breaks `tsc` with TS2300.
+      const version = rel
+        .replace(/^\.\//, "")
+        .split("/")
+        .find((s) => /^\d+\.\d+$/.test(s));
       const name = path
         .basename(outPath, ".ts")
         .split("-")
         .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
         .join("");
-      lines.push(`export * as ${name}Shared from ${JSON.stringify(rel)};`);
+      const suffix = version ? `_v${version.replace(/\./g, "_")}` : "";
+      lines.push(`export * as ${name}Shared${suffix} from ${JSON.stringify(rel)};`);
     }
   }
   await fs.writeFile(path.join(OUT_DIR, "index.ts"), lines.join("\n") + "\n", "utf8");
