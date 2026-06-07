@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.1] — 2026-06-07
+
+Additive `vta/passkey-vms/*` Trust Task family, regenerated from dtgwg PR #81 — the previously-implemented-but-unspecced passkey-as-verificationMethod endpoints, now published in the registry. Additive; consumers pick up `0.2.1` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`specs::vta::passkey_vms::enroll_challenge::v0_1`** — `vta/passkey-vms/enroll-challenge/0.1`: a DID administrator requests a WebAuthn registration challenge for a VTA-managed DID. Payload `{ did, label? }`; response carries the challenge + relying-party / user parameters.
+- **`specs::vta::passkey_vms::enroll_submit::v0_1`** — `vta/passkey-vms/enroll-submit/0.1`: the administrator submits the WebAuthn registration result; the VTA re-derives the public key from the attestation and, on success, publishes the verificationMethod via a WebVH log entry. Response `{ verificationMethod, webvhVersion }`.
+- **`specs::vta::passkey_vms::list::v0_1`** — `vta/passkey-vms/list/0.1`: enumerate the passkey verificationMethods on a DID. Response `{ verificationMethods }`.
+- **`specs::vta::passkey_vms::revoke::v0_1`** — `vta/passkey-vms/revoke/0.1`: remove a passkey verificationMethod by fragment via a WebVH log entry. Empty success body.
+- **`PasskeyVerificationMethod`** shared shape (`vta/_shared/0.1/passkey-vm`) — a WebAuthn passkey published as a `Multikey` verificationMethod (purpose `authentication`); reused by the `enroll-submit` and `list` responses.
+
+These are admin-gated (`IS_PROOF_REQUIRED`, `IS_RECIPIENT_REQUIRED`), in the `authentication` category.
+
 ## [0.1.8] — 2026-06-04
 
 `did-management/did/check-name/0.1` gains an **auto-assign** mode and the shared `DidRecord` gains a `didUrl` locator. Additive; consumers pick up `0.1.8` via `cargo update -p trust-tasks-rs`.
