@@ -40,6 +40,13 @@ window.TT_CATEGORIES = [
     icon: "shield-check"
   },
   {
+    id: "chat",
+    name: "Chat",
+    color: "teal",
+    blurb: "Conversational messaging between AI agents and messaging-platform bridges — author-signed, hash-linked messages forming a verifiable per-conversation chain for audit and dispute resolution (chat/*).",
+    icon: "message"
+  },
+  {
     id: "credentials",
     name: "Credentials",
     color: "amber",
