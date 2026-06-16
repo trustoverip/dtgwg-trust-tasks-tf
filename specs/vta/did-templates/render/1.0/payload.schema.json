@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/render/1.0",
+  "title": "VTA DID-Template Render — payload",
+  "description": "Render a global DID template to a DID document. Authenticated callers supply variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW) server-side, merges the caller's on top, substitutes every placeholder, and returns the rendered document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Resource id — the name of the global template to render."
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {},
+      "description": "Caller-supplied template variables, keyed by name. The VTA injects ambient variables VTA_DID, VTA_URL, NOW server-side and merges these on top."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Render — response payload",
+      "description": "The rendered DID document.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document"],
+      "properties": {
+        "document": {
+          "type": "object",
+          "description": "The rendered DID document with all placeholders substituted."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0",
+  "title": "VTA Context DID-Template Render — payload",
+  "description": "Render a context-scoped DID template to a DID document on a VTA. Gated on context access. The VTA fills `{TOKEN}` placeholders with caller-supplied variables plus ambient values it injects server-side. The success response is the rendered DID document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "name"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The context the template is scoped to."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Resource id of the template to render within the context scope."
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {},
+      "description": "Caller-supplied variables; the VTA also injects ambient VTA_DID, VTA_URL, NOW, CONTEXT_ID, and CONTEXT_DID (if set on the context) server-side."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Context DID-Template Render — response payload",
+      "description": "The rendered DID document with all placeholders filled.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document"],
+      "properties": {
+        "document": {
+          "type": "object",
+          "description": "The rendered DID document."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

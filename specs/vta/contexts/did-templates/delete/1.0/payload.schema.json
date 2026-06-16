@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0",
+  "title": "VTA Context DID-Template Delete — payload",
+  "description": "Remove a DID template scoped to a context on a VTA by name. Gated on the context's admin (or super-admin). The success response echoes the name and confirms deletion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "name"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The context the template is scoped to."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Resource id of the template to remove within the context scope."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Context DID-Template Delete — response payload",
+      "description": "Confirmation that the named context-scoped template was removed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "deleted"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The template name that was removed; echoes the request `name`."
+        },
+        "deleted": {
+          "type": "boolean",
+          "description": "True on successful removal."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

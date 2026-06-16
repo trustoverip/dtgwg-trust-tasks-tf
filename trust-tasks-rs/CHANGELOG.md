@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.3] — 2026-06-17
+
+Additive `vta/did-templates/*` and `vta/contexts/did-templates/*` Trust Task families, regenerated from the registry — the previously-implemented-but-unspecced DID-template management endpoints (global + context scope), now published. Additive; consumers pick up `0.2.3` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`specs::vta::did_templates::{list,get,create,update,delete,render}::v1_0`** — `vta/did-templates/<op>/1.0`: manage **global** DID templates on a VTA. `create`/`update`/`delete` are super-admin gated; `list`/`get`/`render` are open to any authenticated caller. `create`/`get`/`update` return the persisted `DidTemplateRecord`; `list` returns `{ templates }`; `delete` returns `{ name, deleted }`; `render` returns `{ document }`.
+- **`specs::vta::contexts::did_templates::{list,get,create,update,delete,render}::v1_0`** — `vta/contexts/did-templates/<op>/1.0`: the context-scoped counterparts, gated on the context's admin (or super-admin) for writes and context access for reads. Each request carries `contextId`.
+
+All twelve are in the `did-management` category, proof REQUIRED (`IS_PROOF_REQUIRED`, `IS_RECIPIENT_REQUIRED`), with member names in lowerCamelCase per SPEC §4.10.
+
 ## [0.2.2] — 2026-06-16
 
 New `chat` Trust Task category, regenerated from dtgwg PR #85. Additive; consumers pick up `0.2.2` via `cargo update -p trust-tasks-rs`.

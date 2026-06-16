@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/delete/1.0",
+  "title": "VTA DID-Template Delete — payload",
+  "description": "Remove a global DID template from a VTA by name. Super-admin gated. The success response echoes the deleted name for audit pipelines.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Resource id — the name of the global template to remove."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Delete — response payload",
+      "description": "Confirmation that the named global template was removed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "deleted"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The deleted template's name, echoed for audit pipelines."
+        },
+        "deleted": {
+          "type": "boolean",
+          "description": "Always true on success."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}
