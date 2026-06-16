@@ -31,6 +31,7 @@ export * as AuthStepUpApproveResponse_v0_2 from "./auth/step-up/approve-response
 export * as AuthStepUpPolicy_v0_1 from "./auth/step-up/policy/0.1/payload";
 export * as AuthStepUpPolicy_v0_2 from "./auth/step-up/policy/0.2/payload";
 export * as AuthWhoami_v0_1 from "./auth/whoami/0.1/payload";
+export * as ChatMessage_v1_0 from "./chat/message/1.0/payload";
 export * as ConfirmRequest_v0_1 from "./confirm/request/0.1/payload";
 export * as ConfirmResponse_v0_1 from "./confirm/response/0.1/payload";
 export * as DeviceBindingShared_v0_1 from "./device/_shared/0.1/device-binding";

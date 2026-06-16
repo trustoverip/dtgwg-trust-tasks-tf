@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.2] — 2026-06-16
+
+New `chat` Trust Task category, regenerated from dtgwg PR #85. Additive; consumers pick up `0.2.2` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`specs::chat::message::v1_0`** — `chat/message/1.0`: a conversational message between an AI agent and a messaging-platform bridge, signed by its author (`eddsa-jcs-2022`, proof REQUIRED) and hash-linked (`prev`) into a verifiable per-conversation chain for audit and dispute resolution. Conversations are referenced by opaque bridge-issued handles. Fire-and-forget (no response document).
+
 ## [0.2.1] — 2026-06-07
 
 Additive `vta/passkey-vms/*` Trust Task family, regenerated from dtgwg PR #81 — the previously-implemented-but-unspecced passkey-as-verificationMethod endpoints, now published in the registry. Additive; consumers pick up `0.2.1` via `cargo update -p trust-tasks-rs`.
