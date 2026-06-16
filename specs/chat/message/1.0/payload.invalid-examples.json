@@ -1,0 +1,49 @@
+[
+  {
+    "note": "Empty payload omits required member(s): conversationId, direction, sentAt.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "conversationId": "c-1",
+      "direction": "outbound",
+      "sentAt": "2026-06-16T00:00:00Z",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`direction` must be one of the enum values (inbound | outbound).",
+    "payload": {
+      "conversationId": "c-1",
+      "direction": "sideways",
+      "sentAt": "2026-06-16T00:00:00Z"
+    }
+  },
+  {
+    "note": "`conversationId` has the wrong type (expected string).",
+    "payload": {
+      "conversationId": 12345,
+      "direction": "inbound",
+      "sentAt": "2026-06-16T00:00:00Z"
+    }
+  },
+  {
+    "note": "`prev` is missing its required `digest` (an unverifiable chain link is rejected).",
+    "payload": {
+      "conversationId": "c-1",
+      "direction": "outbound",
+      "sentAt": "2026-06-16T00:00:00Z",
+      "prev": { "id": "urn:uuid:prev" }
+    }
+  },
+  {
+    "note": "An attachment reference omits the required `mediaType`.",
+    "payload": {
+      "conversationId": "c-1",
+      "direction": "inbound",
+      "sentAt": "2026-06-16T00:00:00Z",
+      "attachments": [{ "id": "att-1" }]
+    }
+  }
+]

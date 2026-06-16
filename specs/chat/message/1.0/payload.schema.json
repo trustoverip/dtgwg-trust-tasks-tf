@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/chat/message/1.0",
+  "title": "Chat Message — payload",
+  "description": "A conversational message exchanged between an AI agent and a messaging-platform bridge. Signed by its author (via the document `proof`) and hash-linked to the previous message in the conversation (`prev`), so a third party can verify each message's author and ordering after the transport has closed — for audit and dispute resolution. Conversations and contacts are referenced by opaque, bridge-issued handles, never raw platform addresses.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["conversationId", "direction", "sentAt"],
+  "properties": {
+    "conversationId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque, bridge-issued conversation handle. MUST NOT be a raw platform address (phone number, chat id)."
+    },
+    "direction": {
+      "type": "string",
+      "enum": ["inbound", "outbound"],
+      "description": "`inbound` = platform → agent (the bridge attests what it received and normalized); `outbound` = agent → platform (authored by the agent)."
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OPTIONAL. Platform key the message belongs to (e.g. `signal`, `whatsapp`). Advisory."
+    },
+    "text": {
+      "type": "string",
+      "description": "OPTIONAL. Plain-text body. Absent for attachment-only messages."
+    },
+    "attachments": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/AttachmentRef" },
+      "description": "OPTIONAL. Attachments carried by reference, never inline."
+    },
+    "replyToId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OPTIONAL. The `id` of the message this one replies to."
+    },
+    "prev": {
+      "$ref": "#/$defs/ChainLink",
+      "description": "OPTIONAL on the first message in a conversation; present on every message thereafter. Links to the previous message so the conversation forms a verifiable, ordered chain."
+    },
+    "sentAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp the author asserts for this message."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "AttachmentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "mediaType"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque attachment id, resolvable via the bridge's attachment fetch."
+        },
+        "filename": { "type": "string", "description": "OPTIONAL. Suggested filename." },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA media type (e.g. `image/jpeg`)."
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "OPTIONAL. Size in bytes, if known ahead of fetch."
+        },
+        "digest": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONAL. Multihash digest of the attachment bytes, so the reference is itself verifiable and tamper-evident."
+        }
+      }
+    },
+    "ChainLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "digest"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The `id` of the previous `chat/message` Trust Task document in this conversation."
+        },
+        "digest": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Multihash digest (e.g. `sha-256`) over the previous document, so a gap, reorder, or removal in the chain is detectable."
+        }
+      }
+    }
+  }
+}
