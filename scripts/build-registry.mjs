@@ -16,6 +16,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
@@ -27,6 +28,7 @@ const SPECS_DIR = path.join(ROOT, 'specs');
 const BINDINGS_DIR = path.join(ROOT, 'bindings');
 const WEBSITE_DIR = path.join(ROOT, 'website');
 const META_SCHEMA_PATH = path.join(SPECS_DIR, 'spec.meta.schema.json');
+const DATA_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'data.js');
 
 const validateOnly = process.argv.includes('--validate-only');
 
@@ -265,6 +267,58 @@ function loadMetaValidator() {
   return ajv.compile(readJson(META_SCHEMA_PATH));
 }
 
+/* Cross-check the category taxonomy. The category vocabulary lives in TWO
+ * hand-maintained places that nothing else forces to agree:
+ *   - specs/spec.meta.schema.json #/properties/category/enum (validated per spec)
+ *   - website/assets/data.js window.TT_CATEGORIES (the site's id/name/color)
+ * An enum value with no TT_CATEGORIES entry renders broken on the site — the
+ * spec page can't resolve a name/color and the category is invisible in nav —
+ * so it's a hard error. A TT_CATEGORIES entry with no enum value is dead
+ * weight, so it's a warning. (This is the drift that shipped chat/message/1.0
+ * broken: category added to the enum + a spec, but not to data.js.) */
+function checkCategoryTaxonomy() {
+  const meta = readJson(META_SCHEMA_PATH);
+  const enumIds = meta?.properties?.category?.enum;
+  if (!Array.isArray(enumIds)) {
+    warn('spec.meta.schema.json: could not read #/properties/category/enum — skipping taxonomy cross-check');
+    return;
+  }
+  if (!fs.existsSync(DATA_JS_PATH)) {
+    warn(`${path.relative(ROOT, DATA_JS_PATH)} not found — skipping taxonomy cross-check`);
+    return;
+  }
+  let categories;
+  try {
+    const sandbox = { window: {} };
+    vm.createContext(sandbox);
+    vm.runInContext(fs.readFileSync(DATA_JS_PATH, 'utf8'), sandbox, { filename: 'data.js' });
+    categories = sandbox.window.TT_CATEGORIES;
+  } catch (e) {
+    fail(path.relative(ROOT, DATA_JS_PATH), `failed to evaluate window.TT_CATEGORIES: ${e.message}`);
+    return;
+  }
+  if (!Array.isArray(categories)) {
+    fail(path.relative(ROOT, DATA_JS_PATH), 'window.TT_CATEGORIES is not an array');
+    return;
+  }
+  const dataIds = new Set(categories.map((c) => c && c.id));
+  for (const id of enumIds) {
+    if (!dataIds.has(id)) {
+      fail(
+        path.relative(ROOT, DATA_JS_PATH),
+        `category '${id}' is in spec.meta.schema.json's enum but missing from window.TT_CATEGORIES — ` +
+        `its specs would render without a name/color and crash the spec page. ` +
+        `Add an { id: "${id}", name, color, blurb, icon } entry.`
+      );
+    }
+  }
+  for (const id of dataIds) {
+    if (!enumIds.includes(id)) {
+      warn(`${path.relative(ROOT, DATA_JS_PATH)}: category '${id}' has no matching enum value in spec.meta.schema.json — dead weight`);
+    }
+  }
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -471,6 +525,7 @@ function syncWebsiteFrameworkSpec() {
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
   const validate = loadMetaValidator();
+  checkCategoryTaxonomy();
   const entries = discoverSpecs();
   if (entries.length === 0) {
     console.warn('No specs found under specs/<slug>/<version>/.');

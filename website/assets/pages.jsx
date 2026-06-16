@@ -1322,7 +1322,7 @@ function SpecPage({ slug, version, id, setRoute }) {
 
         <div className="tt-spec__banner">
           <span><b>Status</b> &nbsp; <TTStatus status={task.status} /></span>
-          <span><b>Category</b> &nbsp; <a href="/categories" onClick={(e) => { e.preventDefault(); setRoute({ name: "categories" }); }} style={{ color: catColor(task.category), borderBottom: 0 }}>{cat.name}</a></span>
+          <span><b>Category</b> &nbsp; <a href="/categories" onClick={(e) => { e.preventDefault(); setRoute({ name: "categories" }); }} style={{ color: catColor(task.category), borderBottom: 0 }}>{cat ? cat.name : task.category}</a></span>
           <span><b>Updated</b> &nbsp; {task.updated}</span>
           <span><b>Editors</b> &nbsp; {renderAuthorList(task.authors)}</span>
         </div>
