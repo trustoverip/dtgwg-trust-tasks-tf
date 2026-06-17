@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/approver-list/1.0",
+  "title": "Consent List Approvers — payload",
+  "description": "Fetch approver bindings, optionally filtered by platform or context.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Restrict to this platform tag."
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Restrict to this context path."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent List Approvers — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approvers"],
+      "properties": {
+        "approvers": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/consent.schema.json#/$defs/ApproverBinding"
+          },
+          "description": "Matching approver bindings."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -35,6 +35,8 @@ export * as ChatMessage_v1_0 from "./chat/message/1.0/payload";
 export * as ConfirmRequest_v0_1 from "./confirm/request/0.1/payload";
 export * as ConfirmResponse_v0_1 from "./confirm/response/0.1/payload";
 export * as ConsentShared_v0_1 from "./consent/_shared/0.1/consent";
+export * as ConsentApproverList_v1_0 from "./consent/approver-list/1.0/payload";
+export * as ConsentApproverSet_v1_0 from "./consent/approver-set/1.0/payload";
 export * as ConsentDecision_v1_0 from "./consent/decision/1.0/payload";
 export * as ConsentList_v1_0 from "./consent/list/1.0/payload";
 export * as ConsentRequest_v1_0 from "./consent/request/1.0/payload";

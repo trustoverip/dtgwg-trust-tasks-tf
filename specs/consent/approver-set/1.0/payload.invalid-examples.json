@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Missing required approver.",
+    "payload": {
+      "platform": "signal",
+      "context": "vti-message-bridge"
+    }
+  },
+  {
+    "note": "Invalid route value.",
+    "payload": {
+      "platform": "signal",
+      "context": "vti-message-bridge",
+      "approver": "did:web:operator.example",
+      "route": "email"
+    }
+  },
+  {
+    "note": "Unknown property (raw address must not appear).",
+    "payload": {
+      "platform": "signal",
+      "context": "vti-message-bridge",
+      "approver": "did:web:operator.example",
+      "number": "+15551234567"
+    }
+  }
+]

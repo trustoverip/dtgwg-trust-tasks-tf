@@ -75,6 +75,42 @@
           "description": "How the decision was authorized — e.g. \"did-signed\" (approver's DID signed the consent/decision) or \"bridge-attested\" (an enrolled bridge relayed the operator's out-of-band choice)."
         }
       }
+    },
+    "Route": {
+      "type": "string",
+      "enum": ["wake", "bridge-relay"],
+      "description": "How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision."
+    },
+    "ApproverBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "context", "approver"],
+      "description": "Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The VTA context path this binding applies to."
+        },
+        "approver": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the operator authorized to decide consent for this platform/context."
+        },
+        "route": {
+          "$ref": "#/$defs/Route",
+          "description": "Optional. How to deliver the prompt; defaults to bridge-relay when omitted."
+        },
+        "routeHint": {
+          "type": "string",
+          "description": "Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`."
+        }
+      }
     }
   }
 }

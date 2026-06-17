@@ -1,0 +1,15 @@
+[
+  {
+    "note": "Unknown property.",
+    "payload": {
+      "context": "vti-message-bridge",
+      "limit": 50
+    }
+  },
+  {
+    "note": "Empty platform filter (must be non-empty when present).",
+    "payload": {
+      "platform": ""
+    }
+  }
+]
