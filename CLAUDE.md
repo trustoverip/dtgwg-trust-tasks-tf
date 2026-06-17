@@ -7,6 +7,14 @@ website (`website/`), and the generated client libraries (`trust-tasks-rs`,
 website registry; `cargo run -p trust-tasks-codegen` and `npm run build-ts-bindings`
 regenerate the libraries.
 
+## ⚠️ Every commit MUST be DCO signed
+
+This repo enforces the **Developer Certificate of Origin**. *Every* commit needs
+a `Signed-off-by: Name <email>` trailer matching the commit author — the DCO CI
+check fails the PR otherwise. Use **`git commit -s`** (and `git commit -s --amend`
+to fix the most recent commit, or an interactive rebase with `--signoff` to fix a
+range). Verify with `git log -1 --format='%(trailers:key=Signed-off-by)'`.
+
 ## ⚠️ Adding or changing a spec category — TWO files must stay in sync
 
 The category taxonomy lives in **two hand-maintained places** and nothing in CI
@@ -69,7 +77,8 @@ The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push 
 
 ## PR conventions
 
-- Sign off commits (`git commit -s`) — the repo requires the DCO trailer.
+- **DCO sign-off is mandatory on every commit** (`git commit -s`) — see the ⚠️
+  callout at the top of this file.
 - Touch only your own spec folder/namespace where possible — CODEOWNERS routes
   review per slug; multi-folder changes need multiple approvals.
 - See `CONTRIBUTING-SPECS.md` for the full spec-authoring guide.
