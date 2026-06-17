@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/revoke/1.0",
+  "title": "Consent Revoke — payload",
+  "description": "An operator revokes a standing consent grant.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject"],
+  "properties": {
+    "subject": {
+      "$ref": "../../_shared/0.1/consent.schema.json#/$defs/ConsentSubject"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional operator note recorded in the audit trail."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["revoked", "notFound"],
+          "description": "`revoked` = the grant was deleted. `notFound` = no grant existed for the subject."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

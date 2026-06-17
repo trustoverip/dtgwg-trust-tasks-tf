@@ -1,0 +1,45 @@
+[
+  {
+    "note": "Missing required effect.",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group",
+        "agent": "did:key:z6MkAgentExample"
+      },
+      "scope": "converse"
+    }
+  },
+  {
+    "note": "Invalid effect value.",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group",
+        "agent": "did:key:z6MkAgentExample"
+      },
+      "effect": "maybe"
+    }
+  },
+  {
+    "note": "Invalid scope value.",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "dm",
+        "agent": "did:key:z6MkAgentExample"
+      },
+      "effect": "allow",
+      "scope": "admin"
+    }
+  },
+  {
+    "note": "Missing required subject.",
+    "payload": {
+      "effect": "deny"
+    }
+  }
+]

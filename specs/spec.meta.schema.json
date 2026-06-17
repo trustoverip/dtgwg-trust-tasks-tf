@@ -61,6 +61,7 @@
         "ai-agents",
         "authentication",
         "chat",
+        "consent",
         "credentials",
         "data-exchange",
         "did-management",
@@ -71,7 +72,7 @@
         "payments",
         "reputation"
       ],
-      "description": "TT_CATEGORIES id. Pick the one that most cleanly describes the task's domain. Roughly:\n- access-control: ACL / role / permission / capability tasks (acl/*).\n- ai-agents: tasks specific to AI-agent interaction patterns.\n- authentication: login, session, challenge/response, passkey, step-up (auth/*, confirm/*).\n- chat: conversational messaging between agents and messaging-platform bridges, signed and chained for non-repudiation (chat/*).\n- credentials: vault / credential management (vault/*).\n- data-exchange: data-transport / sync / event-stream tasks (sync/*).\n- did-management: DID lifecycle, hosting, domain, server registry (did-management/*).\n- framework: framework-defined meta-tasks (trust-task-error, trust-task-discovery, etc.).\n- governance: policy / rule-engine / decision tasks (policy/*).\n- identity: identity-anchor / device-binding / persona tasks (device/*).\n- notifications: push wake-up control plane — register a push channel, provision the trigger allowlist, request a contentless wake (push/*).\n- payments: payment-flow tasks.\n- reputation: reputation / attestation tasks.\n\nEnforced as a closed enum to prevent the silent category drift that produced `permission` (now access-control) and `did-management` (recognised) — adding a new category is now a deliberate spec-meta-schema PR rather than a typo in a single spec.md."
+      "description": "TT_CATEGORIES id. Pick the one that most cleanly describes the task's domain. Roughly:\n- access-control: ACL / role / permission / capability tasks (acl/*).\n- ai-agents: tasks specific to AI-agent interaction patterns.\n- authentication: login, session, challenge/response, passkey, step-up (auth/*, confirm/*).\n- chat: conversational messaging between agents and messaging-platform bridges, signed and chained for non-repudiation (chat/*).\n- consent: authorization-to-proceed tasks that gate whether an interaction (a connection / channel / group / conversation) may reach a protected party such as an AI agent, with operator/approver consent on first contact (consent/*).\n- credentials: vault / credential management (vault/*).\n- data-exchange: data-transport / sync / event-stream tasks (sync/*).\n- did-management: DID lifecycle, hosting, domain, server registry (did-management/*).\n- framework: framework-defined meta-tasks (trust-task-error, trust-task-discovery, etc.).\n- governance: policy / rule-engine / decision tasks (policy/*).\n- identity: identity-anchor / device-binding / persona tasks (device/*).\n- notifications: push wake-up control plane — register a push channel, provision the trigger allowlist, request a contentless wake (push/*).\n- payments: payment-flow tasks.\n- reputation: reputation / attestation tasks.\n\nEnforced as a closed enum to prevent the silent category drift that produced `permission` (now access-control) and `did-management` (recognised) — adding a new category is now a deliberate spec-meta-schema PR rather than a typo in a single spec.md."
     },
     "keywords": {
       "type": "array",

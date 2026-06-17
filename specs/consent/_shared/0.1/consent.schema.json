@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/_shared/0.1/consent",
+  "title": "Consent — shared definitions",
+  "description": "Platform-agnostic definitions shared across the consent/* tasks.",
+  "$defs": {
+    "Kind": {
+      "type": "string",
+      "enum": ["dm", "group", "channel"],
+      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
+    },
+    "Scope": {
+      "type": "string",
+      "enum": ["receive", "converse"],
+      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
+    },
+    "Effect": {
+      "type": "string",
+      "enum": ["allow", "deny"],
+      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
+    },
+    "ConsentSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "conversationRef", "kind", "agent"],
+      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
+        },
+        "kind": { "$ref": "#/$defs/Kind" },
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the AI agent the conversation would reach."
+        }
+      }
+    },
+    "ConsentGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "effect", "grantedBy", "grantedAt"],
+      "description": "A recorded consent decision over a ConsentSubject.",
+      "properties": {
+        "subject": { "$ref": "#/$defs/ConsentSubject" },
+        "effect": { "$ref": "#/$defs/Effect" },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`."
+        },
+        "grantedBy": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID of the approver who made the decision."
+        },
+        "grantedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 time the decision was recorded."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional. After this time the grant lapses and the subject must be re-consented."
+        },
+        "evidence": {
+          "type": "string",
+          "description": "How the decision was authorized — e.g. \"did-signed\" (approver's DID signed the consent/decision) or \"bridge-attested\" (an enrolled bridge relayed the operator's out-of-band choice)."
+        }
+      }
+    }
+  }
+}

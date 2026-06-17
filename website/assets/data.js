@@ -47,6 +47,13 @@ window.TT_CATEGORIES = [
     icon: "message"
   },
   {
+    id: "consent",
+    name: "Consent",
+    color: "amber",
+    blurb: "Authorization-to-proceed tasks that gate whether an interaction — a connection, channel, group, or conversation — may reach a protected party such as an AI agent, with operator consent on first contact (consent/*).",
+    icon: "shield"
+  },
+  {
     id: "credentials",
     name: "Credentials",
     color: "amber",

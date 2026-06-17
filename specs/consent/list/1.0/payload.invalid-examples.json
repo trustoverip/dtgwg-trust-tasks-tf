@@ -1,0 +1,19 @@
+[
+  {
+    "note": "Unknown property.",
+    "payload": {
+      "agent": "did:key:z6MkAgentExample",
+      "limit": 50
+    }
+  },
+  {
+    "note": "Subject filter present but malformed (missing agent).",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group"
+      }
+    }
+  }
+]

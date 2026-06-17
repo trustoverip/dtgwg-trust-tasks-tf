@@ -1,0 +1,61 @@
+[
+  {
+    "note": "Missing required subject.",
+    "payload": {
+      "scope": "converse",
+      "challenge": "Q29uc2VudENoYWxsZW5nZU5vbmNlWFla"
+    }
+  },
+  {
+    "note": "Subject missing required agent.",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group"
+      },
+      "scope": "converse",
+      "challenge": "Q29uc2VudENoYWxsZW5nZU5vbmNlWFla"
+    }
+  },
+  {
+    "note": "Invalid kind.",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "broadcast",
+        "agent": "did:key:z6MkAgentExample"
+      },
+      "scope": "converse",
+      "challenge": "Q29uc2VudENoYWxsZW5nZU5vbmNlWFla"
+    }
+  },
+  {
+    "note": "Challenge too short.",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group",
+        "agent": "did:key:z6MkAgentExample"
+      },
+      "scope": "converse",
+      "challenge": "short"
+    }
+  },
+  {
+    "note": "Unknown property.",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group",
+        "agent": "did:key:z6MkAgentExample"
+      },
+      "scope": "converse",
+      "challenge": "Q29uc2VudENoYWxsZW5nZU5vbmNlWFla",
+      "rawNumber": "+15551234567"
+    }
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Missing required subject.",
+    "payload": {
+      "reason": "Left the group."
+    }
+  },
+  {
+    "note": "Subject missing required platform.",
+    "payload": {
+      "subject": {
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group",
+        "agent": "did:key:z6MkAgentExample"
+      }
+    }
+  }
+]

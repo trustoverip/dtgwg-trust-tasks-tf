@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/list/1.0",
+  "title": "Consent List — payload",
+  "description": "A bridge fetches the consent grants it should enforce.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agent": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Restrict to grants for this agent VID."
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Restrict to this platform tag."
+    },
+    "subject": {
+      "$ref": "../../_shared/0.1/consent.schema.json#/$defs/ConsentSubject",
+      "description": "Optional. A full subject, to point-check a single conversation."
+    },
+    "since": {
+      "type": "string",
+      "description": "Optional opaque cursor; return only grants changed after it."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent List — response payload",
+      "description": "The grants the requesting bridge is authorized to enforce.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grants"],
+      "properties": {
+        "grants": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/consent.schema.json#/$defs/ConsentGrant"
+          },
+          "description": "Matching consent grants."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Optional cursor for incremental follow-up."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

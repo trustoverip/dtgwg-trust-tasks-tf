@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/request/1.0",
+  "title": "Consent Request — payload",
+  "description": "A bridge asks the VTA whether an inbound conversation may reach an AI agent, prompting operator consent on first contact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "scope", "challenge"],
+  "properties": {
+    "subject": {
+      "$ref": "../../_shared/0.1/consent.schema.json#/$defs/ConsentSubject"
+    },
+    "scope": {
+      "$ref": "../../_shared/0.1/consent.schema.json#/$defs/Scope",
+      "description": "The access the bridge seeks for the agent on this conversation."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "base64url-encoded nonce (≥128 bits entropy) echoed by the matching consent/decision, so the bridge can correlate the decision to this request."
+    },
+    "displayHint": {
+      "type": "string",
+      "description": "Optional operator-facing label (e.g. \"Signal group 'Family'\"). MUST NOT contain a raw platform address."
+    },
+    "firstMessageDigest": {
+      "type": "string",
+      "description": "Optional multihash digest of the held first message, binding the request to concrete content."
+    },
+    "contextHint": {
+      "type": "string",
+      "description": "Optional VTA context path the bridge runs under, to scope approver resolution."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent Request — response payload",
+      "description": "Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["accepted", "refused"],
+          "description": "`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "The VTA's id for the pending consent (set when accepted), for correlation and polling."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `refused`."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/decision/1.0",
+  "title": "Consent Decision — payload",
+  "description": "An approver allows or denies an AI agent's access to a messaging conversation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "effect"],
+  "properties": {
+    "subject": {
+      "$ref": "../../_shared/0.1/consent.schema.json#/$defs/ConsentSubject"
+    },
+    "effect": {
+      "$ref": "../../_shared/0.1/consent.schema.json#/$defs/Effect"
+    },
+    "scope": {
+      "$ref": "../../_shared/0.1/consent.schema.json#/$defs/Scope",
+      "description": "Granted scope. REQUIRED when `effect` is `allow`."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Echoes the consent/request challenge this decision answers. Omit only for an operator-initiated pre-authorization."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional grant TTL; after it the subject must be re-consented."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent Decision — response payload",
+      "description": "Acknowledgement that the decision was recorded (or rejected).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["recorded", "rejected"],
+          "description": "`recorded` = a grant was written. `rejected` = not accepted; `reason` MUST be set."
+        },
+        "grantId": {
+          "type": "string",
+          "description": "The VTA's id for the recorded grant (set when recorded)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `rejected`."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
