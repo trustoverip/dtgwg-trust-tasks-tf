@@ -1,6 +1,6 @@
 ---
 slug: chat/message
-version: "1.0"
+version: "0.1"
 title: Chat — Message
 summary: A conversational message between an AI agent and a messaging-platform bridge, signed by its author and hash-linked to the previous message to form a verifiable per-conversation chain for audit and dispute resolution.
 status: draft
@@ -12,6 +12,7 @@ keywords:
   - bridge
   - agent
   - conversation
+  - mention
   - non-repudiation
 authors:
   - Glenn Gore (https://github.com/stormer78)
@@ -93,9 +94,21 @@ A conforming **consumer** (the counterparty) **MUST**:
 
 `conversationId` (REQUIRED) — opaque conversation handle. `direction` (REQUIRED)
 — `inbound` | `outbound`. `sentAt` (REQUIRED) — RFC 3339 author timestamp.
-`platform`, `text`, `attachments` (by reference), `replyToId`, and `prev` (the
-chain link: previous message `id` + `digest`) are OPTIONAL — though `prev` is
-present on every message after the first. See `payload.schema.json`.
+`platform`, `text`, `mentions`, `attachments` (by reference), `replyToId`, and
+`prev` (the chain link: previous message `id` + `digest`) are OPTIONAL — though
+`prev` is present on every message after the first. See `payload.schema.json`.
+
+`mentions` carries the @-mentions in the body in a **platform-neutral** form.
+Each entry references the mentioned party by an **opaque participant handle**
+(`participant`, never a raw address — the same handle model as `conversationId`)
+plus an optional `displayName` rendering hint. The body carries one `U+FFFC`
+("object replacement character") sentinel per mention, and `mentions` is ordered
+to match: the *Nth* `U+FFFC` in `text` binds to the *Nth* entry. `start`/`length`
+are the source platform's native offsets and are advisory — the authoritative
+binding is positional, because offset units differ across platforms. A producer
+translating from a platform whose mentions are inline text (e.g. WhatsApp,
+Slack, Matrix) replaces each mention span with a single `U+FFFC` sentinel and
+records the corresponding entry.
 
 ## Examples
 
@@ -105,7 +118,7 @@ conversation, so it carries no `prev`:
 ```json
 {
   "id": "urn:uuid:6f1c8b2a-0001-4a10-8a00-000000000001",
-  "type": "https://trusttasks.org/spec/chat/message/1.0",
+  "type": "https://trusttasks.org/spec/chat/message/0.1",
   "issuer": "did:key:z6MkAgentExampleAaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "recipient": "did:key:z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "threadId": "urn:uuid:6f1c8b2a-conv-0000-0000-000000000000",
@@ -134,7 +147,7 @@ message above via `prev`:
 ```json
 {
   "id": "urn:uuid:6f1c8b2a-0002-4a10-8a00-000000000002",
-  "type": "https://trusttasks.org/spec/chat/message/1.0",
+  "type": "https://trusttasks.org/spec/chat/message/0.1",
   "issuer": "did:key:z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "recipient": "did:key:z6MkAgentExampleAaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "threadId": "urn:uuid:6f1c8b2a-conv-0000-0000-000000000000",
@@ -162,6 +175,49 @@ message above via `prev`:
 }
 ```
 
+An **inbound** group message that **@-mentions** a participant. The body carries
+one `U+FFFC` sentinel where the mention sits, and the single `mentions` entry —
+referenced by an opaque `participant` handle, with a `displayName` hint —
+binds to it positionally:
+
+```json
+{
+  "id": "urn:uuid:6f1c8b2a-0003-4a10-8a00-000000000003",
+  "type": "https://trusttasks.org/spec/chat/message/0.1",
+  "issuer": "did:key:z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "recipient": "did:key:z6MkAgentExampleAaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "threadId": "urn:uuid:6f1c8b2a-conv-0000-0000-000000000000",
+  "issuedAt": "2026-06-16T12:01:00Z",
+  "payload": {
+    "conversationId": "conv-9c2f",
+    "direction": "inbound",
+    "platform": "signal",
+    "text": "￼ can you confirm the 3pm slot?",
+    "mentions": [
+      {
+        "participant": "part-7b1e",
+        "displayName": "Alice",
+        "start": 0,
+        "length": 1
+      }
+    ],
+    "prev": {
+      "id": "urn:uuid:6f1c8b2a-0002-4a10-8a00-000000000002",
+      "digest": "zQmExampleSha256MultihashOfThePreviousDocument000000000000"
+    },
+    "sentAt": "2026-06-16T12:01:00Z"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-06-16T12:01:00Z",
+    "verificationMethod": "did:key:z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb#z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z…(eddsa-jcs-2022 signature over the JCS-canonical document)"
+  }
+}
+```
+
 ## Security & Privacy
 
 **Portable, transport-independent evidence.** The value of this task is that the
@@ -176,10 +232,12 @@ its predecessor, so a removed, reordered, or forged-in-the-middle message breaks
 the chain and is detectable (`chat/message:brokenChain`). Producers SHOULD
 compute the digest over the JCS-canonical previous document.
 
-**Opaque handles.** `conversationId` and any contact reference are bridge-issued
-handles, never raw platform addresses — upstream parties never learn the
-phone number or chat id. Surfacing a real-world identity (e.g. for a human
-approval step) is out of band and out of scope for this task.
+**Opaque handles.** `conversationId` and any contact reference — including a
+mention's `participant` — are bridge-issued handles, never raw platform
+addresses; upstream parties never learn the phone number, UUID, or chat id. A
+mention's `displayName` is an optional, non-authoritative rendering hint and
+MUST NOT be treated as an identity. Surfacing a real-world identity (e.g. for a
+human approval step) is out of band and out of scope for this task.
 
 **Confidentiality is the transport's job.** This task is about *authenticity and
 ordering*, not secrecy. Carry it over a confidential binding (DIDComm authcrypt)

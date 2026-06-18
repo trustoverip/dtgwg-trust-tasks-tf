@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/chat/message/1.0",
+  "$id": "https://trusttasks.org/spec/chat/message/0.1",
   "title": "Chat Message — payload",
   "description": "A conversational message exchanged between an AI agent and a messaging-platform bridge. Signed by its author (via the document `proof`) and hash-linked to the previous message in the conversation (`prev`), so a third party can verify each message's author and ordering after the transport has closed — for audit and dispute resolution. Conversations and contacts are referenced by opaque, bridge-issued handles, never raw platform addresses.",
   "type": "object",
@@ -25,6 +25,11 @@
     "text": {
       "type": "string",
       "description": "OPTIONAL. Plain-text body. Absent for attachment-only messages."
+    },
+    "mentions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Mention" },
+      "description": "OPTIONAL. @-mentions carried by the message, ordered to match the U+FFFC sentinel placeholders in `text`: the Nth U+FFFC binds to the Nth entry. Absent/empty when the message mentions no one. The producer is responsible for emitting one U+FFFC sentinel per mention, in order — translating each platform's native mention encoding into this neutral form."
     },
     "attachments": {
       "type": "array",
@@ -90,6 +95,32 @@
           "type": "string",
           "minLength": 1,
           "description": "Multihash digest (e.g. `sha-256`) over the previous document, so a gap, reorder, or removal in the chain is detectable."
+        }
+      }
+    },
+    "Mention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["participant", "start", "length"],
+      "properties": {
+        "participant": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, bridge-issued handle for the mentioned participant. MUST NOT be a raw platform address; like `conversationId` it carries no platform-native identifier (phone number, UUID, member id) upstream."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention."
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Source-platform native start offset of the sentinel span in `text`. Advisory: offset units differ across platforms, so the authoritative binding is positional (Nth U+FFFC → Nth mention), not by offset."
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Source-platform native length of the sentinel span in `text`. Advisory; see `start`."
         }
       }
     }

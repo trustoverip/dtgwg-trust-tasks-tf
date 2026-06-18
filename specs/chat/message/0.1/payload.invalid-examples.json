@@ -45,5 +45,25 @@
       "sentAt": "2026-06-16T00:00:00Z",
       "attachments": [{ "id": "att-1" }]
     }
+  },
+  {
+    "note": "A mention omits the required opaque `participant` handle.",
+    "payload": {
+      "conversationId": "c-1",
+      "direction": "inbound",
+      "sentAt": "2026-06-16T00:00:00Z",
+      "text": "￼ hi",
+      "mentions": [{ "displayName": "Alice", "start": 0, "length": 1 }]
+    }
+  },
+  {
+    "note": "A mention carries an unknown member (additionalProperties: false) — e.g. a raw address leaking in.",
+    "payload": {
+      "conversationId": "c-1",
+      "direction": "inbound",
+      "sentAt": "2026-06-16T00:00:00Z",
+      "text": "￼ hi",
+      "mentions": [{ "participant": "part-1", "number": "+15551112222", "start": 0, "length": 1 }]
+    }
   }
 ]

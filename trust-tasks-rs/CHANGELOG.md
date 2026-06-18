@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.6] — 2026-06-18
+
+`chat/message` renumbered `1.0` → **`0.1`** (aligning with the registry's `0.x`
+draft convention) and extended with @-mentions, regenerated from the registry.
+Consumers pick up `0.2.6` via `cargo update -p trust-tasks-rs`.
+
+### Changed
+
+- **`specs::chat::message::v0_1`** replaces `v1_0` — the type URI is now
+  `https://trusttasks.org/spec/chat/message/0.1`. The `chat/message` task was
+  the lone `1.0` outlier among `0.x` drafts; renumbered while still `draft`.
+
+### Added
+
+- **`chat/message` `mentions`** — an optional, ordered array of platform-neutral
+  @-mentions on the payload. Each `Mention` references the mentioned party by an
+  **opaque `participant` handle** (never a raw address — same model as
+  `conversationId`) with an optional `displayName` hint and advisory
+  `start`/`length` offsets. The body carries one `U+FFFC` sentinel per mention;
+  the Nth sentinel binds positionally to the Nth entry.
+
 ## [0.2.3] — 2026-06-17
 
 Additive `vta/did-templates/*` and `vta/contexts/did-templates/*` Trust Task families, regenerated from the registry — the previously-implemented-but-unspecced DID-template management endpoints (global + context scope), now published. Additive; consumers pick up `0.2.3` via `cargo update -p trust-tasks-rs`.
