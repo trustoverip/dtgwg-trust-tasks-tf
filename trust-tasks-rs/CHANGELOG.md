@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.7] — 2026-06-18
+
+Additive `chat/message` routing flags, regenerated from the registry.
+Consumers pick up `0.2.7` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`chat/message` `isGroup` / `isMention`** — optional booleans on the payload
+  (`specs::chat::message::v0_1`). `isGroup` records group/channel vs 1:1 DM;
+  `isMention` records whether an inbound message addresses the agent (an
+  @-mention of the agent, or any DM) — distinct from `mentions`, which lists the
+  participants referenced in the body. Both are signed routing context so the
+  audit chain captures where a message was sent. Generated as `Option<bool>`
+  (omitted when absent), so a `false` flag can be omitted for byte-lean DMs.
+
 ## [0.2.6] — 2026-06-18
 
 `chat/message` renumbered `1.0` → **`0.1`** (aligning with the registry's `0.x`

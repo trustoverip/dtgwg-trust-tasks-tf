@@ -94,9 +94,19 @@ A conforming **consumer** (the counterparty) **MUST**:
 
 `conversationId` (REQUIRED) — opaque conversation handle. `direction` (REQUIRED)
 — `inbound` | `outbound`. `sentAt` (REQUIRED) — RFC 3339 author timestamp.
-`platform`, `text`, `mentions`, `attachments` (by reference), `replyToId`, and
-`prev` (the chain link: previous message `id` + `digest`) are OPTIONAL — though
-`prev` is present on every message after the first. See `payload.schema.json`.
+`platform`, `text`, `mentions`, `attachments` (by reference), `replyToId`,
+`isGroup`, `isMention`, and `prev` (the chain link: previous message `id` +
+`digest`) are OPTIONAL — though `prev` is present on every message after the
+first. See `payload.schema.json`.
+
+`isGroup` and `isMention` are signed routing context. `isGroup` records whether
+the conversation is a group/channel or a 1:1 DM; `isMention` records whether an
+inbound message **addresses the agent** (an @-mention of the agent, or any DM),
+so a group-aware consumer can decide a group message is for it without
+agent-name heuristics. `isMention` is about the *agent as addressee* and is
+distinct from `mentions`, which enumerates the participants referenced in the
+body. Both are part of the signed record so the audit chain captures where a
+message was sent, not just its text; both default to false when absent.
 
 `mentions` carries the @-mentions in the body in a **platform-neutral** form.
 Each entry references the mentioned party by an **opaque participant handle**
@@ -201,6 +211,8 @@ binds to it positionally:
         "length": 1
       }
     ],
+    "isGroup": true,
+    "isMention": true,
     "prev": {
       "id": "urn:uuid:6f1c8b2a-0002-4a10-8a00-000000000002",
       "digest": "zQmExampleSha256MultihashOfThePreviousDocument000000000000"

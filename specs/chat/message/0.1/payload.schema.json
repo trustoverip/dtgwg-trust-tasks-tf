@@ -41,6 +41,14 @@
       "minLength": 1,
       "description": "OPTIONAL. The `id` of the message this one replies to."
     },
+    "isGroup": {
+      "type": "boolean",
+      "description": "OPTIONAL. True when the conversation is a group/channel, false (or absent) for a 1:1 DM. Part of the signed record so the audit chain captures where a message was sent, not just its text."
+    },
+    "isMention": {
+      "type": "boolean",
+      "description": "OPTIONAL. Platform-confirmed signal that this (inbound) message addresses the agent — e.g. an @-mention of the agent, or any DM. Lets a group-aware consumer decide whether a group message is for it without agent-name heuristics. Distinct from `mentions`, which lists the participants referenced in the body. Outbound messages leave this absent/false."
+    },
     "prev": {
       "$ref": "#/$defs/ChainLink",
       "description": "OPTIONAL on the first message in a conversation; present on every message thereafter. Links to the previous message so the conversation forms a verifiable, ordered chain."

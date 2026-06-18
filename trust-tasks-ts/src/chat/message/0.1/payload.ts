@@ -35,6 +35,14 @@ export interface ChatMessagePayload {
    * OPTIONAL. The `id` of the message this one replies to.
    */
   replyToId?: string;
+  /**
+   * OPTIONAL. True when the conversation is a group/channel, false (or absent) for a 1:1 DM. Part of the signed record so the audit chain captures where a message was sent, not just its text.
+   */
+  isGroup?: boolean;
+  /**
+   * OPTIONAL. Platform-confirmed signal that this (inbound) message addresses the agent — e.g. an @-mention of the agent, or any DM. Lets a group-aware consumer decide whether a group message is for it without agent-name heuristics. Distinct from `mentions`, which lists the participants referenced in the body. Outbound messages leave this absent/false.
+   */
+  isMention?: boolean;
   prev?: ChainLink;
   /**
    * RFC 3339 timestamp the author asserts for this message.
