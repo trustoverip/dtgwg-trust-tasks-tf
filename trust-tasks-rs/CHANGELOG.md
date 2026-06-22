@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.8] — 2026-06-22
+
+Additive new `messaging/*` Trust Task family, regenerated from the registry.
+Consumers pick up `0.2.8` via `cargo update -p trust-tasks-rs`.
+
+### Added
+
+- **`messaging/*` family** — generated payload modules for the new
+  messaging-infrastructure Trust Tasks (`specs::messaging::*`): `ping`,
+  `acl::{get,set}`, `access_list::{add,remove,clear,get,list}`, and
+  `account::{add,get,list,remove,change_type,change_queue_limits}`. These
+  re-express mediator account / ACL / queue administration and liveness as
+  transport-agnostic Trust Tasks, sharing the `messaging/_shared` `Account`,
+  `MediatorAcl`, `QueueLimits`, `AccountType`, and `Vid` definitions. No change
+  to existing modules.
+
 ## [0.2.7] — 2026-06-18
 
 Additive `chat/message` routing flags, regenerated from the registry.
