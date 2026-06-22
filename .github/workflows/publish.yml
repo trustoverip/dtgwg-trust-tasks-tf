@@ -1,0 +1,131 @@
+name: Publish packages
+
+# Publishes the Rust crate (trust-tasks-rs) to crates.io and the TypeScript
+# package (@openvtc/trust-tasks) to npm when an approved PR lands on main.
+#
+# Each package publishes ONLY when its manifest version is newer than what is
+# already on the registry, so unrelated pushes to main (docs, specs, website)
+# are no-ops. Bump the version in the manifest (and changelog) to release —
+# see CLAUDE.md "Changing a spec or payload schema — bump and republish".
+on:
+  push:
+    branches: [main]
+    paths:
+      - "trust-tasks-rs/**"
+      - "trust-tasks-ts/**"
+      - "specs/**"
+      - ".github/workflows/publish.yml"
+
+# Never let two runs publish the same ref at once.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-rust:
+    name: Publish trust-tasks-rs to crates.io
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for crates.io trusted publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # trust-tasks-rs has no dbus dependency itself, but mirror the `package`
+      # job in rust.yml so the publish verify-build behaves identically — and
+      # so it keeps working if a sibling workspace crate is added here later.
+      - name: Install libdbus-1-dev
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+
+      - name: Decide whether to publish
+        id: decide
+        run: |
+          set -euo pipefail
+          meta=$(cargo metadata --no-deps --format-version 1 \
+            --manifest-path trust-tasks-rs/Cargo.toml)
+          version=$(echo "$meta" | jq -r '.packages[] | select(.name=="trust-tasks-rs") | .version')
+
+          # Respect the manifest `publish` flag. `publish = false` => cargo
+          # metadata reports `publish: []`; `true` / unset / an explicit
+          # registry list are all publishable. This mirrors cargo's own gate.
+          publishable=$(echo "$meta" | jq -r '.packages[] | select(.name=="trust-tasks-rs") | if .publish == [] then "false" else "true" end')
+          if [ "$publishable" != "true" ]; then
+            echo "::notice::trust-tasks-rs has publish=false — skipping crates.io publish."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Skip if this exact version is already on crates.io. The crates.io
+          # API rejects requests without a User-Agent (403), so set one.
+          existing=$(curl -fsSL -H "User-Agent: trust-tasks-ci (github-actions)" \
+            "https://crates.io/api/v1/crates/trust-tasks-rs" \
+            | jq -r --arg v "$version" '[.versions[]?.num] | index($v) // "no"')
+          if [ "$existing" != "no" ]; then
+            echo "::notice::trust-tasks-rs $version already on crates.io — skipping."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::trust-tasks-rs $version is new — publishing."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Mint a short-lived crates.io token via OIDC (trusted publishing). No
+      # long-lived CRATES_API_KEY secret needed — the crate must be configured
+      # with a Trusted Publisher on crates.io pointing at this repo + workflow.
+      - name: Authenticate to crates.io
+        id: auth
+        if: steps.decide.outputs.should_publish == 'true'
+        uses: rust-lang/crates-io-auth-action@v1
+
+      - name: cargo publish
+        if: steps.decide.outputs.should_publish == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish -p trust-tasks-rs
+
+  publish-npm:
+    name: Publish @openvtc/trust-tasks to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for npm trusted publishing (OIDC) + provenance
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing (OIDC) requires npm >= 11.5.1; Node 20 ships older.
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Decide whether to publish
+        id: decide
+        working-directory: trust-tasks-ts
+        run: |
+          set -euo pipefail
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "::notice::$name@$version already on npm — skipping."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::$name@$version is new — publishing."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install deps & build
+        if: steps.decide.outputs.should_publish == 'true'
+        working-directory: trust-tasks-ts
+        run: |
+          npm ci
+          npm run build
+
+      # No NODE_AUTH_TOKEN: with trusted publishing npm mints a short-lived
+      # token via OIDC and attaches build provenance automatically.
+      - name: npm publish (trusted publishing)
+        if: steps.decide.outputs.should_publish == 'true'
+        working-directory: trust-tasks-ts
+        run: npm publish --access public
