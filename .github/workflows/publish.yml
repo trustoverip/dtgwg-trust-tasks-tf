@@ -23,66 +23,87 @@ concurrency:
 
 jobs:
   publish-rust:
-    name: Publish trust-tasks-rs to crates.io
+    name: Publish Rust crates to crates.io
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write # required for crates.io trusted publishing (OIDC)
+    # Publish order matters: trust-tasks-rs must land before the sibling
+    # bindings, which depend on it by `version`. The siblings don't depend on
+    # each other, so any order among them is fine. trust-tasks-codegen is
+    # publish=false (internal generator) and deliberately absent here. Each
+    # crate must have its own Trusted Publisher configured on crates.io for
+    # this repo + publish.yml, or its `cargo publish` will fail auth.
+    env:
+      CRATES: "trust-tasks-rs trust-tasks-https trust-tasks-didcomm trust-tasks-proof"
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
-      # trust-tasks-rs has no dbus dependency itself, but mirror the `package`
-      # job in rust.yml so the publish verify-build behaves identically — and
-      # so it keeps working if a sibling workspace crate is added here later.
+      # The sibling bindings pull in Affinidi's TDK (keyring / secret-storage),
+      # whose build scripts probe for libdbus-1 via pkg-config — same as the
+      # `test`/`package` jobs in rust.yml.
       - name: Install libdbus-1-dev
         run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
 
-      - name: Decide whether to publish
+      - name: Decide which crates to publish
         id: decide
         run: |
           set -euo pipefail
-          meta=$(cargo metadata --no-deps --format-version 1 \
-            --manifest-path trust-tasks-rs/Cargo.toml)
-          version=$(echo "$meta" | jq -r '.packages[] | select(.name=="trust-tasks-rs") | .version')
+          to_publish=""
+          for crate in $CRATES; do
+            meta=$(cargo metadata --no-deps --format-version 1 \
+              --manifest-path "$crate/Cargo.toml")
+            version=$(echo "$meta" | jq -r --arg c "$crate" '.packages[] | select(.name==$c) | .version')
 
-          # Respect the manifest `publish` flag. `publish = false` => cargo
-          # metadata reports `publish: []`; `true` / unset / an explicit
-          # registry list are all publishable. This mirrors cargo's own gate.
-          publishable=$(echo "$meta" | jq -r '.packages[] | select(.name=="trust-tasks-rs") | if .publish == [] then "false" else "true" end')
-          if [ "$publishable" != "true" ]; then
-            echo "::notice::trust-tasks-rs has publish=false — skipping crates.io publish."
-            echo "should_publish=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+            # Respect the manifest `publish` flag. `publish = false` => cargo
+            # metadata reports `publish: []`; `true` / unset / an explicit
+            # registry list are all publishable. Mirrors cargo's own gate.
+            publishable=$(echo "$meta" | jq -r --arg c "$crate" '.packages[] | select(.name==$c) | if .publish == [] then "false" else "true" end')
+            if [ "$publishable" != "true" ]; then
+              echo "::notice::$crate has publish=false — skipping."
+              continue
+            fi
 
-          # Skip if this exact version is already on crates.io. The crates.io
-          # API rejects requests without a User-Agent (403), so set one.
-          existing=$(curl -fsSL -H "User-Agent: trust-tasks-ci (github-actions)" \
-            "https://crates.io/api/v1/crates/trust-tasks-rs" \
-            | jq -r --arg v "$version" '[.versions[]?.num] | index($v) // "no"')
-          if [ "$existing" != "no" ]; then
-            echo "::notice::trust-tasks-rs $version already on crates.io — skipping."
-            echo "should_publish=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::trust-tasks-rs $version is new — publishing."
-            echo "should_publish=true" >> "$GITHUB_OUTPUT"
-          fi
+            # Skip if this exact version is already on crates.io. The crates.io
+            # API rejects requests without a User-Agent (403), so set one.
+            existing=$(curl -fsSL -H "User-Agent: trust-tasks-ci (github-actions)" \
+              "https://crates.io/api/v1/crates/$crate" \
+              | jq -r --arg v "$version" '[.versions[]?.num] | index($v) // "no"')
+            if [ "$existing" != "no" ]; then
+              echo "::notice::$crate $version already on crates.io — skipping."
+            else
+              echo "::notice::$crate $version is new — will publish."
+              to_publish="$to_publish $crate"
+            fi
+          done
+          to_publish="$(echo "$to_publish" | xargs || true)"
+          echo "to_publish=$to_publish" >> "$GITHUB_OUTPUT"
 
       # Mint a short-lived crates.io token via OIDC (trusted publishing). No
-      # long-lived CRATES_API_KEY secret needed — the crate must be configured
-      # with a Trusted Publisher on crates.io pointing at this repo + workflow.
+      # long-lived CRATES_API_KEY secret needed. The token is scoped to the
+      # crates whose Trusted Publisher matches this repo + workflow, so a
+      # single auth covers all of them.
       - name: Authenticate to crates.io
         id: auth
-        if: steps.decide.outputs.should_publish == 'true'
+        if: steps.decide.outputs.to_publish != ''
         uses: rust-lang/crates-io-auth-action@v1
 
       - name: cargo publish
-        if: steps.decide.outputs.should_publish == 'true'
+        if: steps.decide.outputs.to_publish != ''
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-        run: cargo publish -p trust-tasks-rs
+        # Publish in $CRATES order so trust-tasks-rs precedes its dependents.
+        # `cargo publish` waits for each new version to appear in the index
+        # before returning, so a dependent published next resolves cleanly.
+        run: |
+          set -euo pipefail
+          for crate in ${{ steps.decide.outputs.to_publish }}; do
+            echo "::group::cargo publish -p $crate"
+            cargo publish -p "$crate"
+            echo "::endgroup::"
+          done
 
   publish-npm:
     name: Publish @openvtc/trust-tasks to npm

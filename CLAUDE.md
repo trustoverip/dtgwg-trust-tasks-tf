@@ -46,12 +46,15 @@ done together — the codegen-drift CI only guards the **Rust** side, so the TS
 bindings and the version bumps are easy to forget (see PR #85 → #86).
 
 **Publishing itself is automated.** `.github/workflows/publish.yml` runs on every
-push to `main` and publishes each library to its registry — `trust-tasks-rs` to
-crates.io and `@openvtc/trust-tasks` to npm — but **only when the manifest version
-is newer than what's already published**. So your job is just to bump the versions
-in the PR; the merge to `main` releases them. A push whose versions are unchanged is
-a no-op. Both registries use **OIDC trusted publishing** (no long-lived tokens), and
-the Rust side additionally respects the `publish` flag in `Cargo.toml`.
+push to `main` and publishes each library to its registry — the four `publish = true`
+crates to crates.io (`trust-tasks-rs`, then the `-https` / `-didcomm` / `-proof`
+bindings, in that dependency order) and `@openvtc/trust-tasks` to npm — but **only
+when the manifest version is newer than what's already published**. So your job is
+just to bump the versions in the PR; the merge to `main` releases them. A push whose
+versions are unchanged is a no-op. Both registries use **OIDC trusted publishing**
+(no long-lived tokens; each crate needs its own Trusted Publisher configured on
+crates.io), and the Rust side additionally respects each crate's `publish` flag —
+`trust-tasks-codegen` is `publish = false` and is never released.
 
 Per the established release housekeeping (#82, #86 precedent):
 
