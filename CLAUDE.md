@@ -41,9 +41,17 @@ two lists in lockstep.
 
 The Rust and TS client libraries are generated from the specs. When you add or
 change anything under `specs/` (a new task, a schema edit, a new category used by a
-task), you MUST regenerate the bindings and bump+publish the libraries. Both must be
+task), you MUST regenerate the bindings and bump the library versions. Both must be
 done together — the codegen-drift CI only guards the **Rust** side, so the TS
 bindings and the version bumps are easy to forget (see PR #85 → #86).
+
+**Publishing itself is automated.** `.github/workflows/publish.yml` runs on every
+push to `main` and publishes each library to its registry — `trust-tasks-rs` to
+crates.io and `@openvtc/trust-tasks` to npm — but **only when the manifest version
+is newer than what's already published**. So your job is just to bump the versions
+in the PR; the merge to `main` releases them. A push whose versions are unchanged is
+a no-op. Both registries use **OIDC trusted publishing** (no long-lived tokens), and
+the Rust side additionally respects the `publish` flag in `Cargo.toml`.
 
 Per the established release housekeeping (#82, #86 precedent):
 
@@ -56,6 +64,8 @@ Per the established release housekeeping (#82, #86 precedent):
 4. **Bump `@openvtc/trust-tasks`:** version in `trust-tasks-ts/package.json`.
 5. Keep the two library versions in step with each other (both went 0.2.1 → 0.2.2
    for the chat change).
+6. **Don't publish by hand** — merging the version bump to `main` triggers
+   `publish.yml`, which releases to crates.io and npm automatically (see above).
 
 Additive spec changes are a patch/minor bump; breaking schema changes require a new
 spec **version** folder (per SPEC §5), not an in-place edit.
@@ -74,6 +84,9 @@ The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push 
 `main`. Generated website outputs (`website/assets/tasks.generated.js`,
 `website/specs/`, `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.
+
+The libraries publish via `.github/workflows/publish.yml` on push to `main`, version-
+gated so only a bumped manifest releases (see the bump-and-republish callout above).
 
 ## PR conventions
 
