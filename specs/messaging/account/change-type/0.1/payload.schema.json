@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/account/change-type/0.1",
+  "title": "Messaging Change Account Type — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did", "accountType"],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The DID of the account whose role is being changed."
+    },
+    "accountType": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/AccountType",
+      "description": "The role to assign. Assigning or modifying the rootAdmin role requires the requester to be a rootAdmin."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Change Account Type — response payload",
+      "description": "The success response to a messaging/account/change-type request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/change-type/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account"],
+      "properties": {
+        "account": {
+          "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Account",
+          "description": "The full realized mediator view of the account after the role change."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

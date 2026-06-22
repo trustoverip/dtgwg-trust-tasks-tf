@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/account/change-queue-limits/0.1",
+  "title": "Messaging Change Account Queue Limits — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did", "queueLimits"],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The DID of the account whose queue limits are being changed."
+    },
+    "queueLimits": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/QueueLimits",
+      "description": "The limit members to apply. A member present is set; a member omitted is left unchanged (partial update). A value of -1 means unlimited."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Change Account Queue Limits — response payload",
+      "description": "The success response to a messaging/account/change-queue-limits request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/change-queue-limits/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account"],
+      "properties": {
+        "account": {
+          "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Account",
+          "description": "The full realized mediator view of the account after the queue-limit change."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

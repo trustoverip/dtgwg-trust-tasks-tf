@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/acl/get/0.1",
+  "title": "Messaging Get ACL — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["dids"],
+  "properties": {
+    "dids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid"
+      },
+      "description": "The accounts to query. One or more controlling DIDs whose ACLs are being read."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Entry": {
+      "title": "Messaging Get ACL — entry",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "acl"],
+      "description": "One queried account's realized ACL.",
+      "properties": {
+        "did": {
+          "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+          "description": "The account whose ACL is reported."
+        },
+        "acl": {
+          "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/MediatorAcl",
+          "description": "The full realized capability set the mediator holds for the account."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Get ACL — response payload",
+      "description": "The success response to a messaging/acl/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/get/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries"],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Entry" },
+          "description": "One entry per queried account that has an account at the mediator. Queried DIDs with no account are omitted."
+        },
+        "unknown": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid"
+          },
+          "description": "Queried DIDs that have no account at this mediator and were therefore omitted from `entries`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

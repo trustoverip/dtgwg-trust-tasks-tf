@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/account/add/0.1",
+  "title": "Messaging Add Account — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The DID of the account to register."
+    },
+    "accountType": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/AccountType",
+      "default": "standard",
+      "description": "The role to assign the new account. Defaults to `standard`; assigning a non-standard role requires administrative standing (only a rootAdmin may assign rootAdmin)."
+    },
+    "acl": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/MediatorAcl",
+      "description": "Initial access-control capabilities. Members omitted take the mediator's configured defaults."
+    },
+    "queueLimits": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/QueueLimits",
+      "description": "Initial queued-message limits. Members omitted take the mediator's configured defaults."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Add Account — response payload",
+      "description": "The success response to a messaging/account/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/add/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account"],
+      "properties": {
+        "account": {
+          "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Account",
+          "description": "The full realized mediator view of the newly created account."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

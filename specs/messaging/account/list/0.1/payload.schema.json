@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/account/list/0.1",
+  "title": "Messaging List Accounts — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Maximum number of accounts to return in this page. The mediator chooses a default when omitted."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging List Accounts — response payload",
+      "description": "The success response to a messaging/account/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accounts"],
+      "properties": {
+        "accounts": {
+          "type": "array",
+          "description": "The page of served account views.",
+          "items": {
+            "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Account"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque continuation token. Present only when further accounts remain beyond this page; omitted on the final page."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -96,6 +96,13 @@ window.TT_CATEGORIES = [
     icon: "user-circle"
   },
   {
+    id: "messaging",
+    name: "Messaging",
+    color: "teal",
+    blurb: "Messaging-infrastructure operation of a mediator or relay — account and ACL administration, queue-limit management, and liveness/capability ping. Operator-facing control of the message-transport substrate itself, distinct from the application-level access-control of acl/* (messaging/*).",
+    icon: "server"
+  },
+  {
     id: "notifications",
     name: "Notifications",
     color: "amber",

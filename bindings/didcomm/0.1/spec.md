@@ -4,7 +4,7 @@ version: "0.1"
 title: DIDComm v2.1 transport binding
 summary: Carries Trust Task documents inside DIDComm v2.1 authcrypt envelopes; the verified sender_kid maps to the framework's transport-authenticated party identity.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.2"
 bindingURI: https://trusttasks.org/binding/didcomm/0.1
 envelopeType: https://trusttasks.org/binding/didcomm/0.1/envelope
 authors:
@@ -17,7 +17,7 @@ This binding specifies how *Trust Task documents* are exchanged inside [DIDComm 
 
 ## Status of This Document
 
-`0.1` draft. Tracks `SPEC.md 0.1`. The binding is implemented by [`trust-tasks-didcomm`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm) and round-trip-tested against `affinidi-messaging-test-mediator`.
+`0.1` draft. Targets **framework `0.2`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-naming-conventions), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). The binding is implemented by [`trust-tasks-didcomm`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm) and round-trip-tested against `affinidi-messaging-test-mediator`.
 
 ## 1. Binding URI
 
@@ -59,23 +59,23 @@ The mapping into the framework's [§4.8.1](https://github.com/trustoverip/dtgwg-
 |--------------------------------------------|--------------------------------------------------------------------------------|
 | *Transport-authenticated sender*           | The verified `sender_kid` of the authcrypt envelope, normalised to its bare DID. |
 | *Transport-authenticated recipient*        | The unwrapping party's own DID (i.e. the DID the receiving DIDComm agent unpacks for). |
-| Producer's *in-band* `issuer` (when set)   | Compared against the transport-authenticated sender per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identity_mismatch`. |
-| Producer's *in-band* `recipient` (when set) | Compared against the transport-authenticated recipient per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identity_mismatch`. |
+| Producer's *in-band* `issuer` (when set)   | Compared against the transport-authenticated sender per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identityMismatch`. |
+| Producer's *in-band* `recipient` (when set) | Compared against the transport-authenticated recipient per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identityMismatch`. |
 
 Where the in-band member is absent, the *consumer* **MAY** treat the DIDComm-derived value as if it were carried in-band — i.e. authcrypt provides authenticated identity end-to-end, so omitting the in-band `issuer`/`recipient` for a DIDComm-only exchange is conformant per [SPEC §4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity).
 
-When applying the §8.1 error-response routing rule under `identity_mismatch`, the *consumer* **MUST** route its `trust-task-error/0.1` response to the transport-authenticated sender (the DID it actually authenticated via authcrypt) and **MUST NOT** route to the contested in-band `issuer`.
+When applying the §8.1 error-response routing rule under `identityMismatch`, the *consumer* **MUST** route its `trust-task-error/0.2` response to the transport-authenticated sender (the DID it actually authenticated via authcrypt) and **MUST NOT** route to the contested in-band `issuer`.
 
 ## 4. Error mapping
 
 | Transport-level condition                                                            | Framework disposition                                  |
 |--------------------------------------------------------------------------------------|--------------------------------------------------------|
-| Envelope arrived as anoncrypt or plaintext (no authenticated sender)                 | Reject; treat as `unauthenticated` per [SPEC §8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes). |
+| Envelope arrived as anoncrypt or plaintext (no authenticated sender)                 | Transport-level reject; the message **MUST NOT** enter the framework pipeline. No framework error code applies — there is no authenticated sender to route a `trust-task-error` response to. |
 | `type` field is not `https://trusttasks.org/binding/didcomm/0.1/envelope`            | Reject the envelope at the DIDComm layer; do not enter the framework pipeline. |
-| `body` fails to deserialise as `TrustTask<P>`                                        | `malformed_request` per [SPEC §8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes). |
+| `body` fails to deserialise as `TrustTask<P>`                                        | `malformedRequest` per [SPEC §8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes). |
 | Decryption / signature verification failure                                          | DIDComm-level error; the message **MUST NOT** be passed to the framework pipeline. |
 
-Error responses generated by the framework pipeline (a `trust-task-error/0.1` document) **SHOULD** be returned by packing the response back into a fresh authcrypt envelope addressed to the verified `sender_kid` of the originating message.
+Error responses generated by the framework pipeline (a `trust-task-error/0.2` document) **SHOULD** be returned by packing the response back into a fresh authcrypt envelope addressed to the verified `sender_kid` of the originating message.
 
 ## 5. Proof interaction
 

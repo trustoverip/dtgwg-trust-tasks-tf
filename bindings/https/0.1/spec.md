@@ -4,7 +4,7 @@ version: "0.1"
 title: HTTPS transport binding
 summary: Carries Trust Task documents as JSON over HTTP/1.1 POST to a single endpoint; transport-authenticated sender identity comes from a bearer-token mapping to a VID.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.2"
 bindingURI: https://trusttasks.org/binding/https/0.1
 authors:
   - Glenn Gore (https://github.com/stormer78)
@@ -12,13 +12,13 @@ authors:
 
 ## Abstract
 
-This binding specifies how *Trust Task documents* are exchanged over HTTP/1.1. A producer sends a *Trust Task document* as the JSON body of an HTTP `POST` to a single well-known path; the server runs the framework's [§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) consumer pipeline and either returns a typed `#response`-variant document or a `trust-task-error/0.1` error response. Transport-authenticated sender identity is conveyed via HTTP `Authorization` headers; the binding does not constrain the token format, but does define how the bearer-mapped *Verifiable Identifier* feeds the framework's [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity) precedence.
+This binding specifies how *Trust Task documents* are exchanged over HTTP/1.1. A producer sends a *Trust Task document* as the JSON body of an HTTP `POST` to a single well-known path; the server runs the framework's [§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) consumer pipeline and either returns a typed `#response`-variant document or a `trust-task-error/0.2` error response. Transport-authenticated sender identity is conveyed via HTTP `Authorization` headers; the binding does not constrain the token format, but does define how the bearer-mapped *Verifiable Identifier* feeds the framework's [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity) precedence.
 
 The binding is named **HTTPS** because every framework *Type URI* uses `https` ([SPEC §6.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#61-type-uri)) and a production deployment **MUST** terminate TLS in front of the receiver. The wire mechanics described here are HTTP/1.1; whether TLS is terminated by a reverse proxy or natively at the server is a deployment concern outside the scope of this binding.
 
 ## Status of This Document
 
-`0.1` draft. Tracks `SPEC.md 0.1`. The binding is implemented by [`trust-tasks-https`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-https) — a typed [`HttpsClient`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-https/src/client.rs) (reqwest) and an axum-based [`HttpsServer`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-https/src/server.rs).
+`0.1` draft. Targets **framework `0.2`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-naming-conventions), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). The binding is implemented by [`trust-tasks-https`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-https) — a typed [`HttpsClient`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-https/src/client.rs) (reqwest) and an axum-based [`HttpsServer`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-https/src/server.rs).
 
 ## 1. Binding URI
 
@@ -47,7 +47,7 @@ A conforming server **MUST**:
 2. Read `Authorization` (if present) and map the bearer token to a *Verifiable Identifier* via a deployment-defined mechanism (an in-process map, a JWT verifier, a database lookup, …). A request with no `Authorization` header is treated as having no transport-authenticated sender.
 3. Parse the request body as JSON, then as a `TrustTask<P>` document for some payload type `P` selected by the document's `type` member.
 4. Apply the framework [§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) consumer pipeline — `resolve_parties` per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity), `validate_basic`, `enforce_audience_binding`, dispatch by canonical *Type URI* per [§4.4.1 item 1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#441-request-and-response-variants), then the registered handler.
-5. Return either a `#response`-variant *Trust Task document* (success) or a `trust-task-error/0.1` document (rejection) as the response body — both in JSON, both with `Content-Type: application/json`.
+5. Return either a `#response`-variant *Trust Task document* (success) or a `trust-task-error/0.2` document (rejection) as the response body — both in JSON, both with `Content-Type: application/json`.
 
 This binding does not define a streaming or multi-message variant. One request per HTTP exchange, one response.
 
@@ -59,12 +59,12 @@ The mapping into the framework's [§4.8.1](https://github.com/trustoverip/dtgwg-
 |----------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
 | *Transport-authenticated sender*             | The VID the server maps the bearer token to. Absent for requests with no `Authorization` header or with an unrecognised token. |
 | *Transport-authenticated recipient*          | The server's own configured `local_vid`. This is a server-side configuration value, not anything carried in the HTTP request. |
-| Producer's *in-band* `issuer` (when set)     | Cross-checked against the transport-authenticated sender per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identity_mismatch`. |
-| Producer's *in-band* `recipient` (when set)  | Cross-checked against the transport-authenticated recipient per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identity_mismatch`. |
+| Producer's *in-band* `issuer` (when set)     | Cross-checked against the transport-authenticated sender per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identityMismatch`. |
+| Producer's *in-band* `recipient` (when set)  | Cross-checked against the transport-authenticated recipient per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity); mismatch is `identityMismatch`. |
 
 The mapping between bearer token and VID is **deployment-defined**. A demo or test deployment **MAY** use a static `HashMap<token, VID>`; a production deployment **SHOULD** verify a JWT against an issuer-controlled JWKS or otherwise bind tokens to verifiable identifiers under a controlled trust framework. The binding makes no claim about token-revocation, audience-restriction, or replay protection beyond what the chosen mechanism provides.
 
-When applying the §8.1 error-response routing rule under `identity_mismatch`, the server **MUST** route its `trust-task-error/0.1` response to the bearer-authenticated sender it actually authenticated, and **MUST NOT** carry the contested in-band `issuer` in the response's `recipient` member.
+When applying the §8.1 error-response routing rule under `identityMismatch`, the server **MUST** route its `trust-task-error/0.2` response to the bearer-authenticated sender it actually authenticated, and **MUST NOT** carry the contested in-band `issuer` in the response's `recipient` member.
 
 ## 4. Status mapping
 
@@ -73,19 +73,21 @@ The server **SHOULD** map the *Trust Task document* response to an HTTP status a
 | Outcome                                                  | HTTP status                           |
 |----------------------------------------------------------|---------------------------------------|
 | Success (a `#response`-variant document)                 | `200 OK`                              |
-| `malformed_request`                                      | `400 Bad Request`                     |
-| `unauthenticated`                                        | `401 Unauthorized`                    |
-| `unauthorized` (a.k.a. `permission_denied`)              | `403 Forbidden`                       |
-| `unsupported_type` / `unsupported_version`               | `422 Unprocessable Entity`            |
+| `malformedRequest`                                       | `400 Bad Request`                     |
+| Missing / invalid `Authorization` (transport-level, no framework error doc) | `401 Unauthorized` |
+| `permissionDenied`                                       | `403 Forbidden`                       |
+| `unsupportedType` / `unsupportedVersion`                 | `422 Unprocessable Entity`            |
 | `expired`                                                | `422 Unprocessable Entity`            |
-| `proof_required` / `proof_invalid` / `identity_mismatch` | `422 Unprocessable Entity`            |
-| `task_failed`                                            | `422 Unprocessable Entity`            |
+| `proofRequired` / `proofInvalid` / `identityMismatch`    | `422 Unprocessable Entity`            |
+| `wrongRecipient`                                         | `422 Unprocessable Entity`            |
+| `taskFailed`                                             | `422 Unprocessable Entity`            |
+| `unavailable`                                            | `503 Service Unavailable`             |
+| `internalError`                                          | `500 Internal Server Error`           |
 | Internal server error (transport-level, no error doc)    | `500 Internal Server Error`           |
-| Server temporarily unavailable                           | `503 Service Unavailable`             |
 
-In every case where the body carries a Trust Task document — success or `trust-task-error/0.1` — the `Content-Type` **MUST** be `application/json`.
+In every case where the body carries a Trust Task document — success or `trust-task-error/0.2` — the `Content-Type` **MUST** be `application/json`.
 
-A client receiving a non-2xx response with `Content-Type: application/json` **MUST** attempt to deserialise the body as a `trust-task-error/0.1` document before falling back to transport-level error handling. A client receiving a non-2xx response with any other `Content-Type` treats the response as an untyped transport-level failure.
+A client receiving a non-2xx response with `Content-Type: application/json` **MUST** attempt to deserialise the body as a `trust-task-error/0.2` document before falling back to transport-level error handling. A client receiving a non-2xx response with any other `Content-Type` treats the response as an untyped transport-level failure.
 
 ## 5. Discovery wiring
 
