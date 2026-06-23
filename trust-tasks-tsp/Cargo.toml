@@ -1,0 +1,23 @@
+[package]
+name = "trust-tasks-tsp"
+version = "0.2.0"
+edition.workspace = true
+rust-version = "1.95"
+license.workspace = true
+repository.workspace = true
+description = "ToIP Trust Spanning Protocol (TSP) transport binding for the Trust Tasks framework, built on affinidi-tsp. Provides pack/unpack helpers and a TransportHandler that maps the authenticated VID sender into the framework's §4.8.1 precedence."
+keywords = ["trust-tasks", "tsp", "affinidi", "vid"]
+categories = ["network-programming", "cryptography"]
+publish = true
+
+[dependencies]
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.2" }
+affinidi-tsp = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+[dev-dependencies]
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

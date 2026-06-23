@@ -11,6 +11,7 @@ on:
       - "trust-tasks-https/**"
       - "trust-tasks-didcomm/**"
       - "trust-tasks-proof/**"
+      - "trust-tasks-tsp/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"

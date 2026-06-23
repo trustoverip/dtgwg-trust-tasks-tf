@@ -35,7 +35,7 @@ jobs:
     # crate must have its own Trusted Publisher configured on crates.io for
     # this repo + publish.yml, or its `cargo publish` will fail auth.
     env:
-      CRATES: "trust-tasks-rs trust-tasks-https trust-tasks-didcomm trust-tasks-proof"
+      CRATES: "trust-tasks-rs trust-tasks-https trust-tasks-didcomm trust-tasks-proof trust-tasks-tsp"
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable

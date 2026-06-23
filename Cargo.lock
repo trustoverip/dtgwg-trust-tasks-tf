@@ -57,6 +57,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "affinidi-cesr"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e986f772f1639a7de3bf1ba1cf9b99aa87175fa28463d289a4afa5fc1c274266"
+dependencies = [
+ "base64ct",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "affinidi-crypto"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -595,6 +605,32 @@ dependencies = [
  "tokio",
  "tracing",
  "windows-native-keyring-store",
+]
+
+[[package]]
+name = "affinidi-tsp"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e08690e51cf42c0915289bd257f020f3727c5da3a45964c191af0715094acac"
+dependencies = [
+ "aes-gcm",
+ "affinidi-cesr",
+ "affinidi-did-common",
+ "affinidi-did-resolver-cache-sdk",
+ "affinidi-encoding",
+ "blake2",
+ "ed25519-dalek",
+ "hex",
+ "hkdf",
+ "rand_core 0.6.4",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "thiserror 2.0.18",
+ "tokio",
+ "url",
+ "x25519-dalek",
+ "zeroize",
 ]
 
 [[package]]
@@ -1615,7 +1651,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ccc2776f0c61eca1ca32528f85548abd1a4be8fb53d1b21c013e4f18da1e7090"
 dependencies = [
  "data-encoding",
- "syn 1.0.109",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -6362,6 +6398,18 @@ dependencies = [
  "serde_with",
  "thiserror 2.0.18",
  "tokio",
+]
+
+[[package]]
+name = "trust-tasks-tsp"
+version = "0.2.0"
+dependencies = [
+ "affinidi-tsp",
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "trust-tasks-rs",
 ]
 
 [[package]]
