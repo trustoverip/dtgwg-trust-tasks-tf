@@ -51,7 +51,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../.
 A conforming **producer** (the requester) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/account/get/0.1`, with itself as `issuer` and the mediator as `recipient`.
-2. Populate `payload.did` with the target account's DID.
+2. Populate `payload.did` with the target account's DID — or, for privacy (and for mediators that key accounts by a one-way hash and never hold the full DID), a stable hash of that DID. Either form is a valid [`Vid`](../../../_shared/0.1/messaging.schema.json#/$defs/Vid); the same form is used across `account/*`, `acl/*`, and `access-list/*` and compared by exact string equality.
 3. **SHOULD** include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
