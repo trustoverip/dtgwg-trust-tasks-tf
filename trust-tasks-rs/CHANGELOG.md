@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.9] — 2026-06-23
+
+### Fixed
+
+- **Publish the `messaging` Trust Task family.** The messaging tasks (`ping`,
+  `account/*`, `acl/*`, `access-list/*`) were added in #96 but landed without a
+  version bump, so they never reached crates.io — the published 0.2.8 predates
+  them. This patch republishes with `specs::messaging` included. No source change
+  beyond the version; the specs are exactly as merged.
+
 ## [0.2.8] — 2026-06-22
 
 Additive new `messaging/*` Trust Task family, regenerated from the registry.
