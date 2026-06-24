@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.10] — 2026-06-24
+
+### Added
+
+- **`vta/credentials/*` Trust Task family.** New `vta/credentials/issue/0.1`
+  (issue a scoped, time-boxed Verifiable Credential to a holder, gated by
+  operator step-up) and `vta/credentials/revoke/0.1` (withdraw an issued
+  credential), regenerated from the registry. Consumers pick up `0.2.10` via
+  `cargo update -p trust-tasks-rs`.
+
 ## [0.2.9] — 2026-06-23
 
 ### Fixed

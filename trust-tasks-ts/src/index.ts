@@ -156,6 +156,8 @@ export * as VtaContextsDidTemplatesGet_v1_0 from "./vta/contexts/did-templates/g
 export * as VtaContextsDidTemplatesList_v1_0 from "./vta/contexts/did-templates/list/1.0/payload";
 export * as VtaContextsDidTemplatesRender_v1_0 from "./vta/contexts/did-templates/render/1.0/payload";
 export * as VtaContextsDidTemplatesUpdate_v1_0 from "./vta/contexts/did-templates/update/1.0/payload";
+export * as VtaCredentialsIssue_v0_1 from "./vta/credentials/issue/0.1/payload";
+export * as VtaCredentialsRevoke_v0_1 from "./vta/credentials/revoke/0.1/payload";
 export * as VtaDidTemplatesCreate_v1_0 from "./vta/did-templates/create/1.0/payload";
 export * as VtaDidTemplatesDelete_v1_0 from "./vta/did-templates/delete/1.0/payload";
 export * as VtaDidTemplatesGet_v1_0 from "./vta/did-templates/get/1.0/payload";
