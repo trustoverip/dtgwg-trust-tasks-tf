@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/admin/list/0.1",
+  "title": "Messaging List Admins — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": { "type": "string", "minLength": 1, "description": "Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester." },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 1000, "description": "Maximum number of admin accounts to return in this page. The mediator chooses a default when omitted." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext", "description": "Ecosystem-defined extension members per SPEC.md §4.5.1." }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging List Admins — response payload",
+      "description": "The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["admins"],
+      "properties": {
+        "admins": { "type": "array", "description": "The page of admin accounts.", "items": { "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/AdminAccount" } },
+        "nextCursor": { "type": "string", "minLength": 1, "description": "Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext", "description": "Ecosystem-defined extension members per SPEC.md §4.5.1." }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/admin/config/0.1",
+  "title": "Messaging Get Configuration — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext", "description": "Ecosystem-defined extension members per SPEC.md §4.5.1." }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Get Configuration — response payload",
+      "description": "The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "config"],
+      "properties": {
+        "version": { "type": "string", "description": "The mediator software version." },
+        "config": { "type": "object", "additionalProperties": true, "description": "The mediator's current configuration as a JSON object. The exact members are mediator-implementation-specific and opaque to this specification." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext", "description": "Ecosystem-defined extension members per SPEC.md §4.5.1." }
+      }
+    }
+  }
+}

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.11] — 2026-06-24
+
+### Added
+
+- **`messaging/admin/*` Trust Task family** — the admin-management surface, mirroring
+  the messaging mediator's admin protocol: `admin/add` and `admin/strip` (grant /
+  revoke admin rights), `admin/list` (page the admin accounts), `admin/audit-log`
+  (page the privileged-change log, newest-first), and `admin/config` (read the
+  mediator's version + configuration). Adds the shared `AdminAccount`, `AuditEntry`,
+  and `AuditAction` `$def`s to `messaging/_shared`. Additive — no change to existing
+  tasks.
+
 ## [0.2.10] — 2026-06-24
 
 ### Added

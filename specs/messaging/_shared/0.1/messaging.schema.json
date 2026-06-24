@@ -69,6 +69,48 @@
         "receiveQueueBytes": { "type": "integer", "minimum": 0, "description": "Current byte size of queued receive messages." },
         "accessListCount": { "type": "integer", "minimum": 0, "description": "Number of entries in the account's access list." }
       }
+    },
+    "AdminAccount": {
+      "title": "AdminAccount",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "accountType"],
+      "description": "A privileged account at the mediator (an `admin` or `rootAdmin`).",
+      "properties": {
+        "did": { "$ref": "#/$defs/Vid", "description": "The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`)." },
+        "accountType": { "$ref": "#/$defs/AccountType", "description": "The admin role; one of `admin` or `rootAdmin`." }
+      }
+    },
+    "AuditAction": {
+      "title": "AuditAction",
+      "type": "string",
+      "description": "The kind of privileged change recorded in the audit log.",
+      "enum": [
+        "setAcl",
+        "accessListAdd",
+        "accessListRemove",
+        "accessListClear",
+        "accountAdd",
+        "accountRemove",
+        "accountChangeType",
+        "accountChangeQueueLimits",
+        "adminAdd",
+        "adminStrip"
+      ]
+    },
+    "AuditEntry": {
+      "title": "AuditEntry",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timestamp", "actor", "target", "action"],
+      "description": "One record in the mediator's privileged-change audit log: one change, by one actor, at one time.",
+      "properties": {
+        "timestamp": { "type": "integer", "minimum": 0, "description": "Unix epoch seconds at which the change was recorded." },
+        "actor": { "$ref": "#/$defs/Vid", "description": "The authenticated account that made the change (an admin, or the owner for a self-service change)." },
+        "target": { "$ref": "#/$defs/Vid", "description": "The account whose record changed." },
+        "action": { "$ref": "#/$defs/AuditAction" },
+        "detail": { "type": "string", "description": "Short human-readable summary of the change; not machine-parsed." }
+      }
     }
   }
 }

@@ -3,4 +3,5 @@
 pub mod access_list;
 pub mod account;
 pub mod acl;
+pub mod admin;
 pub mod ping;
