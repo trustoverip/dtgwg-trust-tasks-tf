@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/memory/delete/0.1",
+  "title": "VTA Memory Delete — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "key"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "description": "The VTA context the item lives in."
+    },
+    "key": {
+      "type": "string",
+      "description": "The key to forget."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Memory Delete — response payload",
+      "description": "Success response to vta/memory/delete. Type https://trusttasks.org/spec/vta/memory/delete/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "key": { "type": "string", "description": "The forgotten item's key." },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

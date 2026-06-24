@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/memory/put/0.1",
+  "title": "VTA Memory Put — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "key", "value"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "description": "The VTA context the memory item is scoped to (the isolation boundary)."
+    },
+    "key": {
+      "type": "string",
+      "description": "Agent-chosen identifier for the item; re-putting the same key upserts."
+    },
+    "value": {
+      "type": "string",
+      "description": "Opaque memory text (a fact, summary, or preference)."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Memory Put — response payload",
+      "description": "Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "key": { "type": "string", "description": "The stored item's key." },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

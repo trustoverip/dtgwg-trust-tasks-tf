@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.12] — 2026-06-24
+
+### Added
+
+- **`vta/memory/*` Trust Task family.** New `vta/memory/put/0.1`,
+  `vta/memory/list/0.1`, and `vta/memory/delete/0.1` — a generic per-context
+  key/value store for AI-agent memory (cross-session recall, context-isolated),
+  regenerated from the registry. Consumers pick up `0.2.12` via
+  `cargo update -p trust-tasks-rs`.
+
 ## [0.2.11] — 2026-06-24
 
 ### Added
