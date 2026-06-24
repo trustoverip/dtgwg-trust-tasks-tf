@@ -4,6 +4,17 @@ All notable changes to `trust-tasks-tsp` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.2.1] — 2026-06-24
+
+### Added
+
+- `pack_trust_task_nested(doc, sender, recipient, intermediary)` — producer-side
+  **Nested** carriage (SPEC binding §5): seals the Trust Task `Direct` to the final
+  `recipient`, then wraps it in an outer `Nested` envelope sealed to `intermediary`
+  (a metadata-privacy wrapper). The messaging mediator unwraps its outer layer and
+  forwards the inner `Direct`; the consumer side (`unpack_trust_task`) is unchanged —
+  it still opens the innermost `Direct` regardless of carriage.
+
 ## [0.2.0] — 2026-06-23
 
 Initial release: the ToIP Trust Spanning Protocol (TSP) transport binding for

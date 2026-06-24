@@ -8,7 +8,8 @@
 //! transport-authenticated peer (a TSP VID is a framework VID — no
 //! transformation).
 
-use affinidi_tsp::message::direct;
+use affinidi_tsp::message::direct::{self, PackedMessage};
+use affinidi_tsp::message::routed;
 use affinidi_tsp::{MessageType, PrivateVid, ResolvedVid};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -39,11 +40,55 @@ pub fn pack_trust_task<P>(
 where
     P: Payload + Serialize,
 {
+    Ok(pack_inner_direct(doc, sender, recipient)?.bytes)
+}
+
+/// Wrap a Trust Task document in the binding envelope, TSP-seal it (`Direct`) from
+/// `sender` to the final `recipient`, then wrap *that* in an outer **`Nested`**
+/// message sealed to `intermediary` (a metadata-privacy carriage — TSP §5.5).
+///
+/// On the wire the intermediary (typically the recipient's mediator) sees only the
+/// outer envelope addressed to itself; it unwraps the `Nested` layer and forwards
+/// the inner `Direct` message — sealed end-to-end to `recipient` — onward. The
+/// recipient still opens the innermost `Direct` via [`unpack_trust_task`]; nothing
+/// changes on the consumer side. `intermediary` is the intermediary's
+/// [`ResolvedVid`] (its public encryption key).
+pub fn pack_trust_task_nested<P>(
+    doc: &TrustTask<P>,
+    sender: &PrivateVid,
+    recipient: &ResolvedVid,
+    intermediary: &ResolvedVid,
+) -> Result<Vec<u8>, TspError>
+where
+    P: Payload + Serialize,
+{
+    let inner = pack_inner_direct(doc, sender, recipient)?;
+    let outer = routed::pack_nested(
+        &inner,
+        &sender.id,
+        &intermediary.id,
+        &sender.signing_key,
+        &sender.decryption_key,
+        &intermediary.encryption_key,
+    )?;
+    Ok(outer.bytes)
+}
+
+/// Build the binding envelope and TSP-seal it `Direct` from `sender` to `recipient`,
+/// returning the [`PackedMessage`] (so callers can either ship it directly or nest it).
+fn pack_inner_direct<P>(
+    doc: &TrustTask<P>,
+    sender: &PrivateVid,
+    recipient: &ResolvedVid,
+) -> Result<PackedMessage, TspError>
+where
+    P: Payload + Serialize,
+{
     let document = serde_json::to_value(doc).map_err(TspError::SerialiseBody)?;
     let envelope = json!({ "type": ENVELOPE_TYPE, "document": document });
     let payload = serde_json::to_vec(&envelope).map_err(TspError::SerialiseBody)?;
 
-    let packed = direct::pack(
+    Ok(direct::pack(
         &payload,
         MessageType::Direct,
         &sender.id,
@@ -51,8 +96,7 @@ where
         &sender.signing_key,
         &sender.decryption_key,
         &recipient.encryption_key,
-    )?;
-    Ok(packed.bytes)
+    )?)
 }
 
 /// Unwrap a TSP message produced by [`pack_trust_task`] into a typed

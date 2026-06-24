@@ -30,11 +30,14 @@
 //! `issuer`. TSP has no anonymous/unauthenticated sender mode, so every envelope
 //! this binding accepts carries a verified sender.
 //!
-//! This first release covers **Direct** carriage (a TSP message sealed straight
-//! from producer to consumer). Routed and Nested carriage ([SPEC binding §5]) —
-//! where the mediator relays the sealed message — are handled by the messaging
-//! mediator on the wire; the consumer opens the innermost Direct message, which
-//! this binding unpacks.
+//! The producer can ship a plain **Direct** message ([`pack_trust_task`], sealed
+//! straight to the consumer) or, for metadata privacy, wrap that Direct message in
+//! an outer **Nested** envelope sealed to an intermediary
+//! ([`pack_trust_task_nested`], [SPEC binding §5]). Routed/Nested relaying — where
+//! the messaging mediator unwraps its outer layer and forwards the sealed inner —
+//! is the mediator's job on the wire; the **consumer always opens the innermost
+//! Direct message**, which [`unpack_trust_task`] handles regardless of how it was
+//! carried.
 //!
 //! ## Sketch
 //!
@@ -61,4 +64,4 @@ mod pack;
 
 pub use error::TspError;
 pub use handler::{BINDING_URI, TspHandler};
-pub use pack::{ENVELOPE_TYPE, pack_trust_task, unpack_trust_task};
+pub use pack::{ENVELOPE_TYPE, pack_trust_task, pack_trust_task_nested, unpack_trust_task};

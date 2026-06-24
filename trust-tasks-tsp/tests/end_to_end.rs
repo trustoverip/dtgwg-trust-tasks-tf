@@ -5,11 +5,13 @@
 //! Runs entirely in-process using `affinidi-tsp`'s `PrivateVid::generate` — no
 //! mediator, no network, no configuration file.
 
-use affinidi_tsp::{MessageType, PrivateVid, message::direct};
+use affinidi_tsp::{MessageType, MetaEnvelope, PrivateVid, message::direct};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use trust_tasks_rs::{Payload, TransportHandler, TrustTask};
-use trust_tasks_tsp::{BINDING_URI, ENVELOPE_TYPE, TspError, pack_trust_task, unpack_trust_task};
+use trust_tasks_tsp::{
+    BINDING_URI, ENVELOPE_TYPE, TspError, pack_trust_task, pack_trust_task_nested, unpack_trust_task,
+};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct GrantPayload {
@@ -45,6 +47,49 @@ fn grant_doc(issuer: &str, recipient: &str) -> TrustTask<GrantPayload> {
     doc.recipient = Some(recipient.to_string());
     doc.issued_at = Some(chrono::Utc::now());
     doc
+}
+
+#[test]
+fn nested_roundtrip_through_intermediary() {
+    let p = setup();
+    let mediator = PrivateVid::generate("did:example:mediator");
+
+    let doc = grant_doc(&p.alice.id, &p.bob.id);
+
+    // Producer: inner Direct sealed end-to-end to bob, wrapped in an outer Nested
+    // envelope sealed to the mediator (a metadata-privacy carriage).
+    let wire = pack_trust_task_nested(&doc, &p.alice, &p.bob.to_resolved(), &mediator.to_resolved())
+        .expect("pack nested");
+
+    // On the wire it is a Nested message addressed to the intermediary, not bob —
+    // bob's identity stays hidden from anyone but the intermediary.
+    let meta = MetaEnvelope::parse(&wire).expect("parse meta");
+    assert_eq!(meta.message_type, MessageType::Nested);
+    assert_eq!(meta.receiver, mediator.id);
+    assert_eq!(meta.sender, p.alice.id);
+
+    // Intermediary unwraps its outer layer (sealed to it) to reveal the inner Direct
+    // message — exactly what the messaging mediator does on the wire.
+    let alice_resolved = p.alice.to_resolved();
+    let unwrapped = direct::unpack(
+        &wire,
+        &mediator.decryption_key,
+        &alice_resolved.encryption_key,
+        &alice_resolved.signing_key,
+    )
+    .expect("intermediary unwrap");
+    let inner = unwrapped.payload;
+
+    // Consumer opens the innermost Direct exactly as in the direct case — the binding
+    // is oblivious to how the message was carried.
+    let (received, handler) =
+        unpack_trust_task::<GrantPayload>(&inner, &p.bob, &p.alice.to_resolved())
+            .expect("unpack inner");
+
+    assert_eq!(received.payload, doc.payload);
+    assert_eq!(received.id, doc.id);
+    assert_eq!(handler.peer(), Some(p.alice.id.as_str()));
+    assert_eq!(handler.local(), Some(p.bob.id.as_str()));
 }
 
 #[test]
