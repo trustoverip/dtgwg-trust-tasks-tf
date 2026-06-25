@@ -1827,6 +1827,22 @@ function ImplementationsPage({ setRoute }) {
 
   const crates = [
     {
+      name: "trust-tasks-tsp",
+      accent: "sky",
+      role: "TSP binding · preferred transport",
+      tagline: "pack/unpack over ToIP Trust Spanning Protocol.",
+      summary:
+        "The preferred transport binding — a ToIP Trust Spanning Protocol (TSP) binding built on affinidi-tsp. pack_trust_task seals a TrustTask into a TSP message whose HPKE authenticated encryption binds the sender's VID; unpack_trust_task returns the document together with a TspHandler whose authenticated peer is the verified VID_sndr — the framework's §4.8.1 transport-authenticated identity. Direct, nested, and routed carriage are all supported.",
+      bullets: [
+        "pack_trust_task / unpack_trust_task helpers",
+        "pack_trust_task_nested — metadata privacy sealed to the final recipient",
+        "pack_trust_task_routed — relay through one or more intermediaries",
+        "TspHandler maps the authenticated VID_sndr → transport peer",
+        "Envelope type: https://trusttasks.org/binding/tsp/0.1/envelope",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-tsp",
+    },
+    {
       name: "trust-tasks-rs",
       accent: "violet",
       role: "Core library",
@@ -1892,16 +1908,17 @@ function ImplementationsPage({ setRoute }) {
   ];
 
   const cargoToml = `[dependencies]
-trust-tasks-rs = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
+trust-tasks-rs = "0.2"
 
-# Pick the transport binding(s) you need:
-trust-tasks-https   = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
-trust-tasks-didcomm = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }
+# Pick the transport binding(s) you need. TSP is the preferred binding:
+trust-tasks-tsp     = "0.2"
+trust-tasks-https   = "0.2"
+trust-tasks-didcomm = "0.2"
 
 # Optional: W3C Data Integrity proof verification. The default feature
 # pulls in the Affinidi backend; use default-features = false for a bare
 # umbrella ready to receive other backends.
-trust-tasks-proof = { git = "https://github.com/trustoverip/dtgwg-trust-tasks-tf" }`;
+trust-tasks-proof = "0.2"`;
 
   const loopbackSnippet = `use chrono::Utc;
 use trust_tasks_rs::{
@@ -2024,12 +2041,36 @@ let client   = DIDCacheClient::new(DIDCacheConfigBuilder::default().build()).awa
 let resolver = Arc::new(CachedDidResolver::new(Arc::new(client)));
 let verifier = Verifier::with_resolver(resolver);`;
 
+  const tspSnippet = `use affinidi_tsp::PrivateVid;
+use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, TransportHandler, TrustTask};
+use trust_tasks_tsp::{pack_trust_task, unpack_trust_task};
+
+// 1. Two parties, each with their own VID + keys.
+let alice = PrivateVid::generate("did:example:alice");
+let bob   = PrivateVid::generate("did:example:bob");
+
+// 2. Alice seals an acl/grant request into a TSP message for bob.
+let mut doc = TrustTask::for_payload("urn:uuid:...", grant::Payload { /* ... */ });
+doc.issuer    = Some(alice.id.clone());
+doc.recipient = Some(bob.id.clone());
+let wire = pack_trust_task(&doc, &alice, &bob.to_resolved())?;
+
+// 3. Bob opens it; handler.peer() is the authenticated VID_sndr.
+let (received, handler) = unpack_trust_task::<grant::Payload>(
+    &wire, &bob, &alice.to_resolved(),
+)?;
+let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
+
+// For metadata privacy / routing, seal to the final recipient instead:
+//   pack_trust_task_nested(&doc, &alice, &intermediary, &bob.to_resolved())?
+//   pack_trust_task_routed(&doc, &alice, &bob.to_resolved(), &hops)?`;
+
   return (
     <React.Fragment>
       <PageHero
         eyebrow="Reference implementation · Rust"
         title="trust-tasks for Rust."
-        lede="A reference Rust implementation of the Trust Tasks framework — five crates that together cover the framework envelope, two transport bindings, a W3C Data Integrity proof verifier, and a codegen tool that turns registry specs into typed payload modules. Pre-publication 0.1.0, tracking SPEC.md 0.1."
+        lede="A reference Rust implementation of the Trust Tasks framework — six crates that together cover the framework envelope, three transport bindings, a W3C Data Integrity proof verifier, and a codegen tool that turns registry specs into typed payload modules."
       >
         <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
           <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
@@ -2041,10 +2082,11 @@ let verifier = Verifier::with_resolver(resolver);`;
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
         <div className="container">
           <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Workspace at a glance</span>
-          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Four publishable crates, one codegen tool.</h2>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Five publishable crates, one codegen tool.</h2>
           <p style={{ color: "var(--tt-text-muted)", maxWidth: "60ch" }}>
-            Each crate is independently usable. Start with <code>trust-tasks-rs</code>;
-            add the transport binding(s) and proof verifier you need.
+            Each crate is independently usable. <code>trust-tasks-tsp</code> is the preferred
+            transport binding; the core <code>trust-tasks-rs</code> library underpins every
+            binding and proof verifier.
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
@@ -2094,7 +2136,8 @@ let verifier = Verifier::with_resolver(resolver);`;
           <span className="eyebrow">Quickstart</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Add to your Cargo.toml.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
-            The crates aren't on crates.io yet — pull them as git dependencies until the first publish. MSRV is 1.94.
+            The crates are published on crates.io and track framework 0.2. Add the core library plus the
+            transport binding(s) you need — <code>trust-tasks-tsp</code> is the preferred binding. MSRV is 1.94.
           </p>
           <CodeBlock json={cargoToml} language="toml" />
 
@@ -2105,6 +2148,28 @@ let verifier = Verifier::with_resolver(resolver);`;
             See <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-rs/examples/loopback.rs" target="_blank" rel="noreferrer"><code>trust-tasks-rs/examples/loopback.rs</code></a> for the full file (runs with <code>cargo run --example loopback -p trust-tasks-rs</code>).
           </p>
           <CodeBlock json={loopbackSnippet} language="rust" />
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* TSP BINDING — preferred transport */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow">Trust Spanning Protocol transport · preferred</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Sealed over ToIP TSP.</h2>
+          <p style={{ color: "var(--tt-text-muted)" }}>
+            The preferred transport binding. <code>pack_trust_task</code> seals a <code>TrustTask</code> into a <a href="https://trustoverip.github.io/tswg-tsp-specification/" target="_blank" rel="noreferrer">ToIP Trust Spanning Protocol</a> message
+            whose HPKE authenticated encryption binds the sender's VID. <code>unpack_trust_task</code> returns the document together with a
+            <code>TspHandler</code> whose authenticated peer is the verified <code>VID_sndr</code> — exactly what the framework's
+            <SpecRef section="4.8.1" setRoute={setRoute}>§4.8.1</SpecRef> precedence rule consumes. Built on <a href="https://crates.io/crates/affinidi-tsp" target="_blank" rel="noreferrer"><code>affinidi-tsp</code></a>;
+            <code>pack_trust_task_nested</code> and <code>pack_trust_task_routed</code> add metadata-private and intermediary-relayed carriage per the <a href="/binding/tsp/0.1" onClick={(e) => { e.preventDefault(); setRoute({ name: "binding", slug: "tsp", version: "0.1" }); }}>tsp/0.1 binding</a>.
+          </p>
+          <CodeBlock json={tspSnippet} language="rust" />
+
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)" }}>
+            Run the full in-process example: <code>cargo run -p trust-tasks-tsp --example local_roundtrip</code>.
+          </p>
         </div>
       </section>
 
@@ -2210,11 +2275,11 @@ git diff --exit-code trust-tasks-rs/src/specs   # CI gate: codegen is idempotent
       <section style={{ paddingBlock: "var(--tt-space-7)", borderTop: "1px solid var(--tt-line)" }}>
         <div className="container">
           <span className="eyebrow">Status</span>
-          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Pre-publication.</h2>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Draft.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
-            All four crates are at <code>0.1.0</code>, tracking <code>SPEC.md 0.1</code>. Neither the framework nor the
+            The crates track framework <code>0.2</code>, with versions in the <code>0.2.x</code> line. Neither the framework nor the
             implementation has gone through external review yet — interfaces and on-the-wire behaviour are subject
-            to change. The repository ships full unit + integration suites (125 tests workspace-wide),
+            to change. The repository ships full unit + integration suites across the workspace,
             a CI matrix on stable Rust (MSRV 1.94), and runnable examples for every binding.
           </p>
           <div style={{ marginTop: "var(--tt-space-5)", display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap" }}>

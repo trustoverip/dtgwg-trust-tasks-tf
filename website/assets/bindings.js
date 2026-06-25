@@ -10,6 +10,26 @@
 
 window.TT_BINDINGS = [
   {
+    id: "tsp/0.1",
+    slug: "tsp",
+    version: "0.1",
+    title: "Trust Spanning Protocol (TSP)",
+    summary:
+      "Carries Trust Task documents inside ToIP Trust Spanning Protocol messages. TSP seals the payload with HPKE authenticated encryption and signs the message, so the authenticated sender VID maps directly to the framework's transport-authenticated party identity. Direct, nested, and routed carriage are defined.",
+    bindingURI: "https://trusttasks.org/binding/tsp/0.1",
+    envelopeType: "https://trusttasks.org/binding/tsp/0.1/envelope",
+    status: "draft",
+    accent: "sky",
+    prosePath: "/bindings/tsp/0.1/spec.md",
+    implementations: [
+      {
+        name: "trust-tasks-tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-tsp",
+        language: "Rust",
+      },
+    ],
+  },
+  {
     id: "https/0.1",
     slug: "https",
     version: "0.1",
