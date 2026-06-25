@@ -5,12 +5,14 @@
 //! Runs entirely in-process using `affinidi-tsp`'s `PrivateVid::generate` — no
 //! mediator, no network, no configuration file.
 
+use affinidi_tsp::message::routed::{RouteStep, next_hop};
 use affinidi_tsp::{MessageType, MetaEnvelope, PrivateVid, message::direct};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use trust_tasks_rs::{Payload, TransportHandler, TrustTask};
 use trust_tasks_tsp::{
-    BINDING_URI, ENVELOPE_TYPE, TspError, pack_trust_task, pack_trust_task_nested, unpack_trust_task,
+    BINDING_URI, ENVELOPE_TYPE, TspError, pack_trust_task, pack_trust_task_nested,
+    pack_trust_task_routed, unpack_trust_task,
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -82,6 +84,64 @@ fn nested_roundtrip_through_intermediary() {
 
     // Consumer opens the innermost Direct exactly as in the direct case — the binding
     // is oblivious to how the message was carried.
+    let (received, handler) =
+        unpack_trust_task::<GrantPayload>(&inner, &p.bob, &p.alice.to_resolved())
+            .expect("unpack inner");
+
+    assert_eq!(received.payload, doc.payload);
+    assert_eq!(received.id, doc.id);
+    assert_eq!(handler.peer(), Some(p.alice.id.as_str()));
+    assert_eq!(handler.local(), Some(p.bob.id.as_str()));
+}
+
+#[test]
+fn routed_roundtrips_through_a_relay() {
+    let p = setup();
+    let mediator = PrivateVid::generate("did:example:mediator");
+
+    let doc = grant_doc(&p.alice.id, &p.bob.id);
+
+    // Producer: inner Direct sealed to bob, wrapped in a Routed envelope sealed to the
+    // first hop (the mediator), with the onward route ending at bob.
+    let wire = pack_trust_task_routed(
+        &doc,
+        &p.alice,
+        &p.bob.to_resolved(),
+        &mediator.to_resolved(),
+        &[p.bob.id.clone()],
+    )
+    .expect("pack routed");
+
+    // On the wire it is a Routed message addressed to the first hop, not bob.
+    let meta = MetaEnvelope::parse(&wire).expect("parse meta");
+    assert_eq!(meta.message_type, MessageType::Routed);
+    assert_eq!(meta.receiver, mediator.id);
+    assert_eq!(meta.sender, p.alice.id);
+
+    // The first hop unwraps its routing layer (sealed to it) and reads the next hop —
+    // exactly what the messaging mediator does on the wire.
+    let alice_resolved = p.alice.to_resolved();
+    let unwrapped = direct::unpack(
+        &wire,
+        &mediator.decryption_key,
+        &alice_resolved.encryption_key,
+        &alice_resolved.signing_key,
+    )
+    .expect("relay unwrap");
+    let inner = match next_hop(&unwrapped.payload).expect("decode route") {
+        RouteStep::Forward {
+            next,
+            remaining,
+            inner,
+        } => {
+            assert_eq!(next, p.bob.id, "forwarded to bob");
+            assert!(remaining.is_empty(), "bob is the last hop");
+            inner
+        }
+        RouteStep::Deliver { .. } => panic!("expected a forward step to bob"),
+    };
+
+    // The consumer opens the innermost Direct exactly as in the direct/nested cases.
     let (received, handler) =
         unpack_trust_task::<GrantPayload>(&inner, &p.bob, &p.alice.to_resolved())
             .expect("unpack inner");

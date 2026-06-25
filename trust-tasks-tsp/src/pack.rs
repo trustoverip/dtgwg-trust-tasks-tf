@@ -74,6 +74,40 @@ where
     Ok(outer.bytes)
 }
 
+/// Wrap a Trust Task document in the binding envelope, TSP-seal it `Direct` to the
+/// final `recipient`, then wrap *that* in a **`Routed`** message relayed through one or
+/// more hops ([SPEC binding §5]).
+///
+/// The full relay path is `[first_hop, ..onward_route]`: the routing layer is sealed to
+/// `first_hop`, and `onward_route` lists the VIDs it is forwarded through, ending at
+/// `recipient`'s VID. Each hop unwraps its layer and forwards onward; only `recipient`
+/// can open the inner Trust Task. `first_hop` is the first relay's [`ResolvedVid`] (its
+/// public encryption key); `recipient` is the final recipient's. As with nested
+/// carriage, the consumer side ([`unpack_trust_task`]) is unchanged — it still opens the
+/// innermost `Direct` regardless of how the message was relayed.
+pub fn pack_trust_task_routed<P>(
+    doc: &TrustTask<P>,
+    sender: &PrivateVid,
+    recipient: &ResolvedVid,
+    first_hop: &ResolvedVid,
+    onward_route: &[String],
+) -> Result<Vec<u8>, TspError>
+where
+    P: Payload + Serialize,
+{
+    let inner = pack_inner_direct(doc, sender, recipient)?;
+    let routed = routed::pack_routed(
+        &inner.bytes,
+        onward_route,
+        &sender.id,
+        &first_hop.id,
+        &sender.signing_key,
+        &sender.decryption_key,
+        &first_hop.encryption_key,
+    )?;
+    Ok(routed.bytes)
+}
+
 /// Build the binding envelope and TSP-seal it `Direct` from `sender` to `recipient`,
 /// returning the [`PackedMessage`] (so callers can either ship it directly or nest it).
 fn pack_inner_direct<P>(

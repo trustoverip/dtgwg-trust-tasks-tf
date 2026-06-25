@@ -31,13 +31,13 @@
 //! this binding accepts carries a verified sender.
 //!
 //! The producer can ship a plain **Direct** message ([`pack_trust_task`], sealed
-//! straight to the consumer) or, for metadata privacy, wrap that Direct message in
-//! an outer **Nested** envelope sealed to an intermediary
-//! ([`pack_trust_task_nested`], [SPEC binding §5]). Routed/Nested relaying — where
-//! the messaging mediator unwraps its outer layer and forwards the sealed inner —
-//! is the mediator's job on the wire; the **consumer always opens the innermost
-//! Direct message**, which [`unpack_trust_task`] handles regardless of how it was
-//! carried.
+//! straight to the consumer) or relay it through intermediaries ([SPEC binding §5]):
+//! a **Nested** envelope sealed to a single intermediary for metadata privacy
+//! ([`pack_trust_task_nested`]), or a **Routed** envelope relayed through one or more
+//! hops ([`pack_trust_task_routed`]). Routed/Nested relaying — where the messaging
+//! mediator unwraps its outer layer and forwards the sealed inner — is the mediator's
+//! job on the wire; the **consumer always opens the innermost Direct message**, which
+//! [`unpack_trust_task`] handles regardless of how it was carried.
 //!
 //! ## Sketch
 //!
@@ -64,4 +64,7 @@ mod pack;
 
 pub use error::TspError;
 pub use handler::{BINDING_URI, TspHandler};
-pub use pack::{ENVELOPE_TYPE, pack_trust_task, pack_trust_task_nested, unpack_trust_task};
+pub use pack::{
+    ENVELOPE_TYPE, pack_trust_task, pack_trust_task_nested, pack_trust_task_routed,
+    unpack_trust_task,
+};
