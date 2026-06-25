@@ -10,11 +10,22 @@ name: Publish packages
 on:
   push:
     branches: [main]
+    # Watch every crate this workflow publishes (see the `CRATES` list below).
+    # The binding crates were previously omitted, so a binding-only change (e.g. a
+    # bump to `trust-tasks-tsp` with no `trust-tasks-rs`/spec change) merged to main
+    # without triggering a publish, stranding the new version on the registry.
     paths:
       - "trust-tasks-rs/**"
+      - "trust-tasks-https/**"
+      - "trust-tasks-didcomm/**"
+      - "trust-tasks-proof/**"
+      - "trust-tasks-tsp/**"
       - "trust-tasks-ts/**"
       - "specs/**"
       - ".github/workflows/publish.yml"
+  # Manual escape hatch to re-run a publish (e.g. after fixing the trigger) without
+  # needing a fresh commit to a watched path.
+  workflow_dispatch:
 
 # Never let two runs publish the same ref at once.
 concurrency:
