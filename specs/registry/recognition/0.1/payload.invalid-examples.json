@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Empty payload omits the required members entity_id, authority_id, action, resource.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "entity_id": "did:example:entity",
+      "authority_id": "did:example:authority",
+      "action": "issue",
+      "resource": "vc",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "entity_id must be a string.",
+    "payload": {
+      "entity_id": 42,
+      "authority_id": "did:example:authority",
+      "action": "issue",
+      "resource": "vc"
+    }
+  }
+]

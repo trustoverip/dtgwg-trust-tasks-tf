@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/record/read/0.1",
+  "title": "Registry Record Read — payload",
+  "description": "An administrator reads the full trust record identified by the four TRQP identifiers (both the recognized and authorized facets, unlike the filtered TRQP query responses).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entity_id", "authority_id", "action", "resource"],
+  "properties": {
+    "entity_id": { "type": "string" },
+    "authority_id": { "type": "string" },
+    "action": { "type": "string" },
+    "resource": { "type": "string" },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Record Read — response payload (a TrustRecord)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_id", "authority_id", "action", "resource", "record_type"],
+      "properties": {
+        "entity_id": { "type": "string" },
+        "authority_id": { "type": "string" },
+        "action": { "type": "string" },
+        "resource": { "type": "string" },
+        "recognized": { "type": "boolean" },
+        "authorized": { "type": "boolean" },
+        "context": { "type": "object", "additionalProperties": true },
+        "record_type": { "$ref": "../../../_shared/0.1/registry.schema.json#/$defs/RecordType" }
+      }
+    }
+  }
+}

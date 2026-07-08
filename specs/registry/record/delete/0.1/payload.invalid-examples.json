@@ -1,0 +1,13 @@
+[
+  {
+    "note": "Empty payload omits the required identifiers.",
+    "payload": {}
+  },
+  {
+    "note": "Missing action + resource.",
+    "payload": {
+      "entity_id": "did:example:entity",
+      "authority_id": "did:example:authority"
+    }
+  }
+]

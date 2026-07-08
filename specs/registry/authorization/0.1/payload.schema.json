@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/authorization/0.1",
+  "title": "Registry Authorization — payload",
+  "description": "TRQP v2.0 authorization query: ask a trust registry whether an entity is authorized by an authority for a given action+resource. Field names are verbatim from the TRQP authorization request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entity_id", "authority_id", "action", "resource"],
+  "properties": {
+    "entity_id": { "type": "string", "description": "Identifier of the entity being tested for authorization." },
+    "authority_id": { "type": "string", "description": "Identifier of the authority being queried." },
+    "action": { "type": "string", "description": "The action the query is checking authorization for." },
+    "resource": { "type": "string", "description": "The resource the query is checking authorization for." },
+    "context": { "$ref": "../../_shared/0.1/registry.schema.json#/$defs/QueryContext" },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Authorization — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_id", "authority_id", "action", "resource", "authorized", "time_evaluated"],
+      "properties": {
+        "entity_id": { "type": "string" },
+        "authority_id": { "type": "string" },
+        "action": { "type": "string" },
+        "resource": { "type": "string" },
+        "authorized": { "type": "boolean", "description": "True if the action+resource authorization has been confirmed, false otherwise." },
+        "time_evaluated": { "type": "string", "format": "date-time", "description": "Server time the query was evaluated at, per the endpoint clock." },
+        "time_requested": { "type": "string", "format": "date-time", "description": "The requested server time, echoed from the request `context.time` when supplied." },
+        "message": { "type": "string", "description": "Additional human-readable detail about the authorization response." },
+        "context": { "$ref": "../../_shared/0.1/registry.schema.json#/$defs/QueryContext" },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

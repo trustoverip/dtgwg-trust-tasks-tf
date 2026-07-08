@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Empty payload omits the required member `record`.",
+    "payload": {}
+  },
+  {
+    "note": "record.record_type must be one of the enum values.",
+    "payload": {
+      "record": {
+        "entity_id": "did:example:entity",
+        "authority_id": "did:example:authority",
+        "action": "issue",
+        "resource": "vc",
+        "record_type": "not-a-type"
+      }
+    }
+  }
+]

@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Empty payload omits the required member `record`.",
+    "payload": {}
+  },
+  {
+    "note": "record missing required members (record_type and the identifiers).",
+    "payload": {
+      "record": { "entity_id": "did:example:entity" }
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "record": {
+        "entity_id": "did:example:entity",
+        "authority_id": "did:example:authority",
+        "action": "issue",
+        "resource": "vc",
+        "record_type": "authorization"
+      },
+      "__notARealMember__": true
+    }
+  }
+]

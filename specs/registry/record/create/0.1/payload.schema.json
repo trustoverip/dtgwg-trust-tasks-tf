@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/record/create/0.1",
+  "title": "Registry Record Create — payload",
+  "description": "An administrator asks a trust registry to create a new trust record (a recognition or authorization assertion). Idempotent per record key (entity+authority+action+resource); creating an existing key is an error.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record"],
+  "properties": {
+    "record": { "$ref": "../../../_shared/0.1/registry.schema.json#/$defs/TrustRecord" },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Record Create — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean", "description": "Whether the record was created." },
+        "message": { "type": "string", "description": "Optional human-readable detail." },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

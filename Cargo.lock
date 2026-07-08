@@ -6402,7 +6402,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-tsp"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "affinidi-tsp",
  "chrono",

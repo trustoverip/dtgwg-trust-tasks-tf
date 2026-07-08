@@ -61,6 +61,7 @@ pub mod messaging;
 pub mod policy;
 pub mod provision;
 pub mod push;
+pub mod registry;
 pub mod sync;
 pub mod trust_task_discovery;
 pub mod vault;

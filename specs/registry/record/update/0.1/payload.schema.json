@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/record/update/0.1",
+  "title": "Registry Record Update — payload",
+  "description": "An administrator asks a trust registry to update an existing trust record. The record key (entity+authority+action+resource) must already exist.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record"],
+  "properties": {
+    "record": { "$ref": "../../../_shared/0.1/registry.schema.json#/$defs/TrustRecord" },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Record Update — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean", "description": "Whether the record was updated." },
+        "message": { "type": "string", "description": "Optional human-readable detail." },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

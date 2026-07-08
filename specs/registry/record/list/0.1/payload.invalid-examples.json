@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "ext must be an object, not a string.",
+    "payload": {
+      "ext": "nope"
+    }
+  }
+]

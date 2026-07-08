@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/record/list/0.1",
+  "title": "Registry Record List — payload",
+  "description": "An administrator lists all trust records held by the registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Record List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["records"],
+      "properties": {
+        "records": {
+          "type": "array",
+          "description": "All trust records held by the registry.",
+          "items": { "$ref": "../../../_shared/0.1/registry.schema.json#/$defs/TrustRecord" }
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

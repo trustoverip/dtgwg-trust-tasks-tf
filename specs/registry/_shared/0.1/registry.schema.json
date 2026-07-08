@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/_shared/0.1/registry",
+  "title": "Shared definitions for the registry/* spec family",
+  "description": "Canonical $defs referenced by every registry/* specification: the TRQP query tuple, the query context, the trust record, and the mutation acknowledgement. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen). Field names for the query tuple and the query responses are verbatim from the ToIP Trust Registry Query Protocol (TRQP) v2.0 JSON schemas, so one shape serves both the plain HTTP TRQP binding and the Trust Task payload.",
+  "$defs": {
+    "QueryContext": {
+      "title": "QueryContext",
+      "type": "object",
+      "description": "Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.",
+      "properties": {
+        "time": { "type": "string", "format": "date-time", "description": "Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time." },
+        "locator": { "type": "string", "description": "Optional hint for systems that need extra information to locate the records in question (authorization queries)." }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "RecordType": {
+      "title": "RecordType",
+      "type": "string",
+      "enum": ["authorization", "recognition"],
+      "description": "Whether the record asserts an authorization or a recognition relationship."
+    },
+    "TrustRecord": {
+      "title": "TrustRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_id", "authority_id", "action", "resource", "record_type"],
+      "properties": {
+        "entity_id": { "type": "string" },
+        "authority_id": { "type": "string" },
+        "action": { "type": "string" },
+        "resource": { "type": "string" },
+        "recognized": { "type": "boolean", "description": "Present on recognition records: whether the action+resource is recognised." },
+        "authorized": { "type": "boolean", "description": "Present on authorization records: whether the action+resource authorization is confirmed." },
+        "context": { "type": "object", "description": "Opaque governance context attached to the record.", "additionalProperties": true },
+        "record_type": { "$ref": "#/$defs/RecordType" }
+      }
+    },
+    "RecordAck": {
+      "title": "RecordAck",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean", "description": "Whether the mutation was applied." },
+        "message": { "type": "string", "description": "Optional human-readable detail." }
+      }
+    }
+  }
+}
