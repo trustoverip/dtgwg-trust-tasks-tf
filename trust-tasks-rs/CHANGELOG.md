@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.13] — 2026-07-09
+
+### Added
+
+- **`registry/*` Trust Task family.** New `registry/recognition/0.1` and
+  `registry/authorization/0.1` (TRQP v2.0 recognition / authorization queries),
+  plus `registry/record/{create,update,delete,read,list}/0.1` for Trust Registry
+  record CRUD. Generated from the `registry/*` specs added in #108; writes carry
+  `IS_PROOF_REQUIRED`. Additive — no change to existing tasks. Consumers pick up
+  `0.2.13` via `cargo update -p trust-tasks-rs`.
+
+  (The `registry/*` source was merged in #108 without a version bump, so it never
+  reached crates.io; this release publishes it.)
+
 ## [0.2.12] — 2026-06-24
 
 ### Added
