@@ -22,6 +22,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Read-only inventory query.
+sideEffects:
+  level: none
+  rationale: "Read-only listing of registered device bindings."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: device/list:permissionDenied
     meaning: The consumer lacks visibility into the device inventory.

@@ -23,6 +23,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Delete is destructive and silently propagates to every Companion cache via sync. The producer's identity MUST be verifiable so the maintainer can attribute the deletion to a specific consumer in the audit log.
+sideEffects:
+  level: destructive
+  rationale: "Tombstones a vault entry; after the grace period it is garbage-collected and unrecoverable."
+consequences:
+  - "The entry is retained only for a grace period, then permanently removed."
+subjectPath: /id
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vault/delete:not_found
     meaning: No entry with this id exists in the consumer's visible scope (conflates "absent" and "permission denied" — see Security).

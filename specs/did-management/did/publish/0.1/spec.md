@@ -23,6 +23,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A publish is an evidentiary record of which log content was uploaded by which owner against which slot; the maintainer SHOULD be able to demonstrate, after the fact, that the upload was authorised.
+sideEffects:
+  level: mutating
+  rationale: Appends a new entry to the DID's log chain. Recoverable — the prior chain state is retained and a subsequent entry can supersede it — but it is a persisted, publicly-resolvable change to the identity's history.
+consequences:
+  - Extends the DID's public log; the new state resolves immediately.
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/publish:not_owner
     meaning: The caller is not the current owner of the slot (or an admin with takeover authority).

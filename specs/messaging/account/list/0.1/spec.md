@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Listing accounts is a non-mutating query; a proof is RECOMMENDED to bind the request to its requester for authorization and audit, but is not required for integrity of any change since none is made.
+sideEffects:
+  level: none
+  rationale: "Read-only listing of served accounts."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes: []
 related:
   - messaging/account/get

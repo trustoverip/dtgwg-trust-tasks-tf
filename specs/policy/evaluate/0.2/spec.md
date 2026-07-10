@@ -23,6 +23,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Read-only dry-run, no state change. Recommended for attribution.
+sideEffects:
+  level: none
+  rationale: "Dry-run of a policy decision; explicitly persists nothing."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: policy/evaluate:permissionDenied
     meaning: The consumer lacks PolicyAdmin capability.

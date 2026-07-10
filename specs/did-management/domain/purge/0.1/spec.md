@@ -19,6 +19,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Purge is irreversible and may delete every DID hosted under the domain. The maintainer MUST retain a signed authorisation.
+sideEffects:
+  level: destructive
+  rationale: "Force-removes a disabled domain, bypassing the grace period and optionally purging it from every serving instance."
+consequences:
+  - "Removes the domain past the recovery grace period and can purge it from all serving instances."
+subjectPath: /name
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management:unknown_domain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).

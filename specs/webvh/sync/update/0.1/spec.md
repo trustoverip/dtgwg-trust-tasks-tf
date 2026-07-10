@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Sync messages travel between trusted infrastructure nodes already bound by Service-role authentication on the receiving server; a transport-independent proof is valuable for audit replay but not required for steady-state replication.
+sideEffects:
+  level: mutating
+  rationale: "Replicates a DID's current log and witness content to a hosting server."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: webvh/sync/update:not_authorized
     meaning: Sender DID is not the configured control plane for the receiving server.

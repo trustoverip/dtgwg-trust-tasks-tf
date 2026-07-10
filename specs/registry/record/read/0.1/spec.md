@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Reading a record is a non-mutating administrative operation whose integrity is normally guaranteed by the transport; a proof is RECOMMENDED, not REQUIRED.
+sideEffects:
+  level: none
+  rationale: "Read-only read of a single trust record."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 related:
   - registry/record/list
   - registry/recognition

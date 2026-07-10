@@ -23,6 +23,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Policy changes alter the maintainer's security posture for every subsequent request. The producer's identity MUST be verifiable for audit and to prevent stealth modifications.
+sideEffects:
+  level: mutating
+  rationale: "Creates or updates a Rego policy module; recoverable by upserting again."
+consequences:
+  - "Changes request-evaluation policy for every subsequent request, effective immediately."
+subjectPath: /id
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: policy/upsert:permissionDenied
     meaning: The consumer lacks PolicyAdmin capability.

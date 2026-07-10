@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Admin-register is privileged — a forged record could let an attacker direct fleet messages at an instance they control. The maintainer SHOULD retain a signed authorisation.
+sideEffects:
+  level: mutating
+  rationale: "Inserts a server instance into the control-plane registry; reversible via deregister."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/registry/admin-register:instance_exists
     meaning: A registry entry with the same `instanceId` is already present.

@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An update is an admin action with audit value.
+sideEffects:
+  level: mutating
+  rationale: "Updates a domain's label metadata; the name itself is immutable."
+subjectPath: /name
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management:unknown_domain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).

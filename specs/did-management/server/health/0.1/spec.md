@@ -19,6 +19,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Health checks are routine and transport-authenticated; a proof becomes valuable only if a participant retains the probe history for SLA evidence.
+sideEffects:
+  level: none
+  rationale: "Liveness probe between control plane and server."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes: []
 related: [did-management/server/register]
 ---

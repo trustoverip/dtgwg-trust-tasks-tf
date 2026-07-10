@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: A challenge request is a public, write-once nudge — no evidentiary value attaches to it. The auth service returns its result regardless of who asked, because nothing of value is granted until the subsequent authenticate document, which IS proof-required.
+sideEffects:
+  level: none
+  rationale: "Issues a short-lived one-time challenge nonce; no durable state change."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/challenge:subject_not_recognized
     meaning: The producer named a `subject` that the auth service does not know how to authenticate (e.g. an unregistered DID, or a VID scheme outside the issuer's trust framework).

@@ -23,6 +23,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: The mediator authenticates and authorizes the request at the transport layer (the request is admin-gated); a proof is RECOMMENDED to additionally bind the request to its requester for audit, but is not required.
+sideEffects:
+  level: mutating
+  rationale: "Grants admin rights at the mediator; revocable via admin/strip."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes: []
 related:
   - messaging/admin/list

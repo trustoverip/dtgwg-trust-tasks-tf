@@ -26,6 +26,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The challenge initiates a mutation of a DID document (a passkey verificationMethod will be published on success) and is admin-gated. The VTA MUST attribute the request to a producer holding the admin role on the target DID's context; transport-independent producer identity is required so the request cannot be replayed or attributed to the wrong party.
+sideEffects:
+  level: none
+  rationale: "Requests a WebAuthn registration challenge; begins a ceremony, persists no key."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/passkey-vms/enroll-challenge:didNotFound
     meaning: The target DID is not managed by this VTA, so no challenge can be issued.

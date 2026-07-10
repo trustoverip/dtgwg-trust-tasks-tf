@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Registration binds a device identity to operator-significant capabilities. The producer's identity MUST be verifiable so the maintainer can attribute the registration to a specific consumer key (the one the operator authorised in provision-integration).
+sideEffects:
+  level: mutating
+  rationale: "Claims a device record on the maintainer; revocable via disable/wipe."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: device/register:no_pending_enrolment
     meaning: The producer's DID is not the result of a recent provision-integration + acl/swap-key flow. Registration cannot proceed without first being granted via the maintainer's normal enrolment path.

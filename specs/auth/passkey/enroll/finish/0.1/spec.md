@@ -25,6 +25,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The producer is asserting "I, $subject, control a fresh passkey that should be bound to my VID for future authentication." The framework proof ties that assertion to the same key that signed the matching start.
+sideEffects:
+  level: mutating
+  rationale: "Binds a new passkey credential to the subject's VID; revocable."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/passkey/enroll/finish:enrollment_not_found
     meaning: The `enrollmentId` does not refer to any active enrollment ceremony.

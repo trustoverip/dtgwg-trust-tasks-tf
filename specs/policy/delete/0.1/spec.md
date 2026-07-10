@@ -21,6 +21,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Removing a policy changes the maintainer's security posture; producer identity MUST be verifiable for audit.
+sideEffects:
+  level: destructive
+  rationale: "Deletes a Rego policy module; it stops shaping evaluation immediately and is gone from the maintainer."
+consequences:
+  - "Requests are evaluated without this policy from the next request on, until it is re-created."
+subjectPath: /id
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: policy/delete:not_found
     meaning: No policy with this id.

@@ -23,6 +23,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Read-only audit query.
+sideEffects:
+  level: none
+  rationale: "Read-only query of the credential-use audit log."
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vault/usage:permission_denied
     meaning: The consumer lacks visibility into the requested scope.

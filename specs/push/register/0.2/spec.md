@@ -26,6 +26,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Over the DIDComm binding the authcrypt sender authenticates the registering device intrinsically, so a document proof is redundant. Over the HTTPS binding a caller MAY carry a did-signed proof. Registration is low-stakes — the issued handle is opaque and useless until the device's VTA provisions a trigger allowlist for it (push/provision) — so proof is RECOMMENDED, not REQUIRED.
+sideEffects:
+  level: mutating
+  rationale: "Registers a device's push token and mints an opaque WakeHandle."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: push/register:unsupportedPlatform
     meaning: The gateway does not implement the registration's `platform`. The device falls back to queue-and-wait (no push).

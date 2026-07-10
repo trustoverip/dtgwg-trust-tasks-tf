@@ -23,6 +23,16 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Release transfers long-term secret material to the consumer. Even though wrapped in HPKE, the consumer becomes the secret's custodian for the TTL window. The producer's identity MUST be verifiable for audit and so policy can enforce per-consumer release rules.
+sideEffects:
+  level: mutating
+  rationale: "Returns an entry's cleartext secret in an HPKE-sealed envelope with a strict TTL; the release is logged."
+consequences:
+  - "Discloses the entry's secret material to the requesting consumer (sealed in transit)."
+subjectPath: /target
+exposure:
+  discloses: secret
+  actsAsSubject: false
+  rationale: "Returns the entry's cleartext secret material to the caller (HPKE-sealed in transit)."
 errorCodes:
   - code: vault/release:not_found
     meaning: No entry with this id exists in the consumer's scope.

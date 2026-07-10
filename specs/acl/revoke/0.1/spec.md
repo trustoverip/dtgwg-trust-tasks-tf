@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A revocation is the evidentiary counterpart to a grant; the maintainer, the former subject, and any downstream party that retained the grant document need to be able to verify, after the fact, that the revocation was authorized.
+sideEffects:
+  level: mutating
+  rationale: "Removes a subject (or scopes) from the ACL; recoverable via acl/grant."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: acl/revoke:subject_not_present
     meaning: The subject named in the payload is not currently in the ACL.

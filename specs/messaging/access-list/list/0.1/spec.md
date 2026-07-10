@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: This is a read-only enumeration that mutates nothing; a proof is RECOMMENDED so the requester may be authenticated and the response bound to a specific request where the ecosystem relies on it after the transport has closed, but it is not required for a query.
+sideEffects:
+  level: none
+  rationale: "Read-only paging of an account's access list."
+subjectPath: /did
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: messaging/access-list/list:unknownAccount
     meaning: The target DID has no account at this mediator.

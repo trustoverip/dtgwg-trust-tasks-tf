@@ -23,6 +23,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: An error response is typically short-lived and consumed over the same transport that delivered the failed request, but a proof becomes necessary when the failure will be retained as evidence (for example, a compliance refusal) or replayed by intermediaries.
+sideEffects:
+  level: none
+  rationale: "A failure report returned in place of a result; changes no recipient state."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes: []
 related: []
 ---

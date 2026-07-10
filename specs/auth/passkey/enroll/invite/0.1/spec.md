@@ -28,6 +28,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An invite assigns a role + scopes to a VID the auth service has never seen authenticate. The administrator's signed proof is the entire trust chain — without it, a token-stealing attacker could mint admin-tier invites pointing at attacker-controlled VIDs.
+sideEffects:
+  level: mutating
+  rationale: "Issues a single-use enrollment invite; consumable/expiring state."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/passkey/enroll/invite:subject_already_enrolled
     meaning: The invitee VID already has a passkey credential on file. Use auth/passkey/enroll/start (with the existing session) instead.

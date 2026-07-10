@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Updating a trust record is an evidentiary, state-changing administrative act that may be audited or replayed after the original transport has closed; transport-independent integrity is required.
+sideEffects:
+  level: mutating
+  rationale: "Updates an existing trust record; recoverable by updating again."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: registry/record/update:not_found
     meaning: No record exists for the given entity+authority+action+resource key.

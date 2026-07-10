@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Changing an account's queue limits is an administrative mutation whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+sideEffects:
+  level: mutating
+  rationale: "Partial update of an account's queue limits."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: messaging/account/change-queue-limits:unknownAccount
     meaning: The target DID has no account at this mediator.

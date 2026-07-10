@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The proof IS the consent record. Without a verified signature from the subject's authoritative key, the relying party has no evidence the user actually approved.
+sideEffects:
+  level: none
+  rationale: "Carries the signed confirmation decision back to the relying party; no recipient-side state change."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: confirm/response:challenge_unknown
     meaning: The relying party has no pending confirm/request matching the echoed challenge.

@@ -24,6 +24,16 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Proxy-login causes the maintainer to authenticate as the holder at a third party — a high-trust, audited action. The consumer's identity MUST be verifiable so the maintainer can attribute every session it creates on the holder's behalf to a specific Companion or Service.
+sideEffects:
+  level: mutating
+  rationale: "Performs a login at the bound site on the holder's behalf and returns a session blob; the use is logged."
+consequences:
+  - "Acts as you at the third-party site and issues a usable session, without exposing the long-term credential."
+subjectPath: /target
+exposure:
+  discloses: secret
+  actsAsSubject: true
+  rationale: "Logs in as the holder at the bound site and returns a usable session blob, exercising the bound credential."
 errorCodes:
   - code: vault/proxy-login:notFound
     meaning: No entry with this id exists in the consumer's scope.

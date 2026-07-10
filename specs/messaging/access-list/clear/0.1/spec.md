@@ -24,6 +24,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Clearing an account's access list is an administrative mutation whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+sideEffects:
+  level: mutating
+  rationale: "Empties an account's access list in one operation; entries can be re-added."
+consequences:
+  - "Removes every entry from the access list at once."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: messaging/access-list/clear:unknownAccount
     meaning: The target DID has no account at this mediator.

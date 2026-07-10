@@ -19,6 +19,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: List is read-only; integrity is usually carried by the transport.
+sideEffects:
+  level: none
+  rationale: Read-only enumeration. Returns slots the caller may see and persists nothing.
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/list:forbidden
     meaning: Non-admin caller specified an `owner` other than themselves.

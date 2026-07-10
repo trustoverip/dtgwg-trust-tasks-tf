@@ -27,6 +27,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Submission mutates a DID document (a passkey verificationMethod is appended via a WebVH log entry) and is admin-gated. The VTA MUST attribute the change to a producer holding the admin role on the target DID's context; transport-independent producer identity is required so the published change is non-repudiable and auditable.
+sideEffects:
+  level: mutating
+  rationale: "Publishes a passkey as a verificationMethod on the DID via a log entry."
+consequences:
+  - "Adds a verificationMethod to the DID document; the change resolves publicly."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/passkey-vms/enroll-submit:unknownCeremony
     meaning: The `ceremonyId` is unknown, has expired, or has already been consumed. Re-running this submission will not succeed; the producer must obtain a fresh challenge.

@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Registering an account is an administrative mutation that provisions standing at the mediator; its record may be replayed by an auditor or relied on after the original transport has closed, so transport-independent integrity and non-repudiation of the change are required.
+sideEffects:
+  level: mutating
+  rationale: "Registers a new served account at the mediator; removable."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: messaging/account/add:alreadyExists
     meaning: The target DID already has an account at this mediator.

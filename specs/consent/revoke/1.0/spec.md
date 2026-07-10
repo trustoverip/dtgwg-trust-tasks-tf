@@ -23,6 +23,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation withdraws a previously-granted authorization; it must be bound to an approver so a third party cannot silently cut off a conversation.
+sideEffects:
+  level: mutating
+  rationale: "Revokes a standing consent grant; recoverable via consent/decision."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: consent/revoke:notAuthorized
     meaning: The issuer is not an approver for this subject's platform/context.

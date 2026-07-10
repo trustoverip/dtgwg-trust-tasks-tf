@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Enable is an evidentiary state transition; restoring a suspended DID has real downstream consequences (resolution traffic resumes, witness watchers re-engage) so the maintainer SHOULD retain a signed record of the change.
+sideEffects:
+  level: mutating
+  rationale: "Returns a suspended DID slot to live resolution."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/enable:not_owner
     meaning: The caller is not the slot's current owner or an admin.

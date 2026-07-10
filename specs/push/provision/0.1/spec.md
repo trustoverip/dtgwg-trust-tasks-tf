@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Authorization binds to the caller's authenticated identity — the gateway accepts the update only from the handle's controller VTA. Over the DIDComm binding the authcrypt sender provides that identity intrinsically; over HTTPS the caller carries a did-signed proof. Proof is therefore RECOMMENDED (redundant on DIDComm, the auth anchor on HTTPS).
+sideEffects:
+  level: mutating
+  rationale: "Sets a wake handle's trigger allowlist on the gateway; reconfigurable."
+subjectPath: /handle
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: push/provision:unknown_handle
     meaning: No such handle at this gateway.

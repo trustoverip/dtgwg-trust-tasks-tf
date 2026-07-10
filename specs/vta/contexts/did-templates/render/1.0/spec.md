@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rendering reads context-scoped configuration and binds caller-supplied variables to a VTA's provisioning surface. The VTA MUST attribute the render to a specific context member for the audit record, so transport-independent producer identity is required.
+sideEffects:
+  level: none
+  rationale: "Renders a context-scoped template to a DID document; produces output, persists nothing."
+subjectPath: /contextId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/contexts/did-templates/render:notFound
     meaning: No template with this name in the context.

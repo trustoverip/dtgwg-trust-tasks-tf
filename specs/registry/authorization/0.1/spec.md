@@ -23,6 +23,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: An authorization query is a read whose integrity is normally guaranteed by the transport (authenticated DIDComm/TSP or HTTPS). A proof is RECOMMENDED, not REQUIRED, so the query remains usable on bindings without an in-band verifier.
+sideEffects:
+  level: none
+  rationale: "Read-only TRQP authorization query."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 related:
   - registry/recognition
   - registry/record/read

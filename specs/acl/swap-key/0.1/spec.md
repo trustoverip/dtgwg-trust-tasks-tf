@@ -25,6 +25,14 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Swap-key is a high-trust mutation — the holder is changing which key controls future access to their resources. Without a verified proof the maintainer cannot tell the swap apart from a hostile takeover by an attacker who has captured a single access token.
+sideEffects:
+  level: destructive
+  rationale: "Replaces the VID bound to an ACL entry and closes the old VID's access in the same transaction — the retired key can no longer authorize."
+consequences:
+  - "Immediately closes the previous VID's access; the old key stops working."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: acl/swap-key:subject_not_found
     meaning: The `currentSubject` is not present in the ACL.

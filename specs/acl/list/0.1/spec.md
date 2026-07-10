@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Most list queries are short-lived and consumed over an authenticated transport; a proof becomes valuable when the list is retained, replayed, or relied upon by a third party. Where the listed roles are themselves sensitive, an in-band proof is preferred.
+sideEffects:
+  level: none
+  rationale: "Read-only enumeration of ACL entries."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes: []
 related:
   - acl/show

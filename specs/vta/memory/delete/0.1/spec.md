@@ -23,6 +23,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A delete mutates durable per-context state the VTA audits; transport-independent integrity is required.
+sideEffects:
+  level: mutating
+  rationale: "Forgets a memory item from a context by key."
+subjectPath: /contextId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/memory/delete:context_forbidden
     meaning: The caller is not permitted to delete memory in the named context.

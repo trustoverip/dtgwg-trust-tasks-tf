@@ -25,6 +25,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A grant is an evidentiary record that may be replayed by an auditor, used by a downstream service to corroborate authorization decisions, or relied on after the original transport has closed; transport-independent integrity is required.
+sideEffects:
+  level: mutating
+  rationale: "Adds a subject to the ACL with a role; recoverable via acl/revoke."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: acl/grant:role_not_recognized
     meaning: The role string is not part of the ACL maintainer's role vocabulary.

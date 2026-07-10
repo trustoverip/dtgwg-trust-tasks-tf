@@ -19,6 +19,16 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A delete is an evidentiary record of authorised removal; auditors retain the document to corroborate the action.
+sideEffects:
+  level: destructive
+  rationale: Takes the DID off the public resolution path. Reversible only within the host's recovery window, after which resolution fails permanently — a human is consenting to making the identity unresolvable.
+consequences:
+  - The DID stops resolving for anyone relying on it, effective immediately.
+  - Recovery is possible only inside the host's retention window; after that it is permanent.
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/delete:not_owner
     meaning: The caller is not the slot's current owner (and is not an admin).

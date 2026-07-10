@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Template removal is a privileged, audited write to a VTA's provisioning surface. The VTA MUST attribute the change to a specific context administrator for the audit record, so transport-independent producer identity is required.
+sideEffects:
+  level: mutating
+  rationale: "Removes a context-scoped template; re-creatable config, not an issued identity."
+subjectPath: /contextId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/contexts/did-templates/delete:notFound
     meaning: No template with this name in the context.

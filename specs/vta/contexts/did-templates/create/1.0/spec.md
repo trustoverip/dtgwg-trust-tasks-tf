@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Template creation is a privileged, audited write to a VTA's provisioning surface. The VTA MUST attribute the change to a specific context administrator for the audit record, so transport-independent producer identity is required.
+sideEffects:
+  level: mutating
+  rationale: "Creates a context-scoped DID template; deletable."
+subjectPath: /contextId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/contexts/did-templates/create:duplicateName
     meaning: A template with this name already exists in the context.

@@ -24,6 +24,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A revocation is an evidentiary record that an issued credential was withdrawn at a point in time; it is replayed by an auditor and relied on by verifiers, so transport-independent integrity is required.
+sideEffects:
+  level: destructive
+  rationale: "Revokes a previously-issued credential, ending a cross-context share before its natural expiry."
+consequences:
+  - "Relying parties treat the credential as revoked; the share cannot be resumed under it."
+subjectPath: /credentialId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/credentials/revoke:not_found
     meaning: No issued credential with the given id is known to this VTA.

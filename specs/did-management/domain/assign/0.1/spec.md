@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Assignment shapes the fleet's traffic routing; an evidentiary record is valuable for cross-instance debugging.
+sideEffects:
+  level: mutating
+  rationale: "Binds a hosting domain to a server instance; reversible via unassign."
+subjectPath: /domain
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management:unknown_domain
     meaning: The submitted `domain` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).

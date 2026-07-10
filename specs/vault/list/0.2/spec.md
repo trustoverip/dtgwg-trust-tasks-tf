@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: List is read-only and the maintainer already authenticates the consumer (typically via the transport's session). A proof on the document is recommended for non-session-bound transports (e.g. a single Trust Task delivered over DIDComm with no prior handshake) so the maintainer can attribute the request to a specific consumer key even if the transport layer cannot. Maintainers MAY require a proof unconditionally as a policy choice.
+sideEffects:
+  level: none
+  rationale: "Read-only metadata query over stored entries; secrets are never returned."
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vault/list:contextNotFound
     meaning: The `contextId` filter does not match any context the maintainer knows about. Distinguished from an empty result so consumers can tell "no entries" from "wrong context id".

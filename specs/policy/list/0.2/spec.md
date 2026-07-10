@@ -23,6 +23,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Read-only inventory.
+sideEffects:
+  level: none
+  rationale: "Read-only listing of registered policy modules."
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: policy/list:permissionDenied
     meaning: The consumer lacks PolicyAdmin capability.

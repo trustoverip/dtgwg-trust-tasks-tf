@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Setting the wake channel determines who can cause this device to be woken and what the VTA provisions to the gateway. It is security-significant and infrequent (only on token rotation), so — unlike the high-volume device/heartbeat — it carries a REQUIRED holder proof and is fully audited.
+sideEffects:
+  level: mutating
+  rationale: "Sets the device's opaque WakeHandle on the VTA; idempotent config write."
+exposure:
+  discloses: none
+  actsAsSubject: false
 related:
   - device/register
   - device/heartbeat

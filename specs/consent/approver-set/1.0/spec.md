@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The binding decides who may approve a conversation reaching an agent; it must be bound to an admin so a third party cannot install themselves as the approver.
+sideEffects:
+  level: mutating
+  rationale: "Binds the operator who approves inbound-messaging consent; reconfigurable."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: consent/approver-set:notAuthorized
     meaning: The issuer is not an admin of the named context.

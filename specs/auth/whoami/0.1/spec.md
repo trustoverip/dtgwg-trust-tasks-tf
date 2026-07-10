@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The response carries the consumer's view of "who the producer is" — roles, scopes, session metadata. A proof on the request ties the introspection to the subject's signing key, preventing a token-bearing intermediary from harvesting a different subject's claims.
+sideEffects:
+  level: none
+  rationale: "Read-only introspection of the current session."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: auth/whoami:no_session
     meaning: The producer's subject has no active session with the auth service.

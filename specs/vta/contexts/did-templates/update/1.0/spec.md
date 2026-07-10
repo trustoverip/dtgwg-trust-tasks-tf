@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Template replacement is a privileged, audited write to a VTA's provisioning surface. The VTA MUST attribute the change to a specific context administrator for the audit record, so transport-independent producer identity is required.
+sideEffects:
+  level: mutating
+  rationale: "Replaces a context-scoped DID template."
+subjectPath: /contextId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/contexts/did-templates/update:notFound
     meaning: No template with this name in the context.

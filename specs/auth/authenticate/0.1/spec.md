@@ -25,6 +25,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The framework `proof` is the authentication. Without a verified proof binding the document to the subject's VID, the auth service has no basis to issue a session.
+sideEffects:
+  level: mutating
+  rationale: "Establishes an authenticated session and issues tokens; the session is revocable state."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/authenticate:challenge_not_found
     meaning: The `sessionId` does not refer to any challenge the auth service issued, or the challenge was already consumed.

@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Creating a trust record is an evidentiary, state-changing administrative act that may be audited or replayed after the original transport has closed; transport-independent integrity is required.
+sideEffects:
+  level: mutating
+  rationale: "Records a new trust assertion; deletable."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: registry/record/create:already_exists
     meaning: A record already exists for the given entity+authority+action+resource key.

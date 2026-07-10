@@ -26,6 +26,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Chat messages form an evidentiary chain that must be verifiable after the transport has closed. For audit and dispute resolution a third party must verify each message's author and its position in the conversation independently of the (ephemeral, authcrypted) DIDComm session that carried it — transport authentication alone is not portable.
+sideEffects:
+  level: mutating
+  rationale: "Appends a signed, hash-linked message to the conversation chain; persisted history."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: chat/message:unknownConversation
     meaning: No conversation matches `conversationId` at this consumer.

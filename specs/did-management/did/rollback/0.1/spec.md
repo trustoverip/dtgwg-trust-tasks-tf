@@ -19,6 +19,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rollback is destructive (entries above the target are discarded); the maintainer SHOULD retain a signed record of who authorised the revert and at what point in the chain.
+sideEffects:
+  level: destructive
+  rationale: "Reverts the log chain to a prior version, discarding all entries above that point."
+consequences:
+  - "Discards the log entries above the target version; the discarded history cannot be recovered."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/rollback:not_owner
     meaning: The caller is not the slot's owner or an admin.

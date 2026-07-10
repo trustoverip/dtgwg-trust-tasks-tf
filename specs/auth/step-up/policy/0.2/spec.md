@@ -25,6 +25,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Setting this policy changes the security posture of every gated operation on the maintainer. Without a verified proof an attacker holding a single captured token could weaken or disable the step-up gate it is meant to defend, then proceed unchallenged.
+sideEffects:
+  level: mutating
+  rationale: "Declares the per-operation-class step-up policy the relying party enforces; changes gating for subsequent operations."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/step-up/policy:notAuthorized
     meaning: The issuer is not authorized to set the maintainer's step-up policy.

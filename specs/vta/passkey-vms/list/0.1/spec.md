@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The listing is admin-gated; the VTA MUST attribute the request to a producer holding the admin role on the target DID's context. Transport-independent producer identity prevents a captured request being replayed or attributed to the wrong party, consistent with the rest of the vta/passkey-vms family.
+sideEffects:
+  level: none
+  rationale: "Read-only listing of a DID's passkey verificationMethods."
+subjectPath: /did
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vta/passkey-vms/list:didNotFound
     meaning: The target DID is not managed by this VTA.

@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rendering reads a VTA's provisioning surface and injects VTA-scoped ambient variables, so the VTA MUST attribute the request to a specific authenticated caller. Transport-independent producer identity is required.
+sideEffects:
+  level: none
+  rationale: "Renders a global DID template to a DID document; produces output, persists nothing."
+subjectPath: /name
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/did-templates/render:notFound
     meaning: No global template with this name.

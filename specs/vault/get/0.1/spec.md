@@ -22,6 +22,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Read-only by id, usually session-authenticated. Recommended on non-session-bound transports so the maintainer can attribute the request to a specific consumer key.
+sideEffects:
+  level: none
+  rationale: "Read-only metadata read of a vault entry; secret material is never returned."
+subjectPath: /id
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vault/get:not_found
     meaning: No entry with this id exists in any context the consumer can read.

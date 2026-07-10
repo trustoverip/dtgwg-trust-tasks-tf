@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Replacing a template is a privileged, audited write to a VTA's provisioning surface. The VTA MUST attribute the change to a specific super-administrator for the audit record, so transport-independent producer identity is required.
+sideEffects:
+  level: mutating
+  rationale: "Replaces an existing global DID template."
+subjectPath: /name
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/did-templates/update:notFound
     meaning: No global template with this name to replace.

@@ -26,6 +26,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A ping is a transient liveness probe, not an evidentiary record. Over a transport that authenticates the parties end-to-end (a TSP message, a DIDComm authcrypt envelope, mutually-authenticated TLS) the in-band proof adds nothing and MAY be omitted; a proof SHOULD be included only where the requester needs a transport-independent, retainable attestation of the responder's response.
+sideEffects:
+  level: none
+  rationale: "Liveness and capability probe against a messaging endpoint."
+exposure:
+  discloses: none
+  actsAsSubject: false
 related:
   - did-management/server/health
   - device/heartbeat

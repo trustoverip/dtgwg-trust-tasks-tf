@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Re-enabling a domain has a fleet-wide effect symmetric to `domain/disable`; the maintainer SHOULD retain a signed record.
+sideEffects:
+  level: mutating
+  rationale: "Re-enables a disabled hosting domain and cancels any pending purge."
+subjectPath: /name
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management:unknown_domain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).

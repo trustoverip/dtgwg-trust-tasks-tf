@@ -19,6 +19,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: The result is a caller-scoped view of public-by-domain-name configuration; the maintainer authenticates the producer via the transport-layer session and a proof becomes valuable only when the response is replayed for audit.
+sideEffects:
+  level: none
+  rationale: "Read-only read of the domains the caller may act on."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes: []
 related:
   - did-management/domain/create

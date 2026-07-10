@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Reading a context-scoped template requires context access. The VTA MUST authenticate the caller to decide whether they may see the context's templates, so transport-independent producer identity is required.
+sideEffects:
+  level: none
+  rationale: "Read-only read of a context-scoped template."
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vta/contexts/did-templates/get:notFound
     meaning: No template with this name in the context.

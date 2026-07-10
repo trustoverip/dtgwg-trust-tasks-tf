@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A memory write mutates durable per-context state the VTA audits and may replay; transport-independent integrity is required.
+sideEffects:
+  level: mutating
+  rationale: "Stores a key/value memory item in a context."
+subjectPath: /contextId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/memory/put:context_forbidden
     meaning: The caller is not permitted to write memory in the named context.

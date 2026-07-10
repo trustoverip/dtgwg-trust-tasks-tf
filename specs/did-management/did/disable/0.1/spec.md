@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Disable is an evidentiary state transition; auditors retain the document to corroborate the change.
+sideEffects:
+  level: mutating
+  rationale: "Suspends resolution while retaining content; reversible via did/enable."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/disable:not_owner
     meaning: The caller is not the slot's current owner or an admin.

@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: An availability probe is short-lived and consumed over an authenticated transport; a reservation outcome may be retained but the reservation's evidentiary record is the subsequent register/publish, not this check.
+sideEffects:
+  level: mutating
+  rationale: "Checks path availability and MAY reserve it in the same round-trip; a reservation is recoverable, expiring state."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/check-name:invalid_path
     meaning: The submitted `path` violates the host's path grammar (length bounds, character set, reserved roots).

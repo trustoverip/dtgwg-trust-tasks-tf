@@ -19,6 +19,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A change-owner irrevocably removes the prior owner's authority on the slot. The maintainer SHOULD retain a signed evidentiary record.
+sideEffects:
+  level: destructive
+  rationale: "Transfers ownership of the DID slot to a different VID; the prior owner loses control."
+consequences:
+  - "The previous owner permanently loses control of the slot; only the new owner can manage it."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/change-owner:not_owner
     meaning: The caller is not the slot's current owner.

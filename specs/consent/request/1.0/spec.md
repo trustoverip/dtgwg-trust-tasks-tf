@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The request asserts which conversation, on which platform, would reach which agent — the basis of the operator's consent decision. A proof binds the request to the enrolled bridge so the VTA can trust the subject it is being asked to gate.
+sideEffects:
+  level: none
+  rationale: "Asks whether an inbound conversation may proceed; prompts the operator, persists no decision itself."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: consent/request:noApprover
     meaning: No approver is configured for this platform/context, so consent cannot be routed to a human.

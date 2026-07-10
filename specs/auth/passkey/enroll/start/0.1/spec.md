@@ -25,6 +25,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Binding a passkey to a subject is a high-trust assertion. Requiring a verified proof on the start ceremony prevents an opportunistic actor with a captured token from registering a credential they control against the legitimate subject's VID.
+sideEffects:
+  level: none
+  rationale: "Begins a WebAuthn registration ceremony and returns options; no durable binding yet."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/passkey/enroll/start:max_credentials_reached
     meaning: The subject already has the maximum number of passkeys this auth service is configured to bind. `details.limit` MAY carry the cap.

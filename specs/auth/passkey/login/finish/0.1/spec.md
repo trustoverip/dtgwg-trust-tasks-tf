@@ -26,6 +26,12 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: The cryptographic gate is the WebAuthn assertion itself; the framework proof adds value only when the producer is signing on behalf of an existing session (step-up against a session held by a different VID). Consumers MAY require it for the step-up flow.
+sideEffects:
+  level: mutating
+  rationale: "Issues a fresh session or elevates an existing session's AAL."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/passkey/login/finish:auth_not_found
     meaning: The `authId` does not refer to any active login ceremony.

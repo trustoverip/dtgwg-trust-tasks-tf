@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: The witness proof object inside `payload.witness` carries its own cryptographic signature from the witness oracle; an outer Trust Task `proof` becomes valuable only when the request is replayed for audit and is not strictly required when the producer is bound by an authenticated transport.
+sideEffects:
+  level: mutating
+  rationale: "Appends a witness-signed proof to the DID's permanent witness file."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: webvh/witness/publish:not_owner
     meaning: The caller is not the owner of the named slot.

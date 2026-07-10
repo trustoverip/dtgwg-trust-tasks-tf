@@ -24,6 +24,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Sign-trust-task causes the maintainer to sign an arbitrary Trust Task envelope as the holder's principal DID — equivalent in power to a session-mint, performed inline whenever the consumer needs to issue a follow-up task in an already-authenticated session. The consumer's identity MUST be verifiable so every signature the maintainer produces is attributable to a specific Companion or Service.
+sideEffects:
+  level: mutating
+  rationale: "Attaches a Data Integrity proof as the entry's principal DID; the long-term key never leaves the maintainer."
+consequences:
+  - "Produces a signature attributable to the entry's principal DID."
+exposure:
+  discloses: none
+  actsAsSubject: true
+  rationale: "Produces a Data Integrity signature as the entry's principal DID."
 errorCodes:
   - code: vault/sign-trust-task:not_found
     meaning: No entry with this id exists in the consumer's scope.

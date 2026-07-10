@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A problem report is informational rather than evidentiary; the consumer's session usually authenticates the receiver, but a proof becomes valuable when the report is retained for ticket-tracking.
+sideEffects:
+  level: none
+  rationale: "Emits an informational async-failure report to the owner; no recipient state change."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes: []
 related: [did-management/did/publish]
 ---

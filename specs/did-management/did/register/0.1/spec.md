@@ -25,6 +25,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A register is an evidentiary record of who claimed which path on which host; transport-independent integrity is valuable for audit but not strictly required when an authenticated transport already binds the producer's identity.
+sideEffects:
+  level: mutating
+  rationale: "Atomically claims a path and publishes the first log entry, creating the DID; recoverable via delete."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/register:path_taken
     meaning: The requested path is already reserved by a different owner and `force` was not set (or the caller lacks authority to force-replace).

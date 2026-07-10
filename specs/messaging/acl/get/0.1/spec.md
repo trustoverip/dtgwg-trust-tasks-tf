@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A query is a read-only operation, not an evidentiary mutation; over an authenticating transport the in-band proof adds nothing to integrity or non-repudiation, so the proof is RECOMMENDED rather than REQUIRED.
+sideEffects:
+  level: none
+  rationale: "Read-only read of an account's mediator capability flags."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 related:
   - messaging/acl/set
   - messaging/account/get

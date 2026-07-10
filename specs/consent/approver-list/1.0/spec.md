@@ -23,6 +23,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A read-only query. A proof lets the VTA scope the returned bindings to what the issuer may see, but they are not mutated.
+sideEffects:
+  level: none
+  rationale: "Read-only fetch of approver bindings."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: consent/approver-list:notAuthorized
     meaning: The issuer may not read approver bindings for the requested platform/context.

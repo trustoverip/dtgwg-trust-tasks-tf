@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: This is a read-only membership check that mutates nothing; a proof is RECOMMENDED so the requester may be authenticated and the response bound to a specific request where the ecosystem relies on it after the transport has closed, but it is not required for a query.
+sideEffects:
+  level: none
+  rationale: "Read-only membership check against an account's access list."
+subjectPath: /did
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: messaging/access-list/get:unknownAccount
     meaning: The target DID has no account at this mediator.

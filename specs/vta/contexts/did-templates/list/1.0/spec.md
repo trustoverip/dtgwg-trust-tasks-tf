@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Listing a context's templates requires context access. The VTA MUST authenticate the caller to decide whether they may see the context's templates, so transport-independent producer identity is required.
+sideEffects:
+  level: none
+  rationale: "Read-only listing of context-scoped templates."
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes: []
 related:
   - vta/contexts/did-templates/get

@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A register is a fleet-membership announcement. The maintainer authenticates the producer via the transport-layer Service-role binding; a proof becomes valuable when the registration is replayed for audit but isn't strictly required.
+sideEffects:
+  level: mutating
+  rationale: "A server announces itself to the control plane; creates/updates a registry entry."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/server/register:forbidden
     meaning: Caller does not hold the `Service` role on this control plane.

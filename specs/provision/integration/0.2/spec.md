@@ -28,6 +28,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Provisioning mints DIDs, issues an authorization VC, and grants the resulting admin DID an ACL row at the maintainer — the equivalent of "create an account with admin powers." Two distinct proofs are involved (the relayer's transport-level credential authenticating the *caller*, and the holder's VP `DataIntegrityProof` authenticating *who the bundle belongs to*); both MUST be present and verified before the maintainer mints anything. See "Two-proof model" in the spec body.
+sideEffects:
+  level: mutating
+  rationale: "Mints the integration's DIDs and admin credential from a template and returns a sealed bundle; the credential is revocable."
+exposure:
+  discloses: secret
+  actsAsSubject: false
+  rationale: "Returns a sealed bundle carrying the minted admin credential and the integration's DID key material."
 errorCodes:
   - code: provision/integration:invalidBootstrapRequest
     meaning: The presented VP failed structural validation (missing required field, malformed `holder`, unsupported cryptosuite, freshness window passed, signature does not verify, `verificationMethod` does not resolve under `holder`).

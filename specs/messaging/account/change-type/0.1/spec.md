@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Changing an account's role is a privilege-granting administrative mutation whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+sideEffects:
+  level: mutating
+  rationale: "Changes a served account's role; reversible."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: messaging/account/change-type:unknownAccount
     meaning: The target DID has no account at this mediator.

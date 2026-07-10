@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A read is attributed to a specific caller for the VTA's audit trail and to keep the vta/* family's authorization model uniform, so transport-independent producer identity is required.
+sideEffects:
+  level: none
+  rationale: "Read-only read of a global DID template."
+subjectPath: /name
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vta/did-templates/get:notFound
     meaning: No global template with this name.

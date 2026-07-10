@@ -16,7 +16,9 @@
     "keywords",
     "authors",
     "parties",
-    "proofRequirement"
+    "proofRequirement",
+    "sideEffects",
+    "exposure"
   ],
   "properties": {
     "slug": {
@@ -121,6 +123,63 @@
         "rationale": { "type": "string", "minLength": 1 }
       },
       "description": "Proof declaration per SPEC §7.3 item 8."
+    },
+    "sideEffects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "rationale"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["none", "mutating", "destructive"],
+          "description": "How much a successful execution changes at the recipient. `none`: read-only / idempotent probe, no persisted state change (list, get, check-name, discovery). `mutating`: creates or alters recoverable state (publish a log entry, grant a role, register a device). `destructive`: irreversible or authority-shifting (deactivate a DID, rotate the only update key, delete, change-owner, wipe a device)."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why this level. For `destructive`, name the irreversible effect a human is consenting to."
+        }
+      },
+      "description": "Descriptive classification of the recipient-side effect of successful execution, per SPEC.md §7.3 item 13. DESCRIPTIVE, NOT PRESCRIPTIVE: it states what the task does, never whether approval is required — a specification MUST NOT declare a consent/approval/step-up requirement, as that policy belongs to the consumer and MUST NOT be delegable to the registry. A consumer enforcing an approval policy MUST derive the authoritative level from the handler it is about to invoke, and MUST treat an absent/unrecognized declaration as no weaker than `mutating`. Required of every conforming spec; `none` is the correct value for read-only and framework-plumbing tasks."
+    },
+    "consequences": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Human-facing second-order effects a consent surface SHOULD surface alongside the primary action — the effects a naive payload diff would miss because they live in the handler's semantics, not the payload's shape (e.g. 'Any document change also rotates this DID's update keys'). Static fallback text; a live executor MAY instead compute a per-request effects list by dry-running the real handler."
+    },
+    "subjectPath": {
+      "type": "string",
+      "pattern": "^(/([^/~]|~0|~1)*)+$",
+      "description": "RFC 6901 JSON Pointer locating the subject identifier (usually a DID) inside the payload — e.g. `/did`. Lets a delegated-execution PEP answer 'does the executing agent speak for this subject?' declaratively rather than with per-task code. Omit for tasks with no single subject (discovery, list, whoami)."
+    },
+    "exposure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discloses", "actsAsSubject"],
+      "properties": {
+        "discloses": {
+          "type": "string",
+          "enum": ["none", "metadata", "secret"],
+          "description": "Sensitivity of data returned to the caller. `none`: an acknowledgement or determination only. `metadata`: non-secret descriptive data about a subject or resource (an enumeration, a status read). `secret`: confidential material the caller retains (released credential material, a usable session blob)."
+        },
+        "actsAsSubject": {
+          "type": "boolean",
+          "description": "True when execution exercises the subject's own authority to produce an attributable effect in their name — a login on their behalf, a signature bearing their identity, a credential issued under their authority — even when nothing is disclosed and no recipient state changes."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Names the disclosed material or the exercised authority. Required when `discloses` is `secret` or `actsAsSubject` is true."
+        }
+      },
+      "if": {
+        "anyOf": [
+          { "properties": { "discloses": { "const": "secret" } } },
+          { "properties": { "actsAsSubject": { "const": true } } }
+        ]
+      },
+      "then": { "required": ["rationale"] },
+      "description": "Exposure class per SPEC.md §7.3 item 14 — the confidentiality-and-agency dimension, orthogonal to the integrity-focused `sideEffects` of item 13. States what leaves the recipient (`discloses`) and whether the subject's authority is exercised (`actsAsSubject`), independent of any state change. DESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as `sideEffects`: a consumer MUST derive authoritative values from the handler it invokes and MUST treat an absent declaration as no less exposed than `discloses: secret` with `actsAsSubject: true`."
     },
     "errorCodes": {
       "type": "array",

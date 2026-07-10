@@ -24,6 +24,14 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Deleting a trust record is an evidentiary, state-changing administrative act that may be audited or replayed after the original transport has closed; transport-independent integrity is required.
+sideEffects:
+  level: destructive
+  rationale: "Deletes a trust record; relying parties querying it will no longer find the assertion."
+consequences:
+  - "Relying parties depending on this record lose the assertion immediately."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: registry/record/delete:not_found
     meaning: No record exists for the given entity+authority+action+resource key.

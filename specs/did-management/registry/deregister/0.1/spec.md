@@ -19,6 +19,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Deregister cuts the instance off from outbound fleet messages. The maintainer SHOULD retain a signed record of the change.
+sideEffects:
+  level: mutating
+  rationale: "Removes a server instance from the control-plane registry; the instance may re-register."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/registry/deregister:not_found
     meaning: No registry entry matches the submitted `instanceId`.

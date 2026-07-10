@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: A read returns no durable state change; the transport's authenticated sender is sufficient. A proof MAY be included where the response is retained for audit.
+sideEffects:
+  level: none
+  rationale: "Read-only recall of a context's memory items."
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vta/memory/list:context_forbidden
     meaning: The caller is not permitted to read memory in the named context.

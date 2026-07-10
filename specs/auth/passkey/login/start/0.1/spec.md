@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: A login-start needs no evidentiary value — the cryptographic gate is the assertion submitted at finish. For step-up purposes a proof MAY be required by consumer policy so the assertion is bindable to a specific session, but the framework treats this as a consumer concern.
+sideEffects:
+  level: none
+  rationale: "Begins a WebAuthn authentication ceremony and returns options; no state change."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/passkey/login/start:subject_not_recognized
     meaning: A named `subject` is not registered with this auth service.

@@ -22,6 +22,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Disable is a state-changing operation that withdraws access — high-trust, audited.
+sideEffects:
+  level: mutating
+  rationale: "Revokes a device's ACL entry and refuses its authentication; recoverable by re-enrolling."
+subjectPath: /deviceId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: device/disable:not_found
     meaning: No DeviceBinding with this id (or the consumer cannot see it).

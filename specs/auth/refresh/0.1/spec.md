@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: The refreshToken itself is the secret; a proof on the document is redundant when the transport binds the producer's identity end-to-end (the typical case for refresh, which is called by an already-authenticated client). Consumers retaining refresh exchanges for audit MAY require a proof.
+sideEffects:
+  level: mutating
+  rationale: "Exchanges a refresh token for a new access token; rotates session token state."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/refresh:token_not_found
     meaning: The refreshToken does not refer to any session the auth service issued.

@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The `reason` is displayed to the user as the basis of consent. A proof binds the request — including the reason — to the relying party's key, so a man-in-the-middle cannot substitute a different reason while leaving the signed envelope intact.
+sideEffects:
+  level: none
+  rationale: "Asks for user confirmation of an action; elicits a decision without persisting recipient state."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: confirm/request:subject_unknown
     meaning: The approver does not speak for the named subject.

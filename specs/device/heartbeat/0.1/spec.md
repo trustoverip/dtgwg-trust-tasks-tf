@@ -22,6 +22,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Heartbeat is frequent and low-stakes; transport-level auth is sufficient. Recommended for non-session-bound transports for attribution.
+sideEffects:
+  level: none
+  rationale: "Periodic check-in refreshing server-managed lastSeenAt; no user-visible state change."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: device/heartbeat:not_registered
     meaning: The issuer's DID has no DeviceBinding. The consumer SHOULD complete device/register.

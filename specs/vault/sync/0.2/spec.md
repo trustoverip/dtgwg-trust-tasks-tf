@@ -23,6 +23,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Read-only delta query. Recommended on non-session-bound transports for the same attribution reason as vault/list.
+sideEffects:
+  level: none
+  rationale: "Read-only incremental delta of vault/ACL/policy events since a baseline."
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: vault/sync:seqTooOld
     meaning: The supplied `sinceSeq` is older than the maintainer's retained event horizon; the consumer cannot catch up incrementally and MUST resync from scratch (omit `sinceSeq`). This happens when a consumer has been offline longer than the maintainer's event-retention window.

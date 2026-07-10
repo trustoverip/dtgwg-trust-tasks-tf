@@ -24,6 +24,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Wipe is destructive and irreversible from the target's perspective. The maintainer's authority MUST be verifiable so the target can confirm the wipe is genuine before executing it (defence against an attacker who has captured the transport channel attempting to silently wipe legitimate Companions).
+sideEffects:
+  level: destructive
+  rationale: "Destroys the target's cache and optionally its device-local keys, revokes access, and rotates the cache-key root."
+consequences:
+  - "Erases the device's local cache and may destroy device-local keys; the wipe cannot be undone on the target."
+subjectPath: /deviceId
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: device/wipe:notFound
     meaning: No DeviceBinding with this id.

@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation is an evidentiary event that affects every device or process holding a token for this subject. Requiring a verified proof prevents an attacker who has captured one token from invalidating other sessions (denial-of-service via revocation) without controlling the subject's signing key.
+sideEffects:
+  level: mutating
+  rationale: "Invalidates one or all of the subject's sessions; recoverable by re-authenticating."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/revoke-session:session_not_found
     meaning: The named `sessionId` does not exist (already revoked, or never belonged to this subject).

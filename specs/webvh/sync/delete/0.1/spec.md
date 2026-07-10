@@ -19,6 +19,15 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Same trust model as `webvh/sync/update` — Service-role authentication binds the producer; a transport-independent proof is useful for audit but not required for steady-state replication.
+sideEffects:
+  level: destructive
+  rationale: "Replicates a DID deletion to a hosting server; the server removes the DID's content."
+consequences:
+  - "The hosting server drops the DID; resolution there stops."
+subjectPath: /mnemonic
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: webvh/sync/delete:not_authorized
     meaning: Sender DID is not the configured control plane for the receiving server.

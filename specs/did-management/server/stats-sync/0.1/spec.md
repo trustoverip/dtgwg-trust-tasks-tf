@@ -19,6 +19,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Stats are operational, not adjudicative; transport authentication suffices for most uses, but a proof becomes valuable when stats feed billing.
+sideEffects:
+  level: none
+  rationale: "Pushes server-managed counter deltas as telemetry; no user-facing state change."
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/server/stats-sync:forbidden
     meaning: Caller does not hold the `Service` role on this control plane.

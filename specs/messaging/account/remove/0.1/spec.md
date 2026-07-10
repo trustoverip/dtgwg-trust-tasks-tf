@@ -24,6 +24,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Removing an account is a destructive administrative mutation whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+sideEffects:
+  level: destructive
+  rationale: "Removes a served account and its queue state; re-adding creates a fresh account, not a restoration."
+consequences:
+  - "Deletes the account together with its queued-message state."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: messaging/account/remove:unknownAccount
     meaning: The target DID has no account at this mediator.

@@ -24,6 +24,12 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Listing records is a non-mutating administrative operation whose integrity is normally guaranteed by the transport; a proof is RECOMMENDED, not REQUIRED.
+sideEffects:
+  level: none
+  rationale: "Read-only listing of trust records."
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 related:
   - registry/record/read
 ---

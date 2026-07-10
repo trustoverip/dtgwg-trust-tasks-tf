@@ -23,6 +23,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A read-only sync. A proof lets the VTA scope the returned grants to the requesting bridge's agents, but the grants are not themselves mutated.
+sideEffects:
+  level: none
+  rationale: "Read-only fetch of consent grants to enforce."
+subjectPath: /subject
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: consent/list:notAuthorized
     meaning: The issuer may not read grants for the requested agent/platform.

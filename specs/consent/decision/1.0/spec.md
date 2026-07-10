@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The decision IS the authorization that lets a conversation reach an agent. The proof binds it to the approver — the operator's DID for a directly-signed decision, or an enrolled bridge's DID when it attests the operator's out-of-band choice.
+sideEffects:
+  level: mutating
+  rationale: "Records a consent grant at the agent; recoverable via consent/revoke."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: consent/decision:notAuthorized
     meaning: The issuer is not an approver for this subject's platform/context.

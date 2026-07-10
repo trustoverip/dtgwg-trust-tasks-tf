@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The reason text is shown to the user as the basis of their consent decision. A proof binds the request to the relying party so a downstream attacker cannot intercept the channel and substitute a different reason.
+sideEffects:
+  level: none
+  rationale: "Requests approval for a step-up and issues a challenge; the decision is a separate task."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: auth/step-up/approve-request:subject_unknown
     meaning: The approver does not speak for the named subject.

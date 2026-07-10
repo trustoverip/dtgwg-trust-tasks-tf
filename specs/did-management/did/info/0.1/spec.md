@@ -23,6 +23,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A single-record lookup is typically short-lived and consumed over an authenticated transport; a proof becomes valuable when the answer is retained or relied on by a third party.
+sideEffects:
+  level: none
+  rationale: "Read-only read of a DID slot's metadata record."
+subjectPath: /mnemonic
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: did-management/did/info:not_found
     meaning: No record exists for the requested mnemonic.

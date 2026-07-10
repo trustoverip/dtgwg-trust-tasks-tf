@@ -26,6 +26,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation mutates a DID document (the verificationMethod is removed via a WebVH log entry) and is admin-gated. The VTA MUST attribute the change to a producer holding the admin role on the target DID's context; transport-independent producer identity is required so the removal is non-repudiable and auditable.
+sideEffects:
+  level: destructive
+  rationale: "Removes a passkey verificationMethod from a live DID document via a log entry."
+consequences:
+  - "Anything relying on that passkey to authenticate stops working once the change resolves."
+subjectPath: /did
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vta/passkey-vms/revoke:didNotFound
     meaning: The target DID is not managed by this VTA.

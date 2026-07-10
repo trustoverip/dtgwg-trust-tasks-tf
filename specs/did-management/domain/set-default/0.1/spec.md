@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Moving the system default changes the answer to every "no domain specified" operation; an evidentiary record protects against later disputes about when the cutover took effect.
+sideEffects:
+  level: mutating
+  rationale: "Promotes a domain to the system default; reversible by setting another."
+subjectPath: /name
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management:unknown_domain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).

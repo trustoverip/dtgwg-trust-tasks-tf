@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Upsert is the canonical state-changing task on the vault; it can introduce credentials that other Companions will later trust and use. The producer's identity MUST be verifiable so the maintainer can attribute the change to a specific consumer and so the audit log records who introduced or rotated the credential.
+sideEffects:
+  level: mutating
+  rationale: "Creates or updates a vault entry; secret material rides sealed inside the envelope."
+subjectPath: /id
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: vault/upsert:contextNotFound
     meaning: The supplied `contextId` does not exist.

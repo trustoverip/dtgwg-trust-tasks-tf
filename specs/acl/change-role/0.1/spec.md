@@ -25,6 +25,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Role changes are the highest-impact ACL operation — promotions can extend privilege; demotions can withdraw it. A non-repudiable, transport-independent record of the change is necessary for audit, dispute resolution, and downstream parties that retained the prior grant.
+sideEffects:
+  level: mutating
+  rationale: "Reassigns a subject's role in the ACL; recoverable by changing it back."
+subjectPath: /subject
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: acl/change-role:role_not_recognized
     meaning: The fromRole or toRole string is not part of the ACL maintainer's role vocabulary.

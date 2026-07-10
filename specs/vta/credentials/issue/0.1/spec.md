@@ -26,6 +26,15 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An issuance instruction authorizes the minting of a bearer-usable credential; it is replayed by an auditor and corroborates the resulting credential's provenance, so transport-independent integrity is required. The operator step-up that gates it is itself a separately-verifiable signed artifact.
+sideEffects:
+  level: mutating
+  rationale: "Issues a scoped, time-boxed credential after step-up approval; revocable."
+consequences:
+  - "Issues a credential attributable to the context authority; valid until expiry or revocation."
+exposure:
+  discloses: none
+  actsAsSubject: true
+  rationale: "Issues a verifiable credential attributable to the context authority."
 errorCodes:
   - code: vta/credentials/issue:holder_invalid
     meaning: The holder identifier is not a resolvable DID.

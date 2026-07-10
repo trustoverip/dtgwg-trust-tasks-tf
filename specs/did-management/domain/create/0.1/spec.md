@@ -19,6 +19,13 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Adding a hosting domain enables every downstream operation under that domain. The maintainer SHOULD retain a signed record of who created the domain.
+sideEffects:
+  level: mutating
+  rationale: "Adds a hosting domain; reversible via disable/purge."
+subjectPath: /name
+exposure:
+  discloses: none
+  actsAsSubject: false
 errorCodes:
   - code: did-management/domain/create:domain_exists
     meaning: A domain with the same `name` already exists.

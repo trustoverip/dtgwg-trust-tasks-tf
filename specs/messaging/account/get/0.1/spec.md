@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Reading an account is a non-mutating query; a proof is RECOMMENDED to bind the request to its requester for authorization and audit, but is not required for integrity of any change since none is made.
+sideEffects:
+  level: none
+  rationale: "Read-only read of one served account."
+subjectPath: /did
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes:
   - code: messaging/account/get:unknownAccount
     meaning: The target DID has no account at this mediator.

@@ -24,6 +24,13 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A single-entry lookup is typically short-lived and consumed over an authenticated transport; a proof becomes valuable when the answer is retained, replayed, or relied upon by a third party.
+sideEffects:
+  level: none
+  rationale: "Read-only read of a single ACL entry."
+subjectPath: /subject
+exposure:
+  discloses: metadata
+  actsAsSubject: false
 errorCodes: []
 related:
   - acl/list
