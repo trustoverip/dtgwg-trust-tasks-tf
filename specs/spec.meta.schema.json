@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/internal/spec-meta/1.0",
+  "$id": "https://trusttasks.org/internal/spec-meta/2.0",
   "title": "Trust Task specification — front matter meta-schema",
   "description": "Shape of the YAML front matter that every specs/<slug>/<version>/spec.md must declare. Mirrors the declarations required by SPEC.md §7.3.",
   "type": "object",
