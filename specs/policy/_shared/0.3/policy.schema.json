@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/_shared/0.3/policy",
+  "title": "Policy — shared definitions",
+  "description": "Shared Rego policy types referenced by the policy/* spec family. The maintainer evaluates these against PolicyInput (the request context) to decide the disposition of a task. 0.3 generalises PolicyInput from the vault-flow triad (proxy-login / release / step-up) to any Trust Task, carrying the task's Type URI, subject, and the two authoritative SPEC §7.3 classifications (side-effect and exposure) so a policy can gate on what a task does; and adds a `requireConsent` decision so a policy can demand approver-set consent. Engine: embedded Rego via `regorus` (pure-Rust evaluator) in the canonical maintainer implementation; other implementations MAY use a different engine if they accept the same Rego syntax.",
+  "$defs": {
+    "PolicyModule": {
+      "title": "PolicyModule",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "module", "version", "createdAt", "updatedAt"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\")."
+        },
+        "description": { "type": "string", "maxLength": 1024 },
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision."
+        },
+        "appliesTo": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy)."
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins."
+        },
+        "enabled": { "type": "boolean", "default": true },
+        "version": { "type": "integer", "minimum": 0 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "PolicyInput": {
+      "title": "PolicyInput",
+      "description": "The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request", "site", "contextId", "consumer"],
+      "properties": {
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["typeUri", "sideEffects", "exposure"],
+          "properties": {
+            "typeUri": {
+              "type": "string",
+              "description": "Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1)."
+            },
+            "kind": {
+              "type": "string",
+              "description": "Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3."
+            },
+            "subject": {
+              "type": "string",
+              "description": "The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list)."
+            },
+            "payloadDigest": {
+              "type": "string",
+              "description": "Multihash of the canonicalized payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play."
+            },
+            "sideEffects": {
+              "type": "string",
+              "enum": ["none", "mutating", "destructive"],
+              "description": "Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only."
+            },
+            "exposure": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["discloses", "actsAsSubject"],
+              "properties": {
+                "discloses": { "type": "string", "enum": ["none", "metadata", "secret"] },
+                "actsAsSubject": { "type": "boolean" }
+              },
+              "description": "Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised."
+            }
+          }
+        },
+        "site": { "$ref": "../../../vault/_shared/0.2/vault-entry.schema.json#/$defs/SiteTarget" },
+        "contextId": { "type": "string", "minLength": 1 },
+        "consumer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["did"],
+          "properties": {
+            "did": { "type": "string" },
+            "kind": { "$ref": "../../../device/_shared/0.2/device-binding.schema.json#/$defs/ConsumerKind" },
+            "deviceId": { "type": "string" },
+            "lastUserVerificationAt": { "type": "string", "format": "date-time" },
+            "networkClass": { "type": "string", "enum": ["unknown", "home", "corp", "public", "vpn"] }
+          }
+        }
+      }
+    },
+    "PolicyDecision": {
+      "title": "PolicyDecision",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision"],
+      "properties": {
+        "decision": { "type": "string", "enum": ["allow", "deny", "requireStepUp", "requireConsent"] },
+        "mode": {
+          "type": "string",
+          "enum": ["proxy", "fill"],
+          "description": "Vault-flow-specific. When decision == \"allow\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds."
+        },
+        "stepUp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method"],
+          "properties": {
+            "method": { "type": "string", "enum": ["webauthnUv", "pushApproval", "totp"] },
+            "ttlSeconds": { "type": "integer", "minimum": 1 }
+          },
+          "description": "When decision == \"requireStepUp\", which method to demand."
+        },
+        "requireConsent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["approverSet"],
+          "properties": {
+            "approverSet": {
+              "type": "string",
+              "description": "Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry)."
+            },
+            "excludeRequester": {
+              "type": "boolean",
+              "default": false,
+              "description": "When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve."
+            },
+            "minApprovals": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Number of distinct approvers from the set required before the task may execute."
+            }
+          },
+          "description": "When decision == \"requireConsent\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing."
+        },
+        "ttlSecondsCap": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "When decision == \"allow\", maximum lifetime of any issued session blob / released secret."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Human-readable explanation for diagnostic display."
+        }
+      }
+    }
+  }
+}
