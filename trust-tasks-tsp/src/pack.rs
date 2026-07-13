@@ -11,8 +11,8 @@
 use affinidi_tsp::message::direct::{self, PackedMessage};
 use affinidi_tsp::message::routed;
 use affinidi_tsp::{MessageType, PrivateVid, ResolvedVid};
-use serde::Serialize;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 use serde_json::json;
 use trust_tasks_rs::{Payload, TrustTask};
 

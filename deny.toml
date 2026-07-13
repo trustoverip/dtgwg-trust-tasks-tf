@@ -23,6 +23,12 @@ ignore = [
     # upstream replacement proc-macro-error2 hasn't been wired through
     # the typify dep chain yet. No active CVE, just maintenance status.
     "RUSTSEC-2024-0370",
+    # rustls-pemfile is unmaintained. Transitive via the Affinidi
+    # messaging/TDK dep chain (affinidi-tdk → … → rustls-pemfile), so it
+    # can't be dropped from here — it goes when those crates move to
+    # rustls-pki-types' own PEM parsing. No active CVE, maintenance status
+    # only.
+    "RUSTSEC-2025-0134",
 ]
 
 # ─── Licenses ──────────────────────────────────────────────────────────────

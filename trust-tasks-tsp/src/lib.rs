@@ -63,8 +63,8 @@ mod handler;
 mod pack;
 
 pub use error::TspError;
-pub use handler::{BINDING_URI, TspHandler};
+pub use handler::{TspHandler, BINDING_URI};
 pub use pack::{
-    ENVELOPE_TYPE, pack_trust_task, pack_trust_task_nested, pack_trust_task_routed,
-    unpack_trust_task,
+    pack_trust_task, pack_trust_task_nested, pack_trust_task_routed, unpack_trust_task,
+    ENVELOPE_TYPE,
 };

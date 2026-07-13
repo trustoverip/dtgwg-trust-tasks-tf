@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -61,14 +55,12 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -100,24 +92,20 @@ impl ::std::convert::From<ExtKey> for ::std::string::String {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -248,11 +236,9 @@ impl ::std::convert::From<PayloadHolder> for ::std::string::String {
 }
 impl ::std::str::FromStr for PayloadHolder {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^did:").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
         if PATTERN.find(value).is_none() {
             return Err("doesn't match pattern \"^did:\"".into());
         }
@@ -261,9 +247,7 @@ impl ::std::str::FromStr for PayloadHolder {
 }
 impl ::std::convert::TryFrom<&str> for PayloadHolder {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -370,21 +354,19 @@ mod conformance {
     #[test]
     fn request_example_1() {
         const JSON: &str = "{\n  \"id\": \"9c2f1a7e-3b44-4e9a-8c21-0f5b2d6a1e90\",\n  \"type\": \"https://trusttasks.org/spec/vta/credentials/issue/0.1\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-24T10:00:00Z\",\n  \"payload\": {\n    \"holder\": \"did:key:z6Mkwork-domain-agent\",\n    \"credentialType\": \"ScopedShareCredential\",\n    \"claims\": {\n      \"share\": {\n        \"from\": \"finance\",\n        \"fields\": [\"invoiceTotal\", \"dueDate\"]\n      }\n    },\n    \"validitySeconds\": 3600,\n    \"purpose\": \"Let the work domain reference this month's invoice total.\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:vta.example#key-1\",\n    \"created\": \"2026-06-24T10:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> = serde_json::from_str(JSON)
-            .expect("deserialize request example");
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "request example failed round-trip");
     }
     #[test]
     fn response_example_1() {
         const JSON: &str = "{\n  \"id\": \"1b7d4c90-5e21-4a83-b1f6-2c9e7a30d845\",\n  \"type\": \"https://trusttasks.org/spec/vta/credentials/issue/0.1#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-24T10:00:01Z\",\n  \"threadId\": \"9c2f1a7e-3b44-4e9a-8c21-0f5b2d6a1e90\",\n  \"payload\": {\n    \"credentialId\": \"urn:uuid:c0ffee00-1234-4abc-9def-0123456789ab\",\n    \"expiresAt\": \"2026-06-24T11:00:01Z\",\n    \"credential\": {\n      \"@context\": [\"https://www.w3.org/ns/credentials/v2\"],\n      \"id\": \"urn:uuid:c0ffee00-1234-4abc-9def-0123456789ab\",\n      \"type\": [\"VerifiableCredential\", \"ScopedShareCredential\"],\n      \"issuer\": \"did:web:vta.example\",\n      \"validFrom\": \"2026-06-24T10:00:01Z\",\n      \"validUntil\": \"2026-06-24T11:00:01Z\",\n      \"credentialSubject\": {\n        \"id\": \"did:key:z6Mkwork-domain-agent\",\n        \"share\": { \"from\": \"finance\", \"fields\": [\"invoiceTotal\", \"dueDate\"] }\n      },\n      \"proof\": { \"type\": \"DataIntegrityProof\", \"cryptosuite\": \"eddsa-jcs-2022\", \"proofValue\": \"z...\" }\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> = serde_json::from_str(JSON)
-            .expect("deserialize response example");
+        let doc: crate::TrustTask<super::Response> =
+            serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON)
-            .expect("re-parse expected");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
         assert_eq!(rendered, expected, "response example failed round-trip");
     }
 }

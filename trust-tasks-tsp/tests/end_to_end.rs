@@ -5,14 +5,14 @@
 //! Runs entirely in-process using `affinidi-tsp`'s `PrivateVid::generate` — no
 //! mediator, no network, no configuration file.
 
-use affinidi_tsp::message::routed::{RouteStep, next_hop};
-use affinidi_tsp::{MessageType, MetaEnvelope, PrivateVid, message::direct};
+use affinidi_tsp::message::routed::{next_hop, RouteStep};
+use affinidi_tsp::{message::direct, MessageType, MetaEnvelope, PrivateVid};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use trust_tasks_rs::{Payload, TransportHandler, TrustTask};
 use trust_tasks_tsp::{
-    BINDING_URI, ENVELOPE_TYPE, TspError, pack_trust_task, pack_trust_task_nested,
-    pack_trust_task_routed, unpack_trust_task,
+    pack_trust_task, pack_trust_task_nested, pack_trust_task_routed, unpack_trust_task, TspError,
+    BINDING_URI, ENVELOPE_TYPE,
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -60,8 +60,13 @@ fn nested_roundtrip_through_intermediary() {
 
     // Producer: inner Direct sealed end-to-end to bob, wrapped in an outer Nested
     // envelope sealed to the mediator (a metadata-privacy carriage).
-    let wire = pack_trust_task_nested(&doc, &p.alice, &p.bob.to_resolved(), &mediator.to_resolved())
-        .expect("pack nested");
+    let wire = pack_trust_task_nested(
+        &doc,
+        &p.alice,
+        &p.bob.to_resolved(),
+        &mediator.to_resolved(),
+    )
+    .expect("pack nested");
 
     // On the wire it is a Nested message addressed to the intermediary, not bob —
     // bob's identity stays hidden from anyone but the intermediary.
@@ -108,7 +113,7 @@ fn routed_roundtrips_through_a_relay() {
         &p.alice,
         &p.bob.to_resolved(),
         &mediator.to_resolved(),
-        &[p.bob.id.clone()],
+        std::slice::from_ref(&p.bob.id),
     )
     .expect("pack routed");
 
@@ -201,7 +206,10 @@ fn forged_in_band_issuer_triggers_identity_mismatch() {
 
 #[test]
 fn envelope_is_sealed_and_carries_the_framework_type() {
-    assert_eq!(ENVELOPE_TYPE, "https://trusttasks.org/binding/tsp/0.1/envelope");
+    assert_eq!(
+        ENVELOPE_TYPE,
+        "https://trusttasks.org/binding/tsp/0.1/envelope"
+    );
 
     let p = setup();
     let doc = grant_doc(&p.alice.id, &p.bob.id);
@@ -254,8 +262,7 @@ fn verifying_against_the_wrong_sender_fails() {
 
     // bob tries to verify alice's message against carol's keys — the authenticated
     // seal does not check out.
-    let err =
-        unpack_trust_task::<GrantPayload>(&wire, &p.bob, &carol.to_resolved()).unwrap_err();
+    let err = unpack_trust_task::<GrantPayload>(&wire, &p.bob, &carol.to_resolved()).unwrap_err();
     assert!(
         matches!(err, TspError::Upstream(_) | TspError::SenderMismatch { .. }),
         "expected an authentication failure, got: {err}"
