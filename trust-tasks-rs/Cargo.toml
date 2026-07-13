@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-rs"
-version = "0.2.13"
+version = "0.2.14"
 edition = "2021"
 # Effective MSRV is constrained by the workspace's transitive deps and
 # the Affinidi crates (`affinidi-data-integrity`, `affinidi-messaging-*`)

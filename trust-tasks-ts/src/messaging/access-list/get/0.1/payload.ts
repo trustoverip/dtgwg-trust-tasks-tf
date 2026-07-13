@@ -8,7 +8,7 @@
  */
 export type Vid = string;
 /**
- * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID; carried verbatim and compared by exact string equality.
+ * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
  */
 export type Vid1 = string;
 

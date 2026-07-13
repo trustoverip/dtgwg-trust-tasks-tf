@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/task-consent/_shared/0.1/task-consent",
+  "title": "Task Consent — shared definitions",
+  "description": "Shared shapes for delegated task-execution consent: the executor-authored effects list a consent surface renders, the prior-state pin the executor asserts at execution, and the approval constraint a policy's requireConsent names.",
+  "$defs": {
+    "Effect": {
+      "title": "Effect",
+      "description": "One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "summary"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]*$",
+          "description": "Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose."
+        },
+        "path": {
+          "type": "string",
+          "description": "OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`)."
+        },
+        "before": {
+          "description": "OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry."
+        },
+        "after": {
+          "description": "OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`."
+        },
+        "detail": {
+          "type": "object",
+          "description": "OPTIONAL kind-specific structured extras (e.g. `{ \"commitments\": 2 }` for `preRotationRefresh`).",
+          "additionalProperties": true
+        }
+      }
+    },
+    "StatePin": {
+      "title": "StatePin",
+      "description": "The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resource", "version"],
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the pinned resource (usually the subject DID)."
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it."
+        }
+      }
+    },
+    "Exposure": {
+      "title": "Exposure",
+      "description": "The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discloses", "actsAsSubject"],
+      "properties": {
+        "discloses": {
+          "type": "string",
+          "enum": ["none", "metadata", "secret"],
+          "description": "Sensitivity of data the task returns to its caller."
+        },
+        "actsAsSubject": {
+          "type": "boolean",
+          "description": "Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name."
+        }
+      }
+    },
+    "Decision": {
+      "title": "Decision",
+      "type": "string",
+      "enum": ["approve", "deny"],
+      "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
+    }
+  }
+}

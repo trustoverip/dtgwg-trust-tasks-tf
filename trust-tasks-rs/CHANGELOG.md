@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.14] — 2026-07-13
+
+### Added
+
+- **`task-consent/*` Trust Task family.** New `task-consent/request/0.1` and
+  `task-consent/decision/0.1`, plus the shared `task-consent/_shared/0.1`
+  (`Effect`, `StatePin`, `Exposure`, `Decision`).
+
+  These are the documents a `PolicyDecision.requireConsent` (added to
+  `policy/_shared/0.3` in #111) has been referring to without them existing: it
+  requires "a signed consent decision from the named set, bound to the request's
+  `payloadDigest`", and no such document was specified. `task-consent/decision`
+  is that document.
+
+  `task-consent/request` is the other half — the executor asks an enrolled
+  approver to authorize one pending privileged task, and carries the `effects`
+  it computed by **dry-running the real handler** against its own prior state.
+  That matters because a payload says what was asked for, while only the code
+  about to run knows what will happen: a `did:webvh` document update whose
+  payload adds one service endpoint also rotates the DID's update keys, and no
+  diff of the payload can show that.
+
+  Distinct from the existing `consent/*` family, which gates an inbound
+  *messaging conversation* for an AI agent (`ConsentSubject` is a
+  platform/conversation pair). Additive — `consent/*` 1.0 is untouched.
+  Consumers pick up `0.2.14` via `cargo update -p trust-tasks-rs`.
+
 ## [0.2.13] — 2026-07-09
 
 ### Added

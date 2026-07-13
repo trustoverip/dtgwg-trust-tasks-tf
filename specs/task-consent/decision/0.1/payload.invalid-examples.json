@@ -1,0 +1,49 @@
+[
+  {
+    "note": "Missing payloadDigest — without it the decision authorizes nothing in particular.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "decision": "approve"
+    }
+  },
+  {
+    "note": "Missing challenge — the decision would not be bound to a single pending request.",
+    "payload": {
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "decision": "approve"
+    }
+  },
+  {
+    "note": "Decision is not a member of the closed enum — silence, timeouts and dismissals are not assent.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "decision": "timeout"
+    }
+  },
+  {
+    "note": "Boolean decision — the wire form is an explicit enum, so a missing or falsy value can never read as approval.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "decision": true
+    }
+  },
+  {
+    "note": "Challenge too short.",
+    "payload": {
+      "challenge": "short",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "decision": "approve"
+    }
+  },
+  {
+    "note": "Unknown property.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "decision": "approve",
+      "approverSet": "operators"
+    }
+  }
+]

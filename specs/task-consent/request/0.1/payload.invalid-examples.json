@@ -1,0 +1,114 @@
+[
+  {
+    "note": "Missing effects — an executor must send the member even when it is empty, so that 'no dry-run' is explicit rather than indistinguishable from 'no consequences'.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "sideEffects": "mutating",
+      "exposure": { "discloses": "none", "actsAsSubject": false },
+      "requester": "did:key:z6MkRequesterBrowserExample",
+      "approverSet": "operators",
+      "minApprovals": 1,
+      "excludeRequester": true,
+      "expiresAt": "2026-07-13T09:56:00Z"
+    }
+  },
+  {
+    "note": "Effect without a summary — a surface could not render an unrecognised kind truthfully.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "sideEffects": "mutating",
+      "exposure": { "discloses": "none", "actsAsSubject": false },
+      "effects": [{ "kind": "keyRotation", "before": ["z6MkA"], "after": ["z6MkB"] }],
+      "requester": "did:key:z6MkRequesterBrowserExample",
+      "approverSet": "operators",
+      "minApprovals": 1,
+      "excludeRequester": true,
+      "expiresAt": "2026-07-13T09:56:00Z"
+    }
+  },
+  {
+    "note": "Unknown sideEffects level — the class is a closed enum; an unrecognised value must fail closed, not be treated as benign.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "sideEffects": "harmless",
+      "exposure": { "discloses": "none", "actsAsSubject": false },
+      "effects": [],
+      "requester": "did:key:z6MkRequesterBrowserExample",
+      "approverSet": "operators",
+      "minApprovals": 1,
+      "excludeRequester": true,
+      "expiresAt": "2026-07-13T09:56:00Z"
+    }
+  },
+  {
+    "note": "Challenge too short — under 128 bits it is guessable, and it is also the digest salt.",
+    "payload": {
+      "challenge": "short",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "sideEffects": "mutating",
+      "exposure": { "discloses": "none", "actsAsSubject": false },
+      "effects": [],
+      "requester": "did:key:z6MkRequesterBrowserExample",
+      "approverSet": "operators",
+      "minApprovals": 1,
+      "excludeRequester": true,
+      "expiresAt": "2026-07-13T09:56:00Z"
+    }
+  },
+  {
+    "note": "minApprovals below 1 — a threshold of zero would authorize with no approver at all.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "sideEffects": "mutating",
+      "exposure": { "discloses": "none", "actsAsSubject": false },
+      "effects": [],
+      "requester": "did:key:z6MkRequesterBrowserExample",
+      "approverSet": "operators",
+      "minApprovals": 0,
+      "excludeRequester": true,
+      "expiresAt": "2026-07-13T09:56:00Z"
+    }
+  },
+  {
+    "note": "Exposure missing actsAsSubject — both members are load-bearing for the policy decision.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "sideEffects": "mutating",
+      "exposure": { "discloses": "none" },
+      "effects": [],
+      "requester": "did:key:z6MkRequesterBrowserExample",
+      "approverSet": "operators",
+      "minApprovals": 1,
+      "excludeRequester": true,
+      "expiresAt": "2026-07-13T09:56:00Z"
+    }
+  },
+  {
+    "note": "Unknown property — the payload is closed, so nothing can ride along outside what the approver is shown.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "sideEffects": "mutating",
+      "exposure": { "discloses": "none", "actsAsSubject": false },
+      "effects": [],
+      "requester": "did:key:z6MkRequesterBrowserExample",
+      "approverSet": "operators",
+      "minApprovals": 1,
+      "excludeRequester": true,
+      "expiresAt": "2026-07-13T09:56:00Z",
+      "renderThisInstead": "Approve routine maintenance"
+    }
+  }
+]

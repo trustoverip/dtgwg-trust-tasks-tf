@@ -63,6 +63,7 @@ pub mod provision;
 pub mod push;
 pub mod registry;
 pub mod sync;
+pub mod task_consent;
 pub mod trust_task_discovery;
 pub mod vault;
 pub mod vta;
