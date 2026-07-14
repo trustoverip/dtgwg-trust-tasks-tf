@@ -32,6 +32,10 @@ pub mod specs;
 
 #[cfg(feature = "validate")]
 #[cfg_attr(docsrs, doc(cfg(feature = "validate")))]
+pub mod schema_index;
+
+#[cfg(feature = "validate")]
+#[cfg_attr(docsrs, doc(cfg(feature = "validate")))]
 pub mod validate;
 
 pub use consume::{consume_inbound, ConsumeOutcome, ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY};

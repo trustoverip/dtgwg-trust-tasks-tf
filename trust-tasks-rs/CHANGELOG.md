@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.15] — 2026-07-14
+
+### Added
+
+- **`vta/webvh/dids/update/1.0`.** The task a caller uses to ask an agent to
+  publish a `did:webvh` log entry it holds the update key for. Classified
+  `destructive`: supplying `document` rotates the DID's update key, which SPEC
+  §7.3 item 13 calls authority-shifting — and the rotation happens whether or not
+  the caller asked for it.
+
+- **`schema_index::schema_for(type_uri)`** (feature `validate`). Type URI →
+  payload schema, generated from the specs.
+
+  Without it a consumer that dispatches on a Type URI could not *find* the schema
+  for the payload it was about to run: `ValidatedPayload::SCHEMA_JSON` is a
+  per-type associated const, and a generic gate has no type to name. It could only
+  validate by hand-writing a match arm per task and remembering to add one with
+  every new task — which is to say, it would validate whatever somebody
+  remembered.
+
 ## [0.2.14] — 2026-07-13
 
 ### Added

@@ -1,0 +1,50 @@
+[
+  {
+    "note": "Missing the subject. Without `did` there is nothing to update.",
+    "payload": {
+      "document": { "id": "did:webvh:QmSCIDExample:example.com:acme" }
+    }
+  },
+  {
+    "note": "The concurrency precondition in the wrong case. THIS is the one that matters: an implementation that silently ignores it publishes with no lost-update protection at all, while the caller's own source reads as though the danger were handled. A closed schema rejects it; a permissive one drops it without a word.",
+    "payload": {
+      "did": "did:webvh:QmSCIDExample:example.com:acme",
+      "expected_version_id": "3-QmPriorEntryHashExample"
+    }
+  },
+  {
+    "note": "An unrecognised member. Not harmless — a payload member the consumer ignores is a member the caller believes it sent.",
+    "payload": {
+      "did": "did:webvh:QmSCIDExample:example.com:acme",
+      "skipApproval": true
+    }
+  },
+  {
+    "note": "preRotationCount must be a non-negative integer.",
+    "payload": {
+      "did": "did:webvh:QmSCIDExample:example.com:acme",
+      "preRotationCount": -1
+    }
+  },
+  {
+    "note": "watchers must be strings.",
+    "payload": {
+      "did": "did:webvh:QmSCIDExample:example.com:acme",
+      "watchers": [{ "url": "https://watcher.example.com" }]
+    }
+  },
+  {
+    "note": "An empty expectedVersionId is not a version; it is a caller that meant to pin and did not.",
+    "payload": {
+      "did": "did:webvh:QmSCIDExample:example.com:acme",
+      "expectedVersionId": ""
+    }
+  },
+  {
+    "note": "The document must be an object.",
+    "payload": {
+      "did": "did:webvh:QmSCIDExample:example.com:acme",
+      "document": "did:webvh:QmSCIDExample:example.com:acme"
+    }
+  }
+]
