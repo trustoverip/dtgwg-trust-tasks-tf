@@ -25,9 +25,10 @@ proofRequirement:
   rationale: Delete is destructive and silently propagates to every Companion cache via sync. The producer's identity MUST be verifiable so the maintainer can attribute the deletion to a specific consumer in the audit log.
 sideEffects:
   level: destructive
-  rationale: "Tombstones a vault entry; after the grace period it is garbage-collected and unrecoverable."
+  rationale: "Tombstones a vault entry; after the grace period it is garbage-collected and unrecoverable. With `force`, there is no grace period at all — the secret bytes are zeroised immediately."
 consequences:
-  - "The entry is retained only for a grace period, then permanently removed."
+  - "Without `force`: the entry becomes a tombstone, recoverable via `vault/restore` until the grace window closes, after which it is permanently removed."
+  - "With `force`: there is NO grace window. The secret bytes are zeroised immediately and the entry cannot be recovered by any means."
 subjectPath: /id
 exposure:
   discloses: none
@@ -65,6 +66,28 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 4. Emit a `sync/event/0.1` of kind `vault.deleted` to every consumer with VaultRead on the entry's context, carrying `{ id, deletedAt, graceUntil }`.
 5. After `graceUntil`, the maintainer MAY purge the tombstone entirely. Consumers that connect after purge see the entry as absent (indistinguishable from "never existed").
 6. Treat a delete-of-an-already-deleted entry as idempotent if the tombstone still exists; return success. If the tombstone has been purged, return `not_found`.
+
+## `force`, and the limits of static consequences
+
+`force` changes *what this task does*, not merely how fast it does it. Without it
+the entry is a tombstone the operator can restore. With it the secret bytes are
+zeroised and nothing can bring them back.
+
+That is a problem for the `consequences` in this specification's front matter, and
+it is worth naming rather than papering over: **`consequences` are per-task;
+`force` is per-request.** A consent surface that renders the static text alone
+cannot tell a human which of these two very different things they are about to
+authorize — and the safe-looking one is the default, so a surface that guessed
+would guess reassuringly.
+
+A consumer that gates this task on human approval therefore **MUST** compute
+per-request effects by dry-running the handler it is about to invoke, and **MUST
+NOT** rely on `consequences` to describe a forced delete. Where it cannot compute
+them it **MUST** say so, rather than present the recoverable case as though it
+were the whole story.
+
+This is SPEC [§7.3](../../../../SPEC.md#73-specification-requirements) item 13 in
+practice: the declared class exists to inform and to render, not to authorize.
 
 ## Payload
 

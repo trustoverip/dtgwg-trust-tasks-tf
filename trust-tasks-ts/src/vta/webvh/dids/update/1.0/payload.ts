@@ -12,9 +12,7 @@ export interface WebVHDIDUpdatePayload {
    */
   did: string;
   /**
-   * The new DID document. Omit to leave it unchanged.
-   *
-   * Supplying this ROTATES the DID's update key and refreshes its pre-rotation commitments, as a parallel consequence of the change. That consequence is not visible anywhere in this payload — it lives in the executing handler's semantics — which is why a consent surface MUST render effects the executor computed, and MUST NOT attempt to derive them from this document.
+   * The new DID document. Omit to leave it unchanged. Supplying this ROTATES the DID's update key and refreshes its pre-rotation commitments, as a parallel consequence of the change — a consequence not visible anywhere in this payload, because it lives in the executing handler's semantics. A consent surface MUST therefore render effects the executor computed, and MUST NOT derive them from this document.
    */
   document?: {};
   /**
@@ -40,11 +38,7 @@ export interface WebVHDIDUpdatePayload {
    */
   label?: string;
   /**
-   * Optimistic-concurrency precondition: the versionId the caller based this edit on.
-   *
-   * The agent MUST refuse the update if the DID's latest entry no longer matches. Without it a `get → edit → save` cycle silently overwrites a concurrent edit with a chain that is structurally valid, verifies perfectly, and is based on a stale read — and where a human approves the update, the window is minutes wide, so this is a routine race rather than an exotic one.
-   *
-   * It is OPTIONAL because a scripted caller with no concurrent writers has nothing to protect against. It is not optional for anything a person looked at.
+   * Optimistic-concurrency precondition: the versionId the caller based this edit on. The agent MUST refuse the update if the DID's latest entry no longer matches. Without it a `get -> edit -> save` cycle silently overwrites a concurrent edit with a chain that is structurally valid, verifies perfectly, and is based on a stale read. Where a human approves the update the window is minutes wide, so this is a routine race rather than an exotic one. OPTIONAL because a scripted caller with no concurrent writers has nothing to protect against; not optional for anything a person looked at.
    */
   expectedVersionId?: string;
   ext?: Ext;

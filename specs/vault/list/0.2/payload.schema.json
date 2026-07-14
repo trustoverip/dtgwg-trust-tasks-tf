@@ -75,6 +75,17 @@
     "ext": {
       "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
       "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "deleted",
+        "all"
+      ],
+      "default": "active",
+      "description": "Archival-lifecycle view selector. Omitted or `active` lists only live entries; `archived` and `deleted` list those respectively (a `deleted` entry is a tombstone still inside its grace window); `all` lists every entry regardless of lifecycle state."
     }
   },
   "$defs": {
@@ -84,11 +95,16 @@
       "description": "The success response to a vault/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vault/list/0.1#response.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["entries", "truncated"],
+      "required": [
+        "entries",
+        "truncated"
+      ],
       "properties": {
         "entries": {
           "type": "array",
-          "items": { "$ref": "../../_shared/0.2/vault-entry.schema.json#/$defs/VaultEntry" },
+          "items": {
+            "$ref": "../../_shared/0.2/vault-entry.schema.json#/$defs/VaultEntry"
+          },
           "description": "Matching VaultEntry items in metadata-only view, in maintainer-defined order (RECOMMENDED: most-recently-used first when no other order is implied by the filters). May be empty."
         },
         "truncated": {
@@ -101,7 +117,9 @@
         },
         "redactedFields": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Names of VaultEntry fields the maintainer redacted from every returned entry (for example, ['lastUsedAt'] when releasing to a consumer whose policy does not permit timing-data exposure)."
         },
         "ext": {

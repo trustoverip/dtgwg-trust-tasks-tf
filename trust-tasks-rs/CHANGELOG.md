@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.16] — 2026-07-14
+
+### Fixed
+
+- **`vault/delete` documents `force`.** The reference implementation has always
+  accepted it: it skips the grace window and hard-deletes, zeroising the secret
+  bytes. The spec did not mention it, and its `consequences` promised that "the
+  entry is retained only for a grace period" — which is false when `force` is set.
+  A consent surface with no dry-run renders exactly that text, so it would have
+  told a human they had a recovery window they did not have.
+
+  `force` is now specified, the consequences describe both cases, and the prose
+  says normatively that a consumer gating this task on human approval MUST compute
+  per-request effects rather than rely on the static text: `consequences` are
+  per-task, and `force` is per-request.
+
+- **`vault/list` documents `status`** (`active` | `archived` | `deleted` | `all`).
+  The archival view selector the implementation has always accepted.
+
+Both were found by turning on payload-schema validation in a consumer — which is
+the point of turning it on.
+
 ## [0.2.15] — 2026-07-14
 
 ### Added

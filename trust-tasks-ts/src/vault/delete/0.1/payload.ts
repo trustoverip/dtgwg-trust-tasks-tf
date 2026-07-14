@@ -17,6 +17,10 @@ export interface VaultDeletePayload {
    */
   reason?: string;
   ext?: Ext;
+  /**
+   * Skip the grace window and hard-delete immediately: the secret bytes are zeroised and the entry is UNRECOVERABLE (equivalent to vault/purge). The default, false, performs a recoverable soft delete — the entry becomes a tombstone, restorable via vault/restore until the sweeper purges it at graceUntil. A consumer MUST NOT present a forced delete to a human as though it were recoverable.
+   */
+  force?: boolean;
 }
 /**
  * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.

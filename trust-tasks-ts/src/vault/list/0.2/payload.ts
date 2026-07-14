@@ -70,6 +70,10 @@ export interface VaultListPayload {
    */
   cursor?: string;
   ext?: Ext;
+  /**
+   * Archival-lifecycle view selector. Omitted or `active` lists only live entries; `archived` and `deleted` list those respectively (a `deleted` entry is a tombstone still inside its grace window); `all` lists every entry regardless of lifecycle state.
+   */
+  status?: "active" | "archived" | "deleted" | "all";
 }
 /**
  * Ecosystem-defined extension members per SPEC.md §4.5.1.

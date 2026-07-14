@@ -5,9 +5,14 @@
   "description": "Tombstone a vault entry. The maintainer SHOULD keep the tombstone for a configured grace period so late-syncing consumers wipe the entry from their caches; after the grace period expires the maintainer MAY garbage-collect.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id"],
+  "required": [
+    "id"
+  ],
   "properties": {
-    "id": { "type": "string", "minLength": 1 },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
     "expectedVersion": {
       "type": "integer",
       "minimum": 0,
@@ -18,7 +23,14 @@
       "maxLength": 256,
       "description": "Optional human-readable reason recorded in the audit log."
     },
-    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    },
+    "force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip the grace window and hard-delete immediately: the secret bytes are zeroised and the entry is UNRECOVERABLE (equivalent to vault/purge). The default, false, performs a recoverable soft delete — the entry becomes a tombstone, restorable via vault/restore until the sweeper purges it at graceUntil. A consumer MUST NOT present a forced delete to a human as though it were recoverable."
+    }
   },
   "$defs": {
     "Response": {
@@ -26,16 +38,28 @@
       "title": "Vault Delete — response payload",
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "deletedAt", "graceUntil"],
+      "required": [
+        "id",
+        "deletedAt",
+        "graceUntil"
+      ],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "deletedAt": { "type": "string", "format": "date-time" },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
         "graceUntil": {
           "type": "string",
           "format": "date-time",
           "description": "Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent."
         },
-        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }
