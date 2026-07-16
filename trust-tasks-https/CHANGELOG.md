@@ -4,6 +4,24 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.2.1] — 2026-07-16
+
+### Added
+
+- `HttpsClientBuilder::timeout(Duration)` and
+  `HttpsClientBuilder::connect_timeout(Duration)`, plus the
+  `DEFAULT_TIMEOUT` (30s) / `DEFAULT_CONNECT_TIMEOUT` (10s) constants.
+
+### Changed
+
+- **The client's `reqwest::Client` now carries finite timeouts by
+  default.** Previously it was built with no timeout at all, so a peer
+  that accepted the connection and never answered would hang the caller
+  forever. An exchange that legitimately needs longer than 30s can raise
+  the limits via the new builder methods. Behavioral change: calls that
+  previously hung indefinitely now fail with a `ClientError::Http`
+  timeout error.
+
 ## [0.1.2] — 2026-05-27
 
 ### Changed

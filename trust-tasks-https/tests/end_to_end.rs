@@ -739,3 +739,69 @@ async fn https_enforces_recipient_required_with_no_in_band_recipient() {
     assert_eq!(status, reqwest::StatusCode::BAD_REQUEST);
     assert_eq!(code, serde_json::json!("malformedRequest"));
 }
+
+/// The client must never hang on an unresponsive peer: its `reqwest::Client`
+/// carries finite timeouts by default, so a server that accepts the
+/// connection and then goes silent surfaces as an error.
+#[tokio::test]
+async fn client_times_out_on_a_silent_server() {
+    use std::time::Duration;
+    use trust_tasks_https::HttpsClient;
+    use trust_tasks_rs::specs::acl::grant::v0_1 as grant;
+
+    // Accepts connections, never answers.
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        let mut held = Vec::new();
+        loop {
+            let Ok((socket, _)) = listener.accept().await else {
+                break;
+            };
+            held.push(socket);
+        }
+    });
+
+    let client = HttpsClient::builder()
+        .server_url(format!("http://{addr}"))
+        .server_vid("did:web:server.example")
+        .my_vid("did:web:alice.example")
+        .timeout(Duration::from_millis(200))
+        .build()
+        .unwrap();
+
+    let request = trust_tasks_rs::TrustTask::for_payload(
+        "urn:uuid:timeout-test".to_string(),
+        grant::Payload {
+            entry: grant::AclEntry {
+                subject: "did:web:carol.example".into(),
+                role: "moderator".into(),
+                scopes: vec![],
+                label: None,
+                created_at: None,
+                created_by: None,
+                updated_at: None,
+                updated_by: None,
+                expires_at: None,
+                step_up: None,
+                ext: None,
+            },
+            reason: None,
+            ext: None,
+        },
+    );
+
+    let started = std::time::Instant::now();
+    let err = client
+        .send::<grant::Payload, grant::Response>(request)
+        .await
+        .unwrap_err();
+    assert!(
+        started.elapsed() < Duration::from_secs(5),
+        "the call must fail fast, not hang"
+    );
+    match err {
+        trust_tasks_https::ClientError::Http(e) => assert!(e.is_timeout(), "got: {e}"),
+        other => panic!("expected Http timeout error, got: {other}"),
+    }
+}

@@ -19,12 +19,21 @@
 //! 2xx) or as a `trust-task-error/0.1` document (non-2xx); both surface
 //! to the caller as [`ClientError`] variants for ergonomic `?` chains.
 
+use std::time::Duration;
+
 use reqwest::{header, Client, ClientBuilder, Url};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 use trust_tasks_rs::{ErrorResponse, Payload, TransportHandler, TrustTask};
 
 use crate::handler::HttpsHandler;
+
+/// Default end-to-end request timeout. A trust-task exchange is one small
+/// JSON round trip; a peer that takes longer than this is down or wedged.
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Default connection-establishment timeout.
+pub const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Builder for [`HttpsClient`].
 #[derive(Default)]
@@ -34,6 +43,8 @@ pub struct HttpsClientBuilder {
     my_vid: Option<String>,
     my_token: Option<String>,
     strip_redundant_in_band: bool,
+    timeout: Option<Duration>,
+    connect_timeout: Option<Duration>,
 }
 
 impl HttpsClientBuilder {
@@ -75,6 +86,19 @@ impl HttpsClientBuilder {
         self
     }
 
+    /// End-to-end request timeout. Defaults to [`DEFAULT_TIMEOUT`].
+    pub fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = Some(timeout);
+        self
+    }
+
+    /// Connection-establishment timeout. Defaults to
+    /// [`DEFAULT_CONNECT_TIMEOUT`].
+    pub fn connect_timeout(mut self, timeout: Duration) -> Self {
+        self.connect_timeout = Some(timeout);
+        self
+    }
+
     /// Build the [`HttpsClient`] or return a configuration error.
     pub fn build(self) -> Result<HttpsClient, ClientError> {
         let server_url = self
@@ -84,7 +108,12 @@ impl HttpsClientBuilder {
             .parse()
             .map_err(|e| ClientError::Config(format!("server_url is not a valid URL: {e}")))?;
 
+        // Finite timeouts always: an unresponsive peer must surface as an
+        // error, never hang the caller. Callers with a genuinely long-running
+        // exchange can raise the values explicitly.
         let http = ClientBuilder::new()
+            .timeout(self.timeout.unwrap_or(DEFAULT_TIMEOUT))
+            .connect_timeout(self.connect_timeout.unwrap_or(DEFAULT_CONNECT_TIMEOUT))
             .build()
             .map_err(|e| ClientError::Config(e.to_string()))?;
 
