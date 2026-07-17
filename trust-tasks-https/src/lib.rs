@@ -68,7 +68,9 @@ pub use handler::{HttpsHandler, BINDING_URI};
 pub use status::status_for_code;
 
 #[cfg(feature = "client")]
-pub use client::{ClientError, DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT, HttpsClient, HttpsClientBuilder};
+pub use client::{
+    ClientError, HttpsClient, HttpsClientBuilder, DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT,
+};
 
 #[cfg(feature = "server")]
 pub use server::{HttpsServer, HttpsServerBuilder, RequestContext};
