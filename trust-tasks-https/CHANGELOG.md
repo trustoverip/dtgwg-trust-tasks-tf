@@ -4,6 +4,15 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.2.2] — 2026-07-17
+
+### Fixed
+
+- `DEFAULT_TIMEOUT` / `DEFAULT_CONNECT_TIMEOUT` (added in 0.2.1) are now
+  re-exported from the crate root as intended; previously they were
+  documented as public API but unreachable, which also broke the
+  workspace doc build under `-D warnings`.
+
 ## [0.2.1] — 2026-07-16
 
 ### Added
