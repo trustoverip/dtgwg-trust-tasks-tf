@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "status must be one of the enum values.",
+    "payload": {
+      "status": "everything"
+    }
+  },
+  {
+    "note": "status must be a string.",
+    "payload": {
+      "status": 1
+    }
+  }
+]

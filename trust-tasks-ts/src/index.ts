@@ -83,6 +83,10 @@ export * as DidManagementRegistryDeregister_v0_1 from "./did-management/registry
 export * as DidManagementServerHealth_v0_1 from "./did-management/server/health/0.1/payload";
 export * as DidManagementServerRegister_v0_1 from "./did-management/server/register/0.1/payload";
 export * as DidManagementServerStatsSync_v0_1 from "./did-management/server/stats-sync/0.1/payload";
+export * as GovernanceShared_v0_1 from "./governance/_shared/0.1/governance";
+export * as GovernanceCapabilityDisable_v0_1 from "./governance/capability/disable/0.1/payload";
+export * as GovernanceCapabilityEnable_v0_1 from "./governance/capability/enable/0.1/payload";
+export * as GovernanceCapabilityList_v0_1 from "./governance/capability/list/0.1/payload";
 export * as MessagingShared_v0_1 from "./messaging/_shared/0.1/messaging";
 export * as MessagingAccessListAdd_v0_1 from "./messaging/access-list/add/0.1/payload";
 export * as MessagingAccessListClear_v0_1 from "./messaging/access-list/clear/0.1/payload";

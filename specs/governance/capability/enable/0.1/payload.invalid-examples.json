@@ -1,0 +1,44 @@
+[
+  {
+    "note": "Empty payload omits the required members capability and version.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "capability": "git-trust",
+      "version": "0.1",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "capability must match the slug pattern (no uppercase).",
+    "payload": {
+      "capability": "GitTrust",
+      "version": "0.1"
+    }
+  },
+  {
+    "note": "version must be MAJOR.MINOR.",
+    "payload": {
+      "capability": "git-trust",
+      "version": "one"
+    }
+  },
+  {
+    "note": "delegate without manifest is rejected (dependentRequired).",
+    "payload": {
+      "capability": "git-trust",
+      "version": "0.1",
+      "delegate": "did:example:companion"
+    }
+  },
+  {
+    "note": "config must be an object, not a string.",
+    "payload": {
+      "capability": "git-trust",
+      "version": "0.1",
+      "config": "grantOnRole=maintainer"
+    }
+  }
+]

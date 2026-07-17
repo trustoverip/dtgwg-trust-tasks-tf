@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.17] — 2026-07-17
+
+### Added
+
+- `governance/capability/*` 0.1 spec family — pluggable community
+  capability management: `enable` (proof-required; supports built-in and
+  DID-delegated companion capabilities via `delegate` + `manifest`),
+  `disable` (proof-required; disable-not-delete), and `list` (read;
+  manifest-level view for management surfaces). Shared
+  `CapabilityManifest` definition in `governance/_shared/0.1` describing
+  a capability's spec families, trust-registry vocabulary, roles,
+  membership lifecycle hooks, consent classes, external adapters, and
+  config schema.
+
 ## [0.2.16] — 2026-07-14
 
 ### Fixed

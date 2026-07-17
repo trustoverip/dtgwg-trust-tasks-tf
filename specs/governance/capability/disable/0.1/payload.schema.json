@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/governance/capability/disable/0.1",
+  "title": "Governance Capability Disable — payload",
+  "description": "A community operator disables a previously enabled capability. Disable is not delete: the capability's registry records are retained for audit, but its handlers stop executing, it disappears from discovery, and its lifecycle hooks stop firing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["capability"],
+  "properties": {
+    "capability": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Namespace slug of the capability to disable."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Human-readable reason, recorded for audit."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Governance Capability Disable — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capability", "enabled"],
+      "properties": {
+        "capability": { "type": "string" },
+        "enabled": {
+          "type": "boolean",
+          "description": "False once the capability is inactive for the community."
+        },
+        "message": {
+          "type": "string",
+          "description": "Additional human-readable detail."
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

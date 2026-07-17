@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/governance/capability/list/0.1",
+  "title": "Governance Capability List — payload",
+  "description": "List a community's capabilities and their manifests — the query behind a capability management surface. Defaults to enabled capabilities only.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["enabled", "available", "all"],
+      "description": "Which capabilities to list: `enabled` (the default when absent), `available` (known to the host but not enabled), or `all`."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Governance Capability List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capabilities"],
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["manifest", "enabled"],
+            "properties": {
+              "manifest": {
+                "$ref": "../../../_shared/0.1/governance.schema.json#/$defs/CapabilityManifest"
+              },
+              "enabled": { "type": "boolean" },
+              "enabledAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When the capability was enabled, for enabled entries."
+              },
+              "delegate": {
+                "type": "string",
+                "description": "DID of the companion serving this capability, when not built in."
+              }
+            }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

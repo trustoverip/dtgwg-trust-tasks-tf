@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Empty payload omits the required member capability.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "capability": "git-trust",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "capability must match the slug pattern.",
+    "payload": {
+      "capability": "Git Trust"
+    }
+  },
+  {
+    "note": "reason must be a string.",
+    "payload": {
+      "capability": "git-trust",
+      "reason": 42
+    }
+  }
+]

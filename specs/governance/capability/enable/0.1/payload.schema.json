@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/governance/capability/enable/0.1",
+  "title": "Governance Capability Enable — payload",
+  "description": "A community operator enables a pluggable capability for a community. Activation registers the capability's Trust Task handlers, advertises it in discovery, and starts its lifecycle hooks; a community with no enable record carries none of the capability's records, surfaces, or attack surface.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["capability", "version"],
+  "dependentRequired": { "delegate": ["manifest"] },
+  "properties": {
+    "capability": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Namespace slug of the capability to enable, e.g. `git-trust`."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Capability version to enable."
+    },
+    "config": {
+      "type": "object",
+      "description": "Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `config_invalid` on mismatch."
+    },
+    "delegate": {
+      "type": "string",
+      "description": "DID of the companion service that serves this capability, for capabilities not built into the host. When present, the host records a namespace delegation to this DID and `manifest` is REQUIRED (the host cannot know a companion's manifest a priori)."
+    },
+    "manifest": {
+      "$ref": "../../../_shared/0.1/governance.schema.json#/$defs/CapabilityManifest",
+      "description": "The capability's manifest. OPTIONAL for built-in capabilities (the host knows it); REQUIRED when `delegate` is present."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Governance Capability Enable — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capability", "enabled"],
+      "properties": {
+        "capability": { "type": "string" },
+        "version": { "type": "string" },
+        "enabled": {
+          "type": "boolean",
+          "description": "True once the capability is active for the community."
+        },
+        "enabledAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the enablement took effect, per the host clock."
+        },
+        "message": {
+          "type": "string",
+          "description": "Additional human-readable detail."
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
