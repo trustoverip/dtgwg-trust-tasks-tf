@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-trust/revoke/0.1",
+  "title": "Git Trust Revoke — payload",
+  "description": "A community operator revokes a member's commit-signing grant for a resource. The host marks the TRQP authorization tuple unauthorized (retaining it for audit), so CI verifiers observe the denial on their next query.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "resource"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "DID of the member whose grant is being revoked."
+    },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The resource of the grant being revoked (`<org>` or `<org>/<repo>`)."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Human-readable reason, recorded for audit."
+    },
+    "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Trust Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "resource", "revoked"],
+      "properties": {
+        "subject": { "type": "string" },
+        "resource": { "type": "string" },
+        "revoked": {
+          "type": "boolean",
+          "description": "True once the tuple is durably marked unauthorized."
+        },
+        "message": { "type": "string", "description": "Additional human-readable detail." },
+        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

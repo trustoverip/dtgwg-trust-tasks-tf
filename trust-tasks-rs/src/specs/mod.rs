@@ -57,6 +57,7 @@ pub mod confirm;
 pub mod consent;
 pub mod device;
 pub mod did_management;
+pub mod git_trust;
 pub mod governance;
 pub mod messaging;
 pub mod policy;

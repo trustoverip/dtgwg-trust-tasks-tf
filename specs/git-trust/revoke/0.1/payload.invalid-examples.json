@@ -1,0 +1,29 @@
+[
+  {
+    "note": "Empty payload omits the required members subject and resource.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "subject": "did:example:signer",
+      "resource": "org/repo",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "subject must be a DID.",
+    "payload": {
+      "subject": "not-a-did",
+      "resource": "org/repo"
+    }
+  },
+  {
+    "note": "reason must be a string.",
+    "payload": {
+      "subject": "did:example:signer",
+      "resource": "org/repo",
+      "reason": false
+    }
+  }
+]

@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.18] — 2026-07-17
+
+### Added
+
+- `git-trust/*` 0.1 spec family — the first capability-module task
+  family (used with `governance/capability/*`): `grant` and `revoke`
+  (both proof-required) record/withdraw a member DID's commit-signing
+  authority as the TRQP tuple `{subject, community authority,
+  git.commit.sign, resource}` that CI verifiers query anonymously.
+
 ## [0.2.17] — 2026-07-17
 
 ### Added

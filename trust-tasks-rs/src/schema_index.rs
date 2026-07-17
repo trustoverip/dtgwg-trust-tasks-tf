@@ -81,6 +81,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/did-management/server/health/0.1" => Some(<crate::specs::did_management::server::health::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/did-management/server/register/0.1" => Some(<crate::specs::did_management::server::register::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/did-management/server/stats-sync/0.1" => Some(<crate::specs::did_management::server::stats_sync::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/git-trust/grant/0.1" => Some(<crate::specs::git_trust::grant::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/git-trust/revoke/0.1" => Some(<crate::specs::git_trust::revoke::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/governance/capability/disable/0.1" => Some(<crate::specs::governance::capability::disable::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/governance/capability/enable/0.1" => Some(<crate::specs::governance::capability::enable::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/governance/capability/list/0.1" => Some(<crate::specs::governance::capability::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

@@ -83,6 +83,8 @@ export * as DidManagementRegistryDeregister_v0_1 from "./did-management/registry
 export * as DidManagementServerHealth_v0_1 from "./did-management/server/health/0.1/payload";
 export * as DidManagementServerRegister_v0_1 from "./did-management/server/register/0.1/payload";
 export * as DidManagementServerStatsSync_v0_1 from "./did-management/server/stats-sync/0.1/payload";
+export * as GitTrustGrant_v0_1 from "./git-trust/grant/0.1/payload";
+export * as GitTrustRevoke_v0_1 from "./git-trust/revoke/0.1/payload";
 export * as GovernanceShared_v0_1 from "./governance/_shared/0.1/governance";
 export * as GovernanceCapabilityDisable_v0_1 from "./governance/capability/disable/0.1/payload";
 export * as GovernanceCapabilityEnable_v0_1 from "./governance/capability/enable/0.1/payload";
