@@ -69,4 +69,18 @@ window.TT_BINDINGS = [
       },
     ],
   },
+  {
+    id: "push/0.1",
+    slug: "push",
+    version: "0.1",
+    title: "Push wake-up",
+    summary:
+      "A signalling binding, not a document-carriage one: a contentless wake-up notification (APNs / FCM / Web Push) sent by a push gateway on behalf of a trigger — the device's mediator or its VTA — telling a backgrounded consumer to connect to its mediator and drain queued DIDComm-carried Trust Task documents. The push payload is a doorbell only and carries no task content; the documents themselves ride the DIDComm binding.",
+    bindingURI: "https://trusttasks.org/binding/push/0.1",
+    envelopeType: null,
+    status: "draft",
+    accent: "amber",
+    prosePath: "/bindings/push/0.1/spec.md",
+    implementations: [],
+  },
 ];

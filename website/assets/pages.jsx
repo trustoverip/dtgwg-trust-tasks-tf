@@ -1905,6 +1905,22 @@ function ImplementationsPage({ setRoute }) {
       ],
       repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-proof",
     },
+    {
+      name: "trust-tasks-capability-client",
+      accent: "violet",
+      role: "Capability wire client",
+      tagline: "Shared document builders + reply parsing for the capability families.",
+      summary:
+        "Client-side wire helpers for the capability Trust Task families — governance/capability/* (enable / disable / list a community capability) and git-trust/* (grant / revoke commit-signing trust). It owns the documents, not a transport: builders emit request documents, parse_envelope_document turns an inbound DIDComm-binding envelope into (threadId, document), and the reply classifiers keep a capability producer (a community service) and a management UI from drifting on the contract. Signing stays out — each consumer attaches its own eddsa-jcs-2022 Data Integrity proof.",
+      bullets: [
+        "build_list_document / build_toggle_document — governance/capability/*",
+        "build_git_trust_grant / build_git_trust_revoke — git-trust/*",
+        "parse_envelope_document → (threadId, document) over the DIDComm envelope",
+        "classify_git_trust_reply / parse_capability_reply — typed inbound replies",
+        "No crypto dependency — sign the canonical form with your own signer",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-capability-client",
+    },
   ];
 
   const cargoToml = `[dependencies]
@@ -2070,7 +2086,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
       <PageHero
         eyebrow="Reference implementation · Rust"
         title="trust-tasks for Rust."
-        lede="A reference Rust implementation of the Trust Tasks framework — six crates that together cover the framework envelope, three transport bindings, a W3C Data Integrity proof verifier, and a codegen tool that turns registry specs into typed payload modules."
+        lede="A reference Rust implementation of the Trust Tasks framework — seven crates that together cover the framework envelope, three transport bindings, a W3C Data Integrity proof verifier, a shared capability wire client, and a codegen tool that turns registry specs into typed payload modules."
       >
         <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
           <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
@@ -2082,7 +2098,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
         <div className="container">
           <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Workspace at a glance</span>
-          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Five publishable crates, one codegen tool.</h2>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Six publishable crates, one codegen tool.</h2>
           <p style={{ color: "var(--tt-text-muted)", maxWidth: "60ch" }}>
             Each crate is independently usable. <code>trust-tasks-tsp</code> is the preferred
             transport binding; the core <code>trust-tasks-rs</code> library underpins every
@@ -2137,7 +2153,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Add to your Cargo.toml.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
             The crates are published on crates.io and track framework 0.2. Add the core library plus the
-            transport binding(s) you need — <code>trust-tasks-tsp</code> is the preferred binding. MSRV is 1.94.
+            transport binding(s) you need — <code>trust-tasks-tsp</code> is the preferred binding. MSRV is 1.95.
           </p>
           <CodeBlock json={cargoToml} language="toml" />
 
@@ -2280,7 +2296,7 @@ git diff --exit-code trust-tasks-rs/src/specs   # CI gate: codegen is idempotent
             The crates track framework <code>0.2</code>, with versions in the <code>0.2.x</code> line. Neither the framework nor the
             implementation has gone through external review yet — interfaces and on-the-wire behaviour are subject
             to change. The repository ships full unit + integration suites across the workspace,
-            a CI matrix on stable Rust (MSRV 1.94), and runnable examples for every binding.
+            a CI matrix on stable Rust (MSRV 1.95), and runnable examples for every binding.
           </p>
           <div style={{ marginTop: "var(--tt-space-5)", display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap" }}>
             <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Open the repository →</a>

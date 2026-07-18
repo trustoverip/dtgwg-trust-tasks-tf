@@ -34,13 +34,14 @@ window.TT_ECOSYSTEM = [
     tier: "reference",
     accent: "violet",
     summary:
-      "A Rust workspace that turns the Trust Tasks framework into runnable code: framework primitives (envelope, TypeUri, Proof, RejectReason, TransportHandler), three transport bindings (TSP, HTTPS, DIDComm v2.1), a ProofVerifier implementation backed by Affinidi Data Integrity, and a codegen tool that materialises typed payload modules for every spec in the registry.",
+      "A Rust workspace that turns the Trust Tasks framework into runnable code: framework primitives (envelope, TypeUri, Proof, RejectReason, TransportHandler), three transport bindings (TSP, HTTPS, DIDComm v2.1), a ProofVerifier implementation backed by Affinidi Data Integrity, a shared capability wire client, and a codegen tool that materialises typed payload modules for every spec in the registry.",
     bullets: [
       "trust-tasks-rs — core library + generated specs::*",
       "trust-tasks-tsp — pack/unpack over ToIP Trust Spanning Protocol (preferred)",
       "trust-tasks-https — typed axum server + reqwest client",
       "trust-tasks-didcomm — pack/unpack over DIDComm v2.1",
       "trust-tasks-proof — pluggable W3C Data Integrity verifiers (default `affinidi` backend)",
+      "trust-tasks-capability-client — shared wire client for the capability families",
       "Tracking framework 0.2 (0.2.x crate line)",
     ],
     primary: { label: "Implementations · trusttasks.org", href: "/implementations" },
