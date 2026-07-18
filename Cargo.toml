@@ -7,6 +7,7 @@ members = [
     "trust-tasks-proof",
     "trust-tasks-didcomm",
     "trust-tasks-tsp",
+    "trust-tasks-capability-client",
 ]
 
 [workspace.package]

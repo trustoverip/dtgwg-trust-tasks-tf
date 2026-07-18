@@ -1,0 +1,19 @@
+[package]
+name = "trust-tasks-capability-client"
+version = "0.1.0"
+edition.workspace = true
+rust-version = "1.95"
+license.workspace = true
+repository.workspace = true
+description = "Client-side wire helpers for the capability Trust Task families (governance/capability/*, git-trust/*): document builders, envelope parsing, reply classification. Shared by capability producers (community services) and management UIs so the two cannot drift."
+keywords = ["trust-tasks", "capability", "governance", "did", "client"]
+categories = ["encoding", "web-programming"]
+publish = true
+
+[dependencies]
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.2" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }

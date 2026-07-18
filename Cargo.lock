@@ -6310,6 +6310,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "trust-tasks-capability-client"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "trust-tasks-rs",
+ "uuid",
+]
+
+[[package]]
 name = "trust-tasks-codegen"
 version = "0.1.0"
 dependencies = [
