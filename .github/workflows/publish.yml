@@ -79,15 +79,27 @@ jobs:
             fi
 
             # Skip if this exact version is already on crates.io. The crates.io
-            # API rejects requests without a User-Agent (403), so set one.
-            existing=$(curl -fsSL -H "User-Agent: trust-tasks-ci (github-actions)" \
-              "https://crates.io/api/v1/crates/$crate" \
-              | jq -r --arg v "$version" '[.versions[]?.num] | index($v) // "no"')
-            if [ "$existing" != "no" ]; then
-              echo "::notice::$crate $version already on crates.io — skipping."
-            else
-              echo "::notice::$crate $version is new — will publish."
+            # API rejects requests without a User-Agent (403), so set one. A
+            # brand-new crate name returns 404 — that is "never published, so
+            # publish it", NOT an error (the old `curl -f` aborted the whole
+            # step on it). Distinguish 404 (new) from a real lookup failure.
+            http_code=$(curl -sSL -o crate.json -w '%{http_code}' \
+              -H "User-Agent: trust-tasks-ci (github-actions)" \
+              "https://crates.io/api/v1/crates/$crate" || echo "000")
+            if [ "$http_code" = "404" ]; then
+              echo "::notice::$crate is not on crates.io yet — will publish."
               to_publish="$to_publish $crate"
+            elif [ "$http_code" = "200" ]; then
+              existing=$(jq -r --arg v "$version" '[.versions[]?.num] | index($v) // "no"' crate.json)
+              if [ "$existing" != "no" ]; then
+                echo "::notice::$crate $version already on crates.io — skipping."
+              else
+                echo "::notice::$crate $version is new — will publish."
+                to_publish="$to_publish $crate"
+              fi
+            else
+              echo "::error::crates.io lookup for $crate failed (HTTP $http_code)"
+              exit 1
             fi
           done
           to_publish="$(echo "$to_publish" | xargs || true)"
