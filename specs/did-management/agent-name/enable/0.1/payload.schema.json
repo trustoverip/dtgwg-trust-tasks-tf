@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/agent-name/enable/0.1",
+  "title": "DID Management Enable Agent Name \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mnemonic",
+    "name",
+    "didData"
+  ],
+  "properties": {
+    "mnemonic": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The hosted DID slot."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The agent name's local part, without the leading `@`."
+    },
+    "didData": {
+      "description": "A new signed document whose `alsoKnownAs` claims the name again; published in the same commit that re-enables resolution.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "domain": {
+      "type": "string",
+      "description": "Optional explicit hosting domain. See category CONVENTIONS \u00a71."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Enable Agent Name \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record"
+      ],
+      "properties": {
+        "record": {
+          "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

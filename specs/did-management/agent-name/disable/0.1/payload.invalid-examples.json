@@ -1,0 +1,40 @@
+[
+  {
+    "note": "Missing mnemonic.",
+    "payload": {
+      "name": "alice",
+      "didData": "x"
+    }
+  },
+  {
+    "note": "Missing name.",
+    "payload": {
+      "mnemonic": "alice",
+      "didData": "x"
+    }
+  },
+  {
+    "note": "Missing didData.",
+    "payload": {
+      "mnemonic": "alice",
+      "name": "alice"
+    }
+  },
+  {
+    "note": "Empty name.",
+    "payload": {
+      "mnemonic": "alice",
+      "name": "",
+      "didData": "x"
+    }
+  },
+  {
+    "note": "Unknown property.",
+    "payload": {
+      "mnemonic": "alice",
+      "name": "alice",
+      "didData": "x",
+      "enabled": true
+    }
+  }
+]

@@ -1,0 +1,8 @@
+[
+  { "note": "Missing mnemonic.", "payload": { "name": "alice", "didData": "x" } },
+  { "note": "Missing name.", "payload": { "mnemonic": "alice", "didData": "x" } },
+  { "note": "Missing didData — a name cannot be set without a document that claims it.", "payload": { "mnemonic": "alice", "name": "alice" } },
+  { "note": "Empty name.", "payload": { "mnemonic": "alice", "name": "", "didData": "x" } },
+  { "note": "Empty didData string.", "payload": { "mnemonic": "alice", "name": "alice", "didData": "" } },
+  { "note": "Unknown property.", "payload": { "mnemonic": "alice", "name": "alice", "didData": "x", "enabled": true } }
+]
