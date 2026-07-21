@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/endorsement-types/register/0.1",
+  "title": "VTC Endorsement-Types Register — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["typeUri"],
+  "properties": {
+    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "description": { "type": "string", "maxLength": 1024 },
+    "claimSchema": { "type": "object", "description": "Optional JSON Schema the endorsement's claims must satisfy (opaque here)." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Endorsement-Types Register — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endorsementType"],
+      "properties": {
+        "endorsementType": { "$ref": "../../../_shared/0.1/endorsement-type.schema.json#/$defs/EndorsementType" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

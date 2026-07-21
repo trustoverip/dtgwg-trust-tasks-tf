@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1",
+  "title": "VTC Endorsement-Types List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": { "type": "string" },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 200 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Endorsement-Types List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "../../../_shared/0.1/endorsement-type.schema.json#/$defs/EndorsementType" } },
+        "nextCursor": { "type": ["string", "null"] },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -211,8 +211,12 @@ export * as VtaPasskeyVmsEnrollSubmit_v0_1 from "./vta/passkey-vms/enroll-submit
 export * as VtaPasskeyVmsList_v0_1 from "./vta/passkey-vms/list/0.1/payload";
 export * as VtaPasskeyVmsRevoke_v0_1 from "./vta/passkey-vms/revoke/0.1/payload";
 export * as VtaWebvhDidsUpdate_v1_0 from "./vta/webvh/dids/update/1.0/payload";
+export * as EndorsementTypeShared_v0_1 from "./vtc/_shared/0.1/endorsement-type";
 export * as JoinRequestShared_v0_1 from "./vtc/_shared/0.1/join-request";
 export * as MemberShared_v0_1 from "./vtc/_shared/0.1/member";
+export * as VtcEndorsementTypesDelete_v0_1 from "./vtc/endorsement-types/delete/0.1/payload";
+export * as VtcEndorsementTypesList_v0_1 from "./vtc/endorsement-types/list/0.1/payload";
+export * as VtcEndorsementTypesRegister_v0_1 from "./vtc/endorsement-types/register/0.1/payload";
 export * as VtcJoinRequestsAccept_v0_1 from "./vtc/join-requests/accept/0.1/payload";
 export * as VtcJoinRequestsApprove_v0_1 from "./vtc/join-requests/approve/0.1/payload";
 export * as VtcJoinRequestsList_v0_1 from "./vtc/join-requests/list/0.1/payload";

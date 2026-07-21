@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "typeUri": "https://example.org/Endorsement", "__x__": true } },
+  { "note": "`typeUri` is required.", "payload": {} }
+]

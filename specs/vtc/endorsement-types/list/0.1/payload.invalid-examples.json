@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "`limit` capped at 200.", "payload": { "limit": 500 } }
+]

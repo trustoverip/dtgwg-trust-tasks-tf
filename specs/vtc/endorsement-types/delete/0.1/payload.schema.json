@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/endorsement-types/delete/0.1",
+  "title": "VTC Endorsement-Types Delete — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["typeUri"],
+  "properties": {
+    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The endorsement type to delete." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Endorsement-Types Delete — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["typeUri"],
+      "properties": {
+        "typeUri": { "type": "string", "minLength": 1 },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

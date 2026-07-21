@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/endorsement-type",
+  "title": "VTC — shared endorsement-type definitions",
+  "description": "Shared type for the vtc/endorsement-types/* family: one operator-registered endorsement type a community recognises.",
+  "$defs": {
+    "EndorsementType": {
+      "$anchor": "endorsementType",
+      "title": "EndorsementType",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["typeUri"],
+      "properties": {
+        "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration." },
+        "description": { "type": "string", "maxLength": 1024 },
+        "claimSchema": { "type": "object", "description": "Optional JSON Schema the endorsement's claims must satisfy (opaque here)." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
