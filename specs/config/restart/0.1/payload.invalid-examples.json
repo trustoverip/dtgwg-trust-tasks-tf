@@ -1,0 +1,10 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "__notARealMember__": true }
+  },
+  {
+    "note": "The request takes no parameters; a stray `force` is rejected.",
+    "payload": { "force": true }
+  }
+]

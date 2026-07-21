@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/config/reload/0.1",
+  "title": "Config Reload — payload",
+  "description": "Re-apply hot-reloadable configuration to the running maintainer without a restart. Takes no parameters.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Config Reload — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keysReloaded"],
+      "properties": {
+        "keysReloaded": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "Keys whose live value was updated by the reload — the hot-reloadable keys whose stored value differed from what was running. A no-op reload returns an empty array. Restart-gated keys are never included; they need config/restart."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

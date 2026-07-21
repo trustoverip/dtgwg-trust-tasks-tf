@@ -40,6 +40,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/auth/whoami/0.1" => Some(<crate::specs::auth::whoami::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/chat/message/0.1" => Some(<crate::specs::chat::message::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/config/patch/0.1" => Some(<crate::specs::config::patch::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/config/reload/0.1" => Some(<crate::specs::config::reload::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/config/restart/0.1" => Some(<crate::specs::config::restart::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/config/show/0.1" => Some(<crate::specs::config::show::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/confirm/request/0.1" => Some(<crate::specs::confirm::request::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/confirm/response/0.1" => Some(<crate::specs::confirm::response::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

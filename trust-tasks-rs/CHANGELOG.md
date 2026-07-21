@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.26] — 2026-07-21
+
+### Added
+
+- `config/reload` + `config/restart` 0.1 — the operational half of the
+  config family. `reload` re-applies hot-reloadable keys live without a
+  restart (`{ keysReloaded }`, idempotent); `restart` requests a
+  graceful supervisor-driven bounce so restart-gated keys take effect
+  (`{ supervisor, drainTimeoutSeconds }`) and refuses with
+  `supervisorRequired` when no supervisor is detected, so a restart can
+  never become an indefinite outage. Both mutating, proof-REQUIRED (a
+  reconfiguration and especially an availability interruption must be
+  attributable); `restart` audits before signalling shutdown. `supervisor`
+  is an open maintainer-defined label, matching the `source` decision in
+  0.2.25.
+
 ## [0.2.25] — 2026-07-21
 
 ### Added

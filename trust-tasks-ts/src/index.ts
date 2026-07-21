@@ -37,6 +37,8 @@ export * as AuthWhoami_v0_1 from "./auth/whoami/0.1/payload";
 export * as ChatMessage_v0_1 from "./chat/message/0.1/payload";
 export * as ConfigShared_v0_1 from "./config/_shared/0.1/config";
 export * as ConfigPatch_v0_1 from "./config/patch/0.1/payload";
+export * as ConfigReload_v0_1 from "./config/reload/0.1/payload";
+export * as ConfigRestart_v0_1 from "./config/restart/0.1/payload";
 export * as ConfigShow_v0_1 from "./config/show/0.1/payload";
 export * as ConfirmRequest_v0_1 from "./confirm/request/0.1/payload";
 export * as ConfirmResponse_v0_1 from "./confirm/response/0.1/payload";
