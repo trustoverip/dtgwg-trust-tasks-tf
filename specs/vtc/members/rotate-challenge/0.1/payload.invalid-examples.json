@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "`reason` must be one of the enum values.", "payload": { "reason": "lost-phone" } }
+]

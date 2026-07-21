@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/self-remove/0.1",
+  "title": "VTC Members Self-Remove — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "disposition": { "type": "string", "enum": ["purge", "tombstone", "historical", "policydefault"], "description": "How the caller's record is handled on removal. Omitted = the community's policy default." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Self-Remove — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "disposition", "removed"],
+      "properties": {
+        "did": { "type": "string", "minLength": 1, "description": "The removed member (the caller)." },
+        "disposition": { "type": "string", "enum": ["purge", "tombstone", "historical"], "description": "The disposition actually applied (policydefault resolved to a concrete one)." },
+        "removed": { "type": "boolean" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

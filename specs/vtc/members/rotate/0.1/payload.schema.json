@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/rotate/0.1",
+  "title": "VTC Members Rotate \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rotationId",
+    "oldDid",
+    "newDid",
+    "oldSignature",
+    "newSignature"
+  ],
+  "properties": {
+    "rotationId": {
+      "type": "string",
+      "description": "From a prior rotate-challenge."
+    },
+    "oldDid": {
+      "type": "string",
+      "minLength": 1
+    },
+    "newDid": {
+      "type": "string",
+      "minLength": 1
+    },
+    "oldSignature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]+$",
+      "description": "Signature over the challenge by the OLD key."
+    },
+    "newSignature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]+$",
+      "description": "Signature over the challenge by the NEW key."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Rotate \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "newDid",
+        "method",
+        "vmc",
+        "roleVec"
+      ],
+      "properties": {
+        "newDid": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "did:key",
+            "did:webvh"
+          ]
+        },
+        "vmc": {
+          "type": "object",
+          "description": "Membership credential re-issued to the new DID (opaque here)."
+        },
+        "roleVec": {
+          "type": "object",
+          "description": "Role credential re-issued to the new DID (opaque here)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/renew/0.1",
+  "title": "VTC Members Renew — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": { "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" } },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Renew — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "vmc", "roleVec", "personhood", "personhoodChanged"],
+      "properties": {
+        "did": { "type": "string", "minLength": 1 },
+        "vmc": { "type": "object", "description": "The freshly-issued W3C Verifiable Membership Credential (opaque here)." },
+        "roleVec": { "type": "object", "description": "The freshly-issued role Verifiable Endorsement Credential (opaque here)." },
+        "personhood": { "type": "boolean", "description": "Whether the renewed membership carries a personhood assertion." },
+        "personhoodChanged": { "type": "boolean", "description": "Whether the personhood state changed on this renewal." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

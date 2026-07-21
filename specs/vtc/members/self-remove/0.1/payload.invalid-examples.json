@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "`disposition` must be one of the enum values.", "payload": { "disposition": "delete" } }
+]

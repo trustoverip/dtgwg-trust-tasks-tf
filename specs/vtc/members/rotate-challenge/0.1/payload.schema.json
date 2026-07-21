@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/rotate-challenge/0.1",
+  "title": "VTC Members Rotate-Challenge \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reason": {
+      "type": "string",
+      "enum": [
+        "routine",
+        "compromise",
+        "deviceLoss",
+        "migration",
+        "unspecified"
+      ],
+      "description": "Self-asserted motive, bound to the authenticated session that opens the ceremony and recorded on the audit envelope. NOT covered by the rotation signatures \u2014 intent, not evidence. Omitted = unspecified."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Rotate-Challenge \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rotationId",
+        "expiresAt",
+        "signingPayloadHex",
+        "canonicalTemplate"
+      ],
+      "properties": {
+        "rotationId": {
+          "type": "string",
+          "description": "A UUID identifying this rotation ceremony."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "signingPayloadHex": {
+          "type": "string",
+          "pattern": "^[0-9a-f]+$",
+          "description": "Hex bytes the member signs with both the old and new keys to prove control of each."
+        },
+        "canonicalTemplate": {
+          "type": "object",
+          "description": "The canonical rotation template the signatures cover (opaque here)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
