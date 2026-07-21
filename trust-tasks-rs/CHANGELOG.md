@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.36] — 2026-07-21
+
+### Added
+- `vtc/community/profile/show` and `vtc/community/profile/update` — the read /
+  write halves of the former `community/profile/manage` operation, sharing a
+  new `vtc/_shared/0.1/community.schema.json#CommunityProfile`. `update` is a
+  partial patch; `registryStatus` is read-only.
+- `vtc/auth/recognise` — mint a scoped `xc-` cross-community session from a
+  foreign community's endorsement (`vec`) + membership (`vmc`) credentials,
+  mapping the foreign role to a local one via `cross_community_roles` policy.
+- `vtc/registry/diagnostics` — registry-reconciler telemetry (queue depth,
+  RTBF-batched / failed counts, oldest-pending age, last success/failure).
+  Replaces the non-conformant `health/diagnostics` naming.
+
 ## [0.2.27] — 2026-07-21
 
 ### Added

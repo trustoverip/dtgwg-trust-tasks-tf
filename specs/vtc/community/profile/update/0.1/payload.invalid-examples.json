@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "name": "Acme", "__x__": true } },
+  { "note": "registryStatus is read-only, not settable.", "payload": { "registryStatus": "active" } }
+]

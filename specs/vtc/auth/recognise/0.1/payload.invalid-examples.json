@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "vec": {}, "vmc": {}, "__x__": true } },
+  { "note": "`vec` is required.", "payload": { "vmc": {} } }
+]

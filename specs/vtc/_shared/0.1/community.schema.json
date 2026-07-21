@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/community",
+  "title": "VTC — shared community definitions",
+  "description": "Shared type for the vtc/community/* family: a community's public profile.",
+  "$defs": {
+    "CommunityProfile": {
+      "$anchor": "communityProfile",
+      "title": "CommunityProfile",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "language"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "logoUrl": { "type": ["string", "null"] },
+        "publicUrl": { "type": ["string", "null"] },
+        "contactEmail": { "type": ["string", "null"] },
+        "language": { "type": "string", "minLength": 1 },
+        "extensions": { "type": "object", "description": "Opaque community-defined extension bag." },
+        "registryStatus": { "type": "string", "enum": ["active", "degraded"], "description": "Trust-registry reachability. Populated on reads; not settable." }
+      }
+    }
+  }
+}

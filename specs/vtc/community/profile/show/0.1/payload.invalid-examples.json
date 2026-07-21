@@ -1,0 +1,3 @@
+[
+  { "note": "The request takes no parameters; a stray field is rejected.", "payload": { "x": 1 } }
+]

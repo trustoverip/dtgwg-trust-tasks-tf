@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/auth/recognise/0.1",
+  "title": "VTC Auth Recognise — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["vec", "vmc"],
+  "properties": {
+    "vec": { "type": "object", "description": "A foreign-issued Verifiable Endorsement Credential carrying the role grant, with its own eddsa-jcs-2022 proof (opaque here)." },
+    "vmc": { "type": "object", "description": "A foreign-issued Verifiable Membership Credential proving membership, optionally with credentialStatus for live revocation (opaque here)." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Auth Recognise — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "data"],
+      "properties": {
+        "sessionId": { "type": "string", "pattern": "^xc-", "description": "A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions." },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["accessToken", "accessExpiresAt", "foreignIssuerDid", "mappedRole"],
+          "properties": {
+            "accessToken": { "type": "string" },
+            "accessExpiresAt": { "type": "integer", "minimum": 0, "description": "Unix-seconds expiry, clamped to min(local default, earliest of the vec/vmc validUntil)." },
+            "foreignIssuerDid": { "type": "string" },
+            "mappedRole": { "type": "string", "description": "The LOCAL role from cross_community_roles policy — not the foreign role." }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

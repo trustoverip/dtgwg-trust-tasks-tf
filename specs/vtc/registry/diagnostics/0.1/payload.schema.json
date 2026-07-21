@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1",
+  "title": "VTC Registry Diagnostics — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": { "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" } },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Registry Diagnostics — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registryStatus", "queueDepth", "rtbfBatchedCount", "failedCount"],
+      "properties": {
+        "registryStatus": { "type": "string", "enum": ["active", "degraded"], "description": "Trust-registry reachability." },
+        "queueDepth": { "type": "integer", "minimum": 0, "description": "Pending + in-flight sync jobs." },
+        "rtbfBatchedCount": { "type": "integer", "minimum": 0, "description": "Pending jobs parked behind the RTBF batch window." },
+        "failedCount": { "type": "integer", "minimum": 0, "description": "Terminal-failure rows awaiting operator triage." },
+        "oldestPendingAgeSeconds": { "type": ["integer", "null"], "description": "Seconds since the oldest dispatchable pending job; null when the queue is empty." },
+        "lastSuccessAt": { "type": ["string", "null"], "format": "date-time" },
+        "lastFailureAt": { "type": ["string", "null"], "format": "date-time" },
+        "lastError": { "type": ["string", "null"], "description": "Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

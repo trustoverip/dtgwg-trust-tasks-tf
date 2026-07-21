@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/community/profile/update/0.1",
+  "title": "VTC Community Profile Update — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "logoUrl": { "type": ["string", "null"] },
+    "publicUrl": { "type": ["string", "null"] },
+    "contactEmail": { "type": ["string", "null"] },
+    "language": { "type": "string", "minLength": 1 },
+    "extensions": { "type": "object", "description": "Opaque community-defined extension bag (maintainer-capped)." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Community Profile Update — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile"],
+      "properties": {
+        "profile": { "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/CommunityProfile" },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
