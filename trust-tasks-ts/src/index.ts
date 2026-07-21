@@ -213,10 +213,14 @@ export * as VtaPasskeyVmsRevoke_v0_1 from "./vta/passkey-vms/revoke/0.1/payload"
 export * as VtaWebvhDidsUpdate_v1_0 from "./vta/webvh/dids/update/1.0/payload";
 export * as JoinRequestShared_v0_1 from "./vtc/_shared/0.1/join-request";
 export * as MemberShared_v0_1 from "./vtc/_shared/0.1/member";
+export * as VtcJoinRequestsAccept_v0_1 from "./vtc/join-requests/accept/0.1/payload";
 export * as VtcJoinRequestsApprove_v0_1 from "./vtc/join-requests/approve/0.1/payload";
 export * as VtcJoinRequestsList_v0_1 from "./vtc/join-requests/list/0.1/payload";
+export * as VtcJoinRequestsManifest_v0_1 from "./vtc/join-requests/manifest/0.1/payload";
 export * as VtcJoinRequestsReject_v0_1 from "./vtc/join-requests/reject/0.1/payload";
 export * as VtcJoinRequestsShow_v0_1 from "./vtc/join-requests/show/0.1/payload";
+export * as VtcJoinRequestsStatus_v0_1 from "./vtc/join-requests/status/0.1/payload";
+export * as VtcJoinRequestsSubmit_v0_1 from "./vtc/join-requests/submit/0.1/payload";
 export * as VtcMembersAdminRemove_v0_1 from "./vtc/members/admin-remove/0.1/payload";
 export * as VtcMembersList_v0_1 from "./vtc/members/list/0.1/payload";
 export * as VtcMembersPersonhoodAssert_v0_1 from "./vtc/members/personhood/assert/0.1/payload";

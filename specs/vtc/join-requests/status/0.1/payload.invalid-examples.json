@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "requestId": "r1", "__x__": true } },
+  { "note": "`requestId` is required.", "payload": {} }
+]

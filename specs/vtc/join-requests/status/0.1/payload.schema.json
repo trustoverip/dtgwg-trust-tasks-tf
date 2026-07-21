@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/status/0.1",
+  "title": "VTC Join-Requests Status — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requestId"],
+  "properties": {
+    "requestId": { "type": "string", "minLength": 1, "description": "The applicant's join request to poll. The poller (proof signer) MUST be the applicant." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join-Requests Status — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requestId", "status"],
+      "properties": {
+        "requestId": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["pending", "deferred", "approved", "rejected", "withdrawn"] },
+        "needs": { "type": "array", "items": { "type": "string" }, "description": "When deferred, what the applicant must supply next." },
+        "presentationDefinition": { "type": "object", "description": "When more evidence is needed, the presentation-definition to satisfy (opaque here)." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

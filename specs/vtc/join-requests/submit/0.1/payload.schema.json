@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+  "title": "VTC Join-Requests Submit — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["vp"],
+  "properties": {
+    "vp": { "type": "object", "description": "The applicant's W3C Verifiable Presentation (opaque here), satisfying the community's join policy. The applicant DID is the document proof's signer — not a payload field." },
+    "registryConsent": { "type": "boolean", "description": "Whether the applicant consents to trust-registry publication." },
+    "extensions": { "type": "object", "description": "Opaque applicant-supplied extension bag." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join-Requests Submit — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requestId", "status"],
+      "properties": {
+        "requestId": { "type": "string", "minLength": 1, "description": "Id of the created join request (a UUID)." },
+        "status": { "type": "string", "const": "pending" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

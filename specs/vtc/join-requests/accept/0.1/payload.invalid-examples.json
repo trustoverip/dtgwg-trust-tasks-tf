@@ -1,0 +1,5 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "requestId": "r1", "vmcId": "v1", "vc": {}, "__x__": true } },
+  { "note": "`requestId` is required.", "payload": { "vmcId": "v1", "vc": {} } },
+  { "note": "`vc` is required.", "payload": { "requestId": "r1", "vmcId": "v1" } }
+]
