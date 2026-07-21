@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.19] — 2026-07-21
+
+### Added
+
+- `did-management/agent-name/*` 0.1 spec family — binding human-memorable
+  agent names (`/@alice`) to hosted DIDs: `set` and `enable` (mutating;
+  `didData` MUST claim the name via `alsoKnownAs`), `disable` (mutating,
+  step-up-required; keeps the host-side reservation) and `remove`
+  (destructive, step-up-required; frees the name). Each task carries a new
+  signed DID document whose `alsoKnownAs` the host verifies against the
+  intended post-state so the document update and name binding land together.
+
 ## [0.2.18] — 2026-07-17
 
 ### Added

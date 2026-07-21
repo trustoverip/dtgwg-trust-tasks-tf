@@ -58,6 +58,10 @@ export * as WebvhShared_v0_1 from "./did-management/_shared/0.1/did-method-exten
 export * as DidRecordShared_v0_1 from "./did-management/_shared/0.1/did-record";
 export * as DomainEntryShared_v0_1 from "./did-management/_shared/0.1/domain-entry";
 export * as ServiceInstanceShared_v0_1 from "./did-management/_shared/0.1/service-instance";
+export * as DidManagementAgentNameDisable_v0_1 from "./did-management/agent-name/disable/0.1/payload";
+export * as DidManagementAgentNameEnable_v0_1 from "./did-management/agent-name/enable/0.1/payload";
+export * as DidManagementAgentNameRemove_v0_1 from "./did-management/agent-name/remove/0.1/payload";
+export * as DidManagementAgentNameSet_v0_1 from "./did-management/agent-name/set/0.1/payload";
 export * as DidManagementDidChangeOwner_v0_1 from "./did-management/did/change-owner/0.1/payload";
 export * as DidManagementDidCheckName_v0_1 from "./did-management/did/check-name/0.1/payload";
 export * as DidManagementDidDelete_v0_1 from "./did-management/did/delete/0.1/payload";
