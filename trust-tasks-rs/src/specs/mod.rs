@@ -51,6 +51,7 @@
 
 // trust-tasks-codegen:begin
 pub mod acl;
+pub mod audit;
 pub mod auth;
 pub mod chat;
 pub mod confirm;

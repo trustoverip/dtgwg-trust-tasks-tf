@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "The request takes no verification parameters; a stray `contextId` is rejected.",
+    "payload": {
+      "contextId": "ctx_1"
+    }
+  }
+]

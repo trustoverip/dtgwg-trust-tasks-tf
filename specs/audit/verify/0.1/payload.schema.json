@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/audit/verify/0.1",
+  "title": "Audit Verify — payload",
+  "description": "Request to verify the integrity of a maintainer's append-only audit hash chain. The request carries no parameters — verification is store-wide.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Audit Verify — response payload",
+      "description": "The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "entriesExamined", "entriesVerified", "legacySkipped", "unparseableSkipped"],
+      "properties": {
+        "verified": {
+          "type": "boolean",
+          "description": "True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity."
+        },
+        "entriesExamined": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total envelopes walked, including those skipped."
+        },
+        "entriesVerified": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes whose links were actually checked (examined minus skipped)."
+        },
+        "legacySkipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix."
+        },
+        "unparseableSkipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed."
+        },
+        "head": {
+          "type": "string",
+          "description": "Hex `entryHash` of the newest envelope reached. Absent when the log is empty."
+        },
+        "chainBreak": {
+          "$ref": "#/$defs/ChainBreak",
+          "description": "Present iff `verified` is false — the first inconsistency found. Absent when verified."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "ChainBreak": {
+      "$anchor": "chainBreak",
+      "title": "ChainBreak",
+      "description": "Locates the first envelope at which chain verification failed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "index"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["tamperedEntry", "brokenLink"],
+          "description": "`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication."
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based position in chronological order of the offending envelope."
+        },
+        "eventId": {
+          "type": "string",
+          "description": "Identifier of the offending envelope, when it has one (an unparseable envelope may not)."
+        }
+      }
+    }
+  }
+}

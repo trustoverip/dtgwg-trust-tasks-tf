@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.23] — 2026-07-21
+
+### Added
+
+- `audit/verify` 0.1 — new top-level `audit` family. Walks a
+  maintainer's append-only audit hash chain and reports whether it is
+  internally consistent, locating the first break (`tamperedEntry` /
+  `brokenLink`) if not. Response accounts for every envelope
+  (`entriesExamined` / `entriesVerified` / `legacySkipped` /
+  `unparseableSkipped`) so a `verified: true` over a log full of skips
+  cannot read as clean. Read-only, audit-read-gated. Spec is explicit
+  that this proves consistency, not authenticity — an unkeyed digest is
+  forgeable by an adversary with store write access; it detects accident
+  and careless tampering, not a determined adversary.
+
 ## [0.2.22] — 2026-07-21
 
 ### Added
