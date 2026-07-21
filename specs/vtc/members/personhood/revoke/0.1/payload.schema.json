@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/personhood/revoke/0.1",
+  "title": "VTC Members Personhood-Revoke — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1, "description": "The member whose personhood is revoked." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Personhood-Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "personhood"],
+      "properties": {
+        "did": { "type": "string", "minLength": 1 },
+        "personhood": { "type": "boolean", "const": false, "description": "Always false on success." },
+        "vmc": { "type": "object", "description": "Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op." },
+        "roleVec": { "type": "object", "description": "Newly-minted role credential; omitted on an idempotent no-op." },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

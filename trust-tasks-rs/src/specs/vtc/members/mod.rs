@@ -2,6 +2,7 @@
 
 pub mod admin_remove;
 pub mod list;
+pub mod personhood;
 pub mod renew;
 pub mod rotate;
 pub mod rotate_challenge;

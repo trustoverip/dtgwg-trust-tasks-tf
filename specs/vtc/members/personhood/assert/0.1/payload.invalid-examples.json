@@ -1,0 +1,5 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "did": "did:key:z6Mk", "presentation": {}, "__x__": true } },
+  { "note": "`presentation` is required.", "payload": { "did": "did:key:z6Mk" } },
+  { "note": "`did` is required.", "payload": { "presentation": {} } }
+]
