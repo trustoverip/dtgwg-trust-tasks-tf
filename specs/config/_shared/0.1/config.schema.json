@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/config/_shared/0.1/config",
+  "title": "Config — shared definitions",
+  "description": "Shared types for the config/* spec family: the effective view of one runtime configuration key, and the per-key rejection reason a patch returns.",
+  "$defs": {
+    "ConfigField": {
+      "$anchor": "configField",
+      "title": "ConfigField",
+      "description": "One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "value", "source", "requiresRestart"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The configuration key, e.g. `server.port` or `log.level`."
+        },
+        "value": {
+          "description": "The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here."
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source."
+        },
+        "requiresRestart": {
+          "type": "boolean",
+          "description": "True when a change to this key takes effect only after a restart, rather than on the next read."
+        }
+      }
+    },
+    "RejectedKey": {
+      "$anchor": "rejectedKey",
+      "title": "RejectedKey",
+      "description": "A key a patch declined to apply, with the reason.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "reason"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc."
+        }
+      }
+    }
+  }
+}

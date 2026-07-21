@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/config/patch/0.1",
+  "title": "Config Patch — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["overrides"],
+  "properties": {
+    "overrides": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "description": "A key -> value map of overrides to write. Keys are configuration keys; values are the desired new values. Wrapped in an object (rather than being the top-level payload) so the payload keeps a fixed, additionalProperties:false envelope. Each entry is validated independently — an invalid or unknown key is reported under `rejected` and does not block the rest."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Config Patch — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applied", "pendingRestart", "rejected"],
+      "properties": {
+        "applied": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "Keys whose new value is now in effect."
+        },
+        "pendingRestart": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true)."
+        },
+        "rejected": {
+          "type": "array",
+          "description": "Keys that were not applied, each with a reason. Empty when every override succeeded.",
+          "items": { "$ref": "../../_shared/0.1/config.schema.json#/$defs/RejectedKey" }
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

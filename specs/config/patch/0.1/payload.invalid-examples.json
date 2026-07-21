@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "overrides": { "log.level": "debug" }, "__notARealMember__": true }
+  },
+  {
+    "note": "`overrides` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`overrides` must have at least one entry.",
+    "payload": { "overrides": {} }
+  }
+]

@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.25] — 2026-07-21
+
+### Added
+
+- `config/show` + `config/patch` 0.1 + `config/_shared/0.1` — new
+  top-level `config` family for runtime configuration. `show` reads the
+  effective value of each key (`ConfigField { key, value, source,
+  requiresRestart }`; `source` is an open maintainer-defined label, not a
+  fixed enum); `patch` writes per-key overrides and sorts each into
+  `applied` / `pendingRestart` / `rejected` (partial-success, reported as
+  data). Overrides ride under a single `overrides` object so the payload
+  keeps a fixed additionalProperties:false envelope. `show` read-only /
+  RECOMMENDED proof; `patch` mutating / REQUIRED proof. Both mandate
+  redaction of secret-bearing key values. Splits what OpenVTC carried as
+  one two-method admin/config/manage task into the read/write pair its own
+  spec planned.
+
 ## [0.2.24] — 2026-07-21
 
 ### Added

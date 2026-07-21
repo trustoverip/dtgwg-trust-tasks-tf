@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "__notARealMember__": true }
+  },
+  {
+    "note": "`keys`, when present, must be non-empty.",
+    "payload": { "keys": [] }
+  },
+  {
+    "note": "`keys` entries must be non-empty strings.",
+    "payload": { "keys": [""] }
+  }
+]

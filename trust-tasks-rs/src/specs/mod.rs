@@ -54,6 +54,7 @@ pub mod acl;
 pub mod audit;
 pub mod auth;
 pub mod chat;
+pub mod config;
 pub mod confirm;
 pub mod consent;
 pub mod device;
