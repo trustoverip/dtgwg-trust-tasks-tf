@@ -17,6 +17,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/acl/revoke/0.1" => Some(<crate::specs::acl::revoke::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/acl/show/0.1" => Some(<crate::specs::acl::show::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/acl/swap-key/0.1" => Some(<crate::specs::acl::swap_key::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/audit/list/0.1" => Some(<crate::specs::audit::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/audit/verify/0.1" => Some(<crate::specs::audit::verify::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/auth/authenticate/0.1" => Some(<crate::specs::auth::authenticate::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/auth/challenge/0.1" => Some(<crate::specs::auth::challenge::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

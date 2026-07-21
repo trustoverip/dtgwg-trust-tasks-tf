@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "action": "member.removed",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`pageSize` is capped at 1000.",
+    "payload": {
+      "pageSize": 5000
+    }
+  },
+  {
+    "note": "`pageSize` must be at least 1.",
+    "payload": {
+      "pageSize": 0
+    }
+  },
+  {
+    "note": "`from` must be a date-time.",
+    "payload": {
+      "from": "yesterday"
+    }
+  }
+]

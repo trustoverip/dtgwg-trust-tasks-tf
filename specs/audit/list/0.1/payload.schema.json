@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/audit/list/0.1",
+  "title": "Audit List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Return only entries recorded at or after this time."
+    },
+    "to": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Return only entries recorded strictly before this time."
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Return only entries whose `action` equals this value."
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Return only entries whose `actor` DID equals this value. Matches on the plaintext; redacted entries are not returned by an actor filter."
+    },
+    "outcome": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Return only entries whose `outcome` equals this value."
+    },
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Return only entries in this trust context."
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Maximum entries to return in this page."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a previous response's `cursor`. Encodes the position to resume from; a maintainer SHOULD sign it so it cannot be forged to skip entries. Treated as invalid (see errorCodes) if it fails to verify — e.g. minted before an audit-key rotation. A consumer that supplies a `cursor` MUST NOT also change the filters, which are bound into the cursor's position."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Audit List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries", "truncated"],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "description": "The matching audit entries, newest first.",
+          "items": { "$ref": "../../_shared/0.1/audit.schema.json#/$defs/AuditEnvelope" }
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "True when more entries match beyond this page — `cursor` is then present to fetch them."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Opaque continuation token for the next page. Present iff `truncated` is true."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/audit/_shared/0.1/audit",
+  "title": "Audit — shared definitions",
+  "description": "Shared audit-record type referenced by the audit/* spec family. AuditEnvelope is the generic wire form of one entry in a maintainer's append-only operations log — the common denominator across services, with service-specific fields carried in `ext` and event-specific payload in `detail`.",
+  "$defs": {
+    "AuditEnvelope": {
+      "$anchor": "auditEnvelope",
+      "title": "AuditEnvelope",
+      "description": "One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "recordedAt", "action"],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier for this event. Also the tie-breaker component of a cursor's position key."
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Wall-clock time the entry was written. The primary ordering key."
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`."
+        },
+        "outcome": {
+          "type": "string",
+          "description": "How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense."
+        },
+        "actor": {
+          "type": ["string", "null"],
+          "description": "DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here."
+        },
+        "target": {
+          "type": ["string", "null"],
+          "description": "DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`."
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Trust context the event occurred in, for a maintainer that partitions its log per context."
+        },
+        "schemaVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution."
+        },
+        "prevHash": {
+          "type": "string",
+          "description": "Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks."
+        },
+        "entryHash": {
+          "type": "string",
+          "description": "Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here."
+        },
+        "detail": {
+          "type": "object",
+          "description": "Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.",
+          "additionalProperties": true
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

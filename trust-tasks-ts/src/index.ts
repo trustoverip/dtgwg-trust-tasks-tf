@@ -9,6 +9,8 @@ export * as AclList_v0_1 from "./acl/list/0.1/payload";
 export * as AclRevoke_v0_1 from "./acl/revoke/0.1/payload";
 export * as AclShow_v0_1 from "./acl/show/0.1/payload";
 export * as AclSwapKey_v0_1 from "./acl/swap-key/0.1/payload";
+export * as AuditShared_v0_1 from "./audit/_shared/0.1/audit";
+export * as AuditList_v0_1 from "./audit/list/0.1/payload";
 export * as AuditVerify_v0_1 from "./audit/verify/0.1/payload";
 export * as SessionShared_v0_1 from "./auth/_shared/0.1/session";
 export * as TokensShared_v0_1 from "./auth/_shared/0.1/tokens";

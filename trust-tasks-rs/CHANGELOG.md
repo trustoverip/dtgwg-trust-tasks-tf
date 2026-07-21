@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.24] — 2026-07-21
+
+### Added
+
+- `audit/list` 0.1 + `audit/_shared/0.1` `AuditEnvelope` — page through a
+  maintainer's append-only audit log, newest first, with optional filters
+  (`from`/`to`, `action`, `actor`, `outcome`, `contextId`) and an opaque
+  continuation cursor (stable under concurrent appends; SHOULD be signed).
+  `AuditEnvelope` is the generic common denominator across services —
+  `eventId`/`recordedAt`/`action` universal, everything else optional
+  (plaintext principal DIDs nullable after RTBF, `prevHash`/`entryHash`
+  present only on chained logs, `detail` for event-specific payload,
+  service-specifics in `ext`). Read-only, audit-read-gated; `exposure`
+  `secret` because envelopes carry plaintext DIDs and full payloads.
+  Companion to `audit/verify` 0.1.
+
 ## [0.2.23] — 2026-07-21
 
 ### Added
