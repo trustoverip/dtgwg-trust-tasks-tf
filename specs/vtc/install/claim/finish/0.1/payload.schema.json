@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/install/claim/finish/0.1",
+  "title": "VTC Install Claim Finish — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["installToken", "registrationId", "webauthnResponse", "didBindingSignature"],
+  "properties": {
+    "installToken": { "type": "string", "minLength": 1 },
+    "registrationId": { "type": "string", "minLength": 1, "description": "From claim/start." },
+    "webauthnResponse": { "type": "object", "description": "RegisterPublicKeyCredential from navigator.credentials.create() (opaque here)." },
+    "didBindingSignature": { "type": "string", "minLength": 1, "description": "Base64url-no-pad 64-byte Ed25519 signature over the didBindingChallenge." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Install Claim Finish — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adminDid", "setupSessionToken"],
+      "properties": {
+        "adminDid": { "type": "string", "pattern": "^did:key:z", "description": "Candidate admin DID derived from the passkey's Ed25519 public key." },
+        "setupSessionToken": { "type": "string", "minLength": 1, "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap." },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

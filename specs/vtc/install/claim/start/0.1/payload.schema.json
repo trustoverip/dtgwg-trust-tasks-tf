@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/install/claim/start/0.1",
+  "title": "VTC Install Claim Start — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["installToken"],
+  "properties": {
+    "installToken": { "type": "string", "minLength": 1, "description": "The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Install Claim Start — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registrationId", "options", "didBindingChallenge"],
+      "properties": {
+        "registrationId": { "type": "string", "minLength": 1, "description": "Echoes the install token's jti (a UUID); pass it back to claim/finish." },
+        "options": { "type": "object", "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}]." },
+        "didBindingChallenge": { "type": "string", "minLength": 1, "description": "Base64url-no-pad 32 random bytes the candidate did:key must sign." },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

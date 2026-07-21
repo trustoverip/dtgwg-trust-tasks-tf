@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "installToken": "e", "registrationId": "r", "webauthnResponse": {}, "didBindingSignature": "s", "__x__": true } },
+  { "note": "`didBindingSignature` is required.", "payload": { "installToken": "e", "registrationId": "r", "webauthnResponse": {} } }
+]

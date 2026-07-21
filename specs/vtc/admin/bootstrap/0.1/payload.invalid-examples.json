@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "setupSessionToken": "eyJ...", "__x__": true } },
+  { "note": "`setupSessionToken` is required.", "payload": {} }
+]
