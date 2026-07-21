@@ -2,5 +2,6 @@
 
 pub mod delete;
 pub mod evaluate;
+pub mod get;
 pub mod list;
 pub mod upsert;

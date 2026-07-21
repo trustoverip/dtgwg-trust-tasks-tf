@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.20] — 2026-07-21
+
+### Added
+
+- `policy/get` 0.1 — fetch one Rego policy module by `id`, including its
+  source. The read-one companion to `policy/list` (which has no `id`
+  filter): returns the full `PolicyModule`, or `notFound` for an unknown
+  id where a filtered list would return an empty page. Read-only,
+  `PolicyAdmin`-gated.
+
 ## [0.2.19] — 2026-07-21
 
 ### Added

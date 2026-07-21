@@ -120,6 +120,7 @@ export * as PolicyDelete_v0_1 from "./policy/delete/0.1/payload";
 export * as PolicyEvaluate_v0_1 from "./policy/evaluate/0.1/payload";
 export * as PolicyEvaluate_v0_2 from "./policy/evaluate/0.2/payload";
 export * as PolicyEvaluate_v0_3 from "./policy/evaluate/0.3/payload";
+export * as PolicyGet_v0_1 from "./policy/get/0.1/payload";
 export * as PolicyList_v0_1 from "./policy/list/0.1/payload";
 export * as PolicyList_v0_2 from "./policy/list/0.2/payload";
 export * as PolicyUpsert_v0_1 from "./policy/upsert/0.1/payload";

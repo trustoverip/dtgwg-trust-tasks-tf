@@ -1,0 +1,19 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "id": "pol_01H...",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`id` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`id` must be a non-empty string.",
+    "payload": {
+      "id": ""
+    }
+  }
+]
