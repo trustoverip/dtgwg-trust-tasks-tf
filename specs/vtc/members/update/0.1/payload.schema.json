@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/update/0.1",
+  "title": "VTC Members Update — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The member to update."
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "New role (wire form). MUST NOT be `admin` — promotion to admin is a separate, gated flow, not a metadata patch."
+    },
+    "publishConsent": {
+      "type": "boolean",
+      "description": "New directory-publish consent."
+    },
+    "departurePreference": {
+      "type": "string",
+      "enum": ["purge", "tombstone", "historical", "policydefault"]
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Replacement extension bag (maintainer-capped, 16 KiB in the reference implementation)."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Update — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["member"],
+      "properties": {
+        "member": { "$ref": "../../../_shared/0.1/member.schema.json#/$defs/MemberResponse" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

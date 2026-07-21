@@ -1,0 +1,5 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "did": "did:key:z6Mk", "__x__": true } },
+  { "note": "`did` is required.", "payload": { "role": "moderator" } },
+  { "note": "`departurePreference` must be one of the enum values.", "payload": { "did": "did:key:z6Mk", "departurePreference": "delete" } }
+]

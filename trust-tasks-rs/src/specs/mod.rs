@@ -71,5 +71,6 @@ pub mod task_consent;
 pub mod trust_task_discovery;
 pub mod vault;
 pub mod vta;
+pub mod vtc;
 pub mod webvh;
 // trust-tasks-codegen:end

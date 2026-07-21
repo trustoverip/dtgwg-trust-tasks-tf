@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/member",
+  "title": "VTC — shared member definitions",
+  "description": "Shared types for the vtc/members/* spec family. MemberResponse is the community's view of one member, joined from the membership record and the ACL entry, returned by list/show/update.",
+  "$defs": {
+    "MemberResponse": {
+      "$anchor": "memberResponse",
+      "title": "MemberResponse",
+      "description": "One community member as the maintainer sees it: the membership record joined with its ACL role.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "role", "joinedAt", "publishConsent", "departurePreference", "extensions"],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member's DID."
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`)."
+        },
+        "label": {
+          "type": ["string", "null"],
+          "description": "Optional human-readable label."
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publishConsent": {
+          "type": "boolean",
+          "description": "Whether the member consented to being published in the community directory."
+        },
+        "departurePreference": {
+          "type": "string",
+          "enum": ["purge", "tombstone", "historical", "policydefault"],
+          "description": "How the member's record is handled on departure."
+        },
+        "statusListIndex": {
+          "type": ["integer", "null"],
+          "description": "The member's slot on the community's membership status list, when allocated."
+        },
+        "currentVmcId": {
+          "type": ["string", "null"],
+          "description": "Id of the member's current Verifiable Membership Credential, if issued."
+        },
+        "currentRoleVecId": {
+          "type": ["string", "null"],
+          "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation)."
+        }
+      }
+    }
+  }
+}

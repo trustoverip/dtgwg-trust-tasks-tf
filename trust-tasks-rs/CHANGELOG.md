@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.27] — 2026-07-21
+
+### Added
+
+- `vtc/members/{list,show,update}` 0.1 + `vtc/_shared/0.1` `MemberResponse`
+  — the first of the OpenVTC community-service tasks migrating from the
+  non-conformant `openvtc/vtc/*` authority to canonical `spec/vtc/*`. New
+  top-level `vtc` namespace. `list` pages community members (each joined
+  with its ACL role); `show` fetches one by DID; `update` changes a
+  member's role/metadata and refuses promotion to `admin` (a separate
+  gated flow). The shared `MemberResponse` replaces a cross-file relative
+  `$ref` that does not survive the registry `$id` scheme. `list`/`show`
+  read-only; `update` mutating + proof-REQUIRED. The subject DID is
+  carried in the payload (not only the REST path) so these dispatch over
+  DIDComm too and expose a `subjectPath` for policy evaluation.
+
 ## [0.2.26] — 2026-07-21
 
 ### Added

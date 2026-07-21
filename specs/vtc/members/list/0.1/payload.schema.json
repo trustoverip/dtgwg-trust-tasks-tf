@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/list/0.1",
+  "title": "VTC Members List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Filter to members with this role (wire form, e.g. `admin`, `custom:editor`)."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "Page size; the maintainer clamps to 1..=200 (default 50)."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/member.schema.json#/$defs/MemberResponse" }
+        },
+        "nextCursor": {
+          "type": ["string", "null"],
+          "description": "Continuation token for the next page, or null when this is the last."
+        },
+        "totalEstimate": {
+          "type": ["integer", "null"],
+          "description": "Approximate total matching members, when the maintainer can cheaply estimate it."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
