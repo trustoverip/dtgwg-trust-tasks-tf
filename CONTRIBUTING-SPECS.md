@@ -218,6 +218,24 @@ npm run validate       # validate only, no website writes
 
 If validation fails, the script prints the offending file and a specific reason. Fix and re-run.
 
+## Regenerate the bindings and bump the libraries
+
+Adding or changing anything under `specs/` (a new task, a schema edit, a new category a task uses) changes the generated client libraries. You **MUST** regenerate both bindings and bump both library versions **in the same PR** — otherwise the merge to `main` never publishes your spec's bindings to crates.io / npm.
+
+```sh
+cargo run -p trust-tasks-codegen && cargo fmt --all   # 1. regenerate Rust bindings, commit the diff
+npm run build-ts-bindings                             # 2. regenerate TS bindings, commit the diff
+```
+
+Then bump the two libraries **in lockstep** (keep their versions equal):
+
+- **`trust-tasks-rs`** — bump `version` in `trust-tasks-rs/Cargo.toml`, add a `trust-tasks-rs/CHANGELOG.md` entry, and refresh `Cargo.lock` (`cargo build -p trust-tasks-rs`).
+- **`@openvtc/trust-tasks`** — bump `version` in `trust-tasks-ts/package.json` (and its `package-lock.json`).
+
+Additive changes (new task, backwards-compatible schema edit) are a patch/minor bump; a breaking schema change needs a new spec **version** folder, not an in-place edit (see [Version rules](#version-rules-per-spec-5)).
+
+CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindings-drift` job fail the PR if either set of generated files is stale. Publishing itself is automated and version-gated: `publish.yml` releases on push to `main` **only** when the manifest version is newer than what's already published, so an un-bumped PR is a silent no-op. Never publish by hand.
+
 ## Submitting a PR
 
 - Touch only your own spec folder (or namespace). CODEOWNERS routes review to that slug's editors; touching multiple folders requires multiple approvals and slows everyone down.

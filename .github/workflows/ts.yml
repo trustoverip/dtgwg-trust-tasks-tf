@@ -1,0 +1,57 @@
+name: TypeScript
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - "specs/**"
+      - "trust-tasks-ts/**"
+      - "scripts/build-ts-bindings.mjs"
+      - ".github/workflows/ts.yml"
+
+jobs:
+  # The Rust bindings have `codegen-drift` (see rust.yml) but the TS side
+  # had no equivalent, so a spec change that regenerated only the Rust
+  # modules could merge with stale `trust-tasks-ts/src` (exactly what
+  # happened on the agent-name PR). This job is the TS mirror of that
+  # guard: regenerate and fail if the committed output differs.
+  bindings-drift:
+    name: build-ts-bindings drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Regenerate TS bindings
+        run: npm run build-ts-bindings
+      - name: Check for drift
+        run: |
+          if ! git diff --quiet trust-tasks-ts/src; then
+            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff (and bump @openvtc/trust-tasks per CONTRIBUTING-SPECS.md)."
+            git diff trust-tasks-ts/src
+            exit 1
+          fi
+
+  typecheck:
+    name: tsc --noEmit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install trust-tasks-ts dev dependencies
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck generated bindings
+        working-directory: trust-tasks-ts
+        run: npx tsc -p tsconfig.json --noEmit
