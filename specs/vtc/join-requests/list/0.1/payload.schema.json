@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/list/0.1",
+  "title": "VTC Join-Requests List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": { "type": "string", "enum": ["pending", "approved", "rejected", "withdrawn", "deferred"], "description": "Filter to requests in this status." },
+    "cursor": { "type": "string", "description": "Opaque continuation token from a prior page." },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 200, "description": "Page size; clamped to 1..=200." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join-Requests List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "../../../_shared/0.1/join-request.schema.json#/$defs/JoinRequest" } },
+        "nextCursor": { "type": ["string", "null"] },
+        "totalEstimate": { "type": ["integer", "null"] },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

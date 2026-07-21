@@ -1,0 +1,5 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "`limit` is capped at 200.", "payload": { "limit": 500 } },
+  { "note": "`status` must be one of the enum values.", "payload": { "status": "cancelled" } }
+]

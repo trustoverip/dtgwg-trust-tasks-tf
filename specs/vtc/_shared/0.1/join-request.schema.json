@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/join-request",
+  "title": "VTC — shared join-request definitions",
+  "description": "Shared types for the vtc/join-requests/* spec family. JoinRequest is the community's view of one pending or decided application to join.",
+  "$defs": {
+    "JoinRequest": {
+      "$anchor": "joinRequest",
+      "title": "JoinRequest",
+      "description": "One application to join a Verifiable Trust Community.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "applicantDid", "vp", "submittedAt", "status"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "Stable id of this join request (a UUID)." },
+        "applicantDid": { "type": "string", "minLength": 1, "description": "DID of the applicant." },
+        "vp": { "type": "object", "description": "The W3C Verifiable Presentation the applicant submitted (opaque here)." },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "withdrawn", "deferred"] },
+        "policyDecision": { "type": "object", "description": "The community policy verdict recorded for this request (opaque here); absent while pending." },
+        "registryConsent": { "type": "boolean", "description": "Whether the applicant consented to trust-registry publication." },
+        "extensions": { "type": "object", "description": "Opaque community-defined extension bag." }
+      }
+    }
+  }
+}
