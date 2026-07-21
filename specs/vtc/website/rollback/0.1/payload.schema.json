@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/rollback/0.1",
+  "title": "VTC Website Rollback — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generation"],
+  "properties": {
+    "generation": { "type": "string", "minLength": 1, "description": "The past generation to make current (e.g. gen-3)." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website Rollback — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generation", "current", "noop"],
+      "properties": {
+        "generation": { "type": "string", "minLength": 1 },
+        "current": { "type": "boolean", "description": "True once this generation is the active one." },
+        "noop": { "type": "boolean", "description": "True when the requested generation was already current — nothing changed." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

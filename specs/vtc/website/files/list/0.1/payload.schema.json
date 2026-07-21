@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/files/list/0.1",
+  "title": "VTC Website Files List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": { "type": "string", "description": "Opaque continuation token from a prior page." },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 1000, "description": "Page size." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website Files List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "size"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1, "description": "Path relative to the site root." },
+              "size": { "type": "integer", "minimum": 0, "description": "File size in bytes." },
+              "modifiedAt": { "type": "string", "format": "date-time" }
+            }
+          },
+          "description": "Files under the site root, excluding hidden files and blocklisted extensions."
+        },
+        "nextCursor": { "type": ["string", "null"] },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

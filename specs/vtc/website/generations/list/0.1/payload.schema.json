@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/generations/list/0.1",
+  "title": "VTC Website Generations List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": { "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" } },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website Generations List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generations"],
+      "properties": {
+        "generations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["generation", "current"],
+            "properties": {
+              "generation": { "type": "string", "minLength": 1, "description": "Generation label (e.g. gen-5)." },
+              "current": { "type": "boolean", "description": "True for the generation current resolves to." }
+            }
+          }
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

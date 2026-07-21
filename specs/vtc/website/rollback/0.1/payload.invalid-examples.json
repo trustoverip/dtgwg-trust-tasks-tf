@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "generation": "gen-3", "__x__": true } },
+  { "note": "`generation` is required.", "payload": {} }
+]
