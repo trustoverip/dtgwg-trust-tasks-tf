@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/activate/0.1",
+  "title": "Policy Activate — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "purpose"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The id of the policy module to make active for `purpose`."
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The decision slot this policy becomes authoritative for. At most one policy is active per (contextId, purpose) at a time; activating this one deactivates whatever was active before. An opaque maintainer-scoped string — the framework does not enumerate its values, so each maintainer defines its own set (e.g. a community governance stage such as `join` or `removal`)."
+    },
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Activate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activated", "purpose"],
+      "properties": {
+        "activated": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The id now active for `purpose` — equal to the request `id`."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echoed from the request."
+        },
+        "previousPolicyId": {
+          "type": ["string", "null"],
+          "description": "The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement."
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echoed from the request when it was supplied."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

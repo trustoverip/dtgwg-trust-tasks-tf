@@ -109,6 +109,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/messaging/admin/list/0.1" => Some(<crate::specs::messaging::admin::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/messaging/admin/strip/0.1" => Some(<crate::specs::messaging::admin::strip::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/messaging/ping/0.1" => Some(<crate::specs::messaging::ping::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/policy/activate/0.1" => Some(<crate::specs::policy::activate::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/policy/delete/0.1" => Some(<crate::specs::policy::delete::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/policy/evaluate/0.1" => Some(<crate::specs::policy::evaluate::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/policy/evaluate/0.2" => Some(<crate::specs::policy::evaluate::v0_2::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

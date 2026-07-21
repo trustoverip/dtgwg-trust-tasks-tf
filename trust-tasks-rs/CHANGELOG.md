@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.21] — 2026-07-21
+
+### Added
+
+- `policy/activate` 0.1 — make one policy the single active policy for a
+  named decision slot (`purpose`), atomically deactivating whatever was
+  active before and returning the displaced `previousPolicyId`. A
+  different selection model from `appliesTo`/`priority` layering (exactly
+  one active per `(contextId, purpose)`), and relational rather than
+  intrinsic: a policy is bound to a purpose here, not born tied to one, so
+  no `_shared`/PolicyModule change is needed. Mutating, proof-REQUIRED,
+  `PolicyAdmin`-gated; refuses a no-op re-activation with `alreadyActive`.
+
 ## [0.2.20] — 2026-07-21
 
 ### Added
