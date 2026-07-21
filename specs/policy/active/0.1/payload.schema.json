@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/active/0.1",
+  "title": "Policy Active — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Return the active binding for this decision slot only. Omitted = return every active binding (optionally scoped by contextId)."
+    },
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Restrict to bindings in this trust context, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope, or all contexts."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Active — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bindings"],
+      "properties": {
+        "bindings": {
+          "type": "array",
+          "description": "The active (contextId, purpose) -> policy bindings that matched the request. Zero entries when the requested purpose has no active policy; the full set when purpose is omitted. Unpaginated — the active set has one entry per purpose, which is small by construction.",
+          "items": { "$ref": "#/$defs/ActiveBinding" }
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "ActiveBinding": {
+      "$anchor": "activeBinding",
+      "title": "ActiveBinding",
+      "description": "One active-policy binding: the policy currently authoritative for a (contextId, purpose) decision slot.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "policy"],
+      "properties": {
+        "purpose": { "type": "string", "minLength": 1 },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Present when the binding is context-scoped."
+        },
+        "policy": { "$ref": "../../_shared/0.3/policy.schema.json#/$defs/PolicyModule" }
+      }
+    }
+  }
+}

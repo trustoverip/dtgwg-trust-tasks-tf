@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.22] — 2026-07-21
+
+### Added
+
+- `policy/active` 0.1 — read the active-policy bindings that
+  `policy/activate` writes: given a `purpose`, the single policy
+  authoritative for that slot (empty when none is active), or every
+  active binding when `purpose` is omitted. Its own task rather than a
+  `policy/list` filter because a purpose is a binding, not a property of a
+  policy module in the relational model — `list` enumerates modules,
+  `active` enumerates bindings. Read-only, `PolicyAdmin`-gated; each
+  binding carries the full `PolicyModule` so no follow-up `policy/get` is
+  needed.
+
 ## [0.2.21] — 2026-07-21
 
 ### Added

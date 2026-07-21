@@ -1,0 +1,15 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "purpose": "join",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`purpose`, when present, must be a non-empty string.",
+    "payload": {
+      "purpose": ""
+    }
+  }
+]

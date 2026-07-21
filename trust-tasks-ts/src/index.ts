@@ -117,6 +117,7 @@ export * as PolicyShared_v0_1 from "./policy/_shared/0.1/policy";
 export * as PolicyShared_v0_2 from "./policy/_shared/0.2/policy";
 export * as PolicyShared_v0_3 from "./policy/_shared/0.3/policy";
 export * as PolicyActivate_v0_1 from "./policy/activate/0.1/payload";
+export * as PolicyActive_v0_1 from "./policy/active/0.1/payload";
 export * as PolicyDelete_v0_1 from "./policy/delete/0.1/payload";
 export * as PolicyEvaluate_v0_1 from "./policy/evaluate/0.1/payload";
 export * as PolicyEvaluate_v0_2 from "./policy/evaluate/0.2/payload";
