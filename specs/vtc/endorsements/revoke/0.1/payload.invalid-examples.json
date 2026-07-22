@@ -1,0 +1,4 @@
+[
+  { "note": "`endorsementId` is required.", "payload": { "reason": "Withdrawn by the issuer." } },
+  { "note": "`endorsementId` must be non-empty.", "payload": { "endorsementId": "" } }
+]

@@ -1,0 +1,4 @@
+[
+  { "note": "`endorsementId` is required.", "payload": {} },
+  { "note": "`endorsementId` must be non-empty.", "payload": { "endorsementId": "" } }
+]

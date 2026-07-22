@@ -1,0 +1,5 @@
+[
+  { "note": "`limit` exceeds the 200 maximum.", "payload": { "limit": 500 } },
+  { "note": "`subjectDid` must be a DID.", "payload": { "subjectDid": "not-a-did" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } }
+]

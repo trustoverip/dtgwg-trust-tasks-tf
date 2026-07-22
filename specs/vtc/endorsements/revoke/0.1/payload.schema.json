@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1",
+  "title": "VTC Endorsements Revoke — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["endorsementId"],
+  "properties": {
+    "endorsementId": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "maxLength": 1024, "description": "Optional human-readable rationale, recorded for audit." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Endorsements Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endorsementId", "revocation", "statusListIndex"],
+      "properties": {
+        "endorsementId": { "type": "string", "minLength": 1 },
+        "revocation": { "$ref": "../../../../credentials/_shared/0.1/credentials.schema.json#/$defs/RevocationReceipt", "description": "The registry-wide revocation receipt for the underlying VEC." },
+        "statusListIndex": { "type": "integer", "minimum": 0, "description": "The status-list slot whose bit was flipped, so a verifier can confirm the published effect." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

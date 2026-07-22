@@ -1,0 +1,6 @@
+[
+  { "note": "`typeUri` is required.", "payload": { "subjectDid": "did:key:z6Mkabc", "claim": { "level": "gold" } } },
+  { "note": "`subjectDid` must be a DID.", "payload": { "subjectDid": "alice@example.com", "typeUri": "https://example.org/Endorsement", "claim": { "level": "gold" } } },
+  { "note": "`claim` must be a non-empty object.", "payload": { "subjectDid": "did:key:z6Mkabc", "typeUri": "https://example.org/Endorsement", "claim": {} } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "subjectDid": "did:key:z6Mkabc", "typeUri": "https://example.org/Endorsement", "claim": { "level": "gold" }, "__x__": true } }
+]

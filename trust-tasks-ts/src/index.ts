@@ -49,6 +49,7 @@ export * as ConsentDecision_v1_0 from "./consent/decision/1.0/payload";
 export * as ConsentList_v1_0 from "./consent/list/1.0/payload";
 export * as ConsentRequest_v1_0 from "./consent/request/1.0/payload";
 export * as ConsentRevoke_v1_0 from "./consent/revoke/1.0/payload";
+export * as CredentialsShared_v0_1 from "./credentials/_shared/0.1/credentials";
 export * as DeviceBindingShared_v0_1 from "./device/_shared/0.1/device-binding";
 export * as DeviceBindingShared_v0_2 from "./device/_shared/0.2/device-binding";
 export * as DeviceDisable_v0_1 from "./device/disable/0.1/payload";
@@ -213,6 +214,7 @@ export * as VtaPasskeyVmsRevoke_v0_1 from "./vta/passkey-vms/revoke/0.1/payload"
 export * as VtaWebvhDidsUpdate_v1_0 from "./vta/webvh/dids/update/1.0/payload";
 export * as CommunityShared_v0_1 from "./vtc/_shared/0.1/community";
 export * as EndorsementTypeShared_v0_1 from "./vtc/_shared/0.1/endorsement-type";
+export * as EndorsementShared_v0_1 from "./vtc/_shared/0.1/endorsement";
 export * as JoinRequestShared_v0_1 from "./vtc/_shared/0.1/join-request";
 export * as MemberShared_v0_1 from "./vtc/_shared/0.1/member";
 export * as VtcAdminBootstrap_v0_1 from "./vtc/admin/bootstrap/0.1/payload";
@@ -222,6 +224,10 @@ export * as VtcCommunityProfileUpdate_v0_1 from "./vtc/community/profile/update/
 export * as VtcEndorsementTypesDelete_v0_1 from "./vtc/endorsement-types/delete/0.1/payload";
 export * as VtcEndorsementTypesList_v0_1 from "./vtc/endorsement-types/list/0.1/payload";
 export * as VtcEndorsementTypesRegister_v0_1 from "./vtc/endorsement-types/register/0.1/payload";
+export * as VtcEndorsementsIssue_v0_1 from "./vtc/endorsements/issue/0.1/payload";
+export * as VtcEndorsementsList_v0_1 from "./vtc/endorsements/list/0.1/payload";
+export * as VtcEndorsementsRevoke_v0_1 from "./vtc/endorsements/revoke/0.1/payload";
+export * as VtcEndorsementsShow_v0_1 from "./vtc/endorsements/show/0.1/payload";
 export * as VtcInstallClaimFinish_v0_1 from "./vtc/install/claim/finish/0.1/payload";
 export * as VtcInstallClaimStart_v0_1 from "./vtc/install/claim/start/0.1/payload";
 export * as VtcJoinRequestsAccept_v0_1 from "./vtc/join-requests/accept/0.1/payload";

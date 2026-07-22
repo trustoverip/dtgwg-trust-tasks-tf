@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/endorsements/issue/0.1",
+  "title": "VTC Endorsements Issue — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subjectDid", "typeUri", "claim"],
+  "properties": {
+    "subjectDid": { "type": "string", "pattern": "^did:", "description": "DID of the endorsement's subject (becomes credentialSubject.id)." },
+    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "A type already registered via vtc/endorsement-types/register; unregistered types are refused." },
+    "claim": { "type": "object", "minProperties": 1, "description": "The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one." },
+    "validitySeconds": { "type": "integer", "minimum": 1, "description": "Credential lifetime in seconds from issuance. The community MAY cap this." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Endorsements Issue — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endorsement"],
+      "properties": {
+        "endorsement": { "$ref": "../../../_shared/0.1/endorsement.schema.json#/$defs/Endorsement" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

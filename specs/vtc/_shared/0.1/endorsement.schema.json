@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/endorsement",
+  "title": "VTC — shared endorsement definitions",
+  "description": "Shared type for the vtc/endorsements/* family: one issued Verifiable Endorsement Credential (VEC) row. Embeds the registry-wide credentials/_shared IssuedCredential receipt and adds the VTC-specific parts — the registered endorsement type and the shared status-list slot that makes the endorsement third-party revocation-checkable.",
+  "$defs": {
+    "Endorsement": {
+      "$anchor": "endorsement",
+      "title": "Endorsement",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endorsementId", "typeUri", "subjectDid", "issued", "statusListIndex"],
+      "properties": {
+        "endorsementId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Community-scoped identifier for this endorsement row."
+        },
+        "typeUri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*."
+        },
+        "subjectDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "DID of the endorsement's subject (becomes credentialSubject.id)."
+        },
+        "claim": {
+          "type": "object",
+          "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
+        },
+        "issued": {
+          "$ref": "../../../credentials/_shared/0.1/credentials.schema.json#/$defs/IssuedCredential",
+          "description": "The registry-wide issuance receipt — credentialId, the signed VEC, and expiry."
+        },
+        "statusListIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community."
+        },
+        "revokedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the endorsement was revoked, or null while live."
+        }
+      }
+    }
+  }
+}

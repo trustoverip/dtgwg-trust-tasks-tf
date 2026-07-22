@@ -4,6 +4,7 @@ pub mod admin;
 pub mod auth;
 pub mod community;
 pub mod endorsement_types;
+pub mod endorsements;
 pub mod install;
 pub mod join_requests;
 pub mod members;

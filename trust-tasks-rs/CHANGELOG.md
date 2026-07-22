@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.37] — 2026-07-22
+
+### Added
+- `credentials/_shared/0.1` — registry-wide `IssuedCredential` and
+  `RevocationReceipt` definitions: the credential-minting core shared by every
+  issuing family. `RevocationReceipt` states the registry-wide contract that a
+  consumer MUST report `alreadyRevoked` / `already_revoked` on re-revocation
+  rather than returning a second receipt silently.
+- `vtc/endorsements/{issue,show,revoke,list}` — the community's Verifiable
+  Endorsement Credential family, embedding the shared issuance/revocation
+  receipts and adding the VTC-specific parts: endorsement-type registry gating
+  and a published status-list slot (`statusListIndex`) so foreign verifiers can
+  check revocation without contacting the issuing community. `revoke` adopts
+  the canonical `alreadyRevoked` contract, correcting the superseded VTC
+  behaviour of returning `200 OK` silently on re-revocation.
+- `vtc/_shared/0.1/endorsement.schema.json` — the shared `Endorsement` row.
+
 ## [0.2.36] — 2026-07-21
 
 ### Added

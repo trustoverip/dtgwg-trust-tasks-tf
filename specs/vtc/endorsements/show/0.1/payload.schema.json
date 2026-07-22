@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/endorsements/show/0.1",
+  "title": "VTC Endorsements Show — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["endorsementId"],
+  "properties": {
+    "endorsementId": { "type": "string", "minLength": 1 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Endorsements Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endorsement"],
+      "properties": {
+        "endorsement": { "$ref": "../../../_shared/0.1/endorsement.schema.json#/$defs/Endorsement" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

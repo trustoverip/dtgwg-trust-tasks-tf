@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/endorsements/list/0.1",
+  "title": "VTC Endorsements List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "Filter to endorsements of this registered type." },
+    "subjectDid": { "type": "string", "pattern": "^did:", "description": "Filter to endorsements about this subject." },
+    "includeRevoked": { "type": "boolean", "description": "Include revoked rows. Defaults to true — both live and revoked rows surface; consumers filter on revokedAt." },
+    "cursor": { "type": "string", "description": "Opaque continuation token from a previous page's nextCursor." },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 200, "description": "Page size; the maintainer clamps to 1..=200 (default 50)." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Endorsements List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "../../../_shared/0.1/endorsement.schema.json#/$defs/Endorsement" } },
+        "nextCursor": { "type": ["string", "null"], "description": "Continuation token for the next page, or null when this is the last." },
+        "totalEstimate": { "type": ["integer", "null"], "description": "Approximate total matching endorsements, when the maintainer can cheaply estimate it." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
