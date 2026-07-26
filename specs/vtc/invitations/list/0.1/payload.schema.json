@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/invitations/list/0.1",
+  "title": "VTC Invitations List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Invitations List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invitations"],
+      "properties": {
+        "invitations": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/invitation.schema.json#/$defs/InvitationSummary" },
+          "description": "Every issued invitation, live and revoked. Never includes credential material."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

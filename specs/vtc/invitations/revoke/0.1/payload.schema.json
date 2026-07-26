@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/invitations/revoke/0.1",
+  "title": "VTC Invitations Revoke — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "description": "Identifier of the invitation to revoke." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Invitations Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "revokedAt", "newlyRevoked"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "The revoked invitation's identifier, echoed." },
+        "revokedAt": { "type": "string", "format": "date-time", "description": "When the credential was revoked. On a repeat call this is the ORIGINAL revocation time, not now." },
+        "newlyRevoked": { "type": "boolean", "description": "True when this call flipped the bit; false when it was already revoked." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/invitation",
+  "title": "VTC — shared invitation-credential definitions",
+  "description": "Shared types for the vtc/invitations/* family. An Invitation Credential (VIC) is a single-use credential that admits its subject to a community; `issue` mints one, `list` enumerates the registry, `revoke` flips its status-list bit.",
+  "$defs": {
+    "InvitationSummary": {
+      "$anchor": "invitationSummary",
+      "title": "InvitationSummary",
+      "description": "Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "subjectDid", "issuedBy", "issuedAt"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "VIC identifier; the revoke target." },
+        "subjectDid": { "type": "string", "minLength": 1, "description": "DID the invitation admits." },
+        "role": { "type": "string", "minLength": 1, "description": "Role granted on redemption, when the invitation names one." },
+        "issuedBy": { "type": "string", "minLength": 1, "description": "DID of the operator who issued it." },
+        "issuedAt": { "type": "string", "format": "date-time", "description": "When it was issued." },
+        "validUntil": { "type": "string", "format": "date-time", "description": "Expiry, when the invitation is time-bounded." },
+        "revokedAt": { "type": "string", "format": "date-time", "description": "When it was revoked; absent while live." }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "The request takes no filters; `subjectDid` is not a member.", "payload": { "subjectDid": "did:key:z6MkGuest" } }
+]

@@ -1,0 +1,5 @@
+[
+  { "note": "`id` is required.", "payload": {} },
+  { "note": "`id` must not be empty.", "payload": { "id": "" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "id": "vic-1", "__x__": true } }
+]

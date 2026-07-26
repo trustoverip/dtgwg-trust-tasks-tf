@@ -1,0 +1,5 @@
+[
+  { "note": "`subjectDid` is required.", "payload": { "role": "member" } },
+  { "note": "`validityDays` must be positive.", "payload": { "subjectDid": "did:key:z6MkGuest", "validityDays": 0 } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "subjectDid": "did:key:z6MkGuest", "__x__": true } }
+]
