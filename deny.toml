@@ -29,6 +29,14 @@ ignore = [
     # rustls-pki-types' own PEM parsing. No active CVE, maintenance status
     # only.
     "RUSTSEC-2025-0134",
+    # smallstr 0.3.1 is unmaintained. 0.3.1 IS the newest release, so there
+    # is no upgrade to take. It arrives deep in the JSON-LD/SSI stack
+    # (smallstr → json-syntax → json-ld → ssi-json-ld → ssi-* → the Affinidi
+    # TDK), and reaches this workspace only through the
+    # affinidi-messaging-test-mediator DEV-dependency — nothing we publish
+    # links it. No active CVE, maintenance status only. It goes when
+    # json-syntax drops it or the SSI stack moves off json-ld 0.21.
+    "RUSTSEC-2026-0215",
 ]
 
 # ─── Licenses ──────────────────────────────────────────────────────────────
