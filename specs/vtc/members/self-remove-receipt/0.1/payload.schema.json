@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/self-remove-receipt/0.1",
+  "title": "VTC Members Self-Remove Receipt — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did", "disposition", "removed"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1, "description": "The departed member's DID." },
+    "disposition": { "type": "string", "minLength": 1, "description": "How the member's published record was handled." },
+    "removed": { "type": "boolean", "description": "True once the removal has actually taken effect — not merely been accepted." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Self-Remove Receipt — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acknowledged"],
+      "properties": {
+        "acknowledged": { "type": "boolean", "description": "The member received the receipt." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

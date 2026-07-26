@@ -1,0 +1,5 @@
+[
+  { "note": "`did` is required.", "payload": {} },
+  { "note": "`did` must not be empty.", "payload": { "did": "" } },
+  { "note": "There is no force override; `force` is not a member.", "payload": { "did": "did:key:z6MkGone", "force": true } }
+]

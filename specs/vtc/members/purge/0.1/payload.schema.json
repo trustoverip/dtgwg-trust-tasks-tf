@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/purge/0.1",
+  "title": "VTC Members Purge — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1, "description": "DID of the member or tombstone to erase." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Purge — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "disposition", "removed"],
+      "properties": {
+        "did": { "type": "string", "minLength": 1, "description": "The purged DID, echoed." },
+        "disposition": { "type": "string", "minLength": 1, "description": "How the member's published record was disposed of." },
+        "removed": { "type": "boolean", "description": "True when a record or tombstone was erased." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

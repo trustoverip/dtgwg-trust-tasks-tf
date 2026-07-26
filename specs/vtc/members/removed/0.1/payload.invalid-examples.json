@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "The request takes no filters; `since` is not a member.", "payload": { "since": "2026-01-01T00:00:00Z" } }
+]

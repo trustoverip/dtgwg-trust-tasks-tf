@@ -1,0 +1,5 @@
+[
+  { "note": "`did`, `disposition` and `removed` are all required.", "payload": { "did": "did:key:z6MkGone" } },
+  { "note": "`removed` must be a boolean, not a string.", "payload": { "did": "did:key:z6MkGone", "disposition": "revoked", "removed": "yes" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "did": "did:key:z6MkGone", "disposition": "revoked", "removed": true, "__x__": true } }
+]

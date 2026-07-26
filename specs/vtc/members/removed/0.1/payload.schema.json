@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/removed/0.1",
+  "title": "VTC Members Removed — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Removed — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["removed"],
+      "properties": {
+        "removed": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/RemovedMember" },
+          "description": "One entry per tombstone. Purged members are absent."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "RemovedMember": {
+      "$anchor": "removedMember",
+      "title": "RemovedMember",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "removedAt", "status"],
+      "properties": {
+        "did": { "type": "string", "minLength": 1, "description": "DID of the departed member." },
+        "removedAt": { "type": "string", "format": "date-time", "description": "When the removal took effect." },
+        "statusListIndex": { "type": ["integer", "null"], "minimum": 0, "description": "Slot in the community's published status list holding this member's revocation bit." },
+        "status": { "type": "string", "minLength": 1, "description": "Tombstone state, e.g. how the departure was dispositioned." }
+      }
+    }
+  }
+}
