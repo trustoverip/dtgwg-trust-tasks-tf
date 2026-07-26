@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/vmc/0.1",
+  "title": "VTC Members Deliver VMC — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["vc"],
+  "properties": {
+    "vc": { "type": "object", "description": "The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Deliver VMC — receipt payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["memberDid", "vmcId", "status"],
+      "properties": {
+        "memberDid": { "type": "string", "minLength": 1, "description": "The delivering member, as proven by the transport." },
+        "vmcId": { "type": "string", "minLength": 1, "description": "Identifier of the stored credential." },
+        "status": { "type": "string", "enum": ["stored"], "description": "Terminal state of the delivery." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

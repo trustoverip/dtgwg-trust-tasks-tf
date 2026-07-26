@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1",
+  "title": "VTC Members Solicit VMC — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["memberDid"],
+  "properties": {
+    "memberDid": { "type": "string", "minLength": 1, "description": "The active member to request a VMC from." },
+    "reason": { "type": "string", "minLength": 1, "description": "Operator note relayed verbatim to the member, e.g. \"renewal\", \"audit\"." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Solicit VMC — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["memberDid", "requested", "threadId"],
+      "properties": {
+        "memberDid": { "type": "string", "minLength": 1, "description": "The member the request was dispatched to." },
+        "requested": { "type": "boolean", "description": "The request was DISPATCHED. Not a delivery or reply receipt." },
+        "threadId": { "type": "string", "minLength": 1, "description": "Correlates the member's eventual vtc/members/vmc delivery with this solicitation." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

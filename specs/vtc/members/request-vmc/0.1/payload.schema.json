@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/request-vmc/0.1",
+  "title": "VTC Members Request VMC — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["communityDid"],
+  "properties": {
+    "communityDid": { "type": "string", "minLength": 1, "description": "DID the member's credential must name as credentialSubject.id." },
+    "reason": { "type": "string", "minLength": 1, "description": "Operator-supplied context surfaced to the member." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Request VMC — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acknowledged"],
+      "properties": {
+        "acknowledged": { "type": "boolean", "description": "The member received the request. NOT a commitment to issue — the credential arrives separately as vtc/members/vmc, or never." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

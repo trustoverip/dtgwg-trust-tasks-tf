@@ -1,0 +1,5 @@
+[
+  { "note": "`memberDid` is required.", "payload": { "reason": "renewal" } },
+  { "note": "`memberDid` must not be empty.", "payload": { "memberDid": "" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "memberDid": "did:key:z6MkMember", "__x__": true } }
+]

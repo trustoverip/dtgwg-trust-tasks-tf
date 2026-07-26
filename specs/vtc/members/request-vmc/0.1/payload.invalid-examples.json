@@ -1,0 +1,5 @@
+[
+  { "note": "`communityDid` is required — it is the subject the member is asked to attest to.", "payload": { "reason": "renewal" } },
+  { "note": "`communityDid` must not be empty.", "payload": { "communityDid": "" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "communityDid": "did:webvh:scid:vtc.example", "__x__": true } }
+]
