@@ -1,0 +1,5 @@
+[
+  { "note": "`jti` is required.", "payload": {} },
+  { "note": "`jti` must not be empty.", "payload": { "jti": "" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "jti": "inv-1", "__x__": true } }
+]

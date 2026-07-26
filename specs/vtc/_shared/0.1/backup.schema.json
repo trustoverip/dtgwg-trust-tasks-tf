@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/backup",
+  "title": "VTC — shared backup definitions",
+  "description": "Shared types for the vtc/backup/* spec family. BackupEnvelope is the encrypted full-state artifact: `export` returns one, `import` consumes one, so it lives here rather than being defined by one and referenced across a task boundary.",
+  "$defs": {
+    "BackupEnvelope": {
+      "$anchor": "backupEnvelope",
+      "title": "BackupEnvelope",
+      "description": "Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "format", "createdAt", "sourceVersion", "kdf", "encryption", "includesAudit", "ciphertext"],
+      "properties": {
+        "version": { "type": "integer", "minimum": 1, "description": "Envelope schema version." },
+        "format": { "type": "string", "minLength": 1, "description": "Envelope format tag, e.g. `vtc-backup-v1`." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the export was taken." },
+        "sourceDid": { "type": ["string", "null"], "description": "DID of the community exported from, when it has one. An import cross-checks this against the running community." },
+        "sourceVersion": { "type": "string", "minLength": 1, "description": "Version of the software that produced the envelope." },
+        "kdf": { "$ref": "#/$defs/KdfParams" },
+        "encryption": { "$ref": "#/$defs/EncryptionParams" },
+        "includesAudit": { "type": "boolean", "description": "Whether the audit log and its signed checkpoints are inside `ciphertext`." },
+        "ciphertext": { "type": "string", "minLength": 1, "description": "base64url(AEAD(JSON(payload)))." }
+      }
+    },
+    "KdfParams": {
+      "$anchor": "kdfParams",
+      "title": "KdfParams",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "salt", "mCost", "tCost", "pCost"],
+      "properties": {
+        "algorithm": { "type": "string", "minLength": 1, "description": "KDF identifier, e.g. `argon2id`." },
+        "salt": { "type": "string", "minLength": 1, "description": "base64url, 32 bytes." },
+        "mCost": { "type": "integer", "minimum": 1, "description": "Argon2id memory cost (KiB)." },
+        "tCost": { "type": "integer", "minimum": 1, "description": "Argon2id time cost (iterations)." },
+        "pCost": { "type": "integer", "minimum": 1, "description": "Argon2id parallelism." }
+      }
+    },
+    "EncryptionParams": {
+      "$anchor": "encryptionParams",
+      "title": "EncryptionParams",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "nonce"],
+      "properties": {
+        "algorithm": { "type": "string", "minLength": 1, "description": "AEAD identifier, e.g. `aes-256-gcm`." },
+        "nonce": { "type": "string", "minLength": 1, "description": "base64url, 12 bytes." }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "The request takes no filters; `status` is not a member.", "payload": { "status": "issued" } }
+]

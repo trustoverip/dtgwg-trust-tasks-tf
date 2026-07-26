@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/invite",
+  "title": "VTC — shared admin-invite definitions",
+  "description": "Shared types for the vtc/admin/invites/* family. An admin invite is a one-shot install URL that lets a named DID enrol an administrator passkey; `create` mints one and `list` enumerates them, so the summary lives here.",
+  "$defs": {
+    "InviteSummary": {
+      "$anchor": "inviteSummary",
+      "title": "InviteSummary",
+      "description": "One outstanding or historical admin invite. Consumed rows are retained as audit history and cannot be revoked.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jti", "status"],
+      "properties": {
+        "jti": { "type": "string", "minLength": 1, "description": "Unique invite identifier; the revoke target." },
+        "status": { "$ref": "#/$defs/InviteStatus" },
+        "targetDid": { "type": "string", "minLength": 1, "description": "The admin DID this invite enrols a passkey for." },
+        "expiresAt": { "type": "string", "format": "date-time", "description": "When an `issued` invite lapses." },
+        "consumedAt": { "type": "string", "format": "date-time", "description": "When the invite was redeemed, if it was." }
+      }
+    },
+    "InviteStatus": {
+      "$anchor": "inviteStatus",
+      "title": "InviteStatus",
+      "type": "string",
+      "enum": ["issued", "consumed", "expired"],
+      "description": "`issued` is outstanding and revocable; `consumed` and `expired` are terminal."
+    }
+  }
+}

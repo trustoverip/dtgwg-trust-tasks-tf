@@ -1,0 +1,6 @@
+[
+  { "note": "`backup` and `password` are both required.", "payload": {} },
+  { "note": "`password` is required even when the envelope is present.", "payload": { "backup": { "version": 1, "format": "vtc-backup-v1", "createdAt": "2026-07-26T10:00:00Z", "sourceVersion": "0.11.28", "kdf": { "algorithm": "argon2id", "salt": "c2FsdA", "mCost": 65536, "tCost": 3, "pCost": 4 }, "encryption": { "algorithm": "aes-256-gcm", "nonce": "bm9uY2U" }, "includesAudit": false, "ciphertext": "Y3Q" } } },
+  { "note": "`status` is a closed enum; `restored` is not a member.", "payload": { "backup": {}, "password": "twelve-char-pw!!", "status": "restored" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "backup": {}, "password": "twelve-char-pw!!", "__x__": true } }
+]

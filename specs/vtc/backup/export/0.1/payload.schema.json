@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/backup/export/0.1",
+  "title": "VTC Backup Export \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "password"
+  ],
+  "properties": {
+    "password": {
+      "type": "string",
+      "minLength": 12,
+      "description": "Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter."
+    },
+    "includeAudit": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include the audit log and its signed checkpoints. Off by default: the log is large and carries plaintext DIDs."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Backup Export \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "envelope"
+      ],
+      "properties": {
+        "envelope": {
+          "$ref": "../../../_shared/0.1/backup.schema.json#/$defs/BackupEnvelope",
+          "description": "The encrypted full-state backup."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+[
+  { "note": "`did` is required.", "payload": { "label": "ops oncall" } },
+  { "note": "`ttlSeconds` is capped at 24 hours.", "payload": { "did": "did:key:z6MkAdmin", "ttlSeconds": 604800 } },
+  { "note": "`ttlSeconds` must be positive.", "payload": { "did": "did:key:z6MkAdmin", "ttlSeconds": 0 } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "did": "did:key:z6MkAdmin", "__x__": true } }
+]

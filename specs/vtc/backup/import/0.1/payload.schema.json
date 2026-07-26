@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/backup/import/0.1",
+  "title": "VTC Backup Import \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "backup",
+    "password"
+  ],
+  "properties": {
+    "backup": {
+      "$ref": "../../../_shared/0.1/backup.schema.json#/$defs/BackupEnvelope",
+      "description": "The envelope returned by `vtc/backup/export`."
+    },
+    "password": {
+      "type": "string",
+      "minLength": 12,
+      "description": "The passphrase the envelope was encrypted under."
+    },
+    "confirm": {
+      "type": "boolean",
+      "default": false,
+      "description": "`false` (default) previews: row counts, no mutation. `true` clears the backed-up keyspaces and applies the backup."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Backup Import \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "counts",
+        "message"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "imported"
+          ],
+          "description": "`preview` when `confirm` was not set; `imported` after a restore."
+        },
+        "sourceDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The community DID the envelope was taken from."
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Per-keyspace row counts written, or that would be written on a preview."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable summary for the operator."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

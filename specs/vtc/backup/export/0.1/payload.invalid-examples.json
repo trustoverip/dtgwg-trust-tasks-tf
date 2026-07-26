@@ -1,0 +1,6 @@
+[
+  { "note": "`password` is required.", "payload": { "includeAudit": true } },
+  { "note": "Password under the 12-character minimum.", "payload": { "password": "short" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "password": "twelve-char-pw!!", "__x__": true } },
+  { "note": "`includeAudit` must be a boolean, not a string.", "payload": { "password": "twelve-char-pw!!", "includeAudit": "yes" } }
+]

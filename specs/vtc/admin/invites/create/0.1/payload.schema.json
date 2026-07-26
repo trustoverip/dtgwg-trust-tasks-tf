@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/invites/create/0.1",
+  "title": "VTC Admin Invites Create — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1, "description": "Admin DID the install URL grants a passkey for." },
+    "ttlSeconds": { "type": "integer", "minimum": 1, "maximum": 86400, "description": "Invite lifetime. Capped at 24 hours." },
+    "label": { "type": "string", "minLength": 1, "description": "Operator-facing note recorded against the invite." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin Invites Create — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jti", "installUrl", "claimCode", "expiresAt", "aclEntryCreated"],
+      "properties": {
+        "jti": { "type": "string", "minLength": 1, "description": "Invite identifier; the revoke target." },
+        "installUrl": { "type": "string", "minLength": 1, "description": "One-shot enrolment URL. Returned once and never retrievable again." },
+        "claimCode": { "type": "string", "minLength": 1, "description": "Secret that authorises the enrolment. Returned once." },
+        "expiresAt": { "type": "string", "format": "date-time", "description": "When the invite lapses." },
+        "aclEntryCreated": { "type": "boolean", "description": "True when the target DID had no ACL entry and one was created." },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/invites/revoke/0.1",
+  "title": "VTC Admin Invites Revoke — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jti"],
+  "properties": {
+    "jti": { "type": "string", "minLength": 1, "description": "Identifier of the invite to revoke." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin Invites Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jti"],
+      "properties": {
+        "jti": { "type": "string", "minLength": 1, "description": "The revoked invite's identifier, echoed." },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

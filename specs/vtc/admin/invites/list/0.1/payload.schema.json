@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/invites/list/0.1",
+  "title": "VTC Admin Invites List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin Invites List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invites"],
+      "properties": {
+        "invites": {
+          "type": "array",
+          "items": { "$ref": "../../../../_shared/0.1/invite.schema.json#/$defs/InviteSummary" },
+          "description": "Every invite the community holds, outstanding and terminal."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
