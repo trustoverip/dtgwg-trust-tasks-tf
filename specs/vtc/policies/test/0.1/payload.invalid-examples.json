@@ -1,0 +1,25 @@
+[
+  {
+    "note": "`id`, `query` and `input` are all required.",
+    "payload": {
+      "id": "pol-1"
+    }
+  },
+  {
+    "note": "`query` must not be empty.",
+    "payload": {
+      "id": "pol-1",
+      "query": "",
+      "input": {}
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "id": "pol-1",
+      "query": "data.vtc.join.allow",
+      "input": {},
+      "__x__": true
+    }
+  }
+]

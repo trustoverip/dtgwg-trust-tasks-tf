@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/submit-receipt/0.1",
+  "title": "VTC Join Requests Submit Receipt \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "requestId",
+    "status"
+  ],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier the applicant polls vtc/join-requests/status with. Valid only once the request is durably recorded."
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Request state at acknowledgement. A snapshot, not a verdict \u2014 may already be terminal where policy auto-decided."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join Requests Submit Receipt \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "acknowledged"
+      ],
+      "properties": {
+        "acknowledged": {
+          "type": "boolean",
+          "description": "The applicant received the receipt."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

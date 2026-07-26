@@ -1,0 +1,5 @@
+[
+  { "note": "`accessToken` is required.", "payload": {} },
+  { "note": "`accessToken` must not be empty.", "payload": { "accessToken": "" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "accessToken": "eyJhbGciOi", "__x__": true } }
+]

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/query/0.1",
+  "title": "VTC Directory Query \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "DID of the member whose directory projection is requested."
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Comma-separated narrowing hint. A hint only \u2014 never an authorisation."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory Query \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "fields"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The projected member's DID."
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The permitted projection. A withheld field is ABSENT, never present-and-null."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

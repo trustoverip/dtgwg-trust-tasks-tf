@@ -1,0 +1,23 @@
+[
+  {
+    "note": "`requestId` and `status` are both required.",
+    "payload": {
+      "requestId": "req-1"
+    }
+  },
+  {
+    "note": "`requestId` must not be empty.",
+    "payload": {
+      "requestId": "",
+      "status": "pending"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "requestId": "req-1",
+      "status": "pending",
+      "__x__": true
+    }
+  }
+]

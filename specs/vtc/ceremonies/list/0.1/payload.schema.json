@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/ceremonies/list/0.1",
+  "title": "VTC Ceremonies List \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Ceremonies List \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ceremonies"
+      ],
+      "properties": {
+        "ceremonies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CeremonyManifest"
+          },
+          "description": "Every ceremony this maintainer implements."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "CeremonyManifest": {
+      "$anchor": "ceremonyManifest",
+      "title": "CeremonyManifest",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "label",
+        "nature"
+      ],
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Governance purpose this ceremony decides, e.g. join, removal."
+        },
+        "pkg": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Policy package backing the decision."
+        },
+        "nature": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Whether the ceremony is automatic, operator-driven, or advisory."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable name for an operator UI."
+        },
+        "wired": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Whether the ceremony is actually reachable in this deployment."
+        },
+        "blurb": {
+          "type": "string",
+          "description": "One-line explanation shown beside the label."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped."
+        }
+      }
+    }
+  }
+}

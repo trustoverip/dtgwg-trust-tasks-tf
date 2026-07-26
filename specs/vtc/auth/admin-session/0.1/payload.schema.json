@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/auth/admin-session/0.1",
+  "title": "VTC Auth Admin Session — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["accessToken"],
+  "properties": {
+    "accessToken": { "type": "string", "minLength": 1, "description": "A currently-valid bearer access token issued by this community." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Auth Admin Session — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "expiresAt"],
+      "properties": {
+        "sessionId": { "type": "string", "minLength": 1, "description": "The cookie-backed session's identifier." },
+        "expiresAt": { "type": "integer", "minimum": 0, "description": "Session expiry as a Unix timestamp. Matches the presented token's — the exchange does not extend a session." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

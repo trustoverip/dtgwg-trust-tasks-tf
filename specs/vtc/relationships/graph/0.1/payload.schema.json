@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/relationships/graph/0.1",
+  "title": "VTC Relationships Graph \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships Graph \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GraphNode"
+          },
+          "description": "One per distinct DID appearing in a live edge. No isolated nodes."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GraphEdge"
+          },
+          "description": "One per unrevoked relationship credential, directed issuer -> subject."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "GraphNode": {
+      "$anchor": "graphNode",
+      "title": "GraphNode",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A DID participating in at least one live relationship."
+        }
+      }
+    },
+    "GraphEdge": {
+      "$anchor": "graphEdge",
+      "title": "GraphEdge",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "issuerDid",
+        "subjectDid",
+        "createdAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Relationship credential identifier."
+        },
+        "issuerDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The vouching party."
+        },
+        "subjectDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The vouched-for party."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the relationship was published."
+        }
+      }
+    }
+  }
+}

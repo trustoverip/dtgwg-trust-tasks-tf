@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.38] — 2026-07-26
+
+### Added
+- **`vtc/*` — the 22 remaining VTC tasks.** Completes the VTC surface in the
+  registry: every task `vtc-service` binds now has a spec here, closing the
+  residual that kept those URIs on the non-conformant
+  `trusttasks.org/openvtc/vtc/...` authority
+  (OpenVTC/verifiable-trust-infrastructure#710).
+
+  - `vtc/backup/{export,import}` — encrypted full-state envelope; import is
+    two-phase, previewing row counts unless `confirm` is set.
+  - `vtc/admin/invites/{list,create,revoke}` and
+    `vtc/invitations/{issue,list,revoke}` — two mounts that had served
+    several operations under one URI, split per method. "Enumerate" and
+    "mint a bearer credential" are different contracts with different
+    exposure; one URI could not state both.
+  - `vtc/members/{solicit-vmc,request-vmc,vmc}` — the reciprocal-membership
+    exchange as three tasks, one per party pair. The first two would have
+    collided on a single slug once the parsing-artifact `spec/` segment was
+    dropped from the old URIs.
+  - `vtc/members/{purge,removed,self-remove-receipt}`,
+    `vtc/auth/{admin-session,recognise/challenge}`, `vtc/ceremonies/list`,
+    `vtc/directory/query`, `vtc/recognition/check`,
+    `vtc/relationships/graph`, `vtc/policies/test`,
+    `vtc/join-requests/submit-receipt`.
+
+- **`vtc/_shared/0.1`** gains `backup`, `invite`, and `invitation` schemas —
+  types two tasks in a family both need. A `$ref` across task boundaries does
+  not resolve under per-file `$id`, and the build only *warns*, so shared
+  types have to live here to be real.
+
+### Notes
+- Several specs make previously-implicit contracts normative where getting
+  them wrong is silent: `vtc/members/solicit-vmc` states that `requested` means
+  *dispatched*, not delivered; `vtc/invitations/revoke` keeps the
+  `newlyRevoked` discriminator and returns the *original* `revokedAt` on a
+  repeat call; `vtc/directory/query` requires a withheld field to be **absent**
+  rather than present-and-null, and `notFound` rather than an empty projection,
+  so the directory cannot be used as a membership oracle.
+
 ## [0.2.37] — 2026-07-22
 
 ### Added

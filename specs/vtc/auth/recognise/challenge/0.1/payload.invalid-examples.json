@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected — the request is deliberately empty.", "payload": { "__x__": true } },
+  { "note": "The caller must not identify itself here; `did` is not a member.", "payload": { "did": "did:key:z6MkForeign" } }
+]

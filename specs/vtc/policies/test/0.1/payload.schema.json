@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/policies/test/0.1",
+  "title": "VTC Policies Test \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "query",
+    "input"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the stored policy module to evaluate."
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Rule to evaluate. Any rule in the module, not only an allow decision."
+    },
+    "input": {
+      "description": "Facts to evaluate against. Deliberately schema-free: community policies decide over community-shaped input."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Policies Test \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "purpose",
+        "sha256",
+        "result"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The evaluated module's identifier."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Governance purpose the module is classified under."
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Digest of the evaluated module, so a caller can confirm which bytes ran."
+        },
+        "result": {
+          "description": "Raw result of the queried rule, uninterpreted. May be any JSON value, including absent-as-null."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

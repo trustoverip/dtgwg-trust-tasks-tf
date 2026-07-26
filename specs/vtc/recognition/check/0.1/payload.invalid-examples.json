@@ -1,0 +1,5 @@
+[
+  { "note": "`did` is required.", "payload": {} },
+  { "note": "`did` must not be empty.", "payload": { "did": "" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "did": "did:key:z6MkForeign", "__x__": true } }
+]

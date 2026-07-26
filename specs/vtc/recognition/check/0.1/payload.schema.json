@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/recognition/check/0.1",
+  "title": "VTC Recognition Check — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1, "description": "Foreign DID to probe." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Recognition Check — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "recognised", "registryConfigured"],
+      "properties": {
+        "did": { "type": "string", "minLength": 1, "description": "The probed DID, echoed." },
+        "recognised": { "type": "boolean", "description": "Whether the community recognises this DID. Meaningless unless registryConfigured is true." },
+        "registryConfigured": { "type": "boolean", "description": "Whether a trust registry backs the answer. False makes `recognised` indeterminate, not negative." },
+        "error": { "type": ["string", "null"], "description": "Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

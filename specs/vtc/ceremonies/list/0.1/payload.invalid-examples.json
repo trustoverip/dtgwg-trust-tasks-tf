@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "__x__": true
+    }
+  },
+  {
+    "note": "The request takes no filters; `purpose` is not a member.",
+    "payload": {
+      "purpose": "join"
+    }
+  }
+]

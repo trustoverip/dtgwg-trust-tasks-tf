@@ -1,0 +1,21 @@
+[
+  {
+    "note": "`subject` is required.",
+    "payload": {
+      "fields": "label"
+    }
+  },
+  {
+    "note": "`subject` must not be empty.",
+    "payload": {
+      "subject": ""
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "subject": "did:key:z6MkMember",
+      "__x__": true
+    }
+  }
+]

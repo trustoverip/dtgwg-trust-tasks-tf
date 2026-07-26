@@ -2,12 +2,18 @@
 
 pub mod admin;
 pub mod auth;
+pub mod backup;
+pub mod ceremonies;
 pub mod community;
+pub mod directory;
 pub mod endorsement_types;
 pub mod endorsements;
 pub mod install;
+pub mod invitations;
 pub mod join_requests;
 pub mod members;
+pub mod policies;
+pub mod recognition;
 pub mod registry;
 pub mod relationships;
 pub mod website;

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/auth/recognise/challenge/0.1",
+  "title": "VTC Auth Recognise Challenge — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Auth Recognise Challenge — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nonce", "expiresAt"],
+      "properties": {
+        "nonce": { "type": "string", "minLength": 1, "description": "Single-use, unpredictable value to bind into the presentation. Consumed on first use regardless of verdict." },
+        "expiresAt": { "type": "integer", "minimum": 0, "description": "Unix timestamp after which the nonce is refused." },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
