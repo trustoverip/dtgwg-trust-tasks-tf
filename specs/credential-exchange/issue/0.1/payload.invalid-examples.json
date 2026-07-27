@@ -1,0 +1,32 @@
+[
+  {
+    "note": "One of `credential_response` or `sealed` is required.",
+    "payload": {}
+  },
+  {
+    "note": "Both delivery paths at once is rejected \u2014 exactly one, or a consumer must guess which is authoritative.",
+    "payload": {
+      "credential_response": {},
+      "sealed": "-----BEGIN VTA SEALED-----"
+    }
+  },
+  {
+    "note": "`sealed` must be a non-empty armored string.",
+    "payload": {
+      "sealed": ""
+    }
+  },
+  {
+    "note": "`credential_response` must be an object, not a string.",
+    "payload": {
+      "credential_response": "eyJhbGciOiJF"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "sealed": "-----BEGIN VTA SEALED-----",
+      "__notARealMember__": true
+    }
+  }
+]

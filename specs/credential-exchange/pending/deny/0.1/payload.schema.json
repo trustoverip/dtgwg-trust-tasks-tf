@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/pending/deny/0.1",
+  "title": "Credential Exchange Pending Deny \u2014 payload",
+  "description": "Refuse a deferred presentation request. Nothing is presented and the deferral becomes terminal.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The deferral to refuse, as returned by credential-exchange/pending/list."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Credential Exchange Pending Deny \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The deferral that was refused."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "denied"
+          ],
+          "description": "Terminal status. A single-valued enum rather than a bare string: a denial has exactly one outcome, and leaving the field open would invite consumers to infer meaning from free text."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

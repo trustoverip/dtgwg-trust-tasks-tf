@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/pending/approve/0.1",
+  "title": "Credential Exchange Pending Approve \u2014 payload",
+  "description": "Approve a deferred presentation request. The holder mints the presentation against the verifier's original query and nonce and returns it; the deferral is then terminal.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The deferral to approve, as returned by credential-exchange/pending/list."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Credential Exchange Pending Approve \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vp_token"
+      ],
+      "properties": {
+        "vp_token": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "description": "The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience \u2014 which is why an expired deferral cannot be approved."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

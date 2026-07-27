@@ -1,0 +1,48 @@
+[
+  {
+    "note": "`dcql_query` is required.",
+    "payload": {
+      "nonce": "n-123",
+      "purpose": "join the Acme community"
+    }
+  },
+  {
+    "note": "`nonce` is required \u2014 without it the presentation cannot be bound for freshness.",
+    "payload": {
+      "dcql_query": {},
+      "purpose": "join the Acme community"
+    }
+  },
+  {
+    "note": "`purpose` is required. A query without a stated reason cannot be consented to.",
+    "payload": {
+      "dcql_query": {},
+      "nonce": "n-123"
+    }
+  },
+  {
+    "note": "`purpose` must be non-empty \u2014 an empty string is not a stated reason.",
+    "payload": {
+      "dcql_query": {},
+      "nonce": "n-123",
+      "purpose": ""
+    }
+  },
+  {
+    "note": "`nonce` must be non-empty.",
+    "payload": {
+      "dcql_query": {},
+      "nonce": "",
+      "purpose": "join the Acme community"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "dcql_query": {},
+      "nonce": "n-123",
+      "purpose": "join",
+      "__notARealMember__": true
+    }
+  }
+]

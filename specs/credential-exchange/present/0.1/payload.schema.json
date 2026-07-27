@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/present/0.1",
+  "title": "Credential Exchange Present \u2014 payload",
+  "description": "Holder to verifier: an OID4VP vp_token carrying the selectively-disclosed, holder-bound presentation. Replies on the query thread.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vp_token"
+  ],
+  "properties": {
+    "vp_token": {
+      "type": [
+        "string",
+        "object"
+      ],
+      "description": "The OID4VP `vp_token`, format-agnostic by design. A JSON **string** is an SD-JWT-VC presentation: the consented disclosures plus a mandatory key-binding JWT over the verifier's nonce and audience. A JSON **object** is a W3C Data-Integrity VP whose proof carries the same nonce and domain. A consumer selects the verification path from the value's type rather than a separate format discriminator, so a new credential format needs no new member here. snake_case is OID4VP's own name for this field."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

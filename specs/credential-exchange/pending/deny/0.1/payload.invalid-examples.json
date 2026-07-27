@@ -1,0 +1,26 @@
+[
+  {
+    "note": "`id` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`id` must be non-empty.",
+    "payload": {
+      "id": ""
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected \u2014 a denial carries no reason field to leak back to the verifier.",
+    "payload": {
+      "id": "thid-123",
+      "reason": "not today"
+    }
+  },
+  {
+    "note": "`ext` must be an object.",
+    "payload": {
+      "id": "thid-123",
+      "ext": []
+    }
+  }
+]

@@ -57,6 +57,7 @@ pub mod chat;
 pub mod config;
 pub mod confirm;
 pub mod consent;
+pub mod credential_exchange;
 pub mod device;
 pub mod did_management;
 pub mod git_trust;

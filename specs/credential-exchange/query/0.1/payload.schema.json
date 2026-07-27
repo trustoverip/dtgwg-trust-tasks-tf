@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/query/0.1",
+  "title": "Credential Exchange Query \u2014 payload",
+  "description": "Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dcql_query",
+    "nonce",
+    "purpose"
+  ],
+  "properties": {
+    "dcql_query": {
+      "type": "object",
+      "description": "An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own."
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time."
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

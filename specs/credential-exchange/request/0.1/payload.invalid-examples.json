@@ -1,0 +1,26 @@
+[
+  {
+    "note": "`credential_request` is required.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "credential_request": {},
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`credential_request` must be an object, not an array.",
+    "payload": {
+      "credential_request": []
+    }
+  },
+  {
+    "note": "`ext` must be an object, not a string.",
+    "payload": {
+      "credential_request": {},
+      "ext": "vendor"
+    }
+  }
+]

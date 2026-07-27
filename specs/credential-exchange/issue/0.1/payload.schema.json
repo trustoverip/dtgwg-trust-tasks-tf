@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/issue/0.1",
+  "title": "Credential Exchange Issue \u2014 payload",
+  "description": "Issuer to holder: the issued credential. Exactly one of `credential_response` (cleartext, known holder over an authenticated channel) or `sealed` (an armored sealed-transfer bundle, for a secret-bearing credential or an unknown holder).",
+  "type": "object",
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "required": [
+        "credential_response"
+      ],
+      "not": {
+        "required": [
+          "sealed"
+        ]
+      }
+    },
+    {
+      "required": [
+        "sealed"
+      ],
+      "not": {
+        "required": [
+          "credential_response"
+        ]
+      }
+    }
+  ],
+  "properties": {
+    "credential_response": {
+      "type": "object",
+      "description": "A cleartext OID4VCI Credential Response, carried verbatim. Format-agnostic: the `credential` within is a JSON string (SD-JWT-VC compact serialization) or a JSON object (a W3C Data-Integrity VC with its proof), and the holder infers the format from the value's shape rather than a separate discriminator. snake_case member names are OID4VCI's own."
+    },
+    "sealed": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An armored sealed-transfer bundle encrypted to the holder. Used when the credential is secret-bearing or the holder is not yet known (invite / air-gap). Only the holder can open it, and an out-of-band digest pins integrity \u2014 there is no trust-on-first-use."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

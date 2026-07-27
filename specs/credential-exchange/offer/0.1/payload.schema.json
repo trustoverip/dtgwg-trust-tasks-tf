@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/offer/0.1",
+  "title": "Credential Exchange Offer \u2014 payload",
+  "description": "Issuer to holder: an OID4VCI Credential Offer. Opens the issuance thread; the holder replies with credential-exchange/request.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "credential_offer"
+  ],
+  "properties": {
+    "credential_offer": {
+      "type": "object",
+      "description": "An OID4VCI Credential Offer object, carried verbatim. Its members are defined by OpenID for Verifiable Credential Issuance and are deliberately NOT re-specified here \u2014 this task is the transport, authentication and threading envelope, and re-stating a foreign specification's shape would create a second source of truth that drifts. snake_case member names are OID4VCI's own."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

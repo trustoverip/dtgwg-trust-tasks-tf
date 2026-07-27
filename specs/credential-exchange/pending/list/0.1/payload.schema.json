@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/pending/list/0.1",
+  "title": "Credential Exchange Pending List \u2014 payload",
+  "description": "List the presentation requests this holder deferred for consent and that can still be acted on. Takes no parameters: the caller's authenticated identity is the scope, and a holder agent answers only for its own wallet.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Credential Exchange Pending List \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pending"
+      ],
+      "properties": {
+        "pending": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/deferred-presentation.schema.json#/$defs/DeferredPresentation"
+          },
+          "description": "The actionable deferrals. A consumer MUST omit records that are already terminal or past their `expiresAt` \u2014 they cannot be approved, so listing them would offer the approver a decision that is guaranteed to fail. An empty array means nothing is awaiting a decision."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "note": "The request takes no parameters; a stray filter is rejected.",
+    "payload": {
+      "status": "pending"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`ext` keys must be reverse-DNS namespaces.",
+    "payload": {
+      "ext": {
+        "vendor": {
+          "a": 1
+        }
+      }
+    }
+  }
+]

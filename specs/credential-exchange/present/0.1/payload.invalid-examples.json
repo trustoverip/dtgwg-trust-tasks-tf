@@ -1,0 +1,28 @@
+[
+  {
+    "note": "`vp_token` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`vp_token` must be a string or an object, not an array.",
+    "payload": {
+      "vp_token": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "note": "`vp_token` must not be a number.",
+    "payload": {
+      "vp_token": 42
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "vp_token": "<jws>~<disclosure>~<kb-jwt>",
+      "__notARealMember__": true
+    }
+  }
+]

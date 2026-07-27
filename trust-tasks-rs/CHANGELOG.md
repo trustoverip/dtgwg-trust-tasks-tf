@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.41] — 2026-07-27
+
+### Added
+- **`credential-exchange/{offer,request,issue,query,present}/0.1`** — the
+  issuance and presentation legs. The Trust Task is the transport,
+  authentication, threading and relayer envelope; the body is OID4VCI
+  (issuance) or OID4VP + DCQL (presentation), carried **verbatim** and
+  deliberately not re-specified — re-stating a foreign specification here
+  would create a second source of truth that drifts the moment it revises.
+  These five are one-way messages on a thread, so they declare no `Response`
+  (same shape as `chat/message` and `sync/event`).
+- **`credential-exchange/pending/{list,approve,deny}/0.1`** — the holder
+  operator's out-of-band surface over presentation requests the agent
+  deferred for consent. A verifier the holder has not pre-trusted gets
+  `consentRequired` rather than an answer or a refusal; these three are how
+  the decision is then made.
+- **`credential-exchange/_shared/0.1/deferred-presentation`** —
+  `DeferredPresentation` and `RequestedCredential`, the approver-facing view.
+
+Three properties are load-bearing enough to call out, because each is a rule
+a plausible implementation gets wrong by default:
+
+- **`purpose` on a query is REQUIRED and non-empty.** The holder's decision is
+  a consent decision, and consent to an unstated use is not consent. Optional
+  would make the well-behaved verifier indistinguishable from the one that
+  declines to say, exactly when it matters.
+- **No wallet enumeration.** Candidates are gathered *only* through the type
+  index named by the query's `meta` discriminator. A query with no
+  discriminator contributes **no** candidates — it does not mean "everything".
+- **A denial carries no reason field, and unknown members are rejected.**
+  "I don't hold that" and "I hold it and won't show you" must stay
+  indistinguishable to the verifier; a reason string is where that leaks.
+
+`pending/approve` is `sideEffects: destructive` — not because it deletes much,
+but because the disclosure it causes cannot be walked back. It is bound to the
+**original** query and nonce, and an expired deferral MUST be refused rather
+than re-nonced, or the holder presents against a request the verifier has
+forgotten making.
+
+These supersede eight non-conformant URIs that `vta-sdk` binds today
+(OpenVTC/verifiable-trust-infrastructure#821). The five exchange specs existed
+only as files in that repo while claiming a `trusttasks.org` ID no consumer
+could resolve; the three `pending-*` had no spec anywhere. They also renumber
+`1.0` → `0.1` and nest `pending-list` → `pending/list`, matching how the rest
+of the registry versions and groups.
+
 ## [0.2.40] — 2026-07-27
 
 ### Added

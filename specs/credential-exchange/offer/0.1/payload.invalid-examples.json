@@ -1,0 +1,30 @@
+[
+  {
+    "note": "`credential_offer` is required.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "credential_offer": {},
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`credential_offer` must be an object, not a string.",
+    "payload": {
+      "credential_offer": "https://issuer.example/offer"
+    }
+  },
+  {
+    "note": "`ext` keys must be reverse-DNS namespaces.",
+    "payload": {
+      "credential_offer": {},
+      "ext": {
+        "notADnsName": {
+          "a": 1
+        }
+      }
+    }
+  }
+]

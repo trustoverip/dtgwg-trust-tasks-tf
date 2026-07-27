@@ -1,0 +1,27 @@
+[
+  {
+    "note": "`id` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`id` must be non-empty.",
+    "payload": {
+      "id": ""
+    }
+  },
+  {
+    "note": "`id` must be a string, not a number.",
+    "payload": {
+      "id": 7
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected \u2014 approval is not a place to re-negotiate the query.",
+    "payload": {
+      "id": "thid-123",
+      "claims": [
+        "name"
+      ]
+    }
+  }
+]
