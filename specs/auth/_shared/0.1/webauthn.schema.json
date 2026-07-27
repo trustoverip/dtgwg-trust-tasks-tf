@@ -102,6 +102,41 @@
         }
       }
     },
+    "RegisteredCredential": {
+      "$anchor": "registeredCredential",
+      "title": "RegisteredCredential",
+      "description": "A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credentialId", "registeredAt"],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed."
+        },
+        "deviceLabel": {
+          "type": "string",
+          "description": "Operator-facing label captured at enrollment (e.g. \"Alice's MacBook Pro\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke."
+        },
+        "transports": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential was bound to the subject."
+        },
+        "lastUsedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise \"usage is not tracked\" SHOULD say so under `ext`."
+        }
+      }
+    },
     "AttestationResponse": {
       "$anchor": "attestationResponse",
       "title": "AuthenticatorAttestationResponse (registration)",

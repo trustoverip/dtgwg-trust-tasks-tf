@@ -1,0 +1,16 @@
+[
+  {
+    "note": "Unknown top-level payload member — the empty `{}` is the only valid shape. A subject filter in particular is rejected on purpose: the proof identifies the subject, so a payload subject could only ever agree with it or attempt to enumerate somebody else's credentials.",
+    "payload": {
+      "subject": "did:web:alice.example"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]

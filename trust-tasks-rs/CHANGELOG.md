@@ -6,6 +6,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.39] — 2026-07-27
+
+### Added
+- **`auth/passkey/list/0.1`** — enumerate the passkeys an auth service holds for
+  a subject. The credential-management counterpart to `auth/sessions/list`:
+  sessions answers "where am I signed in?", this answers "what can sign me in?".
+  Proof-required with no subject filter — the subject comes from the proof, so a
+  filter parameter cannot disagree with the authorization check. Deliberately
+  omits public key, signature counter and AAGUID: none of them help a human pick
+  which authenticator to revoke.
+
+- **`auth/passkey/revoke/{start,finish}/0.1`** — remove a passkey behind a fresh
+  WebAuthn user-verification ceremony. Two legs, mirroring `enroll/*`: `start`
+  names the target and returns the UV challenge, `finish` submits the assertion
+  and the credential is unbound.
+
+  - The **target is bound to the `revocationId` server-side**, so `finish`
+    carries no credential of its own. Accepting one would let an intercepted
+    ceremony be redirected — the user verifies one credential and a different
+    one is destroyed.
+  - The **last-credential refusal is normative**, and is checked at *both* legs.
+    Start's check fails fast; finish's check is the one that holds the invariant,
+    because ceremonies can complete in the gap between the two.
+  - `user_verification_failed` covers bad signature, wrong challenge, wrong
+    origin and clear UV flag alike — separating them hands an attacker the map
+    of which control stopped them.
+
+- **`RegisteredCredential`** in `auth/_shared/0.1/webauthn.schema.json` — the
+  management view of an enrolled passkey, shared by list and revoke. Additive:
+  no existing `$def` changed. `lastUsedAt` is a plain optional rather than a
+  nullable: the first draft distinguished "tracked and never used" from "not
+  tracked", and the generated-binding round-trip test rejected it, because absent
+  and null map onto the same `Option`. A distinction the reference implementation
+  cannot represent is not one a conforming consumer could rely on, so it is gone.
+
+### Changed
+- **`auth/passkey/enroll/{start,finish}` → 0.2.** Adds optional `uvOptions` to
+  the start response and `uvCredential` to the finish request, so a consumer can
+  require an **existing** authenticator to authorize adding a new one. 0.1
+  modelled enrollment as a single ceremony authorized by the `proof`, which is
+  right for a first passkey and wrong for a subsequent one: silently enrolling an
+  attacker-controlled authenticator is durable access that outlives the token
+  used to obtain it. `uvOptions` is optional because a first enrollment has
+  nothing to verify against. Framework target moves to 0.2.
+
+  0.1 remains published and unchanged. A 0.1 producer against a 0.2 consumer that
+  issues `uvOptions` fails at finish — intended, rather than the consumer
+  silently dropping a control it decided it needed.
+
+### Fixed
+- Relative links in the new `auth/passkey/*` specs resolve from the version
+  directory. The 0.1 enroll/login specs they were modelled on carry a
+  depth-by-one error in their `SPEC.md`, `_shared/` and sibling-leg links; the
+  0.2 copies correct it. The same class of broken link exists in ~69 spec
+  directories repo-wide and is left for a separate sweep.
+
 ## [0.2.38] — 2026-07-26
 
 ### Added

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1",
+  "title": "Auth — Passkey Revoke (finish)",
+  "description": "Submit the user-verification assertion that completes a passkey revocation. On success the auth service unbinds the credential named at start. The payload carries no target — the revocationId is bound to it server-side.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["revocationId", "uvCredential"],
+  "properties": {
+    "revocationId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim."
+    },
+    "uvCredential": {
+      "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/AssertionResponse",
+      "description": "AuthenticatorAssertionResponse as returned by navigator.credentials.get over the uvOptions from start. Binary fields base64url-encoded."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Revoke Finish — response payload",
+      "description": "Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credentialId", "revokedAt", "remaining"],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended."
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential was unbound."
+        },
+        "remaining": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

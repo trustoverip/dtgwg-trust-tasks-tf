@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/start/0.2",
+  "title": "Auth — Passkey Enroll (start)",
+  "description": "Ask the auth service to begin a WebAuthn registration ceremony. The response carries PublicKeyCredentialCreationOptions; the producer hands them to `navigator.credentials.create({ publicKey: ... })`.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "deviceLabel": {
+      "type": "string",
+      "description": "Operator-facing label for the credential (e.g. \"Alice's MacBook\"). Surfaced in the credential list for later management."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Enroll Start — response payload",
+      "description": "Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enrollmentId", "options"],
+      "properties": {
+        "enrollmentId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim."
+        },
+        "options": {
+          "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialCreationOptions",
+          "description": "PublicKeyCredentialCreationOptions for navigator.credentials.create."
+        },
+        "uvOptions": {
+          "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialRequestOptions",
+          "description": "New in 0.2. PublicKeyCredentialRequestOptions for a concurrent user-verification ceremony against the subject's EXISTING credentials. Present when the consumer requires re-authentication to add an authenticator — normally whenever the subject already has one. Absent for a first enrollment, when there is nothing to re-authenticate against. When present the producer MUST run both ceremonies and return both results to finish."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

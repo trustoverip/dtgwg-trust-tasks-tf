@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2",
+  "title": "Auth — Passkey Enroll (finish)",
+  "description": "Submit the WebAuthn attestation that completes a passkey-enrollment ceremony. On success the auth service binds the credential to the subject's VID.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["enrollmentId", "credential"],
+  "properties": {
+    "enrollmentId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim."
+    },
+    "credential": {
+      "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/AttestationResponse",
+      "description": "AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded."
+    },
+    "uvCredential": {
+      "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/AssertionResponse",
+      "description": "New in 0.2. AuthenticatorAssertionResponse over the uvOptions returned by start, proving a human with an already-enrolled authenticator authorized adding this one. REQUIRED whenever start returned uvOptions; omitted otherwise. A consumer that issued uvOptions MUST reject a finish that lacks this member — the re-authentication requirement is the consumer's, so treating a missing assertion as consent would let a producer decline it unilaterally."
+    },
+    "deviceLabel": {
+      "type": "string",
+      "description": "Final operator-facing label for the credential. Overrides any label passed at start."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Enroll Finish — response payload",
+      "description": "Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credentialId", "subject", "registeredAt"],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "description": "base64url-encoded WebAuthn credential id, durable identifier for later management."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The VID the credential is now bound to. Echoed for symmetry with finish-time error responses."
+        },
+        "deviceLabel": {
+          "type": "string",
+          "description": "The label persisted with the credential."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/list/0.1",
+  "title": "Auth — Passkey List",
+  "description": "Enumerate the passkeys the auth service holds for the producer's subject. The credential-management counterpart to auth/sessions/list: sessions answers \"where am I signed in?\", this answers \"what can sign me in?\". Its output is the input to auth/passkey/revoke/start.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey List — response payload",
+      "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credentials"],
+      "properties": {
+        "credentials": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/webauthn.schema.json#/$defs/RegisteredCredential"
+          },
+          "description": "Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

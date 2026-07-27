@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1",
+  "title": "Auth — Passkey Revoke (start)",
+  "description": "Ask the auth service to begin revoking one of the subject's passkeys. The response carries PublicKeyCredentialRequestOptions for a fresh user-verification ceremony; nothing is removed until the matching auth/passkey/revoke/finish presents the assertion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["credentialId"],
+  "properties": {
+    "credentialId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The credential to revoke, as returned by auth/passkey/list. Echoed verbatim; opaque to the producer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Revoke Start — response payload",
+      "description": "Server-issued re-authentication options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/start/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revocationId", "uvOptions"],
+      "properties": {
+        "revocationId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim. The consumer binds it to the target credentialId server-side, so the finish carries no target of its own."
+        },
+        "uvOptions": {
+          "$ref": "../../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialRequestOptions",
+          "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get — a fresh user-verification ceremony proving a human with an enrolled authenticator is present right now. userVerification SHOULD be \"required\"."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

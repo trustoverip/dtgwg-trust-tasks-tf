@@ -1,0 +1,34 @@
+[
+  {
+    "note": "Missing credentialId — the target is required at start, because the consumer binds it to the revocationId rather than accepting it at finish.",
+    "payload": {}
+  },
+  {
+    "note": "Empty credentialId.",
+    "payload": {
+      "credentialId": ""
+    }
+  },
+  {
+    "note": "Unknown top-level member. `subject` in particular is rejected: the credential owner comes from the proof, never from the payload.",
+    "payload": {
+      "credentialId": "q1w2e3r4t5y6u7i8o9p0",
+      "subject": "did:web:alice.example"
+    }
+  },
+  {
+    "note": "Array of credential ids — revocation is one credential per ceremony, so that each removal is separately user-verified.",
+    "payload": {
+      "credentialId": ["q1w2e3r4t5y6u7i8o9p0", "z9x8c7v6b5n4m3k2j1h0"]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "credentialId": "q1w2e3r4t5y6u7i8o9p0",
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]

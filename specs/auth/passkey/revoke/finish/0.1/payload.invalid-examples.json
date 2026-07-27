@@ -1,0 +1,74 @@
+[
+  {
+    "note": "Missing uvCredential — the assertion is the whole point of the finish leg.",
+    "payload": {
+      "revocationId": "rev_9f8e7d6c5b4a3210"
+    }
+  },
+  {
+    "note": "Missing revocationId — without the handle there is no server-side binding to a target credential.",
+    "payload": {
+      "uvCredential": {
+        "id": "q1w2e3r4t5y6u7i8o9p0",
+        "rawId": "q1w2e3r4t5y6u7i8o9p0",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+          "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
+          "signature": "MEUCIQDx"
+        }
+      }
+    }
+  },
+  {
+    "note": "credentialId supplied at finish — rejected on purpose. The target is bound to the revocationId at start; accepting a copy here would let an intercepted ceremony be redirected to destroy a different credential than the one the user verified.",
+    "payload": {
+      "revocationId": "rev_9f8e7d6c5b4a3210",
+      "credentialId": "q1w2e3r4t5y6u7i8o9p0",
+      "uvCredential": {
+        "id": "q1w2e3r4t5y6u7i8o9p0",
+        "rawId": "q1w2e3r4t5y6u7i8o9p0",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+          "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
+          "signature": "MEUCIQDx"
+        }
+      }
+    }
+  },
+  {
+    "note": "uvCredential is an attestation (registration) response rather than an assertion — attestationObject where authenticatorData + signature belong.",
+    "payload": {
+      "revocationId": "rev_9f8e7d6c5b4a3210",
+      "uvCredential": {
+        "id": "q1w2e3r4t5y6u7i8o9p0",
+        "rawId": "q1w2e3r4t5y6u7i8o9p0",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0",
+          "attestationObject": "o2NmbXRkbm9uZQ"
+        }
+      }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "revocationId": "rev_9f8e7d6c5b4a3210",
+      "uvCredential": {
+        "id": "q1w2e3r4t5y6u7i8o9p0",
+        "rawId": "q1w2e3r4t5y6u7i8o9p0",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+          "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
+          "signature": "MEUCIQDx"
+        }
+      },
+      "ext": {
+        "bare-key": { "anything": "here" }
+      }
+    }
+  }
+]
