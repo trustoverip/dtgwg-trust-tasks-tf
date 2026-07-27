@@ -5,6 +5,7 @@ pub mod auth;
 pub mod backup;
 pub mod ceremonies;
 pub mod community;
+pub mod config;
 pub mod directory;
 pub mod endorsement_types;
 pub mod endorsements;

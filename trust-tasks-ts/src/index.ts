@@ -219,6 +219,7 @@ export * as VtaPasskeyVmsRevoke_v0_1 from "./vta/passkey-vms/revoke/0.1/payload"
 export * as VtaWebvhDidsUpdate_v1_0 from "./vta/webvh/dids/update/1.0/payload";
 export * as BackupShared_v0_1 from "./vtc/_shared/0.1/backup";
 export * as CommunityShared_v0_1 from "./vtc/_shared/0.1/community";
+export * as ConfigPortabilityShared_v0_1 from "./vtc/_shared/0.1/config-portability";
 export * as EndorsementTypeShared_v0_1 from "./vtc/_shared/0.1/endorsement-type";
 export * as EndorsementShared_v0_1 from "./vtc/_shared/0.1/endorsement";
 export * as InvitationShared_v0_1 from "./vtc/_shared/0.1/invitation";
@@ -237,6 +238,8 @@ export * as VtcBackupImport_v0_1 from "./vtc/backup/import/0.1/payload";
 export * as VtcCeremoniesList_v0_1 from "./vtc/ceremonies/list/0.1/payload";
 export * as VtcCommunityProfileShow_v0_1 from "./vtc/community/profile/show/0.1/payload";
 export * as VtcCommunityProfileUpdate_v0_1 from "./vtc/community/profile/update/0.1/payload";
+export * as VtcConfigExport_v0_1 from "./vtc/config/export/0.1/payload";
+export * as VtcConfigImport_v0_1 from "./vtc/config/import/0.1/payload";
 export * as VtcDirectoryQuery_v0_1 from "./vtc/directory/query/0.1/payload";
 export * as VtcEndorsementTypesDelete_v0_1 from "./vtc/endorsement-types/delete/0.1/payload";
 export * as VtcEndorsementTypesList_v0_1 from "./vtc/endorsement-types/list/0.1/payload";

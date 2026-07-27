@@ -202,6 +202,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/ceremonies/list/0.1" => Some(<crate::specs::vtc::ceremonies::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/community/profile/show/0.1" => Some(<crate::specs::vtc::community::profile::show::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/community/profile/update/0.1" => Some(<crate::specs::vtc::community::profile::update::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vtc/config/export/0.1" => Some(<crate::specs::vtc::config::export::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vtc/config/import/0.1" => Some(<crate::specs::vtc::config::import::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/directory/query/0.1" => Some(<crate::specs::vtc::directory::query::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/endorsement-types/delete/0.1" => Some(<crate::specs::vtc::endorsement_types::delete::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1" => Some(<crate::specs::vtc::endorsement_types::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.40] — 2026-07-27
+
+### Added
+- **`vtc/config/export/0.1`** — export a community's portable configuration (its
+  profile plus its stored configuration overrides) as one self-describing
+  document. Takes no parameters: a document carrying an arbitrary subset of keys
+  is not portable, because importing it would silently leave the unselected keys
+  at whatever the target already had.
+- **`vtc/config/import/0.1`** — apply that document, or preview what applying it
+  would change. `confirm` defaults to `false`, so the default outcome of a
+  forgotten member is a preview rather than an overwritten community. `rejected`
+  is populated on the preview too — a rejection discovered *after* writing the
+  accepted half leaves a community matching neither configuration.
+- **`vtc/_shared/0.1/config-portability`** — `ConfigExportDocument`,
+  `CommunityProfileSnapshot`, and `ConfigFieldChange`, shared by the two tasks
+  above.
+
+### Fixed
+- **The TS binding generator now fails on a duplicate export alias** instead of
+  emitting an `index.ts` that breaks `tsc`. Shared-module aliases are derived
+  from basename + version and do **not** distinguish families, so
+  `config/_shared/0.1/config` and a `vtc/_shared/0.1/config` both want
+  `ConfigShared_v0_1`. That surfaced as a `TS2300` in generated code — a
+  diagnostic pointing at the symptom that names neither colliding spec. The
+  generator now raises at generation time with both paths. (This is why the
+  shared schema above is `config-portability` rather than `config`; a
+  family-qualified alias scheme would rename every existing shared export and
+  break TS consumers, so the collision is avoided by name instead.)
+
+`CommunityProfileSnapshot` is deliberately *not* `vtc/_shared/0.1/community`'s
+`CommunityProfile`. That one is the update-facing view and omits `communityDid`
+so a patch cannot re-point a community's identity; the snapshot **requires** it,
+because the DID is what lets an import refuse a document taken from a different
+community. The import reads it for that comparison and never writes it.
+
+These supersede the non-conformant `openvtc/vtc/admin/config/{export,import}/1.0`
+that `vtc-service` still binds (VTI #710) — the last two bindings on that retired
+authority. They are VTC-slugged rather than folded into the generic `config/*`
+family: `communityProfile` and its diff are roughly half the import's payload, so
+a generic task with those pushed into `ext` would be a hollow shell in its only
+real use. Same reasoning that put `vtc/backup/{export,import}` under `vtc/`.
+
 ## [0.2.39] — 2026-07-27
 
 ### Added

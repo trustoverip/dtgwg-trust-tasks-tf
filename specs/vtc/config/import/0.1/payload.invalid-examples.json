@@ -1,0 +1,93 @@
+[
+  {
+    "note": "`document` is required.",
+    "payload": { "confirm": true }
+  },
+  {
+    "note": "`confirm` must be a boolean, not a string.",
+    "payload": {
+      "document": {
+        "schemaVersion": 1,
+        "exportedAt": "2026-07-27T09:00:00Z",
+        "configOverrides": {}
+      },
+      "confirm": "yes"
+    }
+  },
+  {
+    "note": "The document's `schemaVersion` is required — a document without it cannot be checked after a file round-trip.",
+    "payload": {
+      "document": {
+        "exportedAt": "2026-07-27T09:00:00Z",
+        "configOverrides": {}
+      }
+    }
+  },
+  {
+    "note": "`configOverrides` is required; omitting it is not the same as an empty object.",
+    "payload": {
+      "document": {
+        "schemaVersion": 1,
+        "exportedAt": "2026-07-27T09:00:00Z"
+      }
+    }
+  },
+  {
+    "note": "`schemaVersion` must be an integer of at least 1.",
+    "payload": {
+      "document": {
+        "schemaVersion": 0,
+        "exportedAt": "2026-07-27T09:00:00Z",
+        "configOverrides": {}
+      }
+    }
+  },
+  {
+    "note": "`exportedAt` must be an RFC 3339 date-time.",
+    "payload": {
+      "document": {
+        "schemaVersion": 1,
+        "exportedAt": "last Tuesday",
+        "configOverrides": {}
+      }
+    }
+  },
+  {
+    "note": "A profile snapshot MUST carry `communityDid` — it is what lets an import refuse a document from a different community.",
+    "payload": {
+      "document": {
+        "schemaVersion": 1,
+        "exportedAt": "2026-07-27T09:00:00Z",
+        "configOverrides": {},
+        "communityProfile": { "name": "Example Community", "language": "en" }
+      }
+    }
+  },
+  {
+    "note": "The profile snapshot rejects unknown members, including `registryStatus` — reachability is a property of a running maintainer, not of exported state.",
+    "payload": {
+      "document": {
+        "schemaVersion": 1,
+        "exportedAt": "2026-07-27T09:00:00Z",
+        "configOverrides": {},
+        "communityProfile": {
+          "communityDid": "did:webvh:example.org:community",
+          "name": "Example Community",
+          "language": "en",
+          "registryStatus": "active"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "document": {
+        "schemaVersion": 1,
+        "exportedAt": "2026-07-27T09:00:00Z",
+        "configOverrides": {}
+      },
+      "__notARealMember__": true
+    }
+  }
+]

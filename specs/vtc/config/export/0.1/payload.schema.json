@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/config/export/0.1",
+  "title": "VTC Config Export — payload",
+  "description": "Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Config Export — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document"],
+      "properties": {
+        "document": {
+          "$ref": "../../../_shared/0.1/config-portability.schema.json#/$defs/ConfigExportDocument",
+          "description": "The portable configuration document, ready to feed back to vtc/config/import."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

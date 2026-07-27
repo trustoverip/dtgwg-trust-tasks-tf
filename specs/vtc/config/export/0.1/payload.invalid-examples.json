@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "__notARealMember__": true }
+  },
+  {
+    "note": "The request takes no parameters; a `keys` selector borrowed from config/show is rejected — a partial export is not portable.",
+    "payload": { "keys": ["log.level"] }
+  },
+  {
+    "note": "`ext` keys must be reverse-DNS namespaces, not bare words.",
+    "payload": { "ext": { "notADnsName": { "any": "thing" } } }
+  }
+]

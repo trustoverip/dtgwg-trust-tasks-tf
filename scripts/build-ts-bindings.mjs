@@ -159,6 +159,30 @@ async function emitIndex(generated) {
       lines.push(`export * as ${name}Shared${suffix} from ${JSON.stringify(rel)};`);
     }
   }
+
+  // Fail here rather than downstream. The alias is derived from the basename
+  // and version only, so it does NOT distinguish families: `config/_shared/
+  // 0.1/config` and `vtc/_shared/0.1/config` both want `ConfigShared_v0_1`.
+  // Emitting both is valid-looking output that breaks `tsc` with a TS2300 in
+  // the generated `index.ts` — a diagnostic that points at the symptom and
+  // says nothing about which two specs collided. Catch it at the source.
+  const seen = new Map();
+  const collisions = [];
+  for (const line of lines) {
+    const m = /^export \* as (\S+) from "(.+)";$/.exec(line);
+    if (!m) continue;
+    const [, alias, from] = m;
+    if (seen.has(alias)) collisions.push(`${alias}: ${seen.get(alias)} vs ${from}`);
+    else seen.set(alias, from);
+  }
+  if (collisions.length) {
+    throw new Error(
+      `duplicate TS export alias(es) — rename one of the colliding shared schemas ` +
+        `(the alias comes from the file's basename + version, not its family):\n  ` +
+        collisions.join("\n  "),
+    );
+  }
+
   await fs.writeFile(path.join(OUT_DIR, "index.ts"), lines.join("\n") + "\n", "utf8");
 }
 

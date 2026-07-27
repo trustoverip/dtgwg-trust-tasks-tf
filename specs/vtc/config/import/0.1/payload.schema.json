@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/config/import/0.1",
+  "title": "VTC Config Import — payload",
+  "description": "Apply a portable configuration document to this community, or preview what applying it would change. Defaults to a preview.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document"],
+  "properties": {
+    "document": {
+      "$ref": "../../../_shared/0.1/config-portability.schema.json#/$defs/ConfigExportDocument",
+      "description": "The document returned by `vtc/config/export`."
+    },
+    "confirm": {
+      "type": "boolean",
+      "default": false,
+      "description": "`false` (default) previews: the diff is computed and returned, nothing is written. `true` applies it. The preview and the apply return the same shape, so an operator UX can render one and then re-submit."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Config Import — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "profileChanges",
+        "overrideChanges",
+        "rejected"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["preview", "imported"],
+          "description": "`preview` when `confirm` was not set; `imported` after the document was applied."
+        },
+        "profileChanges": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/config-portability.schema.json#/$defs/ConfigFieldChange" },
+          "description": "Community-profile members that differ from what is in force. Empty when the document omits `communityProfile`, or when nothing differs. On `imported` these are the changes that were written."
+        },
+        "overrideChanges": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/config-portability.schema.json#/$defs/ConfigFieldChange" },
+          "description": "Configuration-override keys that differ from what is in force. Rejected keys are not listed here — they appear under `rejected`. On `imported` these are the changes that were written."
+        },
+        "pendingRestart": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "Applied keys whose new value takes effect only after a restart. Reported on a preview too, so an operator learns before confirming that the import implies downtime."
+        },
+        "rejected": {
+          "type": "array",
+          "items": { "$ref": "../../../../config/_shared/0.1/config.schema.json#/$defs/RejectedKey" },
+          "description": "Keys the consumer declined — unknown to its configuration registry, wrong type, out of range. Reported identically on preview and apply, so a preview surfaces every rejection before anything is written."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
