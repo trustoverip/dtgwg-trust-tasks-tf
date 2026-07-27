@@ -65,14 +65,14 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Login (finish)** Trust Task completes the WebAuthn assertion ceremony started by [`auth/passkey/login/start/0.1`](../start/0.1/spec.md). The producer submits the `AuthenticatorAssertionResponse` returned by `navigator.credentials.get`; the auth service verifies the assertion per WebAuthn Level 2 §7.2 and dispatches on the start ceremony's recorded `purpose`:
+The **Auth — Passkey Login (finish)** Trust Task completes the WebAuthn assertion ceremony started by [`auth/passkey/login/start/0.1`](../../start/0.1/spec.md). The producer submits the `AuthenticatorAssertionResponse` returned by `navigator.credentials.get`; the auth service verifies the assertion per WebAuthn Level 2 §7.2 and dispatches on the start ceremony's recorded `purpose`:
 
 - `purpose: "login"` — issue a new `Session` and `TokenBundle` with `amr` containing at least `"passkey"`, `acr` defaulting to `"aal2"`.
 - `purpose: "stepUp"` — locate the producer's existing session, rotate its `amr`/`acr` to reflect the new factor (`amr` adds `"passkey"`, `acr` raises to `"aal2"` or `"aal3"` per consumer policy). The session id and existing tokens persist.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -106,7 +106,7 @@ A conforming **consumer** **MUST**:
 
 ## Definitions
 
-* **AuthenticatorAssertionResponse.** WebAuthn dictionary; see [`_shared/0.1/webauthn.schema.json#AssertionResponse`](../../../_shared/0.1/webauthn.schema.json).
+* **AuthenticatorAssertionResponse.** WebAuthn dictionary; see [`_shared/0.1/webauthn.schema.json#AssertionResponse`](../../../../_shared/0.1/webauthn.schema.json).
 * **Existing session.** For step-up purposes, the session the producer is elevating. Identified by transport-context: `Authorization: Bearer` token, or the document `issuer` when a framework proof is present.
 
 ## Payload

@@ -51,14 +51,14 @@ The **Device — Set Wake** Trust Task is how a Companion conveys its **WakeHand
 
 This task carries that handle — never the token — from the device to its VTA. The VTA is the source of truth for device configuration, so it owns the **trigger allowlist** (which DIDs may wake this device) and **provisions it to the gateway**, which enforces it. Putting the handle on the VTA (config) while the token stays on the gateway (transport) gives the VTA full policy ownership without ever holding the push token.
 
-The task is **idempotent**: a device re-sends it whenever its platform token rotates (and the gateway issues a fresh handle), or with no handle to disable wake. Unlike [`device/register`](../register/0.1/spec.md) — which is one-shot and rejects re-registration — set-wake is the steady-state update path for the wake channel.
+The task is **idempotent**: a device re-sends it whenever its platform token rotates (and the gateway issues a fresh handle), or with no handle to disable wake. Unlike [`device/register`](../../register/0.1/spec.md) — which is one-shot and rejects re-registration — set-wake is the steady-state update path for the wake channel.
 
 ## Conformance
 
 A conforming **producer** (the device) **MUST**:
 
-1. Have completed [`device/register`](../register/0.1/spec.md) — the issuer's DID MUST already have a DeviceBinding, else `device/set-wake:notRegistered`.
-2. Have registered its platform push token with a push gateway and obtained a [`WakeHandle`](../_shared/0.2/device-binding.schema.json#/$defs/WakeHandle) **before** issuing this task. The device **MUST NOT** place any platform push token in this payload — only the opaque handle.
+1. Have completed [`device/register`](../../register/0.1/spec.md) — the issuer's DID MUST already have a DeviceBinding, else `device/set-wake:notRegistered`.
+2. Have registered its platform push token with a push gateway and obtained a [`WakeHandle`](../../_shared/0.2/device-binding.schema.json#/$defs/WakeHandle) **before** issuing this task. The device **MUST NOT** place any platform push token in this payload — only the opaque handle.
 3. Supply `wakeHandle` to set or replace the wake channel, or omit it to clear the channel (the device becomes non-wakeable; the VTA empties the gateway allowlist).
 4. Carry a `proof`.
 5. Re-issue this task whenever the gateway issues a new handle (token rotation).
@@ -66,7 +66,7 @@ A conforming **producer** (the device) **MUST**:
 A conforming **consumer** (the VTA / vault maintainer) **MUST**:
 
 1. Verify proof; the producer's DID MUST be in the ACL with a DeviceBinding. If not → `device/set-wake:notRegistered`.
-2. Compute the [`WakeTriggerPolicy`](../_shared/0.2/device-binding.schema.json#/$defs/WakeTriggerPolicy) from its own configuration — **this is VTA-owned policy, not device-supplied.** The default allowlist is the device's mediator DID (queue-driven wake) together with the VTA's own DID (policy-driven wake); operators MAY narrow or widen it by policy. A device-supplied `suggestedTriggers` hint, if present, is advisory only and the VTA MAY ignore it.
+2. Compute the [`WakeTriggerPolicy`](../../_shared/0.2/device-binding.schema.json#/$defs/WakeTriggerPolicy) from its own configuration — **this is VTA-owned policy, not device-supplied.** The default allowlist is the device's mediator DID (queue-driven wake) together with the VTA's own DID (policy-driven wake); operators MAY narrow or widen it by policy. A device-supplied `suggestedTriggers` hint, if present, is advisory only and the VTA MAY ignore it.
 3. Provision the allowlist to the gateway named in the handle, authenticating as the VTA. The gateway records `handle → allowedTriggers`. On unreachable/refused gateway → `device/set-wake:gatewayUnreachable` (retryable) or `device/set-wake:invalidHandle` (terminal) per the gateway's response.
 4. Record the handle against the DeviceBinding and set `pushCapable = true` (or `false` when cleared). The VTA stores the **handle and the allowlist, never the token**.
 5. Return the effective `triggerPolicy` it provisioned, so the device can see who is authorized to wake it.

@@ -38,9 +38,9 @@ related:
 
 ## Abstract
 
-The **Auth — Sessions List** Trust Task is the multi-session counterpart to [`auth/whoami/0.1`](../../whoami/0.1/spec.md). Whoami answers "what's my current session?"; this task answers "what sessions do you hold for me?" — typical for the "Signed in on these devices" UX or for an operator auditing where their identity is presented.
+The **Auth — Sessions List** Trust Task is the multi-session counterpart to [`auth/whoami/0.1`](../../../whoami/0.1/spec.md). Whoami answers "what's my current session?"; this task answers "what sessions do you hold for me?" — typical for the "Signed in on these devices" UX or for an operator auditing where their identity is presented.
 
-The proof on the document identifies the subject; the response is an array of `Session` objects the consumer currently holds. The subject MAY follow up with [`auth/revoke-session/0.1`](../../revoke-session/0.1/spec.md) (targeting a specific `id` or `all: true`) to invalidate any session in the list.
+The proof on the document identifies the subject; the response is an array of `Session` objects the consumer currently holds. The subject MAY follow up with [`auth/revoke-session/0.1`](../../../revoke-session/0.1/spec.md) (targeting a specific `id` or `all: true`) to invalidate any session in the list.
 
 ## Status of this Document
 

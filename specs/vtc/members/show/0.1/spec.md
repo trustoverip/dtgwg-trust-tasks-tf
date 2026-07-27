@@ -41,7 +41,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — Show** Trust Task returns one community member — the [`MemberResponse`](../../_shared/0.1/member.schema.json) for `did`, the membership record joined with its ACL role. The read-one companion to [`vtc/members/list`](../list/0.1/).
+The **VTC Members — Show** Trust Task returns one community member — the [`MemberResponse`](../../../_shared/0.1/member.schema.json) for `did`, the membership record joined with its ACL role. The read-one companion to [`vtc/members/list`](../../list/0.1/).
 
 The member `did` is carried in the payload (not only a transport path), so the task dispatches identically over REST and DIDComm and the subject is visible to policy evaluation via `subjectPath: /did`.
 

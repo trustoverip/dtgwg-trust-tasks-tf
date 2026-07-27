@@ -41,7 +41,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members Personhood — Challenge** Trust Task begins a personhood assertion for the member `did`. It returns a single-use `challengeId` and an `expiresAt`; the member embeds the `challengeId` as the `proof.challenge` of the Verifiable Presentation they submit to [`vtc/members/personhood/assert`](../assert/0.1/). The challenge anchors replay resistance for the assertion.
+The **VTC Members Personhood — Challenge** Trust Task begins a personhood assertion for the member `did`. It returns a single-use `challengeId` and an `expiresAt`; the member embeds the `challengeId` as the `proof.challenge` of the Verifiable Presentation they submit to [`vtc/members/personhood/assert`](../../assert/0.1/). The challenge anchors replay resistance for the assertion.
 
 ## Conformance
 

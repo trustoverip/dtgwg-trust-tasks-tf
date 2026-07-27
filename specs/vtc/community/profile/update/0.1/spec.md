@@ -43,7 +43,7 @@ errorCodes:
 ## Abstract
 
 The **VTC Community Profile — Update** Trust Task edits the community's public
-[`CommunityProfile`](../../../_shared/0.1/community.schema.json). It is a
+[`CommunityProfile`](../../../../_shared/0.1/community.schema.json). It is a
 **partial patch**: only the fields present in the request are changed; omitted
 fields are left as-is. The nullable fields (`logoUrl`, `publicUrl`,
 `contactEmail`) may be explicitly set to `null` to clear them.

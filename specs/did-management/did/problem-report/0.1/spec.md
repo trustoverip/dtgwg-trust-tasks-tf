@@ -47,7 +47,7 @@ The producer (the hosting service) emits `type: https://trusttasks.org/spec/did-
 ## Definitions
 
 * **Slot identifier.** `payload.mnemonic` (+ optional `payload.domain`) locates the slot on the producer.
-* **Framework error code.** A code drawn from [SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes) OR a `did-management/...` extended code; consumers treat unknown codes as informational.
+* **Framework error code.** A code drawn from [SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes) OR a `did-management/...` extended code; consumers treat unknown codes as informational.
 
 ## Request
 

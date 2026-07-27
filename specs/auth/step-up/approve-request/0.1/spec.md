@@ -57,7 +57,7 @@ related:
 
 The **Auth — Step-up Approve Request** Trust Task is the first half of an out-of-band step-up flow. The relying party (typically an auth service holding a subject's session at AAL 1) sends this document to an *approver* — usually the subject's wallet or a Verifiable-Trust Agent acting for the subject — asking the approver to ratify an AAL elevation.
 
-The approver SHOULD show the `reason` to a human and obtain consent. If consent is granted, the approver returns an [`auth/step-up/approve-response/0.1`](../approve-response/0.1/spec.md) signed by the subject's key. That signed response is the cryptographic gate the relying party uses to elevate the session.
+The approver SHOULD show the `reason` to a human and obtain consent. If consent is granted, the approver returns an [`auth/step-up/approve-response/0.1`](../../approve-response/0.1/spec.md) signed by the subject's key. That signed response is the cryptographic gate the relying party uses to elevate the session.
 
 This pair (`approve-request` + `approve-response`) is the canonical "trust task instead of a side channel" pattern. The same shape can support transaction-confirmation flows, high-value-operation gates, and admin-takes-over-from-subject ceremonies.
 

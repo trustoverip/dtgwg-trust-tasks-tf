@@ -37,7 +37,7 @@ related:
 
 The **Me / Domains** Trust Task lets a caller discover which hosting domains they are permitted to use on a hosting service, and which of those is their *default*. The result is a caller-scoped projection of the host's domain registry — Admin and Service callers (and any caller whose ACL declares `DomainScope::All`) see every active domain; scoped callers see only the names their ACL entry lists, plus the explicit default the ACL records (or the system default when none is recorded).
 
-This task is the canonical discovery surface for interactive tooling that needs to populate a `--domain` selector before a [`did/check-name`](../../did/check-name/0.1/spec.md) or [`did/register`](../../did/register/0.1/spec.md). It is intentionally a read-only projection — the caller learns *what is accessible*, not *what could be created* — and never mutates state.
+This task is the canonical discovery surface for interactive tooling that needs to populate a `--domain` selector before a [`did/check-name`](../../../did/check-name/0.1/spec.md) or [`did/register`](../../../did/register/0.1/spec.md). It is intentionally a read-only projection — the caller learns *what is accessible*, not *what could be created* — and never mutates state.
 
 ## Status of this Document
 
@@ -79,7 +79,7 @@ Caller authenticates to the hosting service and emits `type: https://trusttasks.
   } }
 ```
 
-Each element of `domains[]` is a `DomainEntry` per [`_shared/0.1/domain-entry.schema.json`](../../../_shared/0.1/domain-entry.schema.json). Consumers MAY populate operator-managed fields under `ext.<vendor>:*` (per [SPEC §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) when the host configures additional per-domain metadata; those keys are advisory and consumers SHOULD ignore unrecognized vendor namespaces.
+Each element of `domains[]` is a `DomainEntry` per [`_shared/0.1/domain-entry.schema.json`](../../../_shared/0.1/domain-entry.schema.json). Consumers MAY populate operator-managed fields under `ext.<vendor>:*` (per [SPEC §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) when the host configures additional per-domain metadata; those keys are advisory and consumers SHOULD ignore unrecognized vendor namespaces.
 
 ## Security & Privacy
 

@@ -42,7 +42,7 @@ errorCodes:
 
 ## Abstract
 
-The **Audit — List** Trust Task pages through a maintainer's append-only audit log, returning [`AuditEnvelope`](../_shared/0.1/audit.schema.json) entries **newest first**. It is the enumeration companion to [`audit/verify`](../verify/0.1/): verify says whether the chain is intact, list shows what is in it. Optional filters (`from`/`to`, `action`, `actor`, `outcome`, `contextId`) narrow the result; an opaque `cursor` continues a previous page.
+The **Audit — List** Trust Task pages through a maintainer's append-only audit log, returning [`AuditEnvelope`](../../_shared/0.1/audit.schema.json) entries **newest first**. It is the enumeration companion to [`audit/verify`](../../verify/0.1/): verify says whether the chain is intact, list shows what is in it. Optional filters (`from`/`to`, `action`, `actor`, `outcome`, `contextId`) narrow the result; an opaque `cursor` continues a previous page.
 
 ## Paging
 

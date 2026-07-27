@@ -43,11 +43,11 @@ errorCodes:
 
 ## Abstract
 
-**Push — Register** is how a device hands its platform push token to a **push gateway** and gets back an opaque [`WakeHandle`](../../device/_shared/0.2/device-binding.schema.json#/$defs/WakeHandle). It is the first step of the [push wake-up binding](../../../bindings/push/0.1/spec.md)'s three-role model (gateway / trigger / device).
+**Push — Register** is how a device hands its platform push token to a **push gateway** and gets back an opaque [`WakeHandle`](../../../device/_shared/0.2/device-binding.schema.json#/$defs/WakeHandle). It is the first step of the [push wake-up binding](../../../../bindings/push/0.1/spec.md)'s three-role model (gateway / trigger / device).
 
-The gateway is the only party that holds the app's platform push credentials (APNs auth key, FCM service account, Web Push VAPID key) and therefore the only one that can deliver a push to the app. In exchange for the token it issues an opaque handle; **the raw token never leaves the gateway**. The device conveys the handle onward — to its VTA via [`device/set-wake/0.1`](../../device/set-wake/0.1/spec.md), and to triggers as the gateway address + handle — but never the token.
+The gateway is the only party that holds the app's platform push credentials (APNs auth key, FCM service account, Web Push VAPID key) and therefore the only one that can deliver a push to the app. In exchange for the token it issues an opaque handle; **the raw token never leaves the gateway**. The device conveys the handle onward — to its VTA via [`device/set-wake/0.1`](../../../device/set-wake/0.1/spec.md), and to triggers as the gateway address + handle — but never the token.
 
-The device also names the **controller VTA** — the DID permitted to provision this handle's trigger allowlist ([`push/provision/0.1`](../provision/0.1/spec.md)). Possession of a handle is not authority to wake the device; the VTA-owned allowlist, enforced by the gateway, is the control.
+The device also names the **controller VTA** — the DID permitted to provision this handle's trigger allowlist ([`push/provision/0.1`](../../provision/0.1/spec.md)). Possession of a handle is not authority to wake the device; the VTA-owned allowlist, enforced by the gateway, is the control.
 
 Carried over the **DIDComm binding** (preferred — the authcrypt sender authenticates the device) or the HTTPS binding (for devices that can't speak DIDComm). The `recipient` is the gateway.
 
@@ -69,11 +69,11 @@ A conforming **consumer** (the push gateway) **MUST**:
 
 ## Payload
 
-`registration` (REQUIRED — the [`PushRegistration`](../../device/_shared/0.2/device-binding.schema.json#/$defs/PushRegistration) platform token); `controllerVtaDid` (REQUIRED — the VTA allowed to provision this handle's allowlist).
+`registration` (REQUIRED — the [`PushRegistration`](../../../device/_shared/0.2/device-binding.schema.json#/$defs/PushRegistration) platform token); `controllerVtaDid` (REQUIRED — the VTA allowed to provision this handle's allowlist).
 
 ## Response
 
-`wakeHandle` — the opaque [`WakeHandle`](../../device/_shared/0.2/device-binding.schema.json#/$defs/WakeHandle) (`{ gateway, handle }`).
+`wakeHandle` — the opaque [`WakeHandle`](../../../device/_shared/0.2/device-binding.schema.json#/$defs/WakeHandle) (`{ gateway, handle }`).
 
 ## Security & Privacy
 
@@ -81,4 +81,4 @@ A conforming **consumer** (the push gateway) **MUST**:
 
 **Handle is not authority.** A handle lets a party *request* a wake, but the gateway fires one only for a DID on the handle's VTA-provisioned allowlist. A leaked handle yields, at worst, a refused wake.
 
-**Contentless downstream.** The wake the gateway eventually delivers to the device is the [push binding](../../../bindings/push/0.1/spec.md)'s contentless doorbell — it carries no Trust Task content. This task only sets up the channel.
+**Contentless downstream.** The wake the gateway eventually delivers to the device is the [push binding](../../../../bindings/push/0.1/spec.md)'s contentless doorbell — it carries no Trust Task content. This task only sets up the channel.

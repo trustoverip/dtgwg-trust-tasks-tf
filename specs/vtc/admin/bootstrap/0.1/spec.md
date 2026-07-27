@@ -36,7 +36,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Admin — Bootstrap** Trust Task writes the first admin to the community's ACL, consuming the single-use `setupSessionToken` minted by [`vtc/install/claim/finish`](../../install/claim/finish/0.1/). It returns the `adminDid` written and the `eventId` of the persisted `CommunityInstalled` audit envelope.
+The **VTC Admin — Bootstrap** Trust Task writes the first admin to the community's ACL, consuming the single-use `setupSessionToken` minted by [`vtc/install/claim/finish`](../../../install/claim/finish/0.1/). It returns the `adminDid` written and the `eventId` of the persisted `CommunityInstalled` audit envelope.
 
 ## Conformance
 

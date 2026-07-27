@@ -45,7 +45,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members Personhood — Assert** Trust Task asserts that the member `did` is a person. The member submits a W3C Verifiable Presentation whose `holder` is `did`, whose `proof.challenge` is the `challengeId` from a prior [`vtc/members/personhood/challenge`](../challenge/0.1/), and which carries at least one credential satisfying the community's active personhood policy. On success the community sets the personhood flag and re-issues the member's membership (`vmc`) and role (`roleVec`) credentials.
+The **VTC Members Personhood — Assert** Trust Task asserts that the member `did` is a person. The member submits a W3C Verifiable Presentation whose `holder` is `did`, whose `proof.challenge` is the `challengeId` from a prior [`vtc/members/personhood/challenge`](../../challenge/0.1/), and which carries at least one credential satisfying the community's active personhood policy. On success the community sets the personhood flag and re-issues the member's membership (`vmc`) and role (`roleVec`) credentials.
 
 ## Conformance
 

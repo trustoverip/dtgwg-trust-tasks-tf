@@ -97,7 +97,7 @@ The task is **idempotent for the slot's owner**: re-submitting the same `path` +
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -111,7 +111,7 @@ A conforming **producer** (the DID owner) **MUST**:
 
 A conforming **consumer** (the hosting service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
+1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements).
 2. Validate `payload.didData` against the declared `payload.method` — for `webvh`, the consumer walks the log chain and verifies each entry's signature against `parameters.updateKeys`; for `web`, the consumer verifies the document parses as a DID document and embeds an `id` consistent with this host.
 3. Extract the host segment from the embedded DID identifier and refuse the register when it does not match the hosting service's configured hosting domains (`did-management/did/register:host_mismatch`).
 4. Resolve the hosting domain to record on the slot: explicit `payload.domain` → caller's ACL default → system default. Persist the resolved value on the new record so subsequent reads carry it.
@@ -172,7 +172,7 @@ A *request* document carries `type: https://trusttasks.org/spec/did-management/d
 
 A success *response* document carries `type: https://trusttasks.org/spec/did-management/did/register/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The payload is `{ record: DidRecord }` carrying the canonical record the hosting service now holds.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful first-time register
 
@@ -206,4 +206,4 @@ A register is the *evidence of claim*: an attacker who can replay a captured reg
 
 `force: true` is a privileged operation — the only legitimate path through it is admin takeover of an abandoned slot. Consumers MUST refuse `force: true` from any caller that lacks administrative authority on the slot's current hosting domain.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the payload; producers MUST NOT place data in `ext` they would not be comfortable signing.
+The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the payload; producers MUST NOT place data in `ext` they would not be comfortable signing.

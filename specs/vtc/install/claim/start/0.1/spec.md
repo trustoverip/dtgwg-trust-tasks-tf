@@ -33,7 +33,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Install Claim — Start** Trust Task begins first-admin enrolment on a freshly-installed community that has no admin yet. The installer presents the single-use `installToken` printed by `vtc setup`; the community returns a `registrationId`, WebAuthn `options`, and a `didBindingChallenge`. The installer creates a passkey and signs the DID-binding challenge, then completes at [`vtc/install/claim/finish`](../finish/0.1/).
+The **VTC Install Claim — Start** Trust Task begins first-admin enrolment on a freshly-installed community that has no admin yet. The installer presents the single-use `installToken` printed by `vtc setup`; the community returns a `registrationId`, WebAuthn `options`, and a `didBindingChallenge`. The installer creates a passkey and signs the DID-binding challenge, then completes at [`vtc/install/claim/finish`](../../finish/0.1/).
 
 ## Conformance
 

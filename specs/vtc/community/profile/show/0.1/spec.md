@@ -38,7 +38,7 @@ errorCodes:
 ## Abstract
 
 The **VTC Community Profile — Show** Trust Task returns the community's public
-[`CommunityProfile`](../../../_shared/0.1/community.schema.json) — its name,
+[`CommunityProfile`](../../../../_shared/0.1/community.schema.json) — its name,
 description, optional logo / public URL / contact, display language, and any
 community-defined `extensions`. The response additionally carries the
 read-only `registryStatus` (`active` | `degraded`) reflecting current

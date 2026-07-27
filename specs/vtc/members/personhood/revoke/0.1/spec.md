@@ -41,7 +41,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members Personhood — Revoke** Trust Task clears the personhood flag for member `did`, the admin-driven counterpart to [`vtc/members/personhood/assert`](../assert/0.1/). On success the community re-issues the member's credentials carrying `personhood: false`; a revoke of an already-unset member is an idempotent no-op (the credentials are then omitted).
+The **VTC Members Personhood — Revoke** Trust Task clears the personhood flag for member `did`, the admin-driven counterpart to [`vtc/members/personhood/assert`](../../assert/0.1/). On success the community re-issues the member's credentials carrying `personhood: false`; a revoke of an already-unset member is an idempotent no-op (the credentials are then omitted).
 
 ## Conformance
 

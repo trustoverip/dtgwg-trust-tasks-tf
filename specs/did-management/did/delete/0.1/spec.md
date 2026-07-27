@@ -48,7 +48,7 @@ The **DID Management — Delete** Trust Task soft-deletes a hosted DID. The slot
 
 ## Status of this Document
 
-Draft per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); schema **MAY** change without notice.
+Draft per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); schema **MAY** change without notice.
 
 ## Conformance
 

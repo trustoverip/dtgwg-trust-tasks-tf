@@ -623,6 +623,30 @@ function main() {
     }
   }
 
+  // Relative markdown links in spec prose must resolve on disk.
+  //
+  // They resolve from the VERSION directory (`specs/<slug>/<version>/`),
+  // because that is where spec.md lives and where it is served from — the
+  // sync below copies `specs/` verbatim to `website/specs/<slug>/<version>/`.
+  // The recurring mistake is writing them as though they resolved from the
+  // SLUG directory, one level shallower: from `auth/passkey/enroll/start/0.1`,
+  // `../finish/0.1/spec.md` points at `.../start/finish/0.1/`, not at the
+  // sibling leg. 135 links across 65 files had drifted this way before anything
+  // checked, and they were broken on the live site, not merely in the repo.
+  for (const { dir, slug, version, specPath } of entries) {
+    const prose = fs.readFileSync(specPath, 'utf8');
+    for (const m of prose.matchAll(/\]\((\.\.[^)#\s]*?)(#[^)\s]*)?\)/g)) {
+      const target = path.resolve(dir, m[1]);
+      if (!fs.existsSync(target)) {
+        const deeper = path.resolve(dir, '../' + m[1]);
+        const hint = fs.existsSync(deeper)
+          ? ` — one level too shallow; '../${m[1]}' resolves`
+          : '';
+        fail(`${slug}/${version}/spec.md`, `relative link '${m[1]}' does not resolve${hint}`);
+      }
+    }
+  }
+
   if (errors.length) {
     console.error('\nBuild failed with the following problems:');
     for (const e of errors) console.error(`  - ${e}`);

@@ -36,7 +36,7 @@ errorCodes:
 
 ## Abstract
 
-The **Config — Show** Trust Task returns the effective value of a maintainer's runtime configuration keys — the values actually in force — as [`ConfigField`](../_shared/0.1/config.schema.json)s. Each field names its `source` (which layer supplied the value, for a maintainer with a layered overlay) and `requiresRestart` (whether changing it takes effect immediately or on restart). It is the read half of the pair completed by [`config/patch`](../patch/0.1/).
+The **Config — Show** Trust Task returns the effective value of a maintainer's runtime configuration keys — the values actually in force — as [`ConfigField`](../../_shared/0.1/config.schema.json)s. Each field names its `source` (which layer supplied the value, for a maintainer with a layered overlay) and `requiresRestart` (whether changing it takes effect immediately or on restart). It is the read half of the pair completed by [`config/patch`](../../patch/0.1/).
 
 With no `keys`, it returns every registered key; with `keys`, only those.
 

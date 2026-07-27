@@ -49,7 +49,7 @@ related:
 
 The **Confirm — Request** Trust Task is the generic "ask the user to approve something" wire form. A *relying party* sends this to a *wallet* (or any approval agent acting for a subject) asking for explicit user consent; the wallet surfaces the request to the user verbatim and returns a signed [`confirm/response/0.1`](../../response/0.1/spec.md) carrying the user's decision.
 
-This pair (`confirm/request` + `confirm/response`) is intentionally less coupled than the [`auth/step-up/approve-*`](../../auth/step-up/approve-request/0.1/spec.md) pair: step-up is specifically about elevating an authenticated session's AAL; confirm is the broader "the user must consent before we take action X" pattern that applies to transactions, data shares, ACL edits, irreversible operations, anything where capturing explicit consent matters for compliance or audit.
+This pair (`confirm/request` + `confirm/response`) is intentionally less coupled than the [`auth/step-up/approve-*`](../../../auth/step-up/approve-request/0.1/spec.md) pair: step-up is specifically about elevating an authenticated session's AAL; confirm is the broader "the user must consent before we take action X" pattern that applies to transactions, data shares, ACL edits, irreversible operations, anything where capturing explicit consent matters for compliance or audit.
 
 When the action being confirmed IS an AAL elevation, use the step-up pair. For everything else, use confirm.
 

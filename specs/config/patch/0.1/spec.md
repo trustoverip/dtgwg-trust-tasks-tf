@@ -38,7 +38,7 @@ errorCodes:
 
 ## Abstract
 
-The **Config — Patch** Trust Task writes per-key overrides into a maintainer's runtime configuration. It is partial-success by design: each override is validated independently, and the response sorts every key into `applied` (in effect now), `pendingRestart` (stored, effective after a restart), or `rejected` (not written, with a reason). It is the write half of the pair completed by [`config/show`](../show/0.1/).
+The **Config — Patch** Trust Task writes per-key overrides into a maintainer's runtime configuration. It is partial-success by design: each override is validated independently, and the response sorts every key into `applied` (in effect now), `pendingRestart` (stored, effective after a restart), or `rejected` (not written, with a reason). It is the write half of the pair completed by [`config/show`](../../show/0.1/).
 
 Overrides are carried under a single `overrides` object rather than as top-level members, so the payload keeps a fixed `additionalProperties: false` envelope while the override keys themselves stay open.
 

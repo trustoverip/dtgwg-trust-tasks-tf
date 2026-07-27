@@ -46,7 +46,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join-Requests — Approve** Trust Task approves a pending join request `id`, admitting the applicant as a member. The decision counterpart to [`vtc/join-requests/reject`](../reject/0.1/).
+The **VTC Join-Requests — Approve** Trust Task approves a pending join request `id`, admitting the applicant as a member. The decision counterpart to [`vtc/join-requests/reject`](../../reject/0.1/).
 
 ## Conformance
 

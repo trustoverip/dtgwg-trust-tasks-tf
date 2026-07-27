@@ -50,12 +50,12 @@ lifecycle hooks stop firing. External adapters that consult the community's
 registry will observe queries under the capability's vocabulary answering
 negatively or the capability absent from discovery, per the host's policy.
 
-Re-enabling later with [`governance/capability/enable`](../enable/0.1/spec.md)
+Re-enabling later with [`governance/capability/enable`](../../enable/0.1/spec.md)
 resumes service over the retained records.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 

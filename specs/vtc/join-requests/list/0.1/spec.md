@@ -37,7 +37,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join-Requests — List** Trust Task returns a community's join requests as [`JoinRequest`](../../_shared/0.1/join-request.schema.json) entries, optionally filtered by `status`, paged by `cursor`/`limit`. The enumeration companion to [`vtc/join-requests/show`](../show/0.1/).
+The **VTC Join-Requests — List** Trust Task returns a community's join requests as [`JoinRequest`](../../../_shared/0.1/join-request.schema.json) entries, optionally filtered by `status`, paged by `cursor`/`limit`. The enumeration companion to [`vtc/join-requests/show`](../../show/0.1/).
 
 ## Conformance
 

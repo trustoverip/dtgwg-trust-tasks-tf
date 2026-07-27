@@ -45,7 +45,7 @@ errorCodes:
 
 ## Abstract
 
-**Push — Wake** is how a **trigger** — the device's **mediator** (queue-driven: it alone knows the device is offline with messages waiting) or its **VTA** (policy-driven: e.g. a delegated step-up) — asks the gateway to deliver a **contentless wake** to a device. The gateway authorizes the request against the handle's VTA-provisioned allowlist ([`push/provision/0.1`](../provision/0.1/spec.md)) and, if the trigger is allowed, fires the doorbell defined by the [push wake-up binding](../../../bindings/push/0.1/spec.md) §2 (gateway → device, via APNs / FCM / Web Push).
+**Push — Wake** is how a **trigger** — the device's **mediator** (queue-driven: it alone knows the device is offline with messages waiting) or its **VTA** (policy-driven: e.g. a delegated step-up) — asks the gateway to deliver a **contentless wake** to a device. The gateway authorizes the request against the handle's VTA-provisioned allowlist ([`push/provision/0.1`](../../provision/0.1/spec.md)) and, if the trigger is allowed, fires the doorbell defined by the [push wake-up binding](../../../../bindings/push/0.1/spec.md) §2 (gateway → device, via APNs / FCM / Web Push).
 
 **This task carries only the binding's contentless hint fields** — `v`, and optionally `mediator` / `count` / `urgency`. It **MUST NOT** carry any Trust Task content, `reason`, relying-party identity, or task type: the wake is a doorbell, and the actual messages are drained from the mediator over the DIDComm binding after the device wakes.
 

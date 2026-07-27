@@ -56,18 +56,18 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Login (start)** Trust Task is the first leg of a WebAuthn assertion ceremony. The producer asks the auth service for `PublicKeyCredentialRequestOptions`; the user agent hands them to `navigator.credentials.get({ publicKey })`, and the resulting assertion is returned via [`auth/passkey/login/finish/0.1`](../finish/0.1/spec.md).
+The **Auth — Passkey Login (start)** Trust Task is the first leg of a WebAuthn assertion ceremony. The producer asks the auth service for `PublicKeyCredentialRequestOptions`; the user agent hands them to `navigator.credentials.get({ publicKey })`, and the resulting assertion is returned via [`auth/passkey/login/finish/0.1`](../../finish/0.1/spec.md).
 
 This task serves two semantically-distinct flows, distinguished by `payload.purpose`:
 
 - **`login`** — issue a fresh session at AAL ≥ 2 on the matching finish.
 - **`stepUp`** — elevate the producer's existing session's `acr` on the matching finish, without rotating its `id` or `subject`.
 
-A consumer that does not support step-up MAY refuse `purpose: "stepUp"` and respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+A consumer that does not support step-up MAY refuse `purpose: "stepUp"` and respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../../SPEC.md#83-standard-error-codes)).
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -81,7 +81,7 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements).
+1. Validate the document per [SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements).
 2. Generate a fresh server-side `authId` and bind it to:
    - The challenge embedded in `options.challenge`.
    - The named subject (when present).

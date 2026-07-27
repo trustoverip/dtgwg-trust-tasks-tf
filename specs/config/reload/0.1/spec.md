@@ -39,9 +39,9 @@ errorCodes:
 
 ## Abstract
 
-The **Config — Reload** Trust Task makes already-stored configuration take effect on the running maintainer without a process restart. It applies to **hot-reloadable** keys only — those whose [`ConfigField.requiresRestart`](../_shared/0.1/config.schema.json) is false. For each such key whose stored value differs from the live value, the maintainer updates the running value and names the key in `keysReloaded`; a key already live (a no-op) is omitted. Restart-gated keys are never reloaded here — they need [`config/restart`](../restart/0.1/).
+The **Config — Reload** Trust Task makes already-stored configuration take effect on the running maintainer without a process restart. It applies to **hot-reloadable** keys only — those whose [`ConfigField.requiresRestart`](../../_shared/0.1/config.schema.json) is false. For each such key whose stored value differs from the live value, the maintainer updates the running value and names the key in `keysReloaded`; a key already live (a no-op) is omitted. Restart-gated keys are never reloaded here — they need [`config/restart`](../../restart/0.1/).
 
-It is the apply step that pairs with [`config/patch`](../patch/0.1/): patch stores the value, reload makes a hot-reloadable one live.
+It is the apply step that pairs with [`config/patch`](../../patch/0.1/): patch stores the value, reload makes a hot-reloadable one live.
 
 ## Conformance
 

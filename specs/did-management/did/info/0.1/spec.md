@@ -48,11 +48,11 @@ The **DID Management — Info** Trust Task is a read-only query: given a `mnemon
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
-The producer emits `type: https://trusttasks.org/spec/did-management/did/info/0.1` with `payload.mnemonic`. The consumer validates per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements), looks up the record, and either returns it (success) or replies with `did-management/did/info:not_found`.
+The producer emits `type: https://trusttasks.org/spec/did-management/did/info/0.1` with `payload.mnemonic`. The consumer validates per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements), looks up the record, and either returns it (success) or replies with `did-management/did/info:not_found`.
 
 ## Definitions
 

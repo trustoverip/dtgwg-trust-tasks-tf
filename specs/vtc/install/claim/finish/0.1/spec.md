@@ -39,7 +39,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Install Claim — Finish** Trust Task completes first-admin enrolment. The installer submits the `installToken`, the `registrationId` from start, the `webauthnResponse`, and the `didBindingSignature` over the challenge. The community derives the admin DID from the passkey's Ed25519 key and returns it with a short-lived `setupSessionToken`, which is consumed by [`vtc/admin/bootstrap`](../../../admin/bootstrap/0.1/) to write the admin ACL.
+The **VTC Install Claim — Finish** Trust Task completes first-admin enrolment. The installer submits the `installToken`, the `registrationId` from start, the `webauthnResponse`, and the `didBindingSignature` over the challenge. The community derives the admin DID from the passkey's Ed25519 key and returns it with a short-lived `setupSessionToken`, which is consumed by [`vtc/admin/bootstrap`](../../../../admin/bootstrap/0.1/) to write the admin ACL.
 
 ## Conformance
 

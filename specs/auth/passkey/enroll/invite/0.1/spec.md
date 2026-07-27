@@ -51,9 +51,9 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Enroll (invite)** Trust Task closes the *cold-start* gap in passkey-based auth: a brand-new subject has no existing factor with which to start the standard [`auth/passkey/enroll/start/0.1`](../start/0.1/spec.md) ceremony, because that flow assumes a pre-authenticated session.
+The **Auth — Passkey Enroll (invite)** Trust Task closes the *cold-start* gap in passkey-based auth: a brand-new subject has no existing factor with which to start the standard [`auth/passkey/enroll/start/0.1`](../../start/0.1/spec.md) ceremony, because that flow assumes a pre-authenticated session.
 
-An administrator emits this task to ask the auth service to mint a single-use invite URL. The administrator shares the URL with the invitee out-of-band (email, secure messaging, in-person QR scan). The invitee opens the URL in a WebAuthn-capable browser; the auth service drives a standard [`auth/passkey/enroll/start`](../start/0.1/spec.md) + [`auth/passkey/enroll/finish`](../finish/0.1/spec.md) ceremony scoped to the invite, and on success binds the credential to the subject + applies the role and scopes the invite encoded.
+An administrator emits this task to ask the auth service to mint a single-use invite URL. The administrator shares the URL with the invitee out-of-band (email, secure messaging, in-person QR scan). The invitee opens the URL in a WebAuthn-capable browser; the auth service drives a standard [`auth/passkey/enroll/start`](../../start/0.1/spec.md) + [`auth/passkey/enroll/finish`](../../finish/0.1/spec.md) ceremony scoped to the invite, and on success binds the credential to the subject + applies the role and scopes the invite encoded.
 
 Logically: a *passkey* is to the invite as a *grant* is to an `acl/grant` — the invite asserts the binding, the redemption demonstrates control.
 

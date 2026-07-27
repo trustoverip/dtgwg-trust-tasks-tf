@@ -51,7 +51,7 @@ render.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -60,7 +60,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 ## Definitions
 
 Each returned entry's `manifest` follows the shared
-[`CapabilityManifest`](../../_shared/0.1/governance.schema.json) definition.
+[`CapabilityManifest`](../../../_shared/0.1/governance.schema.json) definition.
 
 ## Request
 

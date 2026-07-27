@@ -51,13 +51,13 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Enroll (start)** Trust Task is the first leg of a WebAuthn registration ceremony. The subject — already authenticated via `auth/authenticate` or another mechanism — asks the auth service for `PublicKeyCredentialCreationOptions`. The subject's user agent hands the options to `navigator.credentials.create({ publicKey })`, and the resulting attestation is returned via [`auth/passkey/enroll/finish/0.1`](../finish/0.1/spec.md).
+The **Auth — Passkey Enroll (start)** Trust Task is the first leg of a WebAuthn registration ceremony. The subject — already authenticated via `auth/authenticate` or another mechanism — asks the auth service for `PublicKeyCredentialCreationOptions`. The subject's user agent hands the options to `navigator.credentials.create({ publicKey })`, and the resulting attestation is returned via [`auth/passkey/enroll/finish/0.1`](../../finish/0.1/spec.md).
 
 The framework `proof` is REQUIRED. The auth service binds the issued `enrollmentId` to the producer's VID server-side; a finish call carrying a credential from a different subject MUST fail.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -87,13 +87,13 @@ A conforming **consumer** **MUST**:
 * **Subject.** The party enrolling a passkey; identified by `issuer`.
 * **Auth service.** The WebAuthn relying party; identified by `recipient`.
 * **enrollmentId.** Opaque correlation handle between the start and finish ceremonies; produced by the consumer.
-* **PublicKeyCredentialCreationOptions.** WebAuthn dictionary; see [`_shared/0.1/webauthn.schema.json#CredentialCreationOptions`](../../../_shared/0.1/webauthn.schema.json).
+* **PublicKeyCredentialCreationOptions.** WebAuthn dictionary; see [`_shared/0.1/webauthn.schema.json#CredentialCreationOptions`](../../../../_shared/0.1/webauthn.schema.json).
 
 ## Payload
 
 `payload.deviceLabel` — optional human-readable credential name.
 
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

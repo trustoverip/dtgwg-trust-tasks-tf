@@ -43,7 +43,7 @@ errorCodes:
 
 ## Abstract
 
-The **Config — Restart** Trust Task requests a graceful restart of the maintainer so that restart-gated configuration — keys whose [`ConfigField.requiresRestart`](../_shared/0.1/config.schema.json) is true, stored via [`config/patch`](../patch/0.1/) but not yet live — takes effect. The maintainer drains in-flight work and exits; a process supervisor brings it back up.
+The **Config — Restart** Trust Task requests a graceful restart of the maintainer so that restart-gated configuration — keys whose [`ConfigField.requiresRestart`](../../_shared/0.1/config.schema.json) is true, stored via [`config/patch`](../../patch/0.1/) but not yet live — takes effect. The maintainer drains in-flight work and exits; a process supervisor brings it back up.
 
 It **refuses** unless it can identify the supervisor that will restart it. Without one, "restart" is just "stop": a graceful exit with nothing to bring the process back would take the maintainer down. The response echoes the detected `supervisor` and the `drainTimeoutSeconds` window so the caller knows what will happen and how long the outage is.
 

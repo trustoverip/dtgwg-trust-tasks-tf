@@ -52,7 +52,7 @@ The **Witness Publish** Trust Task is part of did:webvh's witness-oracle pattern
 
 This task is webvh-protocol-specific — other DID methods do not use this oracle pattern, which is why the spec lives under the `webvh/` family rather than `did-management/`. The witness proof itself (the contents of `payload.witness`) follows the did:webvh specification's witness-proof shape; this Trust Task spec governs only the envelope and the delivery semantics.
 
-The hosting service stores the latest witness proof per DID; uploading a new witness with a higher version-id supersedes the previous one. After a successful publish, the hosting service fans the updated witness content out to any registered hosting servers via [`webvh/sync/update`](../../sync/update/0.1/spec.md).
+The hosting service stores the latest witness proof per DID; uploading a new witness with a higher version-id supersedes the previous one. After a successful publish, the hosting service fans the updated witness content out to any registered hosting servers via [`webvh/sync/update`](../../../sync/update/0.1/spec.md).
 
 ## Status of this Document
 

@@ -46,7 +46,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join-Requests — Reject** Trust Task rejects a pending join request `id`, with an optional operator `reason`. The decision counterpart to [`vtc/join-requests/approve`](../approve/0.1/).
+The **VTC Join-Requests — Reject** Trust Task rejects a pending join request `id`, with an optional operator `reason`. The decision counterpart to [`vtc/join-requests/approve`](../../approve/0.1/).
 
 ## Conformance
 

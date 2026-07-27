@@ -39,7 +39,7 @@ related:
 
 ## Abstract
 
-The **Sync Delete** Trust Task replicates a slot deletion from the control plane to a registered hosting server. It is the deletion counterpart to [`webvh/sync/update`](../update/0.1/spec.md) and fires once per registered server immediately after the control plane's own `did/delete` completes.
+The **Sync Delete** Trust Task replicates a slot deletion from the control plane to a registered hosting server. It is the deletion counterpart to [`webvh/sync/update`](../../update/0.1/spec.md) and fires once per registered server immediately after the control plane's own `did/delete` completes.
 
 The message is **idempotent**: deleting an already-deleted (or never-known) slot succeeds with `status: "deleted"`. Servers MUST tolerate at-least-once delivery from the control plane's durable outbox without producing duplicate side effects.
 

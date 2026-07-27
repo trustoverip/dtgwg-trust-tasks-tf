@@ -49,7 +49,7 @@ related:
 
 The **Governance — Enable Capability** Trust Task turns on a pluggable
 *capability module* for a community. A capability is a named bundle —
-described by a [`CapabilityManifest`](../../_shared/0.1/governance.schema.json) —
+described by a [`CapabilityManifest`](../../../_shared/0.1/governance.schema.json) —
 of Trust Task spec families, trust-registry vocabulary, membership lifecycle
 hooks, management surfaces, and external adapters. Communities differ in
 which capabilities they need (an open-source community may enable
@@ -72,7 +72,7 @@ in the manifest's `vocabulary.actions`.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -81,7 +81,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../S
 ## Definitions
 
 The `manifest` member follows the shared
-[`CapabilityManifest`](../../_shared/0.1/governance.schema.json) definition.
+[`CapabilityManifest`](../../../_shared/0.1/governance.schema.json) definition.
 The `config` member is opaque to the framework: the recipient MUST validate
 it against the schema named by the manifest's `configSchema` and reject
 `config_invalid` on mismatch. Absent `config` means the capability's most

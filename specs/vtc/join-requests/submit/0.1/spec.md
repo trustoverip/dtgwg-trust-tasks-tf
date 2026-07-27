@@ -41,7 +41,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join-Requests — Submit** Trust Task opens an application to join a community. The applicant presents a W3C Verifiable Presentation (`vp`) whose credentials satisfy the community's join policy, and optionally consents to trust-registry publication. On acceptance the community records a **pending** request and returns its `requestId`, which the applicant polls with [`vtc/join-requests/status`](../status/0.1/).
+The **VTC Join-Requests — Submit** Trust Task opens an application to join a community. The applicant presents a W3C Verifiable Presentation (`vp`) whose credentials satisfy the community's join policy, and optionally consents to trust-registry publication. On acceptance the community records a **pending** request and returns its `requestId`, which the applicant polls with [`vtc/join-requests/status`](../../status/0.1/).
 
 The applicant identity is the **document proof's signer** — there is no `applicantDid` or `signature` field. This is the transport-agnostic form: over DIDComm the authcrypt sender is the signer, over REST/TSP the framework proof is, and the payload is identical on every transport.
 

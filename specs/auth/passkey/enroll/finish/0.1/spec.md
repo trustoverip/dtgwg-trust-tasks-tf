@@ -60,11 +60,11 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Enroll (finish)** Trust Task completes the WebAuthn registration ceremony started by [`auth/passkey/enroll/start/0.1`](../start/0.1/spec.md). The subject submits the `AuthenticatorAttestationResponse` returned by `navigator.credentials.create`; the auth service verifies the attestation per WebAuthn Level 2 §7.1 and binds the resulting public credential to the subject's VID.
+The **Auth — Passkey Enroll (finish)** Trust Task completes the WebAuthn registration ceremony started by [`auth/passkey/enroll/start/0.1`](../../start/0.1/spec.md). The subject submits the `AuthenticatorAttestationResponse` returned by `navigator.credentials.create`; the auth service verifies the attestation per WebAuthn Level 2 §7.1 and binds the resulting public credential to the subject's VID.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -91,7 +91,7 @@ A conforming **consumer** **MUST**:
 
 ## Definitions
 
-* **AuthenticatorAttestationResponse.** WebAuthn dictionary; see [`_shared/0.1/webauthn.schema.json#AttestationResponse`](../../../_shared/0.1/webauthn.schema.json).
+* **AuthenticatorAttestationResponse.** WebAuthn dictionary; see [`_shared/0.1/webauthn.schema.json#AttestationResponse`](../../../../_shared/0.1/webauthn.schema.json).
 * **credentialId.** The opaque per-credential identifier the consumer persists and surfaces in later list / revoke operations.
 
 ## Payload

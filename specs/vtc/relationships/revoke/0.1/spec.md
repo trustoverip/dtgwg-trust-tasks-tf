@@ -38,7 +38,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Relationships — Revoke** Trust Task revokes a relationship credential `id` previously published via [`vtc/relationships/publish`](../publish/0.1/). Only the original issuer may revoke.
+The **VTC Relationships — Revoke** Trust Task revokes a relationship credential `id` previously published via [`vtc/relationships/publish`](../../publish/0.1/). Only the original issuer may revoke.
 
 ## Conformance
 

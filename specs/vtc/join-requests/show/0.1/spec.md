@@ -41,7 +41,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join-Requests — Show** Trust Task returns one join request by `id` — the [`JoinRequest`](../../_shared/0.1/join-request.schema.json), including the applicant's `vp` and, once decided, the `policyDecision`. The read-one companion to [`vtc/join-requests/list`](../list/0.1/).
+The **VTC Join-Requests — Show** Trust Task returns one join request by `id` — the [`JoinRequest`](../../../_shared/0.1/join-request.schema.json), including the applicant's `vp` and, once decided, the `policyDecision`. The read-one companion to [`vtc/join-requests/list`](../../list/0.1/).
 
 ## Conformance
 

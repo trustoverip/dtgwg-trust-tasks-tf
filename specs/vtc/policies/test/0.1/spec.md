@@ -44,7 +44,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Policies — Test** Trust Task evaluates an uploaded policy module against input the caller supplies, and returns whatever the queried rule produced. It is the dry-run that belongs between [`vtc/policies/upload`](../../upload/0.1/) and activation.
+The **VTC Policies — Test** Trust Task evaluates an uploaded policy module against input the caller supplies, and returns whatever the queried rule produced. It is the dry-run that belongs between [`policy/upsert`](../../../../policy/upsert/0.2/spec.md) and activation.
 
 Two things distinguish it from canonical policy evaluation. `query` names **any** rule in the module, not just an `allow` decision — an author debugging a policy needs to see intermediate rules. And `input` is deliberately schema-free: a community's policies decide over community-shaped facts (a membership application, a removal request), and those do not fit a fixed evaluation model.
 

@@ -43,7 +43,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Endorsement-Types — Register** Trust Task adds an endorsement type the community will recognise, keyed by `typeUri`, with an optional `description` and `claimSchema`. It returns the stored [`EndorsementType`](../../_shared/0.1/endorsement-type.schema.json).
+The **VTC Endorsement-Types — Register** Trust Task adds an endorsement type the community will recognise, keyed by `typeUri`, with an optional `description` and `claimSchema`. It returns the stored [`EndorsementType`](../../../_shared/0.1/endorsement-type.schema.json).
 
 ## Conformance
 

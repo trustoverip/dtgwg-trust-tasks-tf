@@ -33,7 +33,7 @@ exposure:
 
 ## Abstract
 
-The **VTC Join-Requests — Manifest** Trust Task returns a community's join criteria so a prospective applicant knows what to present. Each entry names a presentation-definition (and an optional human description) the applicant must satisfy; the applicant then submits via [`vtc/join-requests/submit`](../submit/0.1/). This is pre-submit discovery — it precedes membership.
+The **VTC Join-Requests — Manifest** Trust Task returns a community's join criteria so a prospective applicant knows what to present. Each entry names a presentation-definition (and an optional human description) the applicant must satisfy; the applicant then submits via [`vtc/join-requests/submit`](../../submit/0.1/). This is pre-submit discovery — it precedes membership.
 
 ## Conformance
 

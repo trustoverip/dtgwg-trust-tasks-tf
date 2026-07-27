@@ -33,7 +33,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Endorsement-Types — List** Trust Task returns the endorsement types the community recognises, as [`EndorsementType`](../../_shared/0.1/endorsement-type.schema.json) entries, paged by `cursor`/`limit`.
+The **VTC Endorsement-Types — List** Trust Task returns the endorsement types the community recognises, as [`EndorsementType`](../../../_shared/0.1/endorsement-type.schema.json) entries, paged by `cursor`/`limit`.
 
 ## Conformance
 

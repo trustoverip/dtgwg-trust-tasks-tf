@@ -67,12 +67,12 @@ related:
 
 ## Abstract
 
-The **Auth — Step-up Approve Response** Trust Task is the ratification of an earlier [`auth/step-up/approve-request/0.1`](../approve-request/0.1/spec.md). The approver echoes the request's `subject`, `sessionId`, and `challenge`, sets `decision` to `approved` or `denied`, and backs the decision with **one of two cryptographic gates**, selected by the optional `payload.evidence` tagged union:
+The **Auth — Step-up Approve Response** Trust Task is the ratification of an earlier [`auth/step-up/approve-request/0.1`](../../approve-request/0.1/spec.md). The approver echoes the request's `subject`, `sessionId`, and `challenge`, sets `decision` to `approved` or `denied`, and backs the decision with **one of two cryptographic gates**, selected by the optional `payload.evidence` tagged union:
 
 - **`evidence.kind = did-signed`** (the default when `evidence` is absent) — the framework `proof` IS the gate: a Data Integrity signature from a key the subject controls. This is the original, transport-agnostic step-up. Resulting `amr` reflects `"did"`/`"vta"`.
-- **`evidence.kind = webauthn`** — the approver carries an `AuthenticatorAssertionResponse` produced by a platform passkey over the step-up `challenge` (the cross-device path: a relying party at AAL 1 in a browser, the user elevating with Face ID / Touch ID / Android biometric on their phone). The assertion is the gate; the relying party verifies it per WebAuthn Level 2 §7.2 exactly as [`auth/passkey/login/finish/0.1`](../../passkey/login/finish/0.1/spec.md) does. Resulting `amr` reflects `"passkey"`.
+- **`evidence.kind = webauthn`** — the approver carries an `AuthenticatorAssertionResponse` produced by a platform passkey over the step-up `challenge` (the cross-device path: a relying party at AAL 1 in a browser, the user elevating with Face ID / Touch ID / Android biometric on their phone). The assertion is the gate; the relying party verifies it per WebAuthn Level 2 §7.2 exactly as [`auth/passkey/login/finish/0.1`](../../../passkey/login/finish/0.1/spec.md) does. Resulting `amr` reflects `"passkey"`.
 
-Supporting both lets one step-up flow serve a DID-key approver (a VTA ratifying programmatically) and a biometric-bound passkey approver (a phone) without two separate protocols. A relying party advertises which gates it will accept via the request's `acceptableEvidence` ([`approve-request`](../approve-request/0.1/spec.md)).
+Supporting both lets one step-up flow serve a DID-key approver (a VTA ratifying programmatically) and a biometric-bound passkey approver (a phone) without two separate protocols. A relying party advertises which gates it will accept via the request's `acceptableEvidence` ([`approve-request`](../../approve-request/0.1/spec.md)).
 
 A relying party processing an `approved` response elevates the session's `amr`/`acr` per its own policy and replies with the elevated session snapshot. A `denied` response is signed too (did-signed) — it serves as audit evidence that the user explicitly refused.
 

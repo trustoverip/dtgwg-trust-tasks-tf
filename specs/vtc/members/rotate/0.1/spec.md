@@ -40,7 +40,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — Rotate** Trust Task completes a DID rotation opened by [`vtc/members/rotate-challenge`](../rotate-challenge/0.1/). The member presents the `rotationId`, the old and new DIDs, and a signature over the challenge from **each** key. On success the community repoints the member to `newDid` and re-issues their membership (`vmc`) and role (`roleVec`) credentials to it.
+The **VTC Members — Rotate** Trust Task completes a DID rotation opened by [`vtc/members/rotate-challenge`](../../rotate-challenge/0.1/). The member presents the `rotationId`, the old and new DIDs, and a signature over the challenge from **each** key. On success the community repoints the member to `newDid` and re-issues their membership (`vmc`) and role (`roleVec`) credentials to it.
 
 ## Conformance
 

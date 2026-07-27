@@ -37,9 +37,9 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — List** Trust Task returns a Verifiable Trust Community's members. Each entry is a [`MemberResponse`](../../_shared/0.1/member.schema.json) — the membership record joined with its ACL entry, so the caller gets `role` and `label` inline without a second lookup. Optional `role` filters the result; `cursor`/`limit` page it.
+The **VTC Members — List** Trust Task returns a Verifiable Trust Community's members. Each entry is a [`MemberResponse`](../../../_shared/0.1/member.schema.json) — the membership record joined with its ACL entry, so the caller gets `role` and `label` inline without a second lookup. Optional `role` filters the result; `cursor`/`limit` page it.
 
-It is the enumeration companion to [`vtc/members/show`](../show/0.1/) (one member) and [`vtc/members/update`](../update/0.1/).
+It is the enumeration companion to [`vtc/members/show`](../../show/0.1/) (one member) and [`vtc/members/update`](../../update/0.1/).
 
 ## Conformance
 

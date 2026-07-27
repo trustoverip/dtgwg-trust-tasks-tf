@@ -45,7 +45,7 @@ The **DID Management — Disable** Trust Task suspends a hosted DID's public res
 
 ## Status of this Document
 
-Draft per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); schema **MAY** change without notice.
+Draft per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); schema **MAY** change without notice.
 
 ## Conformance
 

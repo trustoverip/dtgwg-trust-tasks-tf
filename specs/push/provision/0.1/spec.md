@@ -42,7 +42,7 @@ errorCodes:
 
 ## Abstract
 
-**Push — Provision** is how the **controller VTA** sets a wake handle's **trigger allowlist** on the push gateway: the DIDs permitted to request a wake for that handle (typically the device's mediator — queue-driven — and/or the VTA itself — policy-driven). The VTA is the source of truth for this policy ([`device/set-wake/0.1`](../../device/set-wake/0.1/spec.md) conveys the device's handle to the VTA); this task is how the VTA pushes that policy to the gateway, which **enforces** it on every [`push/wake/0.1`](../wake/0.1/spec.md).
+**Push — Provision** is how the **controller VTA** sets a wake handle's **trigger allowlist** on the push gateway: the DIDs permitted to request a wake for that handle (typically the device's mediator — queue-driven — and/or the VTA itself — policy-driven). The VTA is the source of truth for this policy ([`device/set-wake/0.1`](../../../device/set-wake/0.1/spec.md) conveys the device's handle to the VTA); this task is how the VTA pushes that policy to the gateway, which **enforces** it on every [`push/wake/0.1`](../../wake/0.1/spec.md).
 
 This is the mechanism that keeps "all device config at the VTA, token at the gateway": the VTA holds the handle + allowlist and provisions the gateway, which holds the token. A wake request from a DID not on the allowlist is refused.
 
@@ -53,7 +53,7 @@ Carried over the **DIDComm binding** (preferred — the authcrypt sender authent
 A conforming **producer** (the controller VTA) **MUST**:
 
 1. Be the `controllerVtaDid` recorded for the handle at `push/register` — the gateway will reject otherwise.
-2. Populate `handle` and `policy` (the [`WakeTriggerPolicy`](../../device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) allowlist it computed by its own policy — typically `{ mediator } ∪ { self }`).
+2. Populate `handle` and `policy` (the [`WakeTriggerPolicy`](../../../device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) allowlist it computed by its own policy — typically `{ mediator } ∪ { self }`).
 3. Re-provision whenever its policy or the device's handle changes; an empty `allowedTriggers` disables waking while the handle exists.
 
 A conforming **consumer** (the push gateway) **MUST**:
@@ -64,7 +64,7 @@ A conforming **consumer** (the push gateway) **MUST**:
 
 ## Payload
 
-`handle` (REQUIRED — the opaque handle from `push/register`); `policy` (REQUIRED — the [`WakeTriggerPolicy`](../../device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) allowlist).
+`handle` (REQUIRED — the opaque handle from `push/register`); `policy` (REQUIRED — the [`WakeTriggerPolicy`](../../../device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) allowlist).
 
 ## Response
 

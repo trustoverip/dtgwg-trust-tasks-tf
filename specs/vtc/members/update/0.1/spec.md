@@ -46,7 +46,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — Update** Trust Task changes a member's role or non-credential metadata: `role`, `publishConsent`, `departurePreference`, and the opaque `extensions` bag. Every field except `did` is optional — an update carries only what changes. It returns the updated [`MemberResponse`](../../_shared/0.1/member.schema.json).
+The **VTC Members — Update** Trust Task changes a member's role or non-credential metadata: `role`, `publishConsent`, `departurePreference`, and the opaque `extensions` bag. Every field except `did` is optional — an update carries only what changes. It returns the updated [`MemberResponse`](../../../_shared/0.1/member.schema.json).
 
 It deliberately **cannot** promote a member to `admin`: that is a higher-trust operation with its own approval flow, not a metadata patch, so `role: admin` is refused here.
 

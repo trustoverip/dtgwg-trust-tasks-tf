@@ -38,7 +38,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — Rotate Challenge** Trust Task begins a member DID rotation. It returns a `rotationId`, an expiry, the `signingPayloadHex` the member signs with **both** the old and new keys, and the `canonicalTemplate` those signatures cover. The optional `reason` is a self-asserted motive, bound to the session and recorded on the audit envelope — intent, not evidence, and not covered by either signature. The ceremony is completed by [`vtc/members/rotate`](../rotate/0.1/).
+The **VTC Members — Rotate Challenge** Trust Task begins a member DID rotation. It returns a `rotationId`, an expiry, the `signingPayloadHex` the member signs with **both** the old and new keys, and the `canonicalTemplate` those signatures cover. The optional `reason` is a self-asserted motive, bound to the session and recorded on the audit envelope — intent, not evidence, and not covered by either signature. The ceremony is completed by [`vtc/members/rotate`](../../rotate/0.1/).
 
 ## Conformance
 

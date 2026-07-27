@@ -43,7 +43,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — Admin-Remove** Trust Task lets an administrator remove another member, identified by `did`, with an optional `disposition` and an operator `reason` recorded in the audit trail. The counterpart to [`vtc/members/self-remove`](../self-remove/0.1/) for the admin-initiated case.
+The **VTC Members — Admin-Remove** Trust Task lets an administrator remove another member, identified by `did`, with an optional `disposition` and an operator `reason` recorded in the audit trail. The counterpart to [`vtc/members/self-remove`](../../self-remove/0.1/) for the admin-initiated case.
 
 ## Conformance
 

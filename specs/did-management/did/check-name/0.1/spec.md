@@ -74,7 +74,7 @@ A reservation does not block forever; the consumer's retention policy MAY garbag
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -89,7 +89,7 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** (the hosting service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements). Reject a request that omits `path` unless `reserve: true`.
+1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements). Reject a request that omits `path` unless `reserve: true`.
 2. Apply the same path-grammar checks it would on `did-management/did/register` (lengths, character set, reserved roots) to any explicitly-supplied `path`.
 3. Determine availability against the current record store; when the path is taken by a soft-deleted record, treat as not available unless the host's recovery policy permits resurrection.
 4. When `reserve: true` AND (the explicit path is available OR `path` was omitted):
