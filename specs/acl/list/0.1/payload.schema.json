@@ -1,24 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/acl/list/0.1",
-  "title": "ACL List — payload",
+  "title": "ACL List \u2014 payload",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "role": {
       "type": "string",
       "minLength": 1,
-      "description": "Optional filter — only entries with this role are returned."
+      "description": "Optional filter \u2014 only entries with this role are returned."
     },
     "scope": {
       "type": "string",
       "minLength": 1,
-      "description": "Optional filter — only entries whose scopes include this string are returned."
+      "description": "Optional filter \u2014 only entries whose scopes include this string are returned."
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "acting-in",
+        "subtree",
+        "any"
+      ],
+      "description": "How to read `scope` where the maintainer's scopes are hierarchical: `acting-in` (the default when omitted) returns entries that may act IN the scope \u2014 scoped to it or to an ancestor; `subtree` returns entries holding a grant at or BENEATH it; `any` is the union. A consumer without hierarchical scopes MAY treat all three alike. See the specification for why the distinction matters to a revocation sweep."
     },
     "subjectPrefix": {
       "type": "string",
       "minLength": 1,
-      "description": "Optional filter — only entries whose subject VID starts with this prefix are returned."
+      "description": "Optional filter \u2014 only entries whose subject VID starts with this prefix are returned."
     },
     "pageSize": {
       "type": "integer",
@@ -32,21 +41,26 @@
     },
     "ext": {
       "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
-      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
     }
   },
   "$defs": {
     "Response": {
       "$anchor": "response",
-      "title": "ACL List — response payload",
+      "title": "ACL List \u2014 response payload",
       "description": "The success response to an acl/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/list/0.1#response.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["entries", "truncated"],
+      "required": [
+        "entries",
+        "truncated"
+      ],
       "properties": {
         "entries": {
           "type": "array",
-          "items": { "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry" },
+          "items": {
+            "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry"
+          },
           "description": "Matching AclEntry items, in maintainer-defined order. May be empty."
         },
         "truncated": {
@@ -59,12 +73,14 @@
         },
         "redactedFields": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Names of AclEntry fields the maintainer redacted from every returned entry (for example, ['label'] or ['ext.vnd.example.audit'])."
         },
         "ext": {
           "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+          "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
         }
       }
     }

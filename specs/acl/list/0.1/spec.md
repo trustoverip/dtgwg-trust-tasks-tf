@@ -47,6 +47,29 @@ This task is **read-only**: it never mutates the ACL. The response carries the e
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
+## Reading a scope filter in two directions
+
+Where a maintainer's scopes are hierarchical, a single scope identifier raises
+two different questions, and `scope` alone cannot distinguish them:
+
+- **Who may act in this scope?** Entries scoped to it *or to an ancestor of it*
+  — an ancestor's authority reaches down. This is `acting-in`, and it is what a
+  `scope` filter means when `direction` is omitted.
+- **What is granted beneath this scope?** Entries holding a grant *at or below*
+  it. This is `subtree`.
+
+`any` is the union, which is the auditor's question.
+
+The distinction is easy to get wrong and fails quietly. A revocation sweep is
+the clearest case: asking `acting-in` when you meant `subtree` returns precisely
+the entries that are **not** the answer — the ancestors, which keep their
+authority — while omitting every leaf-scoped grant underneath, which is what you
+were trying to find. The result is short rather than empty, so it reads as a
+complete answer to a question nobody asked.
+
+A consumer whose scopes are flat MAY treat all three values alike, since the
+three questions collapse into one.
+
 ## Conformance
 
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.

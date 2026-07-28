@@ -13,6 +13,10 @@ export interface ACLListPayload {
    */
   scope?: string;
   /**
+   * How to read `scope` where the maintainer's scopes are hierarchical: `acting-in` (the default when omitted) returns entries that may act IN the scope — scoped to it or to an ancestor; `subtree` returns entries holding a grant at or BENEATH it; `any` is the union. A consumer without hierarchical scopes MAY treat all three alike. See the specification for why the distinction matters to a revocation sweep.
+   */
+  direction?: "acting-in" | "subtree" | "any";
+  /**
    * Optional filter — only entries whose subject VID starts with this prefix are returned.
    */
   subjectPrefix?: string;

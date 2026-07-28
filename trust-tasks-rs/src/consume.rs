@@ -604,6 +604,7 @@ mod tests {
             list::Payload {
                 role: None,
                 scope: None,
+                direction: None,
                 subject_prefix: None,
                 page_size: None,
                 cursor: None,
@@ -650,6 +651,7 @@ mod tests {
             list::Payload {
                 role: None,
                 scope: None,
+                direction: None,
                 subject_prefix: None,
                 page_size: None,
                 cursor: None,
@@ -739,6 +741,7 @@ mod tests {
             list::Payload {
                 role: None,
                 scope: None,
+                direction: None,
                 subject_prefix: None,
                 page_size: None,
                 cursor: None,
@@ -799,6 +802,7 @@ mod tests {
             crate::specs::acl::list::v0_1::Payload {
                 role: None,
                 scope: None,
+                direction: None,
                 subject_prefix: None,
                 page_size: None,
                 cursor: None,

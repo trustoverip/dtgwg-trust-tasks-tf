@@ -1,0 +1,60 @@
+[
+  {
+    "note": "`subject` is required.",
+    "payload": {
+      "label": "ops runner"
+    }
+  },
+  {
+    "note": "`subject` must be non-empty.",
+    "payload": {
+      "subject": ""
+    }
+  },
+  {
+    "note": "Role is not amendable here \u2014 acl/change-role owns that transition, with a compare-and-swap.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "role": "admin"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "__x__": true
+    }
+  },
+  {
+    "note": "`scopes` must be an array of strings.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "scopes": "tenant-a"
+    }
+  },
+  {
+    "note": "`stepUp.require` is a closed enum.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "stepUp": {
+        "require": "sometimes"
+      }
+    }
+  },
+  {
+    "note": "`approve.all` must be a boolean.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "approve": {
+        "all": "yes"
+      }
+    }
+  },
+  {
+    "note": "`expiresAt` must be an RFC 3339 date-time.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "expiresAt": "next tuesday"
+    }
+  }
+]

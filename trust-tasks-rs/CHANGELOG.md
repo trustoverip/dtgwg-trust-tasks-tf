@@ -6,6 +6,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.43] — 2026-07-28
+
+### Added
+- **`acl/update/0.1`** — amend the non-role attributes of an existing entry:
+  label, scopes, expiry, step-up requirement, approve-authority.
+- **`AclEntry` scope direction on `acl/list`** — a `direction` filter
+  (`acting-in` | `subtree` | `any`, default `acting-in`).
+
+Both close gaps found while folding a maintainer's private `acl/*` surface onto
+this family (OpenVTC/verifiable-trust-infrastructure#840 phase A). Neither is
+implementation-specific.
+
+**`acl/update` fills a hole between the existing verbs.** `acl/grant` creates
+and explicitly refuses role changes; `acl/change-role` moves the role and
+nothing else; `acl/revoke` removes. Nothing could say "same role, different
+step-up approver". A maintainer needing that had to model it as
+revoke-then-grant — a window in which the subject holds nothing — or invent a
+private task.
+
+Two refusals in it are enforced rather than advisory, and both exist so a
+reduction in authority cannot be performed by a task that does not look like
+one:
+
+- **A role member is rejected** (`roleChangeNotPermitted`). `change-role` owns
+  that transition because it requires the current role as a compare-and-swap;
+  role is the one attribute where a lost update between concurrent writers is a
+  privilege change rather than a cosmetic one.
+- **Narrowing `scopes` is rejected** (`narrowingNotPermitted`), directing the
+  caller to `acl/revoke`. Removing authority is what an auditor most needs to
+  find, and it should appear in exactly one place. Were narrowing expressible
+  here, "withdrew production access" and "corrected a label" would be
+  indistinguishable in the trail.
+
+Members replace rather than merge, which keeps *omitted* (leave alone),
+*explicit null* (clear) and *empty array* (set to nothing) distinguishable —
+three intentions a merge cannot tell apart, and under which removal is not
+expressible at all.
+
+**`direction` on `acl/list`** matters only where scopes are hierarchical, which
+is the case where one scope identifier raises two different questions: who may
+act *in* it, and what is granted *beneath* it. The default preserves existing
+behaviour. It is called out because getting it wrong is quiet: a revocation
+sweep using the `acting-in` reading returns exactly the entries that are **not**
+the answer — the ancestors keeping their authority — while omitting every
+leaf-scoped grant underneath. Short, not empty, so it reads as complete.
+
+`_shared/0.1/CONVENTIONS.md` gains a table of which task changes what, and
+records both enforced boundaries.
+
 ## [0.2.42] — 2026-07-28
 
 ### Added

@@ -78,3 +78,27 @@ it could not itself authorize. Maintainers **SHOULD** gate the granting of
 `approve` more strictly than the granting of `scopes` — typically restricting
 it to an unrestricted administrator — and **SHOULD** audit it distinctly from
 an ordinary role grant.
+
+## 7. Which task changes what
+
+The family deliberately splits mutation across four tasks rather than offering
+one general write, so that each kind of change is separately nameable,
+separately gateable and separately auditable:
+
+| Change | Task |
+|---|---|
+| Add a subject | [`acl/grant`](../../grant/0.1/spec.md) |
+| Move a subject's role | [`acl/change-role`](../../change-role/0.1/spec.md) — requires the current role (compare-and-swap) |
+| Amend label / scopes / expiry / step-up / approve | [`acl/update`](../../update/0.1/spec.md) |
+| Remove authority, wholly or partly | [`acl/revoke`](../../revoke/0.1/spec.md) |
+
+Two boundaries are enforced rather than advisory, and both exist so that a
+reduction in authority cannot be performed by a task that does not look like
+one:
+
+- **`acl/grant` refuses a role change** on an existing subject.
+- **`acl/update` refuses a narrowing of `scopes`**, directing the caller to
+  `acl/revoke`.
+
+An implementation that relaxed either would leave an audit trail in which
+"withdrew production access" is indistinguishable from "corrected a label".

@@ -184,6 +184,7 @@ async fn happy_path_acl_list() {
         list::v0_1::Payload {
             role: None,
             scope: None,
+            direction: None,
             subject_prefix: None,
             page_size: None,
             cursor: None,
@@ -550,6 +551,7 @@ async fn proof_invalid_when_verifier_rejects() {
         list::v0_1::Payload {
             role: None,
             scope: None,
+            direction: None,
             subject_prefix: None,
             page_size: None,
             cursor: None,
@@ -597,6 +599,7 @@ async fn permission_denied_from_spec_handler() {
         list::v0_1::Payload {
             role: None,
             scope: None,
+            direction: None,
             subject_prefix: None,
             page_size: None,
             cursor: None,

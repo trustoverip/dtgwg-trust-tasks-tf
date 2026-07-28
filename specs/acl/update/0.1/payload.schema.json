@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl/update/0.1",
+  "title": "ACL Update \u2014 payload",
+  "description": "Amend the non-role attributes of an existing ACL entry: its label, scopes, expiry, step-up requirement, or approve-authority. Role changes are NOT expressible here \u2014 they go through acl/change-role, which requires the current role as a compare-and-swap.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "VID of the entry to amend. The entry MUST already exist; this task does not create one (use acl/grant)."
+    },
+    "label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Replacement human-readable label. Explicit `null` clears it. Omitted leaves it unchanged."
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Replacement scope set, applied wholesale rather than merged \u2014 a caller that means to add one sends the full intended set. NARROWING THE SET IS A REVOCATION and a consumer MUST refuse it here, directing the caller to acl/revoke, so that every removal of authority passes through the task that is audited and reasoned as a revocation."
+    },
+    "expiresAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Replacement expiry. Explicit `null` makes the entry permanent \u2014 a privilege increase, which a consumer SHOULD gate at least as strictly as the original grant."
+    },
+    "stepUp": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Replacement per-entry step-up configuration. Same additive-only rule as on the entry itself: it MAY raise the assurance required of this subject above the system floor but MUST NOT lower it.",
+      "properties": {
+        "approver": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "VID that ratifies step-up for this subject. `null` clears it."
+        },
+        "require": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "self",
+            "delegated",
+            null
+          ],
+          "description": "Minimum step-up mode. `null` clears the per-entry override."
+        }
+      }
+    },
+    "approve": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Replacement approve-authority \u2014 what the subject may CONFER on others, as distinct from what it may exercise. Granting or widening this is an escalation vector (a subject able to confer can manufacture an approver for an operation it could not authorize), so a consumer SHOULD gate it more strictly than the other members here.",
+      "properties": {
+        "all": {
+          "type": "boolean",
+          "description": "The subject may confer any scope."
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Scopes the subject may confer. Empty confers nothing; it is not a wildcard."
+        }
+      }
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional human-readable rationale, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Update \u2014 response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry",
+          "description": "The realized entry the maintainer now holds, after the amendment."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
