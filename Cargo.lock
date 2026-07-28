@@ -6398,7 +6398,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.2.41"
+version = "0.2.42"
 dependencies = [
  "async-trait",
  "chrono",

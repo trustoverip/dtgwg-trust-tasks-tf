@@ -154,6 +154,7 @@ fn entry() -> grant::v0_1::AclEntry {
         updated_at: None,
         updated_by: None,
         expires_at: None,
+        approve: None,
         step_up: None,
         ext: None,
     }
@@ -783,6 +784,7 @@ async fn client_times_out_on_a_silent_server() {
                 updated_at: None,
                 updated_by: None,
                 expires_at: None,
+                approve: None,
                 step_up: None,
                 ext: None,
             },

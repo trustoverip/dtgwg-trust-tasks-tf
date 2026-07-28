@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.42] — 2026-07-28
+
+### Added
+- **`AclEntry.approve`** — the approve-vs-act authority axis, on the shared
+  `acl/_shared/0.1/acl-entry` component, so all six `acl/*` specs gain it at
+  once. `{ all?: boolean, scopes?: string[] }`: what a subject may **confer on
+  others** by ratifying an approval, as distinct from `scopes`, which is what
+  it may **exercise itself**.
+
+The two axes are independent in both directions, and that is the point — it is
+what lets a maintainer configure a **least-privilege approver**: a party that
+can authorize an operation in a scope it has no authority to perform. Modelling
+that with one list cannot express it.
+
+Additive and safe to ignore, by construction. An absent `approve`, an absent
+`all`, and an empty `scopes` all mean "may ratify nothing", so a consumer that
+has not implemented the member confers *less* than the producer intended. That
+is the direction a missed member has to fail in, and it is why this is a
+first-class member rather than an `ext` namespace — `ext` is explicitly
+ignorable, which for an authority member would mean silently dropping a
+restriction a producer relied on.
+
+`_shared/0.1/CONVENTIONS.md` gains two sections stating the consumer rules,
+both of which have been got wrong in real implementations: approve-authority is
+**not** authority to act (resolving "may this party do X" against `approve`
+hands an approver the ability to perform what it was only meant to sign off
+on), and **emptiness is never a wildcard** — an empty `scopes` or
+`approve.scopes` means "nothing"; the wildcard is `approve.all`, and there is
+deliberately no `scopes` equivalent.
+
+Also records that granting `approve` is itself an escalation vector — a subject
+that can grant approve-authority can manufacture an approver for an operation
+it could not authorize — so maintainers SHOULD gate and audit it more strictly
+than an ordinary role grant.
+
+Unblocks folding `vta/acl/{create,get,list,update,delete}/1.0` onto the
+canonical `acl/*` family (OpenVTC/verifiable-trust-infrastructure#840 phase A);
+it was the one member of the VTA's ACL body with no canonical home.
+
 ## [0.2.41] — 2026-07-27
 
 ### Added

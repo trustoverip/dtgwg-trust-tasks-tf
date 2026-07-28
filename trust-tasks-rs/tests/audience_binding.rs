@@ -18,6 +18,7 @@ fn entry() -> grant::AclEntry {
         updated_at: None,
         updated_by: None,
         expires_at: None,
+        approve: None,
         step_up: None,
         ext: None,
     }
