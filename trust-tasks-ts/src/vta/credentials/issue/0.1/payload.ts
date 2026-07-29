@@ -13,7 +13,7 @@ export interface VTACredentialsIssuePayload {
    */
   claims: {};
   /**
-   * Additional credential type beyond VerifiableCredential (e.g. ScopedShareCredential).
+   * Additional credential type beyond VerifiableCredential (e.g. ScopedShareCredential). Some values name a claims profile defined by this specification (e.g. GovernancePolicyCredential), which constrains the shape of `claims`.
    */
   credentialType?: string;
   /**

@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.45] — 2026-07-29
+
+### Added
+- **`GovernancePolicyCredential` claims profile on `vta/credentials/issue/0.1`**
+  (draft-additive) — a domain's governance policy issued as a Verifiable
+  Credential: `GovernancePolicyClaims` (`domain`, `policy`, `policyHash`,
+  optional `contextId` / `policyMediaType`), a single-active supersession rule
+  surfaced as the new optional `supersedes` response field, a mandatory
+  published `credentialStatus`, and the `profileViolation` error code.
+- **`statusListIndex` on the `vta/credentials/revoke/0.1` response**
+  (optional) — confirms the published status-list bit flipped when revoking a
+  profile credential.
+
+Design for OpenVTC/verifiable-trust-infrastructure#804 (governance policy as a
+credential); distribution reuses `credential-exchange/query`/`present`, so no
+new task is introduced.
+
 ## [0.2.44] — 2026-07-29
 
 ### Added

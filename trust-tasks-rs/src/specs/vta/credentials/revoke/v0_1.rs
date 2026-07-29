@@ -206,6 +206,11 @@ pub struct Payload {
 ///      "description": "When the revocation was recorded.",
 ///      "type": "string",
 ///      "format": "date-time"
+///    },
+///    "statusListIndex": {
+///      "description": "When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status.",
+///      "type": "integer",
+///      "minimum": 0.0
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -225,6 +230,13 @@ pub struct Response {
     ///When the revocation was recorded.
     #[serde(rename = "revokedAt")]
     pub revoked_at: ::chrono::DateTime<::chrono::offset::Utc>,
+    ///When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status.
+    #[serde(
+        rename = "statusListIndex",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub status_list_index: ::std::option::Option<u64>,
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/credentials/revoke/0.1";
@@ -239,7 +251,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The revoked credential's id.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"VTA Credentials Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/credentials/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"credentialId\": {\n      \"description\": \"The id of the credential to revoke (as returned by vta/credentials/issue).\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"credentialId\"\n  ],\n  \"title\": \"VTA Credentials Revoke — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The revoked credential's id.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"VTA Credentials Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/credentials/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"credentialId\": {\n      \"description\": \"The id of the credential to revoke (as returned by vta/credentials/issue).\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"credentialId\"\n  ],\n  \"title\": \"VTA Credentials Revoke — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {
