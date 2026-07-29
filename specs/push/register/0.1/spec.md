@@ -3,7 +3,8 @@ slug: push/register
 version: "0.1"
 title: Push — Register
 summary: A device registers its platform push token (APNs / FCM / Web Push) with a push gateway and receives an opaque WakeHandle in exchange. The raw token is held by the gateway only.
-status: draft
+status: retired
+supersededBy: push/register/0.2
 targetFrameworkVersion: "0.1"
 category: notifications
 keywords:
