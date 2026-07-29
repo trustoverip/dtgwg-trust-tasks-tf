@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/list/2.0",
+  "title": "VTA DID-Template List — payload",
+  "description": "List the DID templates in one scope on a VTA. Omit `contextId` to list the global templates (any authenticated caller); set it to list the templates scoped to that context (requires access to the context). The success response is the array of persisted DidTemplateRecords for the selected scope.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scope selector. Absent: the global scope. Present: the context whose templates are listed; the caller MUST have access to that context."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template List — response payload",
+      "description": "Every stored template in the selected scope, in an array.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["templates"],
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/did-template.schema.json#/$defs/DidTemplateRecord" },
+          "description": "Every stored template in the selected scope, sorted by name; empty when none exist."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

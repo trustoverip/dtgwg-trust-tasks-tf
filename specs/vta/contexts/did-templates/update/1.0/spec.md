@@ -3,7 +3,8 @@ slug: vta/contexts/did-templates/update
 version: "1.0"
 title: VTA Context DID-Template — Update
 summary: A context administrator (or super-admin) replaces a context-scoped DID template.
-status: draft
+status: retired
+supersededBy: vta/did-templates/update/2.0
 targetFrameworkVersion: "0.2"
 category: did-management
 keywords:
@@ -53,7 +54,7 @@ Context-scoped templates are visible and manageable within a single context and 
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/update/2.0`](../../../../did-templates/update/2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 

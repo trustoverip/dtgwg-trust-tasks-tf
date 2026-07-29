@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/update/2.0",
+  "title": "VTA DID-Template Update — payload",
+  "description": "Replace an existing DID template on a VTA. Omit `contextId` to replace in the global scope (super-admin gated); set it to replace a template scoped to that context (gated on the context's admin, or a super-admin). The `name` is the resource id within the selected scope and MUST equal `template.name`; the VTA replaces the stored body, preserving createdAt/createdBy and advancing updatedAt. The success response is the persisted DidTemplateRecord.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "template"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scope selector. Absent: the global scope, gated on a super-administrator. Present: the context the template is scoped to, gated on that context's administrator (or a super-administrator)."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Resource id — the template's name within the selected scope. MUST equal `template.name` or the VTA rejects with the framework's `malformedRequest`."
+    },
+    "template": {
+      "$ref": "../../../_shared/0.1/did-template.schema.json#/$defs/DidTemplate",
+      "description": "Full replacement template document. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Update — response payload",
+      "description": "The persisted DidTemplateRecord after replacement. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata (createdAt/createdBy preserved, updatedAt advanced). Same shape returned by create/get.",
+      "$ref": "../../../_shared/0.1/did-template.schema.json#/$defs/DidTemplateRecord"
+    }
+  }
+}

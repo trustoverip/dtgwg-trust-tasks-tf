@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.49] — 2026-07-29
+
+### Added
+- **`vta/did-templates/{create,delete,get,list,render,update}/2.0`** — the
+  global and context-scoped DID-template families merged into one six-task
+  family behind an optional `contextId` (absent = global scope, super-admin
+  gated; present = that context, context-admin gated). `render/2.0` documents
+  the ambient `CONTEXT_ID`/`CONTEXT_DID` variables injected for scoped
+  renders. Proof levels re-derived per task: the pure reads (`get`, `list`,
+  `render`) are now RECOMMENDED; mutations stay REQUIRED.
+- **`vta/_shared/0.1/did-template`** — shared `DidTemplate` /
+  `DidTemplateRecord` / `Scope` definitions, previously duplicated inline in
+  all twelve 1.0 payload schemas.
+
+### Retired
+- The twelve 1.0 specs (`vta/did-templates/*/1.0` and
+  `vta/contexts/did-templates/*/1.0`), each superseded by the corresponding
+  `vta/did-templates/*/2.0` task
+  (OpenVTC/verifiable-trust-infrastructure#851).
+
 ## [0.2.48] — 2026-07-29
 
 ### Added

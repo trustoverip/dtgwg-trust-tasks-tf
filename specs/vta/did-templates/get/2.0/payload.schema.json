@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/get/2.0",
+  "title": "VTA DID-Template Get — payload",
+  "description": "Fetch one DID template on a VTA by name. Omit `contextId` to read from the global scope (any authenticated caller); set it to read a template scoped to that context (requires access to the context). The success response is the persisted DidTemplateRecord.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scope selector. Absent: the global scope. Present: the context the template is scoped to; the caller MUST have access to that context."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Template name to fetch within the selected scope."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Get — response payload",
+      "description": "The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.",
+      "$ref": "../../../_shared/0.1/did-template.schema.json#/$defs/DidTemplateRecord"
+    }
+  }
+}
