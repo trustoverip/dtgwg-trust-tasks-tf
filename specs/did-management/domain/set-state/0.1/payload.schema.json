@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/domain/set-state/0.1",
+  "title": "Domain Set State — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "state"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The hosting domain whose state is being set."
+    },
+    "state": {
+      "type": "string",
+      "enum": ["active", "disabled"],
+      "description": "Desired domain state. `active`: the domain is in active service and accepts new DID registrations (re-activating a disabled domain cancels any pending purge). `disabled`: existing DIDs remain readable for the host's grace period, but no new DIDs may be hosted under it. Declarative — requesting the state the domain is already in is an idempotent no-op."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Domain Set State — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": { "$ref": "../../../_shared/0.1/domain-entry.schema.json#/$defs/DomainEntry" },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

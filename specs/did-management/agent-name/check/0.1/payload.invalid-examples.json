@@ -1,0 +1,5 @@
+[
+  { "note": "Missing name.", "payload": {} },
+  { "note": "Empty name.", "payload": { "name": "" } },
+  { "note": "Unknown extra field.", "payload": { "name": "alice", "reserve": true } }
+]

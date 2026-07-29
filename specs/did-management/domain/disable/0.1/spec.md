@@ -3,7 +3,8 @@ slug: did-management/domain/disable
 version: "0.1"
 title: DID Management — Domain Disable
 summary: An administrator disables a hosting domain — existing DIDs remain readable for the host's grace period, but no new DIDs may be hosted under it.
-status: draft
+status: retired
+supersededBy: did-management/domain/set-state
 targetFrameworkVersion: "0.1"
 category: did-management
 keywords: [did-hosting, domain, disable, admin]
@@ -45,7 +46,7 @@ The **Domain Disable** Trust Task moves a hosting domain into read-only mode. Ex
 
 ## Status of this Document
 
-Draft.
+**Retired.** This task is superseded by [`did-management/domain/set-state`](../../../domain/set-state/0.1/spec.md) with `state: disabled`. Consumers SHOULD NOT accept new documents of this type; the specification is retained for auditability of previously-issued documents.
 
 ## Conformance
 

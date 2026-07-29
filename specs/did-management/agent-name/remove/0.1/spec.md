@@ -45,12 +45,12 @@ errorCodes:
   - code: did-management:unknown_domain
     meaning: The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
-related: [did-management/agent-name/set, did-management/agent-name/disable, auth/step-up/approve-response]
+related: [did-management/agent-name/update, did-management/agent-name/list, auth/step-up/approve-response]
 ---
 
 ## Abstract
 
-The **DID Management — Remove Agent Name** Trust Task releases an agent name from a hosted DID. Unlike [`agent-name/disable`](../../disable/0.1/spec.md) — which parks a name while keeping it reserved — remove **frees the name entirely**: it stops resolving and becomes claimable by any other DID on the host.
+The **DID Management — Remove Agent Name** Trust Task releases an agent name from a hosted DID. Unlike [`agent-name/update`](../../update/0.1/spec.md) with `state: parked` — which parks a name while keeping it reserved — remove **frees the name entirely**: it stops resolving and becomes claimable by any other DID on the host.
 
 ## Status of this Document
 
@@ -58,7 +58,7 @@ Draft.
 
 ## The `alsoKnownAs` invariant, in reverse
 
-[`agent-name/set`](../../set/0.1/spec.md) requires the submitted document to *claim* the name. Remove requires the mirror: the submitted `didData` must **no longer** claim the name via `alsoKnownAs`. The host verifies this and rejects with `also_known_as_mismatch` otherwise.
+[`agent-name/update`](../../update/0.1/spec.md) with `state: active` requires the submitted document to *claim* the name. Remove requires the mirror: the submitted `didData` must **no longer** claim the name via `alsoKnownAs`. The host verifies this and rejects with `also_known_as_mismatch` otherwise.
 
 The reason is symmetry of the invariant. If the host stopped serving a name while the document still claimed it, the DID would advertise an `alsoKnownAs` entry that no longer resolves — a dangling claim a resolver cannot verify. So the release of the redirect and the removal of the `alsoKnownAs` entry land in one commit, driven by one signed document.
 
@@ -91,4 +91,4 @@ Per the framework, this requirement is a **consumer policy** derived from the ta
 
 ## Security & Privacy
 
-A released name carries no memory of its former holder. An operator who wants to retire a name **without** letting anyone else take it should use [`agent-name/disable`](../../disable/0.1/spec.md), which keeps the reservation.
+A released name carries no memory of its former holder. An operator who wants to retire a name **without** letting anyone else take it should use [`agent-name/update`](../../update/0.1/spec.md) with `state: parked`, which keeps the reservation.

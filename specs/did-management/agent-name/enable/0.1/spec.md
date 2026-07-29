@@ -3,7 +3,8 @@ slug: did-management/agent-name/enable
 version: "0.1"
 title: DID Management — Enable Agent Name
 summary: Return a parked (disabled) agent name to live resolution. The submitted DID document must claim it again via `alsoKnownAs`.
-status: draft
+status: retired
+supersededBy: did-management/agent-name/update
 targetFrameworkVersion: "0.1"
 category: did-management
 keywords: [did, did-hosting, agent-name, alsoKnownAs, restore]
@@ -54,7 +55,7 @@ The **DID Management — Enable Agent Name** Trust Task returns a **parked** age
 
 ## Status of this Document
 
-Draft.
+**Retired.** This task is superseded by [`did-management/agent-name/update`](../../../agent-name/update/0.1/spec.md) with `state: active` (resume a parked name). Consumers SHOULD NOT accept new documents of this type; the specification is retained for auditability of previously-issued documents.
 
 ## The `alsoKnownAs` invariant
 

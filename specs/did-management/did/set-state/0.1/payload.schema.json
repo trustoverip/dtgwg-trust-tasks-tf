@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/set-state/0.1",
+  "title": "DID Management Set State — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic", "state"],
+  "properties": {
+    "mnemonic": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The hosted DID slot whose hosting state is being set."
+    },
+    "state": {
+      "type": "string",
+      "enum": ["active", "suspended"],
+      "description": "Desired hosting state. `active`: the DID resolves normally. `suspended`: resolution returns a deactivation marker while the log and witness content are retained for recovery. Declarative — requesting the state the slot is already in is an idempotent no-op."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Optional explicit hosting domain. When omitted, resolves via caller ACL default → system default. See category CONVENTIONS §1."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Set State — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record"],
+      "properties": {
+        "record": { "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord" },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

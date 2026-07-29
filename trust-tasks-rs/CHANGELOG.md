@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.50] — 2026-07-29
+
+### Added
+- **`did-management/agent-name/update/0.1`** — declarative binding state
+  (`active` | `parked`) replacing the set / enable / disable verb trio.
+  `agent-name/remove` deliberately stays a separate destructive task.
+- **`did-management/did/set-state/0.1`** — `active` | `suspended`, replacing
+  the `did/enable` + `did/disable` pair.
+- **`did-management/domain/set-state/0.1`** — `active` | `disabled`, replacing
+  the `domain/enable` + `domain/disable` pair.
+- **`did-management/agent-name/check/0.1`** and
+  **`did-management/agent-name/list/0.1`** — specs for the previously
+  implemented-but-unspecced availability probe and owner-scoped name listing.
+
+### Changed
+- **Retired** `agent-name/{set,enable,disable}`, `did/{enable,disable}`,
+  `domain/{enable,disable}` (superseded by the state-enum tasks above) and
+  `did/publish` (superseded by `did/register`, whose owner-update rule covers
+  the reserved-slot flow). Modules remain generated for auditability of
+  previously-issued documents.
+
+(affinidi/affinidi-webvh-service#143 consolidation.)
+
 ## [0.2.49] — 2026-07-29
 
 ### Added

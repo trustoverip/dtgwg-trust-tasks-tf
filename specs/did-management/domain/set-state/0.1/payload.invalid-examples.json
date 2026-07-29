@@ -1,0 +1,7 @@
+[
+  { "note": "Missing everything.", "payload": {} },
+  { "note": "Missing state.", "payload": { "name": "tenant-a.example.com" } },
+  { "note": "State outside the enum.", "payload": { "name": "tenant-a.example.com", "state": "purged" } },
+  { "note": "Legacy verb as state.", "payload": { "name": "tenant-a.example.com", "state": "enable" } },
+  { "note": "Empty name.", "payload": { "name": "", "state": "active" } }
+]
