@@ -43,6 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 subject: "did:web:carol.example".into(),
                 role: "moderator".into(),
                 scopes: vec![],
+                allowed_keys: None,
                 label: Some("Carol — content moderation".into()),
                 created_at: None,
                 created_by: None,
