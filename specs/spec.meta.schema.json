@@ -243,6 +243,15 @@
       },
       "description": "Method-discriminated extensions a producer MAY (or SHOULD/MUST per `requirement`) include in `ext` when their payload selects the named `method`. Each entry pins a shared schema by slug; the registry build surfaces it in the spec's Uses panel and links the schema page. Unlike $ref-resolved dependencies, method extensions aren't structurally required by the payload schema — they're an out-of-band convention for vendor-namespaced ext data."
     },
+    "knownImplementations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https?://"
+      },
+      "description": "URLs (repositories, products, deployment documentation) of implementations known to produce or consume this task. Informative, not exhaustive: it lets registry readers distinguish adopted specifications from proposals, and doubles as evidence toward the draft → candidate transition (SPEC §5.3). Omit when no implementation is known."
+    },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",

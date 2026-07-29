@@ -118,6 +118,12 @@ Member names and enumerated values use **lowerCamelCase**, so documents are cons
 
 Casing is part of the wire contract: changing the casing of a member name or a value you define is a breaking change ([SPEC §5](SPEC.md#5-versioning)).
 
+## Read-one and read-many tasks
+
+The registry's default for a family that enumerates a collection is the **split pair**: a `list` task (paged, filtered enumeration) *and* a sibling `show`/`get` task (single-record fetch by identifier). The rationale is the one [`policy/get/0.1`](specs/policy/get/0.1/spec.md) spells out — the two reads have different failure semantics. A `get` for an unknown id returns `notFound`, a definite determination the caller can act on; a `list` filtered down to one id returns an **empty page**, which is a *successful* response and indistinguishable from "exists but filtered out". Collapsing the pair into list-with-an-id-filter loses that distinction (and, with it, per-record error codes and per-record authorization decisions).
+
+New families **MUST** either ship the split pair or state, in the `list` task's `spec.md`, why a filter suffices for their collection (for example: existence is never load-bearing for callers, or the collection has no stable per-record identifier). Deciding silently — a lone `list` with an `id` filter and no rationale — is what this rule exists to prevent.
+
 ## `payload.schema.json`
 
 Must be a JSON Schema 2020-12 document. The build script enforces:
@@ -156,6 +162,16 @@ Where the specification defines a success-response document, both shapes live in
 A consumer that receives a document with `type: ".../acl/grant/0.1#response"` resolves `#response` against the fetched schema, lands on `$defs.Response`, and validates the response `payload` against it. The build script verifies that any `$defs.Response` you publish declares `$anchor: "response"` and that no other `$defs` entry uses that anchor.
 
 For a fire-and-forget task with no success response, omit `$defs.Response` entirely — the framework still gives you `trust-task-error` for failures.
+
+### Shared definitions live in `_shared/`, not inline
+
+A definition used by **more than one task in a family** — a record shape returned by both `list` and `show`, an entry granted by one task and revoked by another — **MUST** live in the family's `_shared/` schema as a *shared schema component* ([SPEC §6.6](SPEC.md#66-shared-schema-components)), not be duplicated inline in each payload schema. Reference it with a version-pinned cross-file `$ref` into the component's `$defs`, exactly as the framework `Ext` mechanism does:
+
+```jsonc
+"entry": { "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry" }
+```
+
+Inline copies drift: an edit to one task's copy silently forks the wire shape the family's other tasks still validate against, and the divergence is invisible until an implementer round-trips a record between the two. The `_shared/` component versions independently (pin a specific version — [SPEC §6.6](SPEC.md#66-shared-schema-components) forbids "latest" references), and the registry build indexes it and shows which tasks depend on it. A definition used by exactly one task stays a local `$def` in that task's schema.
 
 ### Opting into the framework `ext` extension slot
 
@@ -241,6 +257,17 @@ CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindin
 - Touch only your own spec folder (or namespace). CODEOWNERS routes review to that slug's editors; touching multiple folders requires multiple approvals and slows everyone down.
 - Sign-off your commits (`git commit -s`) — this repository requires the DCO trailer.
 - Run `npm run build` once before submitting. CI runs it on every PR; failing the build blocks the merge.
+
+## Declaring known implementations
+
+The optional `knownImplementations` front matter field lists URLs (repositories, products, deployment docs) of implementations known to produce or consume the task:
+
+```yaml
+knownImplementations:
+  - https://github.com/example-org/example-server
+```
+
+Its purpose is to let registry readers tell **adoption from aspiration**: a `draft` with implementations behind it is a different proposition from a `draft` that exists only as a proposal, and the registry otherwise gives no way to tell them apart. The list is informative, not exhaustive — omitting it claims nothing either way — but keeping it current is cheap evidence toward the `draft` → `candidate` transition below.
 
 ## Promoting maturity
 
