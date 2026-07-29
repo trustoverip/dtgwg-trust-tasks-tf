@@ -7,9 +7,19 @@
  * The target account's DID whose access list is being enumerated.
  */
 export type Vid = string;
+/**
+ * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
+ */
+export type Vid1 = string;
 
 export interface MessagingListAccessListPayload {
   did: Vid;
+  /**
+   * Membership filter: return only these DIDs, and of them only those present in the account's access list. A supplied DID absent from the response's entries is not in the list. Omitted = enumerate the whole list.
+   *
+   * @minItems 1
+   */
+  entries?: [Vid1, ...Vid1[]];
   /**
    * Opaque pagination cursor from a previous page's nextCursor. Omitted on the first request; echoed verbatim thereafter. Opaque to the requester.
    */

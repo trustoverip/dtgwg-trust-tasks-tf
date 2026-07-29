@@ -13,6 +13,11 @@
         "subject":    { "type": "string", "description": "VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form." },
         "role":       { "type": "string", "description": "Opaque role identifier interpreted by the ACL maintainer." },
         "scopes":     { "type": "array", "items": { "type": "string" }, "description": "Opaque scope identifiers (e.g. contexts, domains, resource prefixes)." },
+        "allowedKeys": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent."
+        },
         "label":      { "type": "string", "description": "Optional human-readable label." },
         "createdAt":  { "type": "string", "format": "date-time" },
         "createdBy":  { "type": "string", "description": "VID of the party that originally added this entry." },

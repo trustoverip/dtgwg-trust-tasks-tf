@@ -39,9 +39,11 @@ related:
 
 ## Abstract
 
-The **Messaging — List Accounts** Trust Task enumerates the accounts served by the mediator. The requester **MAY** supply an opaque `cursor` to continue a previous enumeration and a `limit` to bound the page size; the mediator returns an array of [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) views and, when more results remain, a `nextCursor` to fetch the next page.
+The **Messaging — List Accounts** Trust Task enumerates the accounts served by the mediator. The requester **MAY** supply an opaque `cursor` to continue a previous enumeration, a `limit` to bound the page size, and an `accountType` filter to restrict the enumeration to one role; the mediator returns an array of [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) views and, when more results remain, a `nextCursor` to fetch the next page.
 
 The task is read-only; it makes no change. The `cursor` value is opaque to the requester — it **MUST** be treated as an unstructured continuation token and echoed back verbatim. The mediator applies its own authorization policy; typically only an administrator may list accounts.
+
+The `accountType` filter with `admin` or `rootAdmin` enumerates the mediator's administrators; this subsumes the retired `messaging/admin/list` task, which was this enumeration restricted to the admin roles.
 
 ## Status of this Document
 
@@ -61,8 +63,9 @@ A conforming **consumer** (the mediator) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
 2. Enforce its own authorization policy and respond with the framework's `permissionDenied` where the requester may not list accounts.
-3. Return at most `limit` accounts where `limit` is present, otherwise a mediator-chosen default page size.
-4. Include `nextCursor` in the response when, and only when, further accounts remain beyond the returned page; omit it on the final page.
+3. Where `accountType` is present, return only accounts holding that role.
+4. Return at most `limit` accounts where `limit` is present, otherwise a mediator-chosen default page size.
+5. Include `nextCursor` in the response when, and only when, further accounts remain beyond the returned page; omit it on the final page.
 
 ## Request
 

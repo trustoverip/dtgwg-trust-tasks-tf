@@ -3,7 +3,8 @@ slug: did-management/agent-name/disable
 version: "0.1"
 title: DID Management — Disable Agent Name
 summary: Park an agent name — stop it resolving while keeping it reserved to this DID. The submitted DID document must no longer claim it via `alsoKnownAs`.
-status: draft
+status: retired
+supersededBy: did-management/agent-name/update
 targetFrameworkVersion: "0.1"
 category: did-management
 keywords: [did, did-hosting, agent-name, alsoKnownAs, suspend]
@@ -57,7 +58,7 @@ The **DID Management — Disable Agent Name** Trust Task **parks** an agent name
 
 ## Status of this Document
 
-Draft.
+**Retired.** This task is superseded by [`did-management/agent-name/update`](../../../agent-name/update/0.1/spec.md) with `state: parked`. Consumers SHOULD NOT accept new documents of this type; the specification is retained for auditability of previously-issued documents.
 
 ## The `alsoKnownAs` invariant
 

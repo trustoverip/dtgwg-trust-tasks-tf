@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/create/2.0",
+  "title": "VTA DID-Template Create — payload",
+  "description": "Create a new DID template on a VTA. Omit `contextId` to create in the global scope (super-admin gated); set it to create a template scoped to that context (gated on the context's admin, or a super-admin). The template's own `name` is the resource id within the selected scope; the VTA refuses duplicates (use update to replace). The success response is the persisted DidTemplateRecord.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["template"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scope selector. Absent: the global scope, gated on a super-administrator. Present: the context the template is scoped to, gated on that context's administrator (or a super-administrator)."
+    },
+    "template": {
+      "$ref": "../../../_shared/0.1/did-template.schema.json#/$defs/DidTemplate",
+      "description": "Full template document to store. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Create — response payload",
+      "description": "The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.",
+      "$ref": "../../../_shared/0.1/did-template.schema.json#/$defs/DidTemplateRecord"
+    }
+  }
+}

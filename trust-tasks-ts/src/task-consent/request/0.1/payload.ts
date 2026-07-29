@@ -48,6 +48,10 @@ export interface TaskConsentRequestPayload {
    * OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author.
    */
   origin?: string;
+  /**
+   * OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.
+   */
+  note?: string;
   statePin?: StatePin;
   /**
    * Name of the approver set the policy's `requireConsent` named.

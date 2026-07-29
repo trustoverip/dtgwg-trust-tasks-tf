@@ -3,7 +3,8 @@ slug: messaging/access-list/get
 version: "0.1"
 title: Messaging — Check Access List Membership
 summary: A requester checks whether specific DIDs are present in a served account's access list — the per-account set of other DIDs that, combined with the account's accessListMode, governs who may send to that account.
-status: draft
+status: retired
+supersededBy: messaging/access-list/list
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -49,7 +50,7 @@ Use this task to check a known set of candidates without paging the whole list (
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/list`](../../list/0.1/spec.md) with its `entries` membership filter — send `{ did, entries }`; this task's `present` set is the filtered response's `entries`, and its `absent` set is the remainder of the supplied DIDs.
 
 ## Conformance
 

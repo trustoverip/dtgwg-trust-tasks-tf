@@ -1,0 +1,7 @@
+[
+  { "note": "Missing everything.", "payload": {} },
+  { "note": "Missing state.", "payload": { "mnemonic": "alice" } },
+  { "note": "State outside the enum.", "payload": { "mnemonic": "alice", "state": "deleted" } },
+  { "note": "Legacy verb as state.", "payload": { "mnemonic": "alice", "state": "disable" } },
+  { "note": "Empty mnemonic.", "payload": { "mnemonic": "", "state": "active" } }
+]

@@ -43,7 +43,7 @@ errorCodes:
 related:
   - messaging/account/add
   - messaging/account/get
-  - messaging/account/change-type
+  - messaging/account/update
 ---
 
 ## Abstract

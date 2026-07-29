@@ -3,7 +3,8 @@ slug: did-management/did/enable
 version: "0.1"
 title: DID Management — Enable
 summary: Inverse of `did/disable` — a previously suspended DID slot is returned to live resolution.
-status: draft
+status: retired
+supersededBy: did-management/did/set-state
 targetFrameworkVersion: "0.1"
 category: did-management
 keywords: [did, did-hosting, enable, restore]
@@ -45,7 +46,7 @@ The **DID Management — Enable** Trust Task transitions a disabled DID slot bac
 
 ## Status of this Document
 
-Draft.
+**Retired.** This task is superseded by [`did-management/did/set-state`](../../../did/set-state/0.1/spec.md) with `state: active`. Consumers SHOULD NOT accept new documents of this type; the specification is retained for auditability of previously-issued documents.
 
 ## Conformance
 

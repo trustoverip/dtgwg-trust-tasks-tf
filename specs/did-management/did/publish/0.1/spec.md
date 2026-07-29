@@ -3,7 +3,8 @@ slug: did-management/did/publish
 version: "0.1"
 title: DID Management — Publish
 summary: A DID owner uploads a signed log entry (or full log chain) for an existing reserved slot, completing the two-step reserve-then-publish flow.
-status: draft
+status: retired
+supersededBy: did-management/did/register
 targetFrameworkVersion: "0.1"
 category: did-management
 keywords:
@@ -70,7 +71,7 @@ The task is **idempotent**: re-submitting the same `didData` against an unchange
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+**Retired.** This task is superseded by [`did-management/did/register`](../../../did/register/0.1/spec.md) — a register against an already-reserved (or existing) slot owned by the caller publishes the log as an update, which fully covers the reserved-slot flow. Consumers SHOULD NOT accept new documents of this type; the specification is retained for auditability of previously-issued documents.
 
 ## Conformance
 

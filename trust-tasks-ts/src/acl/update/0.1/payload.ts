@@ -4,7 +4,7 @@
  */
 
 /**
- * Amend the non-role attributes of an existing ACL entry: its label, scopes, expiry, step-up requirement, or approve-authority. Role changes are NOT expressible here — they go through acl/change-role, which requires the current role as a compare-and-swap.
+ * Amend the non-role attributes of an existing ACL entry: its label, scopes, allowed keys, expiry, step-up requirement, or approve-authority. Role changes are NOT expressible here — they go through acl/change-role, which requires the current role as a compare-and-swap.
  */
 export interface ACLUpdatePayload {
   /**
@@ -19,6 +19,10 @@ export interface ACLUpdatePayload {
    * Replacement scope set, applied wholesale rather than merged — a caller that means to add one sends the full intended set. NARROWING THE SET IS A REVOCATION and a consumer MUST refuse it here, directing the caller to acl/revoke, so that every removal of authority passes through the task that is audited and reasoned as a revocation.
    */
   scopes?: string[];
+  /**
+   * Replacement key filter, applied wholesale rather than merged (the entry's allowedKeys becomes exactly this value). Omitted leaves the filter unchanged. Explicit `null` REMOVES the filter — the subject may once again reach every key within its scopes, a privilege increase a consumer SHOULD gate like clearing `expiresAt`. An EMPTY ARRAY sets the filter to no keys at all — the narrowest grant, not a wildcard. A replacement that narrows the previous filter IS a privilege reduction: unlike `scopes` (whose narrowing is refused here and routed to acl/revoke) it is accepted, because acl/revoke/0.1 cannot express a per-key reduction — but the consumer MUST audit it as a reduction and apply it to the subject's live sessions rather than letting the wider set survive until a credential expires.
+   */
+  allowedKeys?: string[] | null;
   /**
    * Replacement expiry. Explicit `null` makes the entry permanent — a privilege increase, which a consumer SHOULD gate at least as strictly as the original grant.
    */

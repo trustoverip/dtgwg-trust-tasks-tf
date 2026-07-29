@@ -89,6 +89,7 @@ fn acl_grant_response_round_trips() {
 fn for_payload_pulls_type_uri_from_trait() {
     let payload = grant::Payload {
         entry: grant::AclEntry {
+            allowed_keys: None,
             subject: "did:web:alice.example".into(),
             role: "admin".parse().unwrap(),
             scopes: vec![],

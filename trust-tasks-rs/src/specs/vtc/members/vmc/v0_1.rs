@@ -153,6 +153,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
+///    "requestId": {
+///      "description": "Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.",
+///      "type": "string",
+///      "minLength": 1
+///    },
 ///    "vc": {
 ///      "description": "The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.",
 ///      "type": "object"
@@ -167,8 +172,84 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.
+    #[serde(
+        rename = "requestId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub request_id: ::std::option::Option<PayloadRequestId>,
     ///The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.
     pub vc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+///Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.",
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadRequestId(::std::string::String);
+impl ::std::ops::Deref for PayloadRequestId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadRequestId> for ::std::string::String {
+    fn from(value: PayloadRequestId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadRequestId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
 }
 ///`Response`
 ///
@@ -189,6 +270,11 @@ pub struct Payload {
 ///    },
 ///    "memberDid": {
 ///      "description": "The delivering member, as proven by the transport.",
+///      "type": "string",
+///      "minLength": 1
+///    },
+///    "requestId": {
+///      "description": "Echoed when the delivery also closed a join request (the request payload carried `requestId`).",
 ///      "type": "string",
 ///      "minLength": 1
 ///    },
@@ -218,6 +304,13 @@ pub struct Response {
     ///The delivering member, as proven by the transport.
     #[serde(rename = "memberDid")]
     pub member_did: ResponseMemberDid,
+    ///Echoed when the delivery also closed a join request (the request payload carried `requestId`).
+    #[serde(
+        rename = "requestId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub request_id: ::std::option::Option<ResponseRequestId>,
     ///Terminal state of the delivery.
     pub status: ResponseStatus,
     ///Identifier of the stored credential.
@@ -282,6 +375,75 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseMemberDid {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for ResponseMemberDid {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Echoed when the delivery also closed a join request (the request payload carried `requestId`).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Echoed when the delivery also closed a join request (the request payload carried `requestId`).",
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseRequestId(::std::string::String);
+impl ::std::ops::Deref for ResponseRequestId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseRequestId> for ::std::string::String {
+    fn from(value: ResponseRequestId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseRequestId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseRequestId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -442,7 +604,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"memberDid\": {\n          \"description\": \"The delivering member, as proven by the transport.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Terminal state of the delivery.\",\n          \"enum\": [\n            \"stored\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vmcId\": {\n          \"description\": \"Identifier of the stored credential.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"memberDid\",\n        \"vmcId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Members Deliver VMC — receipt payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/vmc/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"vc\": {\n      \"description\": \"The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"vc\"\n  ],\n  \"title\": \"VTC Members Deliver VMC — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"memberDid\": {\n          \"description\": \"The delivering member, as proven by the transport.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requestId\": {\n          \"description\": \"Echoed when the delivery also closed a join request (the request payload carried `requestId`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Terminal state of the delivery.\",\n          \"enum\": [\n            \"stored\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vmcId\": {\n          \"description\": \"Identifier of the stored credential.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"memberDid\",\n        \"vmcId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Members Deliver VMC — receipt payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/vmc/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"requestId\": {\n      \"description\": \"Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"vc\": {\n      \"description\": \"The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"vc\"\n  ],\n  \"title\": \"VTC Members Deliver VMC — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {
@@ -467,6 +629,10 @@ mod conformance {
             (
                 "Unknown top-level member is rejected.",
                 "{\n  \"__x__\": true,\n  \"vc\": {}\n}",
+            ),
+            (
+                "`requestId`, when present, must be a non-empty string.",
+                "{\n  \"requestId\": \"\",\n  \"vc\": {}\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {

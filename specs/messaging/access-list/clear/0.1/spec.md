@@ -3,7 +3,8 @@ slug: messaging/access-list/clear
 version: "0.1"
 title: Messaging — Clear Access List
 summary: An administrator empties a served account's access list — removing every entry from the per-account set of other DIDs that, combined with the account's accessListMode, governs who may send to that account.
-status: draft
+status: retired
+supersededBy: messaging/access-list/update
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -54,7 +55,7 @@ The clear is **idempotent**: clearing an already-empty list succeeds and reports
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/update`](../../update/0.1/spec.md) — send `{ did, clear: true }`; `clear` is applied before any `add`, so `{ clear: true, add: [...] }` additionally replaces the list wholesale, which this task could not express.
 
 ## Conformance
 

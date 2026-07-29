@@ -3,7 +3,13 @@
  * Source: specs/messaging/account/list/0.1/payload.schema.json
  */
 
+/**
+ * Role filter: return only accounts holding this role. Omitted = accounts of every role. Filtering on `admin` or `rootAdmin` enumerates the mediator's administrators.
+ */
+export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
+
 export interface MessagingListAccountsPayload {
+  accountType?: AccountType;
   /**
    * Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
    */

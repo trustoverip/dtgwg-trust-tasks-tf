@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/decide/0.1",
+  "title": "VTC Join-Requests Decide — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "decision"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "description": "The join request being decided." },
+    "decision": { "type": "string", "enum": ["approved", "rejected"], "description": "The operator's decision. `approved` admits the applicant as a member; `rejected` refuses them." },
+    "reason": { "type": "string", "maxLength": 1024, "description": "Optional operator rationale, recorded in the audit trail alongside the decision. Most useful with `rejected`." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join-Requests Decide — response payload",
+      "description": "The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requestId", "status"],
+      "properties": {
+        "requestId": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["approved", "rejected"], "description": "The request's post-decision state; echoes the decision." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

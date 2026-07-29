@@ -46,6 +46,7 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
 - `MAJOR.MINOR` only — no patch level.
 - `MINOR` bump = backwards-compatible change.
 - `MAJOR` bump = breaking change, reset `MINOR` to 0.
+- Editorial/normalization changes to a `status: draft` spec — normalizing casing to the canonical convention below, re-pinning a framework or shared-schema `$ref` with no wire effect, rewording descriptions — are made **in place**. Do **not** create a new version folder for them ([SPEC.md §5.2](SPEC.md#52-compatibility-rules)).
 - See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump.
 
 ## `spec.md` front matter
@@ -85,6 +86,8 @@ Notes:
 
 - **`bearer: true` flips off audience binding — do not set it casually.** The default for any spec is non-bearer ([SPEC §4.8.3](SPEC.md#483-bearer-specifications)). Adding `bearer: true` to your front matter does two coupled things: it declares that documents conforming to your spec are intended for unspecified consumption (any party that can verify the `proof` is a legitimate recipient), and it causes the codegen to emit `Payload::IS_BEARER = true`. That constant in turn suppresses the audience-binding rule of [SPEC §4.8.2](SPEC.md#482-audience-binding) in every conforming consumer pipeline — a `proof`-carrying document with no in-band `recipient` is accepted instead of rejected with `malformedRequest`. **Only set `bearer: true` when the audience-free property is intrinsic to the assertion your spec publishes** (public attestations, heartbeats, schema-publication announcements). A spec that should have been audience-bound but is mistakenly bearer-flagged is silently exposed to cross-recipient replay (SPEC §10.1) — there is no second check downstream. If `bearer: true` is set, the spec's `parties` declaration **MUST** also list `recipient` as `OPTIONAL`, and the prose **MUST** state what assertion the document conveys and why audience binding is inappropriate for it.
 
+- **`wireCompatibleWith` marks a version that never needed to exist.** This optional field declares that this version is wire-identical to the named earlier version of the same slug, modulo the mechanical normalizations of [SPEC §4.10](SPEC.md#410-naming-conventions) (casing) and framework/shared-schema `$ref` re-pins. Implementers read it as "dual-accept the predecessor by re-casing and retyping — no hand-written adapter needed". You should never need it on a new version: a `draft`'s normalization happens in place ([SPEC §5.2](SPEC.md#52-compatibility-rules)); the field exists for wire-identical versions minted before that rule.
+
 - **`proofRequirement.requirement` is runtime-enforceable, not advisory.** The three values map to consumer behaviour through `Payload::IS_PROOF_REQUIRED` (codegen-emitted): `REQUIRED` sets the const to `true` and causes every conforming consumer pipeline to reject a proofless document with `proofRequired` ([SPEC §7.2 item 7](SPEC.md#72-consumer-requirements)); `RECOMMENDED` and `OPTIONAL` leave the const at its trait default (`false`) and the pipeline accepts proofless documents (subject to the consumer's chosen `ProofPolicy`). Picking `REQUIRED` therefore commits every conforming consumer — including bindings without an in-band verifier — to reject proofless requests, which is the right outcome for evidentiary specs like `acl/grant` but makes the spec unreachable on bindings whose integrity guarantees are out-of-band until those bindings grow a verifier. **Pick `REQUIRED` only when the threat model genuinely needs transport-independent integrity** (audit replay, downstream corroboration, dispute resolution after the original transport has closed). For everyday request/response interactions whose integrity is already guaranteed by the transport, `RECOMMENDED` is the right default.
 
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
@@ -108,7 +111,7 @@ See `specs/acl/grant/0.1/spec.md` for a worked example.
 
 ## Naming conventions (per SPEC §4.10)
 
-Member names and enumerated values use **lowerCamelCase**, so documents are consistent for both human readers and code generators:
+The registry has a single canonical casing convention: member names and enumerated values in payload schemas use **lowerCamelCase**, so documents are consistent for both human readers and code generators:
 
 - **Payload member names** — lowerCamelCase (`sessionId`, `wakeHandle`, `redactedFields`). Deviate only where you embed a member whose name is fixed by an external vocabulary (a field copied verbatim from a WebAuthn or JOSE structure), and confine the foreign naming to that sub-object.
 - **Enumerated values you define** — statuses, kinds, decisions, event types: lowerCamelCase (`cacheAndKeys`, `stepUp`, `proxyLogin`).
@@ -116,7 +119,13 @@ Member names and enumerated values use **lowerCamelCase**, so documents are cons
 - **Externally-owned values** — carry **verbatim**, never re-cased: WebAuthn (`public-key`, `cross-platform`), JOSE (`EdDSA`, `ES256`), cookie `SameSite` (`Lax`, `Strict`), W3C Data Integrity (`DataIntegrityProof`, `assertionMethod`). The framework compares these by exact string equality.
 - **Slugs and `ext` namespace keys** keep their own grammars (lowercase-hyphenated and reverse-DNS) — see [SPEC §6.1](SPEC.md#61-type-uri) and [§4.5.1](SPEC.md#451-the-ext-extension-member).
 
-Casing is part of the wire contract: changing the casing of a member name or a value you define is a breaking change ([SPEC §5](SPEC.md#5-versioning)).
+Casing is part of the wire contract: changing the casing of a member name or a value you define is a breaking change ([SPEC §5](SPEC.md#5-versioning)) — except while your spec is `draft`, where normalizing to the canonical convention is an in-place edit, never a new version folder ([SPEC §5.2](SPEC.md#52-compatibility-rules)).
+
+## Read-one and read-many tasks
+
+The registry's default for a family that enumerates a collection is the **split pair**: a `list` task (paged, filtered enumeration) *and* a sibling `show`/`get` task (single-record fetch by identifier). The rationale is the one [`policy/get/0.1`](specs/policy/get/0.1/spec.md) spells out — the two reads have different failure semantics. A `get` for an unknown id returns `notFound`, a definite determination the caller can act on; a `list` filtered down to one id returns an **empty page**, which is a *successful* response and indistinguishable from "exists but filtered out". Collapsing the pair into list-with-an-id-filter loses that distinction (and, with it, per-record error codes and per-record authorization decisions).
+
+New families **MUST** either ship the split pair or state, in the `list` task's `spec.md`, why a filter suffices for their collection (for example: existence is never load-bearing for callers, or the collection has no stable per-record identifier). Deciding silently — a lone `list` with an `id` filter and no rationale — is what this rule exists to prevent.
 
 ## `payload.schema.json`
 
@@ -156,6 +165,16 @@ Where the specification defines a success-response document, both shapes live in
 A consumer that receives a document with `type: ".../acl/grant/0.1#response"` resolves `#response` against the fetched schema, lands on `$defs.Response`, and validates the response `payload` against it. The build script verifies that any `$defs.Response` you publish declares `$anchor: "response"` and that no other `$defs` entry uses that anchor.
 
 For a fire-and-forget task with no success response, omit `$defs.Response` entirely — the framework still gives you `trust-task-error` for failures.
+
+### Shared definitions live in `_shared/`, not inline
+
+A definition used by **more than one task in a family** — a record shape returned by both `list` and `show`, an entry granted by one task and revoked by another — **MUST** live in the family's `_shared/` schema as a *shared schema component* ([SPEC §6.6](SPEC.md#66-shared-schema-components)), not be duplicated inline in each payload schema. Reference it with a version-pinned cross-file `$ref` into the component's `$defs`, exactly as the framework `Ext` mechanism does:
+
+```jsonc
+"entry": { "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry" }
+```
+
+Inline copies drift: an edit to one task's copy silently forks the wire shape the family's other tasks still validate against, and the divergence is invisible until an implementer round-trips a record between the two. The `_shared/` component versions independently (pin a specific version — [SPEC §6.6](SPEC.md#66-shared-schema-components) forbids "latest" references), and the registry build indexes it and shows which tasks depend on it. A definition used by exactly one task stays a local `$def` in that task's schema.
 
 ### Opting into the framework `ext` extension slot
 
@@ -234,6 +253,24 @@ Then bump the two libraries **in lockstep** (keep their versions equal):
 
 Additive changes (new task, backwards-compatible schema edit) are a patch/minor bump; a breaking schema change needs a new spec **version** folder, not an in-place edit (see [Version rules](#version-rules-per-spec-5)).
 
+### A patch bump promises wire compatibility, not source compatibility
+
+Adding an optional member to an existing payload is additive **on the wire** — every document valid before stays valid, which is why it is a patch bump. It is *not* additive for the generated Rust types: `trust-tasks-rs` emits plain structs with public fields, so any consumer that builds one with struct-literal syntax stops compiling the moment a member is added.
+
+```rust
+// Breaks when the schema gains a member:
+let entry = grant::v0_1::AclEntry { subject, role, scopes, ..  };
+//          ^ error[E0063]: missing field `allowedKeys`
+```
+
+This is a loud compile error rather than a silent behaviour change, and the fix is one line per site — but it lands on consumers who only bumped a patch version, so it is worth stating plainly:
+
+- **Spec authors:** an additive member is still a patch bump (the wire contract is what the version tracks), but call it out in the `CHANGELOG.md` entry so downstream maintainers can budget for the edit. Both instances so far — `messaging/account/list` + `messaging/access-list/list` gaining filters, and `AclEntry` gaining `allowedKeys` — broke at least one downstream crate.
+- **Library consumers:** prefer constructing payloads by deserialization (`serde_json::from_value::<Payload>(v)?`), which is unaffected by added members and is what the wire path does anyway. Reserve struct literals for tests you are happy to touch.
+- **Binding examples in this repo** are consumers too: `trust-tasks-https` and `trust-tasks-didcomm` examples and end-to-end tests all broke this way. The full-workspace `cargo test` job catches it before merge — if it fires on an additive change, that is the expected signal, not a mistake in your schema.
+
+Making this structurally impossible was considered and rejected: deriving `Default` on the generated types (so consumers could write `..Default::default()`) does not compile, because generated enums have no natural default variant, and inventing one is unsafe — a `decision` enum silently defaulting to `approved` is a worse failure than a compile error.
+
 CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindings-drift` job fail the PR if either set of generated files is stale. Publishing itself is automated and version-gated: `publish.yml` releases on push to `main` **only** when the manifest version is newer than what's already published, so an un-bumped PR is a silent no-op. Never publish by hand.
 
 ## Submitting a PR
@@ -241,6 +278,17 @@ CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindin
 - Touch only your own spec folder (or namespace). CODEOWNERS routes review to that slug's editors; touching multiple folders requires multiple approvals and slows everyone down.
 - Sign-off your commits (`git commit -s`) — this repository requires the DCO trailer.
 - Run `npm run build` once before submitting. CI runs it on every PR; failing the build blocks the merge.
+
+## Declaring known implementations
+
+The optional `knownImplementations` front matter field lists URLs (repositories, products, deployment docs) of implementations known to produce or consume the task:
+
+```yaml
+knownImplementations:
+  - https://github.com/example-org/example-server
+```
+
+Its purpose is to let registry readers tell **adoption from aspiration**: a `draft` with implementations behind it is a different proposition from a `draft` that exists only as a proposal, and the registry otherwise gives no way to tell them apart. The list is informative, not exhaustive — omitting it claims nothing either way — but keeping it current is cheap evidence toward the `draft` → `candidate` transition below.
 
 ## Promoting maturity
 

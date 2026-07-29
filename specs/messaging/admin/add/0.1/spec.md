@@ -3,14 +3,15 @@ slug: messaging/admin/add
 version: "0.1"
 title: Messaging — Add Admins
 summary: An administrator grants admin rights to one or more accounts at the mediator.
-status: draft
+status: retired
+supersededBy: messaging/account/update
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
   - messaging
   - mediator
   - admin
-  - admin
+  - role
 authors:
   - Glenn Gore (https://github.com/stormer78)
 parties:
@@ -41,7 +42,7 @@ The **Messaging — Add Admins** Trust Task promotes one or more accounts to adm
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../../account/update/0.1/spec.md) — one `{ did, accountType: "admin" }` update per account (this task's batching is dropped; each grant becomes its own signed, auditable document). The successor is proof-**REQUIRED**, which closes an inconsistency this task embodied: it granted the same privilege as `messaging/account/change-type` — a proof-REQUIRED task — while itself only RECOMMENDING proof.
 
 ## Conformance
 

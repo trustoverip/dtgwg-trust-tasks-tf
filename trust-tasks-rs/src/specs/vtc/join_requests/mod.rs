@@ -2,6 +2,7 @@
 
 pub mod accept;
 pub mod approve;
+pub mod decide;
 pub mod list;
 pub mod manifest;
 pub mod reject;

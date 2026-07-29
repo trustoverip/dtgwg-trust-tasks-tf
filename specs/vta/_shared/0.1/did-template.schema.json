@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/_shared/0.1/did-template",
+  "title": "DidTemplate / DidTemplateRecord — shared definitions for the vta/did-templates/* spec family",
+  "description": "A *DID template* is the JSON shape of a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces; the VTA fills the placeholders with keys it mints and caller-supplied variables when provisioning an integration. `DidTemplate` is the authored shape a caller uploads; `DidTemplateRecord` is the persisted shape the VTA returns (the DidTemplate fields flattened at the top level alongside the resolved `Scope` and provenance metadata). Shared by every task in the vta/did-templates/* family so the record is defined once rather than duplicated per task.",
+  "$defs": {
+    "DidTemplate": {
+      "title": "DidTemplate",
+      "description": "Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "name", "kind", "document"],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1,
+          "description": "Template schema version. Currently always 1."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Template id within its scope. Lowercase alphanumeric and hyphen only."
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour."
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Human-readable description of what the template provisions."
+        },
+        "methods": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "DID methods this template targets, e.g. [\"webvh\", \"web\"] for a hosted DID or [\"key\"] for a did:key."
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW)."
+        },
+        "optionalVars": {
+          "type": "object",
+          "description": "Variables with default values, keyed by variable name.",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).",
+          "additionalProperties": true
+        },
+        "document": {
+          "type": "object",
+          "description": "The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name."
+        }
+      }
+    },
+    "Scope": {
+      "title": "Scope",
+      "description": "Where a stored template lives. Tagged by `type`.",
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "Builtin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "builtin" } }
+        },
+        {
+          "title": "Global",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "global" } }
+        },
+        {
+          "title": "Context",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "contextId"],
+          "properties": {
+            "type": { "const": "context" },
+            "contextId": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "DidTemplateRecord": {
+      "title": "DidTemplateRecord",
+      "description": "A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "name", "kind", "document", "scope", "createdAt", "updatedAt", "createdBy"],
+      "properties": {
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9-]+$" },
+        "kind": { "type": "string", "minLength": 1 },
+        "description": { "type": ["string", "null"] },
+        "methods": { "type": "array", "items": { "type": "string" } },
+        "requiredVars": { "type": "array", "items": { "type": "string" } },
+        "optionalVars": { "type": "object", "additionalProperties": true },
+        "defaults": { "type": "object", "additionalProperties": true },
+        "document": { "type": "object" },
+        "scope": { "$ref": "#/$defs/Scope", "description": "Resolved scope of the stored template." },
+        "createdAt": { "type": "integer", "description": "UTC unix-epoch seconds the template was first stored." },
+        "updatedAt": { "type": "integer", "description": "UTC unix-epoch seconds of the last write." },
+        "createdBy": { "type": "string", "description": "DID of the admin who last wrote the template." }
+      }
+    }
+  }
+}

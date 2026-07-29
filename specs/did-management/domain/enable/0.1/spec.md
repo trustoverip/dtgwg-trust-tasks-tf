@@ -3,7 +3,8 @@ slug: did-management/domain/enable
 version: "0.1"
 title: DID Management — Domain Enable
 summary: An administrator re-enables a previously-disabled hosting domain, cancelling any pending purge and restoring it to active service.
-status: draft
+status: retired
+supersededBy: did-management/domain/set-state
 targetFrameworkVersion: "0.1"
 category: did-management
 keywords: [did-hosting, domain, enable, admin]
@@ -46,7 +47,7 @@ A successful enable triggers the same fleet-wide fan-out as create/update/disabl
 
 ## Status of this Document
 
-Draft.
+**Retired.** This task is superseded by [`did-management/domain/set-state`](../../../domain/set-state/0.1/spec.md) with `state: active`. Consumers SHOULD NOT accept new documents of this type; the specification is retained for auditability of previously-issued documents.
 
 ## Conformance
 

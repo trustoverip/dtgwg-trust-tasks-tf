@@ -38,7 +38,7 @@ errorCodes:
 related:
   - messaging/account/get
   - messaging/account/remove
-  - messaging/account/change-type
+  - messaging/account/update
 ---
 
 ## Abstract

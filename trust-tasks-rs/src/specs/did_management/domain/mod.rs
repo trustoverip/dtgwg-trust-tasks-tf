@@ -6,5 +6,6 @@ pub mod disable;
 pub mod enable;
 pub mod purge;
 pub mod set_default;
+pub mod set_state;
 pub mod unassign;
 pub mod update;

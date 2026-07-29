@@ -8,6 +8,10 @@ export interface VTCMembersDeliverVMCPayload {
    * The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.
    */
   vc: {};
+  /**
+   * Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.
+   */
+  requestId?: string;
   ext?: Ext;
 }
 /**

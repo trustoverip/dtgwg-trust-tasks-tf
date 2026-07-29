@@ -36,9 +36,9 @@ errorCodes:
     meaning: The target DID has no account at this mediator.
     retryable: false
 related:
-  - messaging/access-list/get
-  - messaging/access-list/add
-  - messaging/access-list/clear
+  - messaging/access-list/update
+  - messaging/account/get
+  - messaging/account/update
 ---
 
 ## Abstract
@@ -46,6 +46,8 @@ related:
 The **Messaging — List Access List** Trust Task enumerates a served account's *access list* in pages. A mediator account carries a per-account access list — a set of other DIDs (VIDs) — which, combined with the account's [`MediatorAcl.accessListMode`](../../../_shared/0.1/messaging.schema.json#/$defs/MediatorAcl) (`explicitAllow` = an allowlist, `explicitDeny` = a denylist), governs who may send to that account. The *requester* names the account in `payload.did` and may bound the page with an optional `limit`; the mediator returns a page of entries and, where more remain, an opaque `nextCursor` to fetch the next page. This is a **read-only** query and changes nothing.
 
 A first request omits `cursor`; each subsequent request echoes the `nextCursor` returned by the previous page. The `cursor` is **opaque** to the requester — its structure is the mediator's concern and a requester **MUST NOT** construct, parse, or modify it. Enumeration is complete when a response omits `nextCursor`.
+
+An optional `entries` member turns the enumeration into a **membership check**: the mediator returns only the supplied DIDs that are present in the list, so a supplied DID absent from the response is not a member. This subsumes the retired `messaging/access-list/get` task, whose `present`/`absent` partition is recovered as the returned entries and the remainder of the supplied set.
 
 ## Status of this Document
 
@@ -66,7 +68,8 @@ A conforming **consumer** (the mediator) **MUST**:
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
 2. Where the target DID has no account, respond with `messaging/access-list/list:unknownAccount`.
 3. Apply its own read-authorization policy, responding with the framework's `permissionDenied` where the requester has no standing to inspect the account's access list.
-4. Otherwise return a page of entries bounded by `limit` (the mediator MAY apply a smaller server-side bound), include a `nextCursor` only where further entries remain, and report `accessListCount` as the total size of the list.
+4. Where `entries` is present, return exactly the supplied DIDs that are present in the account's access list (the membership check); the mediator **MAY** omit paging for a filtered request whose result fits one page. `accessListCount` remains the total size of the whole list.
+5. Otherwise return a page of entries bounded by `limit` (the mediator MAY apply a smaller server-side bound), include a `nextCursor` only where further entries remain, and report `accessListCount` as the total size of the list.
 
 ## Request
 

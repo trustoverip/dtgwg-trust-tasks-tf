@@ -3,7 +3,8 @@ slug: did-management/agent-name/set
 version: "0.1"
 title: DID Management — Set Agent Name
 summary: Bind a human-memorable agent name (`/@alice`) to a hosted DID, or update an existing binding. The submitted DID document must claim the name via `alsoKnownAs`.
-status: draft
+status: retired
+supersededBy: did-management/agent-name/update
 targetFrameworkVersion: "0.1"
 category: did-management
 keywords: [did, did-hosting, agent-name, alsoKnownAs, redirect]
@@ -56,7 +57,7 @@ Idempotent: setting a name already bound to the same DID succeeds and refreshes 
 
 ## Status of this Document
 
-Draft.
+**Retired.** This task is superseded by [`did-management/agent-name/update`](../../../agent-name/update/0.1/spec.md) with `state: active` (bind or refresh). Consumers SHOULD NOT accept new documents of this type; the specification is retained for auditability of previously-issued documents.
 
 ## The `alsoKnownAs` invariant
 

@@ -11,3 +11,4 @@ pub mod problem_report;
 pub mod publish;
 pub mod register;
 pub mod rollback;
+pub mod set_state;

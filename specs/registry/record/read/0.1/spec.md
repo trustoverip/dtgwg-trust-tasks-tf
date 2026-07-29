@@ -3,7 +3,8 @@ slug: registry/record/read
 version: "0.1"
 title: Registry — Read Record
 summary: An administrator reads the full stored trust record for a given key, including both the recognition and authorization facets.
-status: draft
+status: retired
+supersededBy: registry/record/query
 targetFrameworkVersion: "0.1"
 category: governance
 keywords:
@@ -42,7 +43,7 @@ The **Registry — Read Record** Trust Task returns the full stored [`TrustRecor
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/query`](../../query/0.1/spec.md), which preserves the exact-fetch semantics (notFound on a fully keyed miss). Producers SHOULD NOT emit new documents against this specification.
 
 ## Conformance
 

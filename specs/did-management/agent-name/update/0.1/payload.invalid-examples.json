@@ -1,0 +1,8 @@
+[
+  { "note": "Missing everything.", "payload": {} },
+  { "note": "Missing state.", "payload": { "mnemonic": "alice", "name": "alice", "didData": "{}" } },
+  { "note": "State outside the enum.", "payload": { "mnemonic": "alice", "name": "alice", "state": "released", "didData": "{}" } },
+  { "note": "Legacy verb as state.", "payload": { "mnemonic": "alice", "name": "alice", "state": "enable", "didData": "{}" } },
+  { "note": "Empty didData string.", "payload": { "mnemonic": "alice", "name": "alice", "state": "active", "didData": "" } },
+  { "note": "Missing name.", "payload": { "mnemonic": "alice", "state": "active", "didData": "{}" } }
+]

@@ -37,8 +37,8 @@ errorCodes:
     meaning: No record exists for the given entity+authority+action+resource key.
     retryable: false
 related:
-  - registry/record/create
-  - registry/record/update
+  - registry/record/put
+  - registry/record/query
 ---
 
 ## Abstract

@@ -1,0 +1,18 @@
+[
+  {
+    "note": "pre_rotation_count must be an integer, not a string.",
+    "payload": { "pre_rotation_count": "3" }
+  },
+  {
+    "note": "pre_rotation_count must not be negative.",
+    "payload": { "pre_rotation_count": -1 }
+  },
+  {
+    "note": "label must be a string.",
+    "payload": { "label": 7 }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "preRotationCount": 3 }
+  }
+]

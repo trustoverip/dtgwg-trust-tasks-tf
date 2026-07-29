@@ -1,0 +1,33 @@
+[
+  {
+    "note": "Wrong status — only `granted` exists. A denial is never announced, so a notice that could say anything else would tempt consumers into treating this advisory channel as the authoritative outcome.",
+    "payload": {
+      "status": "denied",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0"
+    }
+  },
+  {
+    "note": "Missing payloadDigest — without it the requester cannot correlate the notice to its pending task, and the notice's only job is correlation.",
+    "payload": {
+      "status": "granted",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0"
+    }
+  },
+  {
+    "note": "Missing taskType — required for correlation and display even though it is advisory.",
+    "payload": {
+      "status": "granted",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62"
+    }
+  },
+  {
+    "note": "Unknown property — the payload is closed; an advisory notice must not grow unspecified members that consumers might start branching on.",
+    "payload": {
+      "status": "granted",
+      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
+      "grantToken": "eyJhbGciOi..."
+    }
+  }
+]

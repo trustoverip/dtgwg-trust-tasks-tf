@@ -31,14 +31,14 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 related:
-  - messaging/acl/set
+  - messaging/account/update
   - messaging/account/get
   - messaging/access-list/list
 ---
 
 ## Abstract
 
-The **Messaging — Get ACL** Trust Task reads the mediator's per-account access-control capabilities for one or more served accounts. The *administrator* names the accounts to query in `payload.dids`, and the mediator returns, for each known account, the full realized [`MediatorAcl`](../../../_shared/0.1/messaging.schema.json#/$defs/MediatorAcl) capability set it currently holds. This is the read counterpart of [`messaging/acl/set`](../../set/0.1/spec.md): `set` declares a partial update of capabilities; `get` retrieves the complete realized set.
+The **Messaging — Get ACL** Trust Task reads the mediator's per-account access-control capabilities for one or more served accounts. The *administrator* names the accounts to query in `payload.dids`, and the mediator returns, for each known account, the full realized [`MediatorAcl`](../../../_shared/0.1/messaging.schema.json#/$defs/MediatorAcl) capability set it currently holds. This is the read counterpart of the `acl` member of [`messaging/account/update`](../../../account/update/0.1/spec.md): `update` declares a partial update of capabilities; `get` retrieves the complete realized set.
 
 The query is a **batch** read: any number of accounts may be requested in one document. A queried DID that has no account at the mediator is simply omitted from the response `entries`; the response **MAY** additionally list such DIDs in `unknown` so the administrator can distinguish an omitted account from a transmission loss. The mediator applies its own authorization policy — an ACL discloses an account's privileges, so the mediator **MUST** authorize the reader before returning any entry.
 

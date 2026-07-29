@@ -51,6 +51,22 @@
     }
   },
   {
+    "note": "`allowedKeys` must be an array of strings (or explicit null to clear) — a bare string is neither.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "allowedKeys": "key-1"
+    }
+  },
+  {
+    "note": "`allowedKeys` items must be strings.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "allowedKeys": [
+        1
+      ]
+    }
+  },
+  {
     "note": "`expiresAt` must be an RFC 3339 date-time.",
     "payload": {
       "subject": "did:web:alice.example",

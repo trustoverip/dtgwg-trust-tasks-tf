@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/account/update/0.1",
+  "title": "Messaging Update Account — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The DID of the account being updated."
+    },
+    "accountType": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/AccountType",
+      "description": "The role to assign. Omitted = the role is left unchanged. Assigning or modifying the rootAdmin role requires a rootAdmin requester."
+    },
+    "acl": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/MediatorAcl",
+      "description": "Access-control capability members to apply as a partial update. A capability present is set; a capability omitted is left unchanged. Omitted entirely = the capability set is left unchanged."
+    },
+    "queueLimits": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/QueueLimits",
+      "description": "Queued-message limit members to apply as a partial update. A member present is set (-1 = unlimited); a member omitted is left unchanged. Omitted entirely = the limits are left unchanged."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Update Account — response payload",
+      "description": "The success response to a messaging/account/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account"],
+      "properties": {
+        "account": {
+          "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Account",
+          "description": "The full realized mediator view of the account after the update."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -258,6 +258,7 @@ mod tests {
     fn payload() -> grant::Payload {
         grant::Payload {
             entry: grant::AclEntry {
+                allowed_keys: None,
                 subject: "did:web:alice.example".into(),
                 role: "admin".into(),
                 scopes: vec![],

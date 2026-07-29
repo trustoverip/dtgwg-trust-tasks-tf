@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/agent-name/check/0.1",
+  "title": "DID Management Check Agent Name — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The agent name's local part to probe, without the leading `@` (the `alice` in `/@alice`). A leading `@` submitted by a lenient client is stripped by the consumer before evaluation."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Optional explicit hosting domain to probe against. Availability is domain-scoped — the same name may be free on one domain and taken on another. When omitted, resolves via caller ACL default → system default. See category CONVENTIONS §1."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Check Agent Name — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "domain", "available", "reserved"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The probed name's local part, echoed in canonical bare form (leading `@` stripped)."
+        },
+        "domain": {
+          "type": "string",
+          "description": "The hosting domain the probe was evaluated against, after domain resolution."
+        },
+        "available": {
+          "type": "boolean",
+          "description": "Free to claim: neither reserved by the host nor already bound to a DID on this domain."
+        },
+        "reserved": {
+          "type": "boolean",
+          "description": "On the host's reserved list (`admin`, `support`, …) — unavailable but well-formed, distinct from a grammar error (which is rejected as invalid_name)."
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

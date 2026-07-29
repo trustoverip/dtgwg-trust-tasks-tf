@@ -48,6 +48,7 @@ errorCodes:
     retryable: false
 related:
   - task-consent/request
+  - task-consent/granted
   - policy/evaluate
 ---
 

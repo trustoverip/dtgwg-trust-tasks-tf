@@ -3,7 +3,8 @@ slug: confirm/response
 version: "0.1"
 title: Confirm — Response
 summary: An approver's signed answer to a confirm/request — the proof on this document is the cryptographic record of the user's decision.
-status: draft
+status: retired
+supersededBy: task-consent/decision
 targetFrameworkVersion: "0.1"
 category: authentication
 keywords:
@@ -54,7 +55,9 @@ A relying party processing an `approved` response proceeds with the gated action
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This specification is **retired** per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels), superseded by [`task-consent/decision/0.1`](../../../task-consent/decision/0.1/spec.md).
+
+The task-consent decision carries the same signed human answer this task carried — the proof remains the consent record — but binds it to a salted, type-bound digest of the exact payload about to execute rather than to a requester-authored `reason`, and feeds a threshold/grant model (`minApprovals`, single-use grants, `excludeRequester`) that subsumes the single-approver confirm flow. See the supersession note in [`confirm/request/0.1`](../../request/0.1/spec.md) for the full rationale. New implementations MUST use the task-consent family.
 
 ## Conformance
 

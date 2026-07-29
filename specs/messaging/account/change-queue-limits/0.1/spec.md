@@ -3,7 +3,8 @@ slug: messaging/account/change-queue-limits
 version: "0.1"
 title: Messaging — Change Account Queue Limits
 summary: An administrator sets a served account's send and receive queued-message limits, applying a partial update where -1 means unlimited and an omitted member leaves that limit unchanged.
-status: draft
+status: retired
+supersededBy: messaging/account/update
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -59,7 +60,7 @@ The update is **partial**: a [`QueueLimits`](../../../_shared/0.1/messaging.sche
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../update/0.1/spec.md), which accepts this task's exact payload — send `{ did, queueLimits }` with the same members and the same partial-update semantics (`-1` = unlimited, omitted member unchanged); the `selfChangeDenied` guard carries over per member.
 
 ## Conformance
 

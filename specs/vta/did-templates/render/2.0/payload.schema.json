@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/render/2.0",
+  "title": "VTA DID-Template Render — payload",
+  "description": "Render a DID template to a DID document. Omit `contextId` to render a global template; set it to render a template scoped to that context (requires access to the context; the VTA MAY fall back to a global template of the same name). Callers supply variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW — plus CONTEXT_ID and, if set on the context, CONTEXT_DID when contextId is present) server-side, merges the caller's on top, substitutes every placeholder, and returns the rendered document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scope selector. Absent: the global scope. Present: the context whose template is rendered; the caller MUST have access to that context. When present the VTA additionally injects the ambient variables CONTEXT_ID and (if set on the context) CONTEXT_DID."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Resource id — the name of the template to render within the selected scope."
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {},
+      "description": "Caller-supplied template variables, keyed by name. The VTA injects ambient variables (VTA_DID, VTA_URL, NOW; plus CONTEXT_ID / CONTEXT_DID when contextId is present) server-side and merges these on top."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Render — response payload",
+      "description": "The rendered DID document.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document"],
+      "properties": {
+        "document": {
+          "type": "object",
+          "description": "The rendered DID document with all placeholders substituted."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

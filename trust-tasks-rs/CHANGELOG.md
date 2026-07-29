@@ -6,6 +6,177 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.51] — 2026-07-29
+
+### Added
+- **`AclEntry.allowedKeys`** (`acl/_shared/0.1/acl-entry`) — optional actor-scoped
+  key-id filter for maintainers that operate a signing oracle. Intersects with —
+  never widens — `scopes`. Absent (`None`) = every key in scope (prior
+  behaviour); **present-but-empty = authorized on no keys**. Generated as
+  `Option<Vec<String>>` so the absent-vs-empty distinction survives the binding.
+- **`allowedKeys` on the `acl/update/0.1` payload** — replacement-not-merge;
+  explicit `null` clears the filter (a privilege increase), an empty array sets
+  it to no keys, and a narrowing replacement is a privilege reduction the
+  consumer must audit and apply to live sessions
+  (OpenVTC/verifiable-trust-infrastructure#818).
+
+## [0.2.50] — 2026-07-29
+
+### Added
+- **`did-management/agent-name/update/0.1`** — declarative binding state
+  (`active` | `parked`) replacing the set / enable / disable verb trio.
+  `agent-name/remove` deliberately stays a separate destructive task.
+- **`did-management/did/set-state/0.1`** — `active` | `suspended`, replacing
+  the `did/enable` + `did/disable` pair.
+- **`did-management/domain/set-state/0.1`** — `active` | `disabled`, replacing
+  the `domain/enable` + `domain/disable` pair.
+- **`did-management/agent-name/check/0.1`** and
+  **`did-management/agent-name/list/0.1`** — specs for the previously
+  implemented-but-unspecced availability probe and owner-scoped name listing.
+
+### Changed
+- **Retired** `agent-name/{set,enable,disable}`, `did/{enable,disable}`,
+  `domain/{enable,disable}` (superseded by the state-enum tasks above) and
+  `did/publish` (superseded by `did/register`, whose owner-update rule covers
+  the reserved-slot flow). Modules remain generated for auditability of
+  previously-issued documents.
+
+(affinidi/affinidi-webvh-service#143 consolidation.)
+
+## [0.2.49] — 2026-07-29
+
+### Added
+- **`vta/did-templates/{create,delete,get,list,render,update}/2.0`** — the
+  global and context-scoped DID-template families merged into one six-task
+  family behind an optional `contextId` (absent = global scope, super-admin
+  gated; present = that context, context-admin gated). `render/2.0` documents
+  the ambient `CONTEXT_ID`/`CONTEXT_DID` variables injected for scoped
+  renders. Proof levels re-derived per task: the pure reads (`get`, `list`,
+  `render`) are now RECOMMENDED; mutations stay REQUIRED.
+- **`vta/_shared/0.1/did-template`** — shared `DidTemplate` /
+  `DidTemplateRecord` / `Scope` definitions, previously duplicated inline in
+  all twelve 1.0 payload schemas.
+
+### Retired
+- The twelve 1.0 specs (`vta/did-templates/*/1.0` and
+  `vta/contexts/did-templates/*/1.0`), each superseded by the corresponding
+  `vta/did-templates/*/2.0` task
+  (OpenVTC/verifiable-trust-infrastructure#851).
+
+## [0.2.48] — 2026-07-29
+
+### Added
+- **`vtc/join-requests/decide/0.1`** — an administrator decides a pending join
+  request with one payload: `{ id, decision: approved|rejected, reason? }`.
+  Supersedes the `approve`/`reject` pair (near-identical payloads, same admin
+  gate, same pending→notPending lifecycle check, same REQUIRED-proof posture),
+  following the enum-variant pattern of `provision/integration` and
+  `auth/passkey/login/start`.
+- **`vtc/members/vmc/0.1` gains optional `requestId`** (additive, in-place —
+  the spec is `draft`). When present and naming an approved join request whose
+  applicant is the delivering member, the delivery also closes that request,
+  recording the credential as the reciprocal half of the join; the receipt
+  echoes `requestId`. New error codes `requestNotFound`, `requestNotApproved`,
+  `requestApplicantMismatch`.
+
+### Retired
+- **`vtc/join-requests/approve/0.1`** and **`vtc/join-requests/reject/0.1`** —
+  superseded by `vtc/join-requests/decide`.
+- **`vtc/join-requests/accept/0.1`** — superseded by `vtc/members/vmc` with
+  `requestId`; one credential-delivery path instead of two.
+
+(OpenVTC/verifiable-trust-infrastructure#853.)
+
+## [0.2.47] — 2026-07-29
+
+### Added
+- **`registry/record/put/0.1`** — create-or-replace at the four-part record
+  key, with an optional `expectedExisting` assertion recovering the strict
+  create-only / update-only semantics (vault/upsert precedent).
+- **`registry/record/query/0.1`** — optional four-part key: fully keyed is an
+  exact fetch (`notFound` on a miss); partial is a filtered enumeration with
+  `cursor`/`limit` pagination, fixing `registry/record/list`'s pagination gap.
+- **`registry/did/rotate/0.1`** — rotate the registry's own agent-managed
+  `did:webvh` keys in place; documents the pre-existing deployed wire contract
+  from `affinidi-trust-registry-rs`.
+
+### Retired
+- **`registry/record/{create,update}/0.1`** → superseded by
+  `registry/record/put/0.1`; **`registry/record/{read,list}/0.1`** → superseded
+  by `registry/record/query/0.1`. The generated modules remain so
+  already-issued documents keep validating.
+
+(affinidi/affinidi-trust-registry-rs#120 registry/record consolidation.)
+
+## [0.2.46] — 2026-07-29
+
+### Added
+- **`messaging/account/update/0.1`** — one partial-update task for a served
+  account's role, capabilities, and queue limits, mirroring
+  `messaging/account/add`'s payload (`did`, `accountType?`, `acl?`,
+  `queueLimits?`; an omitted member is unchanged). Per-member guards:
+  `rootAdminRequired`, `selfChangeDenied`.
+- **`messaging/access-list/update/0.1`** — `{ did, clear?, add?, remove? }`,
+  applied in that fixed order, replacing the three single-verb access-list
+  writers.
+- **`accountType` role filter on `messaging/account/list/0.1`** — subsumes
+  `messaging/admin/list`.
+- **`entries` membership filter on `messaging/access-list/list/0.1`** —
+  subsumes `messaging/access-list/get`.
+
+### Deprecated
+- Twelve `messaging/*` tasks are now `retired` with `supersededBy`
+  (affinidi/affinidi-tdk-rs#667; 19 → 9 active tasks):
+  `account/change-type`, `account/change-queue-limits`, `acl/set`,
+  `admin/add`, `admin/strip` → `messaging/account/update`;
+  `admin/list` → `messaging/account/list` (+ role filter);
+  `access-list/add`, `access-list/remove`, `access-list/clear` →
+  `messaging/access-list/update`;
+  `access-list/get` → `messaging/access-list/list` (+ membership filter);
+  `admin/audit-log` → the generic `audit/list`;
+  `admin/config` → the generic `config/show`.
+  The retired modules remain generated so existing consumers keep compiling;
+  producers should stop emitting them.
+
+### Fixed
+- `messaging/admin/add` (and `strip`) duplicated the `admin` keyword;
+  `messaging/admin/list` listed itself in `related`.
+
+## [0.2.45] — 2026-07-29
+
+### Added
+- **`GovernancePolicyCredential` claims profile on `vta/credentials/issue/0.1`**
+  (draft-additive) — a domain's governance policy issued as a Verifiable
+  Credential: `GovernancePolicyClaims` (`domain`, `policy`, `policyHash`,
+  optional `contextId` / `policyMediaType`), a single-active supersession rule
+  surfaced as the new optional `supersedes` response field, a mandatory
+  published `credentialStatus`, and the `profileViolation` error code.
+- **`statusListIndex` on the `vta/credentials/revoke/0.1` response**
+  (optional) — confirms the published status-list bit flipped when revoking a
+  profile credential.
+
+Design for OpenVTC/verifiable-trust-infrastructure#804 (governance policy as a
+credential); distribution reuses `credential-exchange/query`/`present`, so no
+new task is introduced.
+
+## [0.2.44] — 2026-07-29
+
+### Added
+- **`task-consent/granted/0.1`** — the previously unspecified fire-and-forget
+  notice an executor sends the requester when a pending task reaches its
+  approval threshold and a single-use grant is waiting. Specced from the wire
+  shape VTI already ships (`{status: "granted", payloadDigest, taskType}`).
+- **`task-consent/request/0.1` gains an optional `note`** — explicitly-untrusted,
+  requester-authored display text, rendered attributed and never as a statement
+  of effects. Absorbs the one legitimate use of the retired confirm family.
+
+### Retired
+- **`confirm/request/0.1`** → superseded by `task-consent/request`.
+- **`confirm/response/0.1`** → superseded by `task-consent/decision`.
+  A confirm is a task-consent with empty `effects` and `minApprovals: 1`; the
+  requester-authored-`reason` trust model it required is the one task-consent
+  exists to reject (OpenVTC/verifiable-trust-infrastructure#852).
+
 ## [0.2.43] — 2026-07-28
 
 ### Added

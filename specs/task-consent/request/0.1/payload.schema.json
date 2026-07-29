@@ -69,6 +69,12 @@
       "type": "string",
       "description": "OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author."
     },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true."
+    },
     "statePin": {
       "$ref": "../../_shared/0.1/task-consent.schema.json#/$defs/StatePin"
     },

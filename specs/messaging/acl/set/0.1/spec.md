@@ -3,7 +3,8 @@ slug: messaging/acl/set
 version: "0.1"
 title: Messaging — Set ACL
 summary: An administrator sets the mediator's access-control capability flags for a served account, applying a partial update of named capabilities (send, receive, forward, anon-receive, protocol enablement, self-manage, blocked).
-status: draft
+status: retired
+supersededBy: messaging/account/update
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -59,7 +60,7 @@ The mediator's internal capability representation (a packed flag set) is opaque 
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../../account/update/0.1/spec.md), which accepts this task's exact payload — send `{ did, acl }` with the same partial-update semantics (a capability present is set, a capability omitted is unchanged) and the same `selfChangeDenied` self-management guard. The successor returns the full realized `Account` rather than `{ did, acl }`; the applied capability set is its `account.acl` member.
 
 ## Conformance
 

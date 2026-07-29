@@ -1,0 +1,5 @@
+[
+  { "note": "Missing mnemonic.", "payload": {} },
+  { "note": "Empty mnemonic.", "payload": { "mnemonic": "" } },
+  { "note": "Unknown extra field.", "payload": { "mnemonic": "alice", "includeParked": true } }
+]
