@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
-## [0.2.47] — 2026-07-29
+## [0.2.48] — 2026-07-29
 
 ### Added
 - **`vtc/join-requests/decide/0.1`** — an administrator decides a pending join
@@ -30,7 +30,7 @@ the corresponding `SPEC.md` framework version.
 
 (OpenVTC/verifiable-trust-infrastructure#853.)
 
-## [0.2.46] — 2026-07-29
+## [0.2.47] — 2026-07-29
 
 ### Added
 - **`registry/record/put/0.1`** — create-or-replace at the four-part record
@@ -51,6 +51,9 @@ the corresponding `SPEC.md` framework version.
 
 (affinidi/affinidi-trust-registry-rs#120 registry/record consolidation.)
 
+## [0.2.46] — 2026-07-29
+
+### Added
 - **`messaging/account/update/0.1`** — one partial-update task for a served
   account's role, capabilities, and queue limits, mirroring
   `messaging/account/add`'s payload (`did`, `accountType?`, `acl?`,
