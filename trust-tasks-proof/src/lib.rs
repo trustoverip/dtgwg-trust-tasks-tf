@@ -27,6 +27,18 @@
 //! let verifier = Verifier::for_did_key();
 //! verifier.verify(&inbound_doc).await?;
 //! ```
+//!
+//! Producers sign with the same backend's
+//! [`affinidi::sign_trust_task`] — defaults to `eddsa-jcs-2022` /
+//! `assertionMethod` and enforces the issuer↔verificationMethod binding
+//! at sign time, so its output verifies with the stock
+//! [`affinidi::Verifier`] by construction:
+//!
+//! ```rust,ignore
+//! use trust_tasks_proof::affinidi::{sign_trust_task, SignOptions};
+//!
+//! let signed = sign_trust_task(&doc_value, &secret, SignOptions::new()).await?;
+//! ```
 
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]

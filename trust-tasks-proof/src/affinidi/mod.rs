@@ -1,5 +1,6 @@
 //! [`Verifier`] — a [`ProofVerifier`] implementation backed by
-//! `affinidi-data-integrity`.
+//! `affinidi-data-integrity` — and [`sign_trust_task`], its sign-side
+//! counterpart for producers.
 //!
 //! Supports the W3C Data Integrity cryptosuites `eddsa-rdfc-2022` and
 //! `eddsa-jcs-2022` out of the box; `bbs-2023` and post-quantum variants
@@ -22,10 +23,14 @@
 //! handing it to the Affinidi `verify` call, as required by the W3C
 //! Data Integrity canonicalisation rules — the proof is over the doc
 //! *plus* the proof's own configuration (everything except `proofValue`),
-//! not over the embedded proof object itself.
+//! not over the embedded proof object itself. [`sign_trust_task`] applies
+//! the identical document-minus-`proof` contract on the sign side, so
+//! what it emits is what [`Verifier`] verifies.
 
 mod resolver;
+mod sign;
 pub use resolver::CachedDidResolver;
+pub use sign::{sign_trust_task, SignError};
 
 use std::sync::Arc;
 
@@ -42,6 +47,15 @@ use trust_tasks_rs::{ProofVerifier, TrustTask, VerificationError};
 /// `did:web` / `did:webvh` resolvers without adding a direct dep on the
 /// upstream crate.
 pub use affinidi_data_integrity::DidKeyResolver as AffinidiDidKeyResolver;
+
+/// Re-export the upstream signer trait so callers can drive
+/// [`sign_trust_task`] from a KMS/HSM-backed signer without adding a
+/// direct dep on the upstream crate.
+pub use affinidi_data_integrity::signer::Signer as AffinidiSigner;
+
+/// Re-export the upstream sign options + cryptosuite enum so callers can
+/// build [`sign_trust_task`] options without a direct upstream dep.
+pub use affinidi_data_integrity::{crypto_suites::CryptoSuite, SignOptions};
 
 /// [`ProofVerifier`] implementation backed by the Affinidi Data Integrity
 /// crate.

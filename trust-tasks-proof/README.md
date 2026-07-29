@@ -43,6 +43,18 @@ The default builder runs in local mode (no network) — sufficient for `did:key`
 
 The adapter currently extracts public keys from `Multikey`-typed verification methods (`publicKeyMultibase`); JWK-bearing methods surface a clean `Resolver` error so callers can stack a custom resolver in front.
 
+## Signing (`affinidi` backend)
+
+Producers sign with `sign_trust_task` — the sign-side counterpart to the stock `Verifier`. It signs the document with the `proof` member removed (the exact canonicalisation contract the verify side applies), replaces any existing `proof`, and pre-flights the SPEC §4.7/§4.8 issuer binding (`issuer` must equal the DID of the signer's `verificationMethod`), so its output verifies with the stock `Verifier` by construction. Defaults: `eddsa-jcs-2022`, `proofPurpose: assertionMethod`.
+
+```rust,ignore
+use trust_tasks_proof::affinidi::{sign_trust_task, SignOptions};
+
+// `doc` is a serde_json::Value with `issuer` set to the signer's DID;
+// `secret` is an affinidi-secrets-resolver Secret (or any upstream Signer).
+let signed = sign_trust_task(&doc, &secret, SignOptions::new()).await?;
+```
+
 ## Opting out of the default backend
 
 ```toml
