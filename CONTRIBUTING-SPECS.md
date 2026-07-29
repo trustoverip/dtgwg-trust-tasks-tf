@@ -253,6 +253,24 @@ Then bump the two libraries **in lockstep** (keep their versions equal):
 
 Additive changes (new task, backwards-compatible schema edit) are a patch/minor bump; a breaking schema change needs a new spec **version** folder, not an in-place edit (see [Version rules](#version-rules-per-spec-5)).
 
+### A patch bump promises wire compatibility, not source compatibility
+
+Adding an optional member to an existing payload is additive **on the wire** — every document valid before stays valid, which is why it is a patch bump. It is *not* additive for the generated Rust types: `trust-tasks-rs` emits plain structs with public fields, so any consumer that builds one with struct-literal syntax stops compiling the moment a member is added.
+
+```rust
+// Breaks when the schema gains a member:
+let entry = grant::v0_1::AclEntry { subject, role, scopes, ..  };
+//          ^ error[E0063]: missing field `allowedKeys`
+```
+
+This is a loud compile error rather than a silent behaviour change, and the fix is one line per site — but it lands on consumers who only bumped a patch version, so it is worth stating plainly:
+
+- **Spec authors:** an additive member is still a patch bump (the wire contract is what the version tracks), but call it out in the `CHANGELOG.md` entry so downstream maintainers can budget for the edit. Both instances so far — `messaging/account/list` + `messaging/access-list/list` gaining filters, and `AclEntry` gaining `allowedKeys` — broke at least one downstream crate.
+- **Library consumers:** prefer constructing payloads by deserialization (`serde_json::from_value::<Payload>(v)?`), which is unaffected by added members and is what the wire path does anyway. Reserve struct literals for tests you are happy to touch.
+- **Binding examples in this repo** are consumers too: `trust-tasks-https` and `trust-tasks-didcomm` examples and end-to-end tests all broke this way. The full-workspace `cargo test` job catches it before merge — if it fires on an additive change, that is the expected signal, not a mistake in your schema.
+
+Making this structurally impossible was considered and rejected: deriving `Default` on the generated types (so consumers could write `..Default::default()`) does not compile, because generated enums have no natural default variant, and inventing one is unsafe — a `decision` enum silently defaulting to `approved` is a worse failure than a compile error.
+
 CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindings-drift` job fail the PR if either set of generated files is stale. Publishing itself is automated and version-gated: `publish.yml` releases on push to `main` **only** when the manifest version is newer than what's already published, so an un-bumped PR is a silent no-op. Never publish by hand.
 
 ## Submitting a PR
