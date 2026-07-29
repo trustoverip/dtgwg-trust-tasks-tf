@@ -3,7 +3,8 @@ slug: registry/record/update
 version: "0.1"
 title: Registry — Update Record
 summary: An administrator updates, in a verifiable form, an existing recognition or authorization record in a trust registry.
-status: draft
+status: retired
+supersededBy: registry/record/put
 targetFrameworkVersion: "0.1"
 category: governance
 keywords:
@@ -45,7 +46,7 @@ The **Registry — Update Record** Trust Task replaces the stored [`TrustRecord`
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/put`](../../put/0.1/spec.md), which covers strict-update via `expectedExisting: true`. Producers SHOULD NOT emit new documents against this specification.
 
 ## Conformance
 

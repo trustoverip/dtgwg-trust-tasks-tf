@@ -3,7 +3,8 @@ slug: registry/record/list
 version: "0.1"
 title: Registry — List Records
 summary: An administrator lists all trust records held by the registry.
-status: draft
+status: retired
+supersededBy: registry/record/query
 targetFrameworkVersion: "0.1"
 category: governance
 keywords:
@@ -40,7 +41,7 @@ The **Registry — List Records** Trust Task returns every [`TrustRecord`](../..
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/query`](../../query/0.1/spec.md), which adds the cursor pagination this task's abstract conceded it lacked. Producers SHOULD NOT emit new documents against this specification.
 
 ## Conformance
 
