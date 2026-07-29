@@ -3,7 +3,8 @@ slug: messaging/admin/audit-log
 version: "0.1"
 title: Messaging — Audit Log
 summary: An administrator pages through the mediator's privileged-change audit log, newest first.
-status: draft
+status: retired
+supersededBy: audit/list
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -41,7 +42,7 @@ The **Messaging — Audit Log** Trust Task pages through the mediator's record o
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by the generic [`audit/list`](../../../../audit/list/0.1/spec.md), which offers the same newest-first cursor paging plus the filters this task never had (`from`/`to`, `action`, `actor`, `outcome`). **Payload-profile mapping:** request `cursor` → `cursor` and `limit` → `pageSize`; each [`AuditEntry`](../../../_shared/0.1/messaging.schema.json#/$defs/AuditEntry) maps onto an `AuditEnvelope` as `timestamp` → `recordedAt`, `actor` → `actor`, `target` → `target`, `action` → `action` (the mediator's `AuditAction` value becomes the maintainer-defined action name), and `detail` → `detail`; the response's `nextCursor` becomes `cursor` + `truncated: true`, and a mediator mints an `eventId` per entry (the one member the legacy shape lacked).
 
 ## Conformance
 

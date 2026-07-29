@@ -10,6 +10,14 @@
       "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
       "description": "The target account's DID whose access list is being enumerated."
     },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid"
+      },
+      "description": "Membership filter: return only these DIDs, and of them only those present in the account's access list. A supplied DID absent from the response's entries is not in the list. Omitted = enumerate the whole list."
+    },
     "cursor": {
       "type": "string",
       "minLength": 1,

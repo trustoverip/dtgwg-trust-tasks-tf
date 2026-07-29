@@ -3,7 +3,8 @@ slug: messaging/access-list/remove
 version: "0.1"
 title: Messaging — Remove from Access List
 summary: An administrator removes one or more DIDs from a served account's access list — the per-account set of other DIDs that, combined with the account's accessListMode, governs who may send to that account.
-status: draft
+status: retired
+supersededBy: messaging/access-list/update
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -52,7 +53,7 @@ The remove is **idempotent at the set level**: an entry not present is silently 
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/update`](../../update/0.1/spec.md) — send `{ did, remove: entries }`; the idempotent set semantics, the `selfChangeDenied` guard, and the `removed` / `accessListCount` response members carry over unchanged.
 
 ## Conformance
 

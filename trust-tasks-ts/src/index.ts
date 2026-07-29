@@ -123,12 +123,14 @@ export * as MessagingAccessListClear_v0_1 from "./messaging/access-list/clear/0.
 export * as MessagingAccessListGet_v0_1 from "./messaging/access-list/get/0.1/payload";
 export * as MessagingAccessListList_v0_1 from "./messaging/access-list/list/0.1/payload";
 export * as MessagingAccessListRemove_v0_1 from "./messaging/access-list/remove/0.1/payload";
+export * as MessagingAccessListUpdate_v0_1 from "./messaging/access-list/update/0.1/payload";
 export * as MessagingAccountAdd_v0_1 from "./messaging/account/add/0.1/payload";
 export * as MessagingAccountChangeQueueLimits_v0_1 from "./messaging/account/change-queue-limits/0.1/payload";
 export * as MessagingAccountChangeType_v0_1 from "./messaging/account/change-type/0.1/payload";
 export * as MessagingAccountGet_v0_1 from "./messaging/account/get/0.1/payload";
 export * as MessagingAccountList_v0_1 from "./messaging/account/list/0.1/payload";
 export * as MessagingAccountRemove_v0_1 from "./messaging/account/remove/0.1/payload";
+export * as MessagingAccountUpdate_v0_1 from "./messaging/account/update/0.1/payload";
 export * as MessagingAclGet_v0_1 from "./messaging/acl/get/0.1/payload";
 export * as MessagingAclSet_v0_1 from "./messaging/acl/set/0.1/payload";
 export * as MessagingAdminAdd_v0_1 from "./messaging/admin/add/0.1/payload";

@@ -3,7 +3,8 @@ slug: messaging/admin/list
 version: "0.1"
 title: Messaging — List Admins
 summary: An administrator lists the mediator's administrator accounts, paginated by an opaque cursor.
-status: draft
+status: retired
+supersededBy: messaging/account/list
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -31,8 +32,8 @@ exposure:
   actsAsSubject: false
 errorCodes: []
 related:
-  - messaging/admin/list
-  - messaging/account/change-type
+  - messaging/account/list
+  - messaging/account/update
 ---
 
 ## Abstract
@@ -41,7 +42,7 @@ The **Messaging — List Admins** Trust Task enumerates the administrator accoun
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/list`](../../../account/list/0.1/spec.md) with its `accountType` role filter — send `{ accountType: "admin" }` (or `"rootAdmin"`), with the same `cursor`/`limit` paging; the successor returns full `Account` views rather than the thinner `AdminAccount` shape.
 
 ## Conformance
 

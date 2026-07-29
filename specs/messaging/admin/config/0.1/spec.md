@@ -3,7 +3,8 @@ slug: messaging/admin/config
 version: "0.1"
 title: Messaging — Get Configuration
 summary: An administrator reads the mediator's current configuration and software version.
-status: draft
+status: retired
+supersededBy: config/show
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -41,7 +42,7 @@ The **Messaging — Get Configuration** Trust Task returns the mediator's softwa
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by the generic [`config/show`](../../../../config/show/0.1/spec.md), which is strictly stronger: per-key values with a source layer and restart semantics, plus a `keys` filter, versus this task's opaque whole-config blob. **Payload-profile mapping:** an empty request maps to `config/show` with `keys` omitted (every registered key); each member of this task's `config` object becomes a `ConfigField` (`key` = the member path, `value` = its value, `source` = a mediator-defined label such as `mediator`, `requiresRestart` per the key's reload semantics); the `version` member is exposed as an ordinary key (e.g. `mediator.version`). The successor's secret-redaction rule applies to secret-bearing keys the blob would have leaked.
 
 ## Conformance
 

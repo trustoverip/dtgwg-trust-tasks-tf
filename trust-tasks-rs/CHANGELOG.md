@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.46] — 2026-07-29
+
+### Added
+- **`messaging/account/update/0.1`** — one partial-update task for a served
+  account's role, capabilities, and queue limits, mirroring
+  `messaging/account/add`'s payload (`did`, `accountType?`, `acl?`,
+  `queueLimits?`; an omitted member is unchanged). Per-member guards:
+  `rootAdminRequired`, `selfChangeDenied`.
+- **`messaging/access-list/update/0.1`** — `{ did, clear?, add?, remove? }`,
+  applied in that fixed order, replacing the three single-verb access-list
+  writers.
+- **`accountType` role filter on `messaging/account/list/0.1`** — subsumes
+  `messaging/admin/list`.
+- **`entries` membership filter on `messaging/access-list/list/0.1`** —
+  subsumes `messaging/access-list/get`.
+
+### Deprecated
+- Twelve `messaging/*` tasks are now `retired` with `supersededBy`
+  (affinidi/affinidi-tdk-rs#667; 19 → 9 active tasks):
+  `account/change-type`, `account/change-queue-limits`, `acl/set`,
+  `admin/add`, `admin/strip` → `messaging/account/update`;
+  `admin/list` → `messaging/account/list` (+ role filter);
+  `access-list/add`, `access-list/remove`, `access-list/clear` →
+  `messaging/access-list/update`;
+  `access-list/get` → `messaging/access-list/list` (+ membership filter);
+  `admin/audit-log` → the generic `audit/list`;
+  `admin/config` → the generic `config/show`.
+  The retired modules remain generated so existing consumers keep compiling;
+  producers should stop emitting them.
+
+### Fixed
+- `messaging/admin/add` (and `strip`) duplicated the `admin` keyword;
+  `messaging/admin/list` listed itself in `related`.
+
 ## [0.2.45] — 2026-07-29
 
 ### Added

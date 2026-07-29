@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/access-list/update/0.1",
+  "title": "Messaging Update Access List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The target account's DID whose access list is being modified."
+    },
+    "clear": {
+      "type": "boolean",
+      "description": "Where true, empty the access list before applying `add`. Applied first; combining `clear: true` with `add` replaces the list wholesale."
+    },
+    "add": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid"
+      },
+      "description": "The DIDs to add to the account's access list. Applied after `clear`. Entries already present are ignored."
+    },
+    "remove": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid"
+      },
+      "description": "The DIDs to remove from the account's access list. Applied last. Entries not present are ignored."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Update Access List — response payload",
+      "description": "The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "added", "removed", "accessListCount"],
+      "properties": {
+        "did": {
+          "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+          "description": "The account whose access list was modified."
+        },
+        "added": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid"
+          },
+          "description": "The entries actually added (those not already present when `add` was applied)."
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid"
+          },
+          "description": "The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here."
+        },
+        "accessListCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The resulting number of entries in the account's access list."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

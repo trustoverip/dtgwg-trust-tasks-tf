@@ -3,7 +3,8 @@ slug: messaging/access-list/add
 version: "0.1"
 title: Messaging — Add to Access List
 summary: An administrator adds one or more DIDs to a served account's access list — the per-account set of other DIDs that, combined with the account's accessListMode, governs who may send to that account.
-status: draft
+status: retired
+supersededBy: messaging/access-list/update
 targetFrameworkVersion: "0.2"
 category: messaging
 keywords:
@@ -55,7 +56,7 @@ The add is **idempotent at the set level**: an entry already present is not dupl
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/update`](../../update/0.1/spec.md) — send `{ did, add: entries }`; the idempotent set semantics, `listFull` / `selfChangeDenied` guards, and the `added` / `accessListCount` response members carry over unchanged.
 
 ## Conformance
 
