@@ -48,6 +48,7 @@ errorCodes:
     retryable: true
 related:
   - task-consent/decision
+  - task-consent/granted
   - policy/evaluate
   - push/wake
 ---
@@ -99,6 +100,27 @@ Hence the two rules this task exists to enforce:
    rendering; the executing code is for policy. Where the two disagree the
    executor's value wins and the executor SHOULD log the divergence.
 
+## The requester's note
+
+`note` is the one deliberate exception to the rule that every word the human
+reads was authored by the executor. It exists because a requester sometimes has
+context no executor can compute — "migrating to the new mediator, ticket
+OPS-441" — and because the alternative to carrying that context here is a
+second, weaker approval family that carries *only* requester prose (this field
+absorbs the one legitimate use of the retired
+[`confirm/request/0.1`](../../../confirm/request/0.1/spec.md)).
+
+The quarantine rules keep the exception from swallowing the design:
+
+- `note` is **display text, not a statement of effects**. It is authored by the
+  least trusted party in the system; nothing in it is verified by anyone.
+- The executor carries it **verbatim or not at all** — never edited, never
+  summarised — so its signature attests provenance ("the requester said this"),
+  never truth.
+- A surface renders it **attributed and visually separate** from `effects`, and
+  a human decision is based on the effects. A note that contradicts the effects
+  is a red flag to display, not a discrepancy to reconcile.
+
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
@@ -116,16 +138,18 @@ A conforming **producer** (the executor) **MUST**:
 5. Compute `payloadDigest` over the canonical payload, the task type, and `challenge` as salt (see *Binding*, below).
 6. Generate `challenge` with ≥128 bits of entropy, distinct per request.
 7. Populate `origin`, when the task arrived from a relying party, with the origin its **own runtime attested** — never a value the proposing page supplied.
-8. Re-evaluate policy **and** the approver's enrolment at execution, not only when this request was minted (see *Time of check*, below).
+8. Populate `note`, when the requester supplied one, **verbatim** — the executor **MUST NOT** author, edit, or summarise it, and **MAY** omit or truncate it. Signing this document attests that the requester supplied that text, never that it is true (see *The requester's note*, below).
+9. Re-evaluate policy **and** the approver's enrolment at execution, not only when this request was minted (see *Time of check*, below).
 
 A conforming **consumer** (the approver device) **MUST**:
 
 1. Verify the `proof` and that the `issuer` is an executor it is enrolled with. An unverifiable request → `untrusted_issuer`; the device **MUST NOT** prompt.
-2. Render **only** members of this verified document. It **MUST NOT** render, and **MUST NOT** allow the requester or the `origin` to contribute, any prose the human reads as the basis of the decision.
+2. Render **only** members of this verified document. With the single, explicitly-quarantined exception of `note`, it **MUST NOT** render, and **MUST NOT** allow the requester or the `origin` to contribute, any prose the human reads as the basis of the decision.
 3. Render every `effects[].summary` verbatim, including for a `kind` it does not recognise. It **MAY** additionally render structured members of kinds it knows. A surface that silently drops an unrecognised effect misinforms the human precisely where the design is weakest.
 4. Where `effects` and `consequences` are **both** empty, tell the approver the consequences could not be determined. It **MUST NOT** present the task as though it had none.
-5. Refuse to prompt when `expiresAt` has passed (`expired`), when it is not a member of `approverSet`, or when it is the `requester` and `excludeRequester` is set (`not_eligible`).
-6. Return a `#response` with `status: prompted` or `status: refused`. The human's answer is **not** a synchronous reply — it returns as a separate `task-consent/decision`.
+5. Render `note`, when it renders it at all, attributed to `requester` and visually distinct from `effects`. It **MUST NOT** present `note` as a statement of what the task does, and **MUST NOT** let it substitute for, reorder, or obscure any effect. A surface **MAY** drop `note` entirely; it **MUST NOT** drop an effect.
+6. Refuse to prompt when `expiresAt` has passed (`expired`), when it is not a member of `approverSet`, or when it is the `requester` and `excludeRequester` is set (`not_eligible`).
+7. Return a `#response` with `status: prompted` or `status: refused`. The human's answer is **not** a synchronous reply — it returns as a separate `task-consent/decision`.
 
 A conforming consumer **SHOULD**, for a `sideEffects: destructive` task, require the human to **match** a prefix of `payloadDigest` against the same prefix displayed by the requesting surface, rather than to tap "approve". Only a comparison across two independent screens survives a compromised consent surface; a tap is a reflex, and a reflex is what habituation destroys first.
 
@@ -163,6 +187,7 @@ already does this for the data; nothing else does it for the authorization.
 `payload.requester` (REQUIRED) — the DID that submitted the task.
 `payload.requesterDeviceId` (OPTIONAL) — the device it was submitted from.
 `payload.origin` (OPTIONAL) — runtime-attested origin of the proposing page.
+`payload.note` (OPTIONAL) — requester-authored display text, explicitly untrusted; never a statement of effects.
 `payload.statePin` (OPTIONAL) — the prior state effects were computed against.
 `payload.approverSet` (REQUIRED) — the set named by the policy.
 `payload.minApprovals` (REQUIRED) — approvals required.
@@ -200,6 +225,7 @@ requester could compute.
     "requester": "did:key:z6MkRequesterBrowserExample",
     "requesterDeviceId": "dev-8f21c0",
     "origin": "https://control.example.com",
+    "note": "Adding the FileStore endpoint for the Q3 files migration (ticket OPS-441).",
     "statePin": {
       "resource": "did:webvh:QmSCIDExample:example.com:acme",
       "version": "3-QmPriorEntryHashExample"

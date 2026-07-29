@@ -158,6 +158,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/sync/event/0.1" => Some(<crate::specs::sync::event::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/sync/event/0.2" => Some(<crate::specs::sync::event::v0_2::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/task-consent/decision/0.1" => Some(<crate::specs::task_consent::decision::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/task-consent/granted/0.1" => Some(<crate::specs::task_consent::granted::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/task-consent/request/0.1" => Some(<crate::specs::task_consent::request::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/trust-task-discovery/0.1" => Some(<crate::specs::trust_task_discovery::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vault/delete/0.1" => Some(<crate::specs::vault::delete::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.44] — 2026-07-29
+
+### Added
+- **`task-consent/granted/0.1`** — the previously unspecified fire-and-forget
+  notice an executor sends the requester when a pending task reaches its
+  approval threshold and a single-use grant is waiting. Specced from the wire
+  shape VTI already ships (`{status: "granted", payloadDigest, taskType}`).
+- **`task-consent/request/0.1` gains an optional `note`** — explicitly-untrusted,
+  requester-authored display text, rendered attributed and never as a statement
+  of effects. Absorbs the one legitimate use of the retired confirm family.
+
+### Retired
+- **`confirm/request/0.1`** → superseded by `task-consent/request`.
+- **`confirm/response/0.1`** → superseded by `task-consent/decision`.
+  A confirm is a task-consent with empty `effects` and `minApprovals: 1`; the
+  requester-authored-`reason` trust model it required is the one task-consent
+  exists to reject (OpenVTC/verifiable-trust-infrastructure#852).
+
 ## [0.2.43] — 2026-07-28
 
 ### Added

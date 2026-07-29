@@ -173,6 +173,7 @@ export * as SyncEvent_v0_1 from "./sync/event/0.1/payload";
 export * as SyncEvent_v0_2 from "./sync/event/0.2/payload";
 export * as TaskConsentShared_v0_1 from "./task-consent/_shared/0.1/task-consent";
 export * as TaskConsentDecision_v0_1 from "./task-consent/decision/0.1/payload";
+export * as TaskConsentGranted_v0_1 from "./task-consent/granted/0.1/payload";
 export * as TaskConsentRequest_v0_1 from "./task-consent/request/0.1/payload";
 export * as TrustTaskDiscovery_v0_1 from "./trust-task-discovery/0.1/payload";
 export * as TrustTaskError_v0_1 from "./trust-task-error/0.1/payload";
