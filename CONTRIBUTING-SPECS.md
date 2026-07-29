@@ -46,6 +46,7 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
 - `MAJOR.MINOR` only — no patch level.
 - `MINOR` bump = backwards-compatible change.
 - `MAJOR` bump = breaking change, reset `MINOR` to 0.
+- Editorial/normalization changes to a `status: draft` spec — normalizing casing to the canonical convention below, re-pinning a framework or shared-schema `$ref` with no wire effect, rewording descriptions — are made **in place**. Do **not** create a new version folder for them ([SPEC.md §5.2](SPEC.md#52-compatibility-rules)).
 - See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump.
 
 ## `spec.md` front matter
@@ -85,6 +86,8 @@ Notes:
 
 - **`bearer: true` flips off audience binding — do not set it casually.** The default for any spec is non-bearer ([SPEC §4.8.3](SPEC.md#483-bearer-specifications)). Adding `bearer: true` to your front matter does two coupled things: it declares that documents conforming to your spec are intended for unspecified consumption (any party that can verify the `proof` is a legitimate recipient), and it causes the codegen to emit `Payload::IS_BEARER = true`. That constant in turn suppresses the audience-binding rule of [SPEC §4.8.2](SPEC.md#482-audience-binding) in every conforming consumer pipeline — a `proof`-carrying document with no in-band `recipient` is accepted instead of rejected with `malformedRequest`. **Only set `bearer: true` when the audience-free property is intrinsic to the assertion your spec publishes** (public attestations, heartbeats, schema-publication announcements). A spec that should have been audience-bound but is mistakenly bearer-flagged is silently exposed to cross-recipient replay (SPEC §10.1) — there is no second check downstream. If `bearer: true` is set, the spec's `parties` declaration **MUST** also list `recipient` as `OPTIONAL`, and the prose **MUST** state what assertion the document conveys and why audience binding is inappropriate for it.
 
+- **`wireCompatibleWith` marks a version that never needed to exist.** This optional field declares that this version is wire-identical to the named earlier version of the same slug, modulo the mechanical normalizations of [SPEC §4.10](SPEC.md#410-naming-conventions) (casing) and framework/shared-schema `$ref` re-pins. Implementers read it as "dual-accept the predecessor by re-casing and retyping — no hand-written adapter needed". You should never need it on a new version: a `draft`'s normalization happens in place ([SPEC §5.2](SPEC.md#52-compatibility-rules)); the field exists for wire-identical versions minted before that rule.
+
 - **`proofRequirement.requirement` is runtime-enforceable, not advisory.** The three values map to consumer behaviour through `Payload::IS_PROOF_REQUIRED` (codegen-emitted): `REQUIRED` sets the const to `true` and causes every conforming consumer pipeline to reject a proofless document with `proofRequired` ([SPEC §7.2 item 7](SPEC.md#72-consumer-requirements)); `RECOMMENDED` and `OPTIONAL` leave the const at its trait default (`false`) and the pipeline accepts proofless documents (subject to the consumer's chosen `ProofPolicy`). Picking `REQUIRED` therefore commits every conforming consumer — including bindings without an in-band verifier — to reject proofless requests, which is the right outcome for evidentiary specs like `acl/grant` but makes the spec unreachable on bindings whose integrity guarantees are out-of-band until those bindings grow a verifier. **Pick `REQUIRED` only when the threat model genuinely needs transport-independent integrity** (audit replay, downstream corroboration, dispute resolution after the original transport has closed). For everyday request/response interactions whose integrity is already guaranteed by the transport, `RECOMMENDED` is the right default.
 
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
@@ -108,7 +111,7 @@ See `specs/acl/grant/0.1/spec.md` for a worked example.
 
 ## Naming conventions (per SPEC §4.10)
 
-Member names and enumerated values use **lowerCamelCase**, so documents are consistent for both human readers and code generators:
+The registry has a single canonical casing convention: member names and enumerated values in payload schemas use **lowerCamelCase**, so documents are consistent for both human readers and code generators:
 
 - **Payload member names** — lowerCamelCase (`sessionId`, `wakeHandle`, `redactedFields`). Deviate only where you embed a member whose name is fixed by an external vocabulary (a field copied verbatim from a WebAuthn or JOSE structure), and confine the foreign naming to that sub-object.
 - **Enumerated values you define** — statuses, kinds, decisions, event types: lowerCamelCase (`cacheAndKeys`, `stepUp`, `proxyLogin`).
@@ -116,7 +119,7 @@ Member names and enumerated values use **lowerCamelCase**, so documents are cons
 - **Externally-owned values** — carry **verbatim**, never re-cased: WebAuthn (`public-key`, `cross-platform`), JOSE (`EdDSA`, `ES256`), cookie `SameSite` (`Lax`, `Strict`), W3C Data Integrity (`DataIntegrityProof`, `assertionMethod`). The framework compares these by exact string equality.
 - **Slugs and `ext` namespace keys** keep their own grammars (lowercase-hyphenated and reverse-DNS) — see [SPEC §6.1](SPEC.md#61-type-uri) and [§4.5.1](SPEC.md#451-the-ext-extension-member).
 
-Casing is part of the wire contract: changing the casing of a member name or a value you define is a breaking change ([SPEC §5](SPEC.md#5-versioning)).
+Casing is part of the wire contract: changing the casing of a member name or a value you define is a breaking change ([SPEC §5](SPEC.md#5-versioning)) — except while your spec is `draft`, where normalizing to the canonical convention is an in-place edit, never a new version folder ([SPEC §5.2](SPEC.md#52-compatibility-rules)).
 
 ## Read-one and read-many tasks
 
