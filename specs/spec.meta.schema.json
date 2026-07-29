@@ -252,6 +252,11 @@
       },
       "description": "URLs (repositories, products, deployment documentation) of implementations known to produce or consume this task. Informative, not exhaustive: it lets registry readers distinguish adopted specifications from proposals, and doubles as evidence toward the draft → candidate transition (SPEC §5.3). Omit when no implementation is known."
     },
+    "wireCompatibleWith": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Declares that this version is wire-identical to the named earlier version of the same slug, modulo the mechanical normalizations of SPEC §4.10 — casing of member names and enumerated values — and framework/shared-schema `$ref` re-pins. Advisory: consumers MAY dual-accept documents of the named version by normalizing casing and retyping the URI, without a hand-written adapter. New versions should not need this field — editorial changes to a `draft` spec are made in place per SPEC §5.2; it exists for wire-identical versions minted before that rule."
+    },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",
