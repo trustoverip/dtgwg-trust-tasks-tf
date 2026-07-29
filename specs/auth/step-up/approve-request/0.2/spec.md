@@ -82,11 +82,13 @@ A conforming **producer** (the relying party) **MUST**:
 
 A conforming **consumer** (the approver) **MUST**:
 
-1. Verify the document's `proof`.
+1. Verify the document's `proof`, and verify the DID resolved from the proof's `verificationMethod` equals the document's `issuer` — the signature is by the *named* relying party, not some third key. Mismatch → the framework `proofInvalid` error, per the binding rule of [SPEC.md §4.7](../../../../../SPEC.md#47-proof) (this task mints no task-specific code for it).
 2. Determine whether it speaks for `payload.subject`. If not → `subjectUnknown`.
 3. Decide whether to surface the request to the user (subject of consent) or to ratify it programmatically (policy-bound delegation). The framework leaves this to the approver — but if a human is presented with the request, the `reason` MUST be shown verbatim.
 4. Honor `payload.acceptableEvidence` when present: the approve-response it later returns MUST carry an `evidence.kind` in that list. If the approver cannot satisfy any listed kind (e.g. `webauthn` was demanded but the device has no passkey for the subject) → `methodUnsupported`. When `payload.webauthn` is present and the approver will produce `webauthn` evidence, it MUST pass those options to the platform passkey API unchanged and assert over `payload.challenge`.
 5. Return a `#response` document carrying `status: accepted` (will return an approve-response asynchronously) or `status: refused` (with a `reason`).
+
+> **Note (non-normative).** The reference ecosystem signs this document with the `eddsa-jcs-2022` Data Integrity cryptosuite and `proofPurpose: assertionMethod`, as the examples show. This is an implementation profile, not a requirement of this specification: [SPEC.md §4.7](../../../../../SPEC.md#47-proof) leaves the choice of cryptosuite open, and any registered suite whose `verificationMethod` resolves to material controlled by the `issuer` satisfies the `proof` requirement.
 
 The approve-response document arrives out-of-band — typically via the approver's preferred transport (DIDComm push to the relying party's mediator, or a push channel the relying party registered at request time).
 
