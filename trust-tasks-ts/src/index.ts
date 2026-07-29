@@ -268,6 +268,7 @@ export * as VtcInvitationsList_v0_1 from "./vtc/invitations/list/0.1/payload";
 export * as VtcInvitationsRevoke_v0_1 from "./vtc/invitations/revoke/0.1/payload";
 export * as VtcJoinRequestsAccept_v0_1 from "./vtc/join-requests/accept/0.1/payload";
 export * as VtcJoinRequestsApprove_v0_1 from "./vtc/join-requests/approve/0.1/payload";
+export * as VtcJoinRequestsDecide_v0_1 from "./vtc/join-requests/decide/0.1/payload";
 export * as VtcJoinRequestsList_v0_1 from "./vtc/join-requests/list/0.1/payload";
 export * as VtcJoinRequestsManifest_v0_1 from "./vtc/join-requests/manifest/0.1/payload";
 export * as VtcJoinRequestsReject_v0_1 from "./vtc/join-requests/reject/0.1/payload";

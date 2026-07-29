@@ -7,6 +7,7 @@
   "required": ["vc"],
   "properties": {
     "vc": { "type": "object", "description": "The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID." },
+    "requestId": { "type": "string", "minLength": 1, "description": "Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete." },
     "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {
@@ -20,6 +21,7 @@
         "memberDid": { "type": "string", "minLength": 1, "description": "The delivering member, as proven by the transport." },
         "vmcId": { "type": "string", "minLength": 1, "description": "Identifier of the stored credential." },
         "status": { "type": "string", "enum": ["stored"], "description": "Terminal state of the delivery." },
+        "requestId": { "type": "string", "minLength": 1, "description": "Echoed when the delivery also closed a join request (the request payload carried `requestId`)." },
         "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
       }
     }

@@ -3,7 +3,8 @@ slug: vtc/join-requests/approve
 version: "0.1"
 title: VTC Join-Requests — Approve
 summary: An administrator approves a pending join request, admitting the applicant to the community.
-status: draft
+status: retired
+supersededBy: vtc/join-requests/decide
 targetFrameworkVersion: "0.2"
 category: governance
 keywords:
@@ -45,6 +46,8 @@ errorCodes:
 ---
 
 ## Abstract
+
+> **Retired.** Superseded by [`vtc/join-requests/decide`](../../decide/0.1/), which carries this task's payload as `{ id, decision: "approved" }`. The payloads, admin gate, lifecycle check and proof posture of approve and reject were identical; the decision is one enum field, not two tasks.
 
 The **VTC Join-Requests — Approve** Trust Task approves a pending join request `id`, admitting the applicant as a member. The decision counterpart to [`vtc/join-requests/reject`](../../reject/0.1/).
 

@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.47] — 2026-07-29
+
+### Added
+- **`vtc/join-requests/decide/0.1`** — an administrator decides a pending join
+  request with one payload: `{ id, decision: approved|rejected, reason? }`.
+  Supersedes the `approve`/`reject` pair (near-identical payloads, same admin
+  gate, same pending→notPending lifecycle check, same REQUIRED-proof posture),
+  following the enum-variant pattern of `provision/integration` and
+  `auth/passkey/login/start`.
+- **`vtc/members/vmc/0.1` gains optional `requestId`** (additive, in-place —
+  the spec is `draft`). When present and naming an approved join request whose
+  applicant is the delivering member, the delivery also closes that request,
+  recording the credential as the reciprocal half of the join; the receipt
+  echoes `requestId`. New error codes `requestNotFound`, `requestNotApproved`,
+  `requestApplicantMismatch`.
+
+### Retired
+- **`vtc/join-requests/approve/0.1`** and **`vtc/join-requests/reject/0.1`** —
+  superseded by `vtc/join-requests/decide`.
+- **`vtc/join-requests/accept/0.1`** — superseded by `vtc/members/vmc` with
+  `requestId`; one credential-delivery path instead of two.
+
+(OpenVTC/verifiable-trust-infrastructure#853.)
+
 ## [0.2.46] — 2026-07-29
 
 ### Added

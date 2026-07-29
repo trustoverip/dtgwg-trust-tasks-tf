@@ -231,6 +231,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/invitations/revoke/0.1" => Some(<crate::specs::vtc::invitations::revoke::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/join-requests/accept/0.1" => Some(<crate::specs::vtc::join_requests::accept::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/join-requests/approve/0.1" => Some(<crate::specs::vtc::join_requests::approve::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vtc/join-requests/decide/0.1" => Some(<crate::specs::vtc::join_requests::decide::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/join-requests/list/0.1" => Some(<crate::specs::vtc::join_requests::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/join-requests/manifest/0.1" => Some(<crate::specs::vtc::join_requests::manifest::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/join-requests/reject/0.1" => Some(<crate::specs::vtc::join_requests::reject::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

@@ -1,0 +1,6 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff", "decision": "approved", "__x__": true } },
+  { "note": "`decision` is required.", "payload": { "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff" } },
+  { "note": "`decision` must be `approved` or `rejected`.", "payload": { "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff", "decision": "maybe" } },
+  { "note": "`id` is required.", "payload": { "decision": "rejected" } }
+]

@@ -1,5 +1,6 @@
 [
   { "note": "`vc` is required.", "payload": {} },
   { "note": "`vc` must be a credential object, not a string.", "payload": { "vc": "eyJhbGciOi..." } },
-  { "note": "Unknown top-level member is rejected.", "payload": { "vc": {}, "__x__": true } }
+  { "note": "Unknown top-level member is rejected.", "payload": { "vc": {}, "__x__": true } },
+  { "note": "`requestId`, when present, must be a non-empty string.", "payload": { "vc": {}, "requestId": "" } }
 ]

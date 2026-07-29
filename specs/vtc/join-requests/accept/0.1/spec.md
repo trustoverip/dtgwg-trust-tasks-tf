@@ -3,7 +3,8 @@ slug: vtc/join-requests/accept
 version: "0.1"
 title: VTC Join-Requests — Accept
 summary: An approved applicant completes membership by issuing the reciprocal credential back to the community.
-status: draft
+status: retired
+supersededBy: vtc/members/vmc
 targetFrameworkVersion: "0.2"
 category: governance
 keywords:
@@ -43,6 +44,8 @@ errorCodes:
 ---
 
 ## Abstract
+
+> **Retired.** Superseded by [`vtc/members/vmc`](../../../members/vmc/0.1/), whose optional `requestId` carries this task's request-closing semantics. Both tasks delivered the member-issued reciprocal credential to the community to close the bidirectional membership edge; accept was vmc plus a request-state transition, so the registry keeps one credential-delivery path instead of two.
 
 The **VTC Join-Requests — Accept** Trust Task completes an approved join: the new member issues a reciprocal Verifiable Credential (`vc`) back to the community, acknowledging the membership credential (`vmcId`) the community issued them. This forms the bidirectional membership edge. The member identity is the proof signer.
 
