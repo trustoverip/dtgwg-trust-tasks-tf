@@ -9,6 +9,24 @@ the corresponding `SPEC.md` framework version.
 ## [0.2.46] — 2026-07-29
 
 ### Added
+- **`registry/record/put/0.1`** — create-or-replace at the four-part record
+  key, with an optional `expectedExisting` assertion recovering the strict
+  create-only / update-only semantics (vault/upsert precedent).
+- **`registry/record/query/0.1`** — optional four-part key: fully keyed is an
+  exact fetch (`notFound` on a miss); partial is a filtered enumeration with
+  `cursor`/`limit` pagination, fixing `registry/record/list`'s pagination gap.
+- **`registry/did/rotate/0.1`** — rotate the registry's own agent-managed
+  `did:webvh` keys in place; documents the pre-existing deployed wire contract
+  from `affinidi-trust-registry-rs`.
+
+### Retired
+- **`registry/record/{create,update}/0.1`** → superseded by
+  `registry/record/put/0.1`; **`registry/record/{read,list}/0.1`** → superseded
+  by `registry/record/query/0.1`. The generated modules remain so
+  already-issued documents keep validating.
+
+(affinidi/affinidi-trust-registry-rs#120 registry/record consolidation.)
+
 - **`messaging/account/update/0.1`** — one partial-update task for a served
   account's role, capabilities, and queue limits, mirroring
   `messaging/account/add`'s payload (`did`, `accountType?`, `acl?`,

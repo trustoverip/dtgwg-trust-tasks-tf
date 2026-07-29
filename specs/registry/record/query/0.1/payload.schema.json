@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/record/query/0.1",
+  "title": "Registry Record Query — payload",
+  "description": "An administrator queries a trust registry's stored records by an optional four-part key. All four parts supplied: an exact fetch of one record (notFound on a miss). Fewer parts: a filtered, cursor-paginated enumeration — fixing the pagination gap the superseded registry/record/list conceded. Key field names are verbatim TRQP (snake_case), matching the registry/* family.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "entity_id": { "type": "string", "description": "Filter to records for this entity." },
+    "authority_id": { "type": "string", "description": "Filter to records asserted by this authority." },
+    "action": { "type": "string", "description": "Filter to records for this action." },
+    "resource": { "type": "string", "description": "Filter to records for this resource." },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "Page size; the registry clamps to 1..=200 (default 50). Ignored on a fully keyed exact fetch."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Record Query — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["records"],
+      "properties": {
+        "records": {
+          "type": "array",
+          "description": "The matching trust records. Exactly one entry on a fully keyed fetch; zero or more per page on an enumeration.",
+          "items": { "$ref": "../../../_shared/0.1/registry.schema.json#/$defs/TrustRecord" }
+        },
+        "nextCursor": {
+          "type": ["string", "null"],
+          "description": "Continuation token for the next page, or null/absent when this is the last."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

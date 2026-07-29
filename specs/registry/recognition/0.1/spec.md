@@ -31,7 +31,7 @@ exposure:
   actsAsSubject: false
 related:
   - registry/authorization
-  - registry/record/read
+  - registry/record/query
 ---
 
 ## Abstract

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/record/put/0.1",
+  "title": "Registry Record Put — payload",
+  "description": "An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record"],
+  "properties": {
+    "record": { "$ref": "../../../_shared/0.1/registry.schema.json#/$defs/TrustRecord" },
+    "expectedExisting": {
+      "type": "boolean",
+      "description": "Optional existence assertion. When true, the registry MUST reject with `registry/record/put:notFound` if no record exists at the key (strict update). When false, the registry MUST reject with `registry/record/put:alreadyExists` if one does (strict create). Omitted: pure create-or-update."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Record Put — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "created"],
+      "properties": {
+        "ok": { "type": "boolean", "description": "Whether the record was stored." },
+        "created": { "type": "boolean", "description": "True when the put created a new record, false when it replaced an existing one." },
+        "message": { "type": "string", "description": "Optional human-readable detail." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
