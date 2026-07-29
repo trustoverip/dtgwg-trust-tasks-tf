@@ -4,6 +4,37 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.2.2] — 2026-07-29
+
+### Added
+
+- `affinidi::sign_trust_task` — the sign-side counterpart to the stock
+  `affinidi::Verifier`. Takes a `serde_json::Value` Trust Task document,
+  any upstream `Signer` (an `affinidi-secrets-resolver` `Secret` works
+  directly), and an upstream `SignOptions`; signs the document with the
+  `proof` member removed (the same canonicalisation contract the verify
+  side applies) and returns the document with the proof embedded.
+  Defaults to the reference ecosystem's signing profile —
+  `proofPurpose: assertionMethod` and the `eddsa-jcs-2022` cryptosuite
+  (applied whenever `SignOptions::cryptosuite` is unset, overriding any
+  signer-declared default so the wire suite is deterministic).
+  - An existing `proof` member is **replaced**, never nested or appended.
+  - The document must carry an in-band `issuer` equal to the DID of the
+    signer's `verificationMethod`; the SPEC §4.7/§4.8 issuer binding the
+    verifier enforces is pre-flighted at sign time (`SignError::MissingIssuer`
+    / `SignError::IssuerMismatch`), so emitted documents verify with the
+    stock `Verifier` by construction.
+- `affinidi::SignError` — error taxonomy for the above.
+- Re-exports so producers need no direct upstream dep:
+  `affinidi::AffinidiSigner` (the upstream `Signer` trait),
+  `affinidi::SignOptions`, `affinidi::CryptoSuite`.
+- `tests/sign_round_trip.rs` — sign with a `did:key` secret and verify
+  with the crate's own stock `Verifier`; option pass-through
+  (proofPurpose, explicit cryptosuite incl. RDFC with `@context`);
+  deterministic JCS default against a signer declaring RDFC; replace
+  semantics for already-signed documents; sign-time issuer-binding
+  rejections.
+
 ## [0.1.2] — 2026-05-27
 
 ### Changed
