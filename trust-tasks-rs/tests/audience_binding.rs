@@ -9,6 +9,7 @@ use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, Proof, StandardC
 
 fn entry() -> grant::AclEntry {
     grant::AclEntry {
+        allowed_keys: None,
         subject: "did:web:alice.example".into(),
         role: "admin".parse().unwrap(),
         scopes: vec![],

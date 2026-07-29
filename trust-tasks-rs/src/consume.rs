@@ -290,6 +290,7 @@ mod tests {
 
     fn entry() -> grant::AclEntry {
         grant::AclEntry {
+            allowed_keys: None,
             subject: "did:web:alice.example".into(),
             role: "admin".into(),
             scopes: vec![],

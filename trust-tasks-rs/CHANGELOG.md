@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.51] — 2026-07-29
+
+### Added
+- **`AclEntry.allowedKeys`** (`acl/_shared/0.1/acl-entry`) — optional actor-scoped
+  key-id filter for maintainers that operate a signing oracle. Intersects with —
+  never widens — `scopes`. Absent (`None`) = every key in scope (prior
+  behaviour); **present-but-empty = authorized on no keys**. Generated as
+  `Option<Vec<String>>` so the absent-vs-empty distinction survives the binding.
+- **`allowedKeys` on the `acl/update/0.1` payload** — replacement-not-merge;
+  explicit `null` clears the filter (a privilege increase), an empty array sets
+  it to no keys, and a narrowing replacement is a privilege reduction the
+  consumer must audit and apply to live sessions
+  (OpenVTC/verifiable-trust-infrastructure#818).
+
 ## [0.2.50] — 2026-07-29
 
 ### Added

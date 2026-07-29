@@ -70,6 +70,23 @@ maintainer that wants unrestricted authority expresses it through a role, not
 through an absent scope list. Reading emptiness as unrestricted is a known
 source of privilege-escalation bugs in ACL implementations.
 
+### `allowedKeys` — a narrowing filter on the act axis
+
+`allowedKeys` refines the act axis where the maintainer operates a signing
+oracle: it names the key identifiers the subject may invoke it on. It
+**intersects with `scopes` and can only narrow, never widen** — a key named in
+`allowedKeys` that lies outside the entry's scopes remains unreachable.
+
+Its absent-vs-empty rule is the same fail-closed convention, and it is the one
+place where the two spellings deliberately differ:
+
+- **absent** — no per-key filter: every key the entry's `scopes` reach
+  (the behaviour of every entry that pre-dates the member);
+- **present but empty** — authorized on **no** keys.
+
+Emptiness is never a wildcard. A consumer MUST carry the absent-vs-empty
+distinction end to end rather than testing emptiness at a call site.
+
 ## 6. Granting approve-authority
 
 Conferring the *ability to confer* is a privilege escalation vector: a subject
@@ -89,7 +106,7 @@ separately gateable and separately auditable:
 |---|---|
 | Add a subject | [`acl/grant`](../../grant/0.1/spec.md) |
 | Move a subject's role | [`acl/change-role`](../../change-role/0.1/spec.md) — requires the current role (compare-and-swap) |
-| Amend label / scopes / expiry / step-up / approve | [`acl/update`](../../update/0.1/spec.md) |
+| Amend label / scopes / allowed keys / expiry / step-up / approve | [`acl/update`](../../update/0.1/spec.md) |
 | Remove authority, wholly or partly | [`acl/revoke`](../../revoke/0.1/spec.md) |
 
 Two boundaries are enforced rather than advisory, and both exist so that a
@@ -102,3 +119,11 @@ one:
 
 An implementation that relaxed either would leave an audit trail in which
 "withdrew production access" is indistinguishable from "corrected a label".
+
+`allowedKeys` is the one deliberate exception to the second boundary:
+`acl/revoke/0.1` cannot express a per-key reduction, so `acl/update` carries
+it. A replacement that narrows `allowedKeys` **is a privilege reduction all
+the same**, and a consumer MUST give it the same treatment the revocation
+doctrine exists for — audit it distinctly as a reduction and apply it to the
+subject's live sessions rather than letting the wider set survive until a
+credential expires (see [`acl/update`](../../update/0.1/spec.md)).

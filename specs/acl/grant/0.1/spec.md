@@ -86,6 +86,7 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 * **AclEntry.** The canonical record of one subject's membership in the ACL.
 * **Role.** A short opaque string interpreted by the ACL maintainer (e.g. `admin`, `member`, `viewer`).
 * **Scopes.** An array of opaque strings restricting where the role applies (e.g. contexts, domains, resource prefixes).
+* **Allowed keys.** An optional array of key identifiers restricting which keys the subject may invoke the maintainer's signing oracle on. It **intersects with** `scopes` — it can only narrow, never widen, so a key named here that lies outside the entry's scopes remains unreachable. **Absent** means every key within the entry's scopes (the behaviour of entries that pre-date the member); **present but empty** means authorized on *no* keys. The two spellings are different grants and a maintainer MUST NOT collapse them (see `_shared/0.1/CONVENTIONS.md` §5).
 
 ## Request
 
@@ -188,5 +189,7 @@ Response to the first request example:
 A grant document is evidence: a captured `acl/grant` Trust Task proves who authorized whom with what role. The **REQUIRED** `proof` ensures the granting authority cannot repudiate the grant and that intermediaries cannot alter its content.
 
 Where the subject is a natural person or the role vocabulary is sensitive (for example, signalling membership in a regulated community), producers **SHOULD** apply transport confidentiality appropriate to the privacy regime.
+
+`allowedKeys` exists so that least privilege is *expressible* where the split is meaningful: a granting authority that needs a consumer to sign with exactly one key out of a shared scope can say so, rather than being forced to hand over the whole scope or contort the scope topology into per-key compartments. Because the member only ever intersects with `scopes`, a maintainer that ignores it grants **more** than the producer intended — so a maintainer that operates a signing oracle SHOULD enforce it, and one that cannot SHOULD reject a grant that carries it rather than silently widening. The empty-vs-absent rule is load-bearing: an implementation that reads an empty `allowedKeys` as "unrestricted" has turned the narrowest possible grant into the widest one.
 
 The optional `ext` extension (see [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing. The `ext` slot is available at both the payload level and on the `AclEntry` itself — the same namespacing and ignore-unknown rules apply at both levels.

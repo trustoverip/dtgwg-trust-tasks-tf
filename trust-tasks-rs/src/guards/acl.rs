@@ -188,6 +188,7 @@ mod tests {
         use crate::specs::acl::grant::v0_1 as grant;
 
         let admin = grant::AclEntry {
+            allowed_keys: None,
             subject: "did:web:alice.example".into(),
             role: "admin".into(),
             scopes: vec![],
@@ -202,6 +203,7 @@ mod tests {
             ext: None,
         };
         let member = grant::AclEntry {
+            allowed_keys: None,
             subject: "did:web:bob.example".into(),
             role: "member".into(),
             scopes: vec![],
