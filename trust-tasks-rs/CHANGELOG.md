@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.54] — 2026-07-31
+
+### Changed
+- **`credentialId` is now the shared `CredentialId` newtype across the credential
+  families.** `credentials/_shared/0.1/credentials` hoists the identifier both
+  receipts are keyed by into its own `$def`, and `vta/credentials/{issue,revoke}`
+  reference it instead of restating the field. **Source-breaking for Rust
+  consumers** (the wire is unchanged): in `vtc/endorsements/*` the generated type
+  is renamed `IssuedCredentialCredentialId` → `CredentialId`, and in
+  `vta/credentials/*` `credential_id` moves from a plain `String` to the
+  validated newtype. Construct via `.parse()` / `try_from`, or by deserializing
+  the payload whole. Only the identifier was hoisted — `expiresAt`, `revokedAt`
+  and the opaque `credential` object keep their natural generated types on
+  purpose, since wrapping them would deduplicate a description at the cost of
+  every consumer's ergonomics.
+- **`vta/credentials/*` `credentialId` is now constrained non-empty**, inherited
+  from the shared definition. Every real payload already satisfied it.
+
+### Added
+- **`vault/_shared/0.2` gains `StepUpChallenge` and `EnvelopeMismatch`** — the
+  `details` shapes behind `stepUpRequired` and `envelopeUnsupported`, previously
+  restated verbatim across `vault/release`, `vault/proxy-login` and
+  `vault/sign-trust-task`. An `errorCodes[].detailsSchema` may now be a `$ref`
+  into a shared schema; the registry build resolves and inlines it, so
+  `registry.json` consumers see the full fragment as before. No generated-code
+  effect — the code generators do not read `errorCodes`.
+
 ## [0.2.53] — 2026-07-31
 
 ### Added

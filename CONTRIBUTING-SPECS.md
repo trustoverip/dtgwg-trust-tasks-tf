@@ -218,6 +218,15 @@ errorCodes:
           items: { type: string }
 ```
 
+A `detailsSchema` **MAY** be a `$ref` into a shared schema component instead of an inline fragment, resolved from the spec's own directory exactly as a payload-schema `$ref` is:
+
+```yaml
+    detailsSchema:
+      $ref: "../../_shared/0.2/consumer-context.schema.json#/$defs/StepUpChallenge"
+```
+
+Reach for this when the same `details` shape appears on more than one task's error — the step-up challenge returned by `vault/release`, `vault/proxy-login` and `vault/sign-trust-task` was restated verbatim in all three before this existed. The build **resolves and inlines** the reference into `registry.json` and `tasks.generated.js`, so machine consumers still receive the whole fragment (they have no base URI against which a relative `$ref` would mean anything), and it records the dependency in the shared schema's "used by" index. A ref that names a missing file or a missing fragment fails the build rather than dangling.
+
 ### Extension authority: spec authors vs. consumer maintainers
 
 Two parties may need to mint codes under `<slug>:<local>`:

@@ -3,11 +3,13 @@
  * Source: specs/vta/credentials/revoke/0.1/payload.schema.json
  */
 
+/**
+ * The id of the credential to revoke (as returned by vta/credentials/issue).
+ */
+export type CredentialId = string;
+
 export interface VTACredentialsRevokePayload {
-  /**
-   * The id of the credential to revoke (as returned by vta/credentials/issue).
-   */
-  credentialId: string;
+  credentialId: CredentialId;
   /**
    * Optional human-readable rationale, recorded for audit.
    */

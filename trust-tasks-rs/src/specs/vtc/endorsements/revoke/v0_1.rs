@@ -29,6 +29,77 @@ pub mod error {
         }
     }
 }
+///Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "CredentialId",
+///  "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
+///  "type": "string",
+///  "minLength": 1,
+///  "$anchor": "credentialId"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct CredentialId(::std::string::String);
+impl ::std::ops::Deref for CredentialId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<CredentialId> for ::std::string::String {
+    fn from(value: CredentialId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for CredentialId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CredentialId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -447,9 +518,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEndorsementId {
 ///  ],
 ///  "properties": {
 ///    "credentialId": {
-///      "description": "The revoked credential's id.",
-///      "type": "string",
-///      "minLength": 1
+///      "$ref": "#/definitions/CredentialId"
 ///    },
 ///    "revokedAt": {
 ///      "description": "When the revocation was recorded.",
@@ -465,81 +534,11 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEndorsementId {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct RevocationReceipt {
-    ///The revoked credential's id.
     #[serde(rename = "credentialId")]
-    pub credential_id: RevocationReceiptCredentialId,
+    pub credential_id: CredentialId,
     ///When the revocation was recorded.
     #[serde(rename = "revokedAt")]
     pub revoked_at: ::chrono::DateTime<::chrono::offset::Utc>,
-}
-///The revoked credential's id.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The revoked credential's id.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RevocationReceiptCredentialId(::std::string::String);
-impl ::std::ops::Deref for RevocationReceiptCredentialId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RevocationReceiptCredentialId> for ::std::string::String {
-    fn from(value: RevocationReceiptCredentialId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RevocationReceiptCredentialId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RevocationReceiptCredentialId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RevocationReceiptCredentialId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RevocationReceiptCredentialId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RevocationReceiptCredentialId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1";
@@ -554,7 +553,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revocation\": {\n          \"$ref\": \"#/$defs/RevocationReceipt\",\n          \"description\": \"The registry-wide revocation receipt for the underlying VEC.\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The status-list slot whose bit was flipped, so a verifier can confirm the published effect.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"revocation\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"VTC Endorsements Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationReceipt\": {\n      \"$anchor\": \"revocationReceipt\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \\\"I revoked it now\\\" from \\\"it was already gone\\\".\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The revoked credential's id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"RevocationReceipt\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"endorsementId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"endorsementId\"\n  ],\n  \"title\": \"VTC Endorsements Revoke — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revocation\": {\n          \"$ref\": \"#/$defs/RevocationReceipt\",\n          \"description\": \"The registry-wide revocation receipt for the underlying VEC.\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The status-list slot whose bit was flipped, so a verifier can confirm the published effect.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"revocation\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"VTC Endorsements Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationReceipt\": {\n      \"$anchor\": \"revocationReceipt\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \\\"I revoked it now\\\" from \\\"it was already gone\\\".\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"RevocationReceipt\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"endorsementId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"endorsementId\"\n  ],\n  \"title\": \"VTC Endorsements Revoke — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

@@ -5,6 +5,8 @@
 
 /**
  * A WebAuthn passkey published as a Multikey verificationMethod (purpose `authentication`) on a VTA-managed DID. Any verifier that resolves the DID can validate a WebAuthn assertion against the embedded public key — no callback to the VTA and no shared secret. Returned by vta/passkey-vms/enroll-submit (the single VM just created) and vta/passkey-vms/list (every VM on the DID). The shape mirrors the wallet-side `@pnm/core` PasskeyVerificationMethod and the VTA-side `vta_sdk::protocols::did_management::passkey_vms::PasskeyVerificationMethod`.
+ *
+ * Related but deliberately separate from `auth/_shared/0.1/webauthn`: both families drive the same browser APIs, but that document mirrors the WebAuthn dictionaries verbatim for client pass-through, while this family flattens the ceremony and carries DID-specific members (`publicKeyMultibase`, `coseAlgorithm`) because its output is a verificationMethod published in a DID document rather than a credential row in an auth service. A `PasskeyVerificationMethod` is not an `auth/_shared` `RegisteredCredential` under another name — it is a W3C Multikey any resolver can verify against without calling back to the issuer. The overlap is in subject matter, not in shape; see the note in `auth/_shared/0.1/webauthn` before proposing a merge.
  */
 export interface PasskeyVerificationMethodSharedDefinitionForTheVtaPasskeyVmsSpecFamily {
   [k: string]: unknown | undefined;

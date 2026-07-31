@@ -66,13 +66,7 @@ errorCodes:
     meaning: Policy demands a step-up proof before the signature can be issued. Consumer retries with `stepUpProof` populated. Same shape as `vault/proxy-login:stepUpRequired`.
     retryable: true
     detailsSchema:
-      type: object
-      additionalProperties: false
-      required: ["method", "challengeId"]
-      properties:
-        method: { type: "string", enum: ["webauthnUv", "pushApproval", "totp"] }
-        challengeId: { type: "string" }
-        ttlSeconds: { type: "integer", minimum: 1 }
+      $ref: "../../_shared/0.2/consumer-context.schema.json#/$defs/StepUpChallenge"
   - code: vault/sign-trust-task:policyDeny
     meaning: Policy denies sign-trust-task for this consumer + entry combination outright (no step-up will satisfy it).
     retryable: false

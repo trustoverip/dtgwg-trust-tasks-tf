@@ -261,6 +261,88 @@ function computeUses(schema, schemaPath, sharedByPath) {
   return { uses: [...seen.values()], unresolved };
 }
 
+/* Resolve `$ref`s inside an `errorCodes[].detailsSchema` front-matter fragment.
+ *
+ * A detailsSchema is a JSON Schema fragment describing an error's `details`
+ * object, but it lives in YAML front matter rather than in a schema file, so
+ * nothing resolved `$ref`s there — a ref written in one would dangle silently.
+ * That left families with no way to share a shape between an error and the
+ * rest of the registry, which is how the step-up challenge came to be restated
+ * verbatim in three vault specs.
+ *
+ * Refs are resolved and INLINED into the emitted registry rather than passed
+ * through. `detailsSchema` is consumed only by machine readers via
+ * registry.json / tasks.generated.js, and handing them a relative `$ref` with
+ * no base URI would be strictly worse than the duplication it replaces. So the
+ * source gets one home for the shape and consumers still get the whole thing.
+ */
+function resolveDetailsSchemas(meta, dir, rel, sharedByPath) {
+  const codes = meta.errorCodes || [];
+  if (!codes.some((c) => c && c.detailsSchema)) return { errorCodes: codes, uses: [] };
+
+  const uses = [];
+  const out = codes.map((code) => {
+    if (!code || !code.detailsSchema) return code;
+    return { ...code, detailsSchema: resolve(code.detailsSchema, dir, code.code, 0) };
+  });
+  return { errorCodes: out, uses };
+
+  function resolve(node, baseDir, codeName, depth) {
+    if (Array.isArray(node)) return node.map((n) => resolve(n, baseDir, codeName, depth));
+    if (!node || typeof node !== 'object') return node;
+
+    if (typeof node.$ref === 'string') {
+      if (depth > 8) {
+        fail(rel, `errorCodes['${codeName}'].detailsSchema: $ref nesting too deep (cycle?) at '${node.$ref}'`);
+        return node;
+      }
+      const resolved = resolveRef(node.$ref, baseDir);
+      if (!resolved || resolved.external) {
+        fail(rel, `errorCodes['${codeName}'].detailsSchema: $ref '${node.$ref}' must point at a shared schema file (a bare local '#/...' ref has nothing to resolve against here)`);
+        return node;
+      }
+      const target = sharedByPath.get(resolved.filePath);
+      if (!target) {
+        fail(rel, `errorCodes['${codeName}'].detailsSchema: $ref '${node.$ref}' did not resolve to a discovered shared schema`);
+        return node;
+      }
+      const frag = pointerInto(target.schema, resolved.frag);
+      if (frag === undefined) {
+        fail(rel, `errorCodes['${codeName}'].detailsSchema: $ref '${node.$ref}' resolved to a file but its fragment '${resolved.frag}' does not exist`);
+        return node;
+      }
+      const defMatch = resolved.frag.match(/^\/\$defs\/([^/]+)$/);
+      uses.push({
+        schemaSlug: target.slug,
+        def: defMatch ? decodeURIComponent(defMatch[1]) : null,
+        occurrences: 1,
+        via: 'ref'
+      });
+      // Recurse into the resolved fragment so a shared def that itself refs
+      // another one still inlines whole. Its refs resolve against ITS file.
+      const { $ref, ...siblings } = node;
+      return { ...resolve(frag, path.dirname(resolved.filePath), codeName, depth + 1), ...siblings };
+    }
+
+    const copy = {};
+    for (const [k, v] of Object.entries(node)) copy[k] = resolve(v, baseDir, codeName, depth);
+    return copy;
+  }
+}
+
+/* Walk an RFC 6901 JSON Pointer into a parsed schema. Returns undefined when
+ * any segment is missing, which the caller reports as a dangling fragment. */
+function pointerInto(root, pointer) {
+  if (!pointer) return root;
+  let node = root;
+  for (const raw of pointer.split('/').slice(1)) {
+    const seg = decodeURIComponent(raw).replace(/~1/g, '/').replace(/~0/g, '~');
+    if (node === null || typeof node !== 'object' || !(seg in node)) return undefined;
+    node = node[seg];
+  }
+  return node;
+}
+
 function loadMetaValidator() {
   const ajv = new Ajv({ allErrors: true, strict: false });
   addFormats(ajv);
@@ -618,7 +700,16 @@ function main() {
       warn(`${slug}/${version}/payload.schema.json: $ref '${u}' did not resolve to a discovered shared schema`);
     }
     const uses = applyMethodExtensions(meta, slug, version, refUses, sharedBySlug);
-    tasks.push(buildTask(entry, meta, schema, uses));
+    // A shared shape referenced from an error's detailsSchema is as real a
+    // dependency as one referenced from the payload schema — fold it into the
+    // same list so the shared schema's "used by" index stays honest.
+    const details = resolveDetailsSchemas(meta, dir, `${rel}/spec.md`, sharedByPath);
+    for (const u of details.uses) {
+      const existing = uses.find((e) => e.schemaSlug === u.schemaSlug && e.def === u.def && (e.via || 'ref') === 'ref');
+      if (existing) existing.occurrences += u.occurrences;
+      else uses.push(u);
+    }
+    tasks.push(buildTask(entry, { ...meta, errorCodes: details.errorCodes }, schema, uses));
   }
 
   // wireCompatibleWith referential integrity: the named predecessor must be a

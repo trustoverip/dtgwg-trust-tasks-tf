@@ -29,6 +29,77 @@ pub mod error {
         }
     }
 }
+///Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "CredentialId",
+///  "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
+///  "type": "string",
+///  "minLength": 1,
+///  "$anchor": "credentialId"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct CredentialId(::std::string::String);
+impl ::std::ops::Deref for CredentialId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<CredentialId> for ::std::string::String {
+    fn from(value: CredentialId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for CredentialId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CredentialId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -152,7 +223,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "properties": {
 ///    "credentialId": {
 ///      "description": "The id of the credential to revoke (as returned by vta/credentials/issue).",
-///      "type": "string"
+///      "$ref": "#/definitions/CredentialId"
 ///    },
 ///    "ext": {
 ///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
@@ -172,7 +243,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The id of the credential to revoke (as returned by vta/credentials/issue).
     #[serde(rename = "credentialId")]
-    pub credential_id: ::std::string::String,
+    pub credential_id: CredentialId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -195,8 +266,7 @@ pub struct Payload {
 ///  ],
 ///  "properties": {
 ///    "credentialId": {
-///      "description": "The revoked credential's id.",
-///      "type": "string"
+///      "$ref": "#/definitions/CredentialId"
 ///    },
 ///    "ext": {
 ///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
@@ -221,9 +291,8 @@ pub struct Payload {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Response {
-    ///The revoked credential's id.
     #[serde(rename = "credentialId")]
-    pub credential_id: ::std::string::String,
+    pub credential_id: CredentialId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -251,7 +320,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The revoked credential's id.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"VTA Credentials Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/credentials/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"credentialId\": {\n      \"description\": \"The id of the credential to revoke (as returned by vta/credentials/issue).\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"credentialId\"\n  ],\n  \"title\": \"VTA Credentials Revoke — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"VTA Credentials Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/credentials/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"credentialId\": {\n      \"$ref\": \"#/$defs/CredentialId\",\n      \"description\": \"The id of the credential to revoke (as returned by vta/credentials/issue).\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"credentialId\"\n  ],\n  \"title\": \"VTA Credentials Revoke — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

@@ -5,6 +5,8 @@
 
 /**
  * Reusable JSON Schema fragments for the WebAuthn (Level 2) options and credential responses exchanged during passkey enrollment and login. Field names follow the WebAuthn / WHATWG dictionaries verbatim so existing client-side libraries (`@simplewebauthn/browser`, `navigator.credentials.*`) can pass-through their inputs and outputs.
+ *
+ * NOT the only WebAuthn surface in the registry, and deliberately so: `vta/passkey-vms/*` runs its own enrolment ceremony against these same browser APIs without referencing these definitions. The divergence is intentional. This document's contract is pass-through fidelity to the WebAuthn dictionaries — nested `rp` / `user` / `response`, `clientDataJSON` cased as the spec cases it — so a client hands `navigator.credentials.*` output over unmodified. The VTA family's contract is different: it flattens the ceremony and carries members that only mean something when the outcome is a DID verificationMethod (`did`, `publicKeyMultibase`, `coseAlgorithm`), because the VTA re-derives the authoritative key server-side from the attestation. Unifying them would break a wire contract with shipped implementations to make two genuinely different exchanges share a spelling. Extend whichever surface matches the ceremony you are specifying; do not merge them.
  */
 export interface AuthSharedWebAuthnDefinitions {
   [k: string]: unknown | undefined;

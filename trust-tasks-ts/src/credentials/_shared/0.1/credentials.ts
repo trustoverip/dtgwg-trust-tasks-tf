@@ -5,6 +5,10 @@
 
 /**
  * The credential-minting core shared by every family that issues or revokes a Verifiable Credential (vta/credentials/*, vtc/endorsements/*, and future issuers). A family embeds these definitions rather than restating them, so the issuance receipt and the revocation receipt have one canonical shape across the registry. Families remain separate Trust Tasks because their trust semantics differ (approval plane, third-party verifiability, governance gating); only the mechanism is shared.
+ *
+ * Two levels of reuse are offered. A family whose response IS a receipt embeds `IssuedCredential` / `RevocationReceipt` whole, as vtc/endorsements does. A family whose response carries additional members alongside the receipt fields cannot do that — these definitions are `additionalProperties: false`, so composing one via `allOf` would reject the extra members — and instead references `CredentialId`, the identifier both receipts are keyed by, as vta/credentials does.
+ *
+ * `CredentialId` is hoisted and the other members are not, deliberately: it is the one field carrying a constraint worth stating once (non-empty), and the code generators mint a named type per `$def`, so hoisting a plain timestamp or the opaque credential object would wrap `expiresAt` and `credential` in newtypes for every consumer while deduplicating nothing but a description.
  */
 export interface CredentialsSharedIssuanceAndRevocationDefinitions {
   [k: string]: unknown | undefined;

@@ -26,6 +26,29 @@
         }
       }
     },
+    "StepUpChallenge": {
+      "title": "StepUpChallenge",
+      "description": "The demand half of a step-up exchange: what the maintainer returns in the `details` of a `stepUpRequired` error, naming the method the consumer must satisfy and the challenge its proof must answer. The consumer's reply is a `StepUpProof`, whose `challengeId` echoes the `challengeId` here — the two definitions are the two ends of one exchange and their `method`/`kind` vocabularies MUST stay in step. Referenced by the `detailsSchema` of `vault/release`, `vault/proxy-login`, and `vault/sign-trust-task`, which previously each restated it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "challengeId"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["webauthnUv", "pushApproval", "totp"],
+          "description": "The step-up method the consumer must satisfy. Mirrors `StepUpProof.kind`."
+        },
+        "challengeId": {
+          "type": "string",
+          "description": "Maintainer-issued challenge id. The consumer echoes this in `StepUpProof.challengeId` so the maintainer can bind the proof to the demand that provoked it."
+        },
+        "ttlSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How long the challenge remains answerable. Advisory to the consumer; the maintainer enforces its own expiry."
+        }
+      }
+    },
     "StepUpProof": {
       "title": "StepUpProof",
       "type": "object",

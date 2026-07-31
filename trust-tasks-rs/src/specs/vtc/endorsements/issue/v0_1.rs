@@ -29,6 +29,77 @@ pub mod error {
         }
     }
 }
+///Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "CredentialId",
+///  "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
+///  "type": "string",
+///  "minLength": 1,
+///  "$anchor": "credentialId"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct CredentialId(::std::string::String);
+impl ::std::ops::Deref for CredentialId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<CredentialId> for ::std::string::String {
+    fn from(value: CredentialId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for CredentialId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CredentialId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///`Endorsement`
 ///
 /// <details><summary>JSON schema</summary>
@@ -457,9 +528,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "type": "object"
 ///    },
 ///    "credentialId": {
-///      "description": "Stable identifier for the issued credential — the handle for revocation and audit.",
-///      "type": "string",
-///      "minLength": 1
+///      "$ref": "#/definitions/CredentialId"
 ///    },
 ///    "expiresAt": {
 ///      "description": "When the credential's validUntil falls due.",
@@ -482,9 +551,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct IssuedCredential {
     ///The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///Stable identifier for the issued credential — the handle for revocation and audit.
     #[serde(rename = "credentialId")]
-    pub credential_id: IssuedCredentialCredentialId,
+    pub credential_id: CredentialId,
     ///When the credential's validUntil falls due.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -495,75 +563,6 @@ pub struct IssuedCredential {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-}
-///Stable identifier for the issued credential — the handle for revocation and audit.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Stable identifier for the issued credential — the handle for revocation and audit.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct IssuedCredentialCredentialId(::std::string::String);
-impl ::std::ops::Deref for IssuedCredentialCredentialId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<IssuedCredentialCredentialId> for ::std::string::String {
-    fn from(value: IssuedCredentialCredentialId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for IssuedCredentialCredentialId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for IssuedCredentialCredentialId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for IssuedCredentialCredentialId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for IssuedCredentialCredentialId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for IssuedCredentialCredentialId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
 }
 ///`Payload`
 ///
@@ -818,7 +817,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/IssuedCredential\",\n          \"description\": \"The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"IssuedCredential\": {\n      \"$anchor\": \"issuedCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successfully-minted Verifiable Credential. Identical across issuers: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"description\": \"Stable identifier for the issued credential — the handle for revocation and audit.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"IssuedCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsement\": {\n          \"$ref\": \"#/$defs/Endorsement\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsement\"\n      ],\n      \"title\": \"VTC Endorsements Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claim\": {\n      \"description\": \"The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"subjectDid\": {\n      \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"typeUri\": {\n      \"description\": \"A type already registered via vtc/endorsement-types/register; unregistered types are refused.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"validitySeconds\": {\n      \"description\": \"Credential lifetime in seconds from issuance. The community MAY cap this.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subjectDid\",\n    \"typeUri\",\n    \"claim\"\n  ],\n  \"title\": \"VTC Endorsements Issue — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/IssuedCredential\",\n          \"description\": \"The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"IssuedCredential\": {\n      \"$anchor\": \"issuedCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successfully-minted Verifiable Credential. Identical across issuers: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"IssuedCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsement\": {\n          \"$ref\": \"#/$defs/Endorsement\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsement\"\n      ],\n      \"title\": \"VTC Endorsements Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claim\": {\n      \"description\": \"The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"subjectDid\": {\n      \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"typeUri\": {\n      \"description\": \"A type already registered via vtc/endorsement-types/register; unregistered types are refused.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"validitySeconds\": {\n      \"description\": \"Credential lifetime in seconds from issuance. The community MAY cap this.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subjectDid\",\n    \"typeUri\",\n    \"claim\"\n  ],\n  \"title\": \"VTC Endorsements Issue — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

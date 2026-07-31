@@ -45,13 +45,7 @@ errorCodes:
     meaning: Policy demands a step-up proof. Same shape as vault/proxy-login:stepUpRequired.
     retryable: true
     detailsSchema:
-      type: object
-      additionalProperties: false
-      required: ["method", "challengeId"]
-      properties:
-        method: { type: "string", enum: ["webauthnUv", "pushApproval", "totp"] }
-        challengeId: { type: "string" }
-        ttlSeconds: { type: "integer", minimum: 1 }
+      $ref: "../../_shared/0.2/consumer-context.schema.json#/$defs/StepUpChallenge"
   - code: vault/release:policyDeny
     meaning: Policy refuses to release this secret to this consumer.
     retryable: false
@@ -59,11 +53,7 @@ errorCodes:
     meaning: The consumer's published recipient key advertises envelope kinds the maintainer does not implement (e.g. consumer requests `tspMessage` against a maintainer that only emits `didcommAuthcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
     retryable: false
     detailsSchema:
-      type: object
-      additionalProperties: false
-      properties:
-        requestedEnvelope: { type: "string" }
-        supportedEnvelopes: { type: "array", items: { "type": "string" } }
+      $ref: "../../_shared/0.2/sealed-envelope.schema.json#/$defs/EnvelopeMismatch"
 ---
 
 ## Abstract

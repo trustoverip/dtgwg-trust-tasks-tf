@@ -46,13 +46,7 @@ errorCodes:
     meaning: Policy demands a step-up proof before the login can proceed. Consumer retries with `stepUpProof` populated.
     retryable: true
     detailsSchema:
-      type: object
-      additionalProperties: false
-      required: ["method", "challengeId"]
-      properties:
-        method: { type: "string", enum: ["webauthnUv", "pushApproval", "totp"] }
-        challengeId: { type: "string" }
-        ttlSeconds: { type: "integer", minimum: 1 }
+      $ref: "../../_shared/0.2/consumer-context.schema.json#/$defs/StepUpChallenge"
   - code: vault/proxy-login:targetUnreachable
     meaning: The maintainer attempted the login at the third-party site but the site is unreachable, rate-limiting, or returned an unexpected response. Consumer SHOULD retry with backoff.
     retryable: true
@@ -69,11 +63,7 @@ errorCodes:
     meaning: The maintainer cannot emit a `sealedSessionBlob` in any envelope kind the consumer accepts. Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
     retryable: false
     detailsSchema:
-      type: object
-      additionalProperties: false
-      properties:
-        requestedEnvelope: { type: "string" }
-        supportedEnvelopes: { type: "array", items: { "type": "string" } }
+      $ref: "../../_shared/0.2/sealed-envelope.schema.json#/$defs/EnvelopeMismatch"
 ---
 
 ## Abstract
