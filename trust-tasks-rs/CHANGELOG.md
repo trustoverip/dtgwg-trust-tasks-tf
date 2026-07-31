@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.53] — 2026-07-31
+
+### Added
+- **`keys/create/0.1` gains an optional `mnemonic`.** Additive, so the version
+  folder is edited in place per SPEC §5.2. A producer may ask the custodian to
+  derive from a supplied BIP-39 phrase rather than from the custodian's own seed
+  — an import of externally-generated seed material wearing create's clothes.
+
+  The member is **secret-bearing in a way the rest of the payload is not**: the
+  phrase reconstitutes the key anywhere. Consumers MUST refuse it on any
+  transport that is not end-to-end confidential — the same rule `keys/import`
+  applies to its cleartext carrier — and MUST NOT log or echo it.
+
+  Found by conformance rather than by review: an implementation was already
+  sending `mnemonic` on create, and the first version of this spec had no member
+  for it, so binding the task would have silently dropped the capability.
+
 ## [0.2.52] — 2026-07-31
 
 ### Added

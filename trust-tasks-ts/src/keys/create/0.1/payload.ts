@@ -15,6 +15,10 @@ export interface KeysCreatePayload {
    */
   derivationPath?: string;
   /**
+   * BIP-39 phrase to derive from instead of the custodian's own seed. Supplying it makes this an import of externally-generated seed material wearing create's clothes: the phrase reconstitutes the key anywhere, so it is secret-bearing in exactly the way the rest of this payload is not. A custodian MUST refuse it on any transport that is not end-to-end confidential, for the reason `keys/import` refuses its cleartext carrier, and MUST NOT log or echo it.
+   */
+  mnemonic?: string;
+  /**
    * Optional human-readable label for the resulting record.
    */
   label?: string;

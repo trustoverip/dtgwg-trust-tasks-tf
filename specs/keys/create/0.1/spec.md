@@ -44,6 +44,8 @@ The **Keys — Create** Trust Task asks a *key custodian* to generate a key and 
 
 Where the custodian derives from a seed it holds, a key created with an explicit `derivationPath` is **reproducible**: restoring the seed reconstitutes the key. This is the property that distinguishes create from [`keys/import`](../../import/0.1/spec.md), whose result exists only as stored material.
 
+The optional `mnemonic` member sits between the two. Supplying a BIP-39 phrase asks the custodian to derive from *that* seed rather than its own — an import of externally-generated seed material wearing create's clothes. It carries import's confidentiality problem with it, and the conformance rules treat it accordingly.
+
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
@@ -61,6 +63,7 @@ A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
 2. Establish the producer's authority to add keys, refusing with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) otherwise.
+2a. **Refuse `mnemonic` on any transport that is not end-to-end confidential**, and never log or echo it. A BIP-39 phrase reconstitutes the key anywhere, so it is secret-bearing in exactly the way the rest of this payload is not — the same reasoning that makes [`keys/import`](../../import/0.1/spec.md) refuse its cleartext carrier.
 3. Refuse, with `already_exists`, a request that would collide with an existing key record rather than replacing it.
 4. Return the realized record — including `publicKey` and the assigned `keyId` — under the `#response` variant, with `origin: "derived"`.
 5. **Not** return the private key, or any encoding of it.
