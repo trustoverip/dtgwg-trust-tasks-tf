@@ -1,6 +1,7 @@
 ---
 slug: provision/integration
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Provision — Integration
 summary: A relayer presents a VP-signed bootstrap request from an integration holder; the maintainer mints the integration's DIDs and admin credential from a registered DID template and returns the material in a sealed bundle the holder can open.
 status: draft

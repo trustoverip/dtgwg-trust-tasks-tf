@@ -1,6 +1,7 @@
 ---
 slug: auth/passkey/login/start
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Auth — Passkey Login (start)
 summary: A party asks an auth service to begin a WebAuthn authentication ceremony — issuing PublicKeyCredentialRequestOptions for either an initial login or an AAL step-up against an existing session.
 status: draft

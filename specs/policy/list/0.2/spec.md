@@ -1,6 +1,7 @@
 ---
 slug: policy/list
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Policy — List
 summary: List Rego policy modules registered on the maintainer, optionally filtered by context or enablement status.
 status: draft

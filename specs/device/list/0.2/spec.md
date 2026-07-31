@@ -1,6 +1,7 @@
 ---
 slug: device/list
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Device — List
 summary: List DeviceBindings (Companions and Services) registered on the maintainer, optionally filtered by kind, capability, status, or last-seen time.
 status: draft

@@ -1,6 +1,7 @@
 ---
 slug: sync/event
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Sync — Event
 summary: One-way push notification from the maintainer to a subscribing consumer, carrying a single vault/ACL/policy change event. Pairs with vault/sync/0.1 for offline catch-up.
 status: draft

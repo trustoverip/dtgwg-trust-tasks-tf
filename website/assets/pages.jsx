@@ -47,6 +47,44 @@ function renderAuthorList(authors) {
   });
 }
 
+/* Condense a knownImplementations URL to something readable in a metadata
+ * row. A GitHub repo shows as `org/repo`; anything else keeps its host plus
+ * path, minus the scheme and any trailing slash. */
+function prettyImplUrl(url) {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.replace(/\/+$/, "");
+    if (/(^|\.)github\.com$/.test(u.hostname)) {
+      const parts = path.split("/").filter(Boolean);
+      if (parts.length >= 2) return `${parts[0]}/${parts[1]}`;
+    }
+    return u.hostname + path;
+  } catch {
+    return url;
+  }
+}
+
+/* `supersededBy` is either a bare `<slug>` — meaning "the latest non-retired
+ * version of that slug" — or a `<slug>/<MAJOR.MINOR>` pin (SPEC §7.3 item 11).
+ * Resolve to a concrete version so the tombstone links somewhere useful. */
+function renderSupersededBy(ref, setRoute) {
+  const m = ref.match(/^(.*)\/(\d+\.\d+)$/);
+  const slug = m ? m[1] : ref;
+  let version = m ? m[2] : null;
+  if (!version) {
+    const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+    const live = (window.TT_TASKS || []).filter(t => t.slug === slug && t.status !== "retired");
+    if (live.length) version = live.reduce((a, b) => (cmpVer(a.version, b.version) >= 0 ? a : b)).version;
+  }
+  if (!version) return <code>{ref}</code>;
+  return (
+    <a
+      href={`/spec/${slug}/${version}`}
+      onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug, version }); window.scrollTo(0, 0); }}
+    >{slug} v{version}</a>
+  );
+}
+
 /* GitHub-style heading slug: strip HTML, strip punctuation (including `.`),
  * collapse whitespace into single hyphens. Matches the anchors that SPEC.md's
  * own cross-references use (e.g. "4.8.1 Precedence..." -> "481-precedence-..."). */
@@ -1351,6 +1389,42 @@ function SpecPage({ slug, version, id, setRoute }) {
           <dt>Proof requirement</dt><dd>{task.proofRequirement ? task.proofRequirement.requirement : "—"}</dd>
           <dt>Category</dt><dd>{cat ? cat.name : task.category}</dd>
           <dt>Keywords</dt><dd>{task.keywords.join(", ")}</dd>
+          {/* Adoption evidence. Always rendered, because the absence is itself
+              the thing a reader came for: a draft with implementations behind
+              it is a different proposition from a draft that is only a
+              proposal. "Not declared" claims nothing either way — the list is
+              informative and never exhaustive. */}
+          <dt>Implementations</dt>
+          <dd>
+            {task.knownImplementations && task.knownImplementations.length > 0
+              ? task.knownImplementations.map((u, i) => (
+                  <React.Fragment key={u}>
+                    {i > 0 && ", "}
+                    <a href={u} target="_blank" rel="noreferrer">{prettyImplUrl(u)}</a>
+                  </React.Fragment>
+                ))
+              : <span style={{ color: "var(--tt-text-muted)" }}>Not declared</span>}
+          </dd>
+          {/* The two exceptional-state rows render only when set — a "—" on
+              every one of the registry's specs would be noise. */}
+          {task.wireCompatibleWith && (
+            <>
+              <dt>Wire-compatible with</dt>
+              <dd>
+                <a
+                  href={`/spec/${task.slug}/${task.wireCompatibleWith}`}
+                  onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: task.slug, version: task.wireCompatibleWith }); window.scrollTo(0, 0); }}
+                >v{task.wireCompatibleWith}</a>
+                <span style={{ color: "var(--tt-text-muted)" }}> — identical on the wire modulo casing and <code>$ref</code> re-pins; a consumer can accept v{task.wireCompatibleWith} documents by normalizing casing and retyping the URI.</span>
+              </dd>
+            </>
+          )}
+          {task.supersededBy && (
+            <>
+              <dt>Superseded by</dt>
+              <dd>{renderSupersededBy(task.supersededBy, setRoute)}</dd>
+            </>
+          )}
         </dl>
 
         {proseError && (

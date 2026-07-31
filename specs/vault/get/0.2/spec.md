@@ -1,6 +1,7 @@
 ---
 slug: vault/get
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Vault — Get
 summary: A vault consumer fetches the metadata view of a single vault entry by id; secret material is never returned.
 status: draft

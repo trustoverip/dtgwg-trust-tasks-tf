@@ -1,6 +1,7 @@
 ---
 slug: push/wake
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Push — Wake
 summary: A trigger (the device's mediator or its VTA) asks the push gateway to deliver a contentless wake to a handle. The gateway authorizes against the VTA-provisioned allowlist, then fires the doorbell.
 status: draft

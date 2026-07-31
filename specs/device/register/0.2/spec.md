@@ -1,6 +1,7 @@
 ---
 slug: device/register
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Device — Register
 summary: A newly-onboarded Companion or Service claims its device record on the maintainer, supplying form factor, display name, HPKE public key, and optional device attestation; wraps the maintainer's existing provision-integration → acl/swap-key bootstrap.
 status: draft

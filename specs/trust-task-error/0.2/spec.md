@@ -1,6 +1,7 @@
 ---
 slug: trust-task-error
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Trust Task Error
 summary: The framework-defined response type a consumer returns when it cannot or will not act upon a received Trust Task document.
 status: draft

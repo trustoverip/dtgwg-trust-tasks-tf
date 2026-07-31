@@ -1,6 +1,7 @@
 ---
 slug: policy/upsert
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Policy — Upsert
 summary: Create or update a Rego policy module on the maintainer. New policies take effect on the next request evaluation; no restart required.
 status: draft

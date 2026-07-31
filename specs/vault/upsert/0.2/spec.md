@@ -1,6 +1,7 @@
 ---
 slug: vault/upsert
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Vault — Upsert
 summary: A vault consumer creates a new vault entry or updates an existing one; secret material rides inside an HPKE-sealed envelope so the Trust Task itself carries only ciphertext.
 status: draft

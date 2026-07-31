@@ -1,6 +1,7 @@
 ---
 slug: vault/sign-trust-task
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Vault — Sign Trust Task
 summary: A vault consumer asks the vault maintainer to attach a Data Integrity proof to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` (or `didcommPeer`) vault entry. The long-term signing key never leaves the maintainer.
 status: draft

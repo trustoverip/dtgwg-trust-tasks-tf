@@ -1,6 +1,7 @@
 ---
 slug: vault/release
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Vault — Release
 summary: A vault consumer requests the cleartext secret material of an entry; the maintainer returns it inside an HPKE-sealed envelope with a strict cache TTL. The fallback when proxy-login is not viable.
 status: draft

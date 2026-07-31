@@ -414,6 +414,14 @@ function buildTask(entry, meta, schema, uses) {
     consequences: meta.consequences || [],
     subjectPath: meta.subjectPath || null,
     errorCodes: meta.errorCodes || [],
+    // Adoption / lifecycle signals. These live in front matter and were, until
+    // now, invisible to every registry reader — which defeated the point of
+    // declaring them: `knownImplementations` exists to separate adoption from
+    // aspiration, and `wireCompatibleWith` exists to tell an implementer it can
+    // dual-accept a predecessor version. Both have to reach the page to work.
+    knownImplementations: meta.knownImplementations || [],
+    wireCompatibleWith: meta.wireCompatibleWith || null,
+    supersededBy: meta.supersededBy || null,
     jsonLdContext: !!meta.jsonLdContext,
     hasResponse,
     schema,
@@ -611,6 +619,29 @@ function main() {
     }
     const uses = applyMethodExtensions(meta, slug, version, refUses, sharedBySlug);
     tasks.push(buildTask(entry, meta, schema, uses));
+  }
+
+  // wireCompatibleWith referential integrity: the named predecessor must be a
+  // real, strictly-earlier version of the SAME slug. The field's whole value is
+  // that an implementer can act on it without checking — "dual-accept 0.1 by
+  // re-casing and retyping" is worthless advice if 0.1 was never published.
+  const versionsBySlug = new Map();
+  for (const t of tasks) {
+    if (!versionsBySlug.has(t.slug)) versionsBySlug.set(t.slug, new Set());
+    versionsBySlug.get(t.slug).add(t.version);
+  }
+  const cmpVersion = (a, b) => {
+    const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+    return (pa[0] - pb[0]) || (pa[1] - pb[1]);
+  };
+  for (const t of tasks) {
+    if (!t.wireCompatibleWith) continue;
+    const rel = `${t.slug}/${t.version}`;
+    if (!versionsBySlug.get(t.slug).has(t.wireCompatibleWith)) {
+      fail(rel, `wireCompatibleWith names version '${t.wireCompatibleWith}', which does not exist for slug '${t.slug}'`);
+    } else if (cmpVersion(t.wireCompatibleWith, t.version) >= 0) {
+      fail(rel, `wireCompatibleWith must name a strictly earlier version of the same slug (got '${t.wireCompatibleWith}' for version '${t.version}')`);
+    }
   }
 
   // related[] referential integrity

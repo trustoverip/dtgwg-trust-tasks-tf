@@ -1,6 +1,7 @@
 ---
 slug: vault/usage
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Vault — Usage
 summary: A vault consumer queries the maintainer's audit log of recent credential uses (proxy-logins, releases), filtered by entry, context, consumer, kind, and time range.
 status: draft

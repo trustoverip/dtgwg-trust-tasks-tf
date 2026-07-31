@@ -1,6 +1,7 @@
 ---
 slug: device/heartbeat
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Device — Heartbeat
 summary: Periodic check-in from a Companion or Service that refreshes lastSeenAt, carries optional state digests, and lets the maintainer deliver queued operations (queued wipes especially).
 status: draft

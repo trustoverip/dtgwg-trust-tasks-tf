@@ -1,6 +1,7 @@
 ---
 slug: policy/evaluate
 version: "0.2"
+wireCompatibleWith: "0.1"
 title: Policy — Evaluate
 summary: Dry-run a policy decision against a synthetic PolicyInput; returns the decision plus a trace of which modules matched and which rules fired.
 status: draft
