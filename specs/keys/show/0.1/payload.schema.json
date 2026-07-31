@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/show/0.1",
+  "title": "Keys Show — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keyId"],
+  "properties": {
+    "keyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the key to read."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Show — response payload",
+      "description": "The success response to a keys/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "key": {
+          "description": "The record the custodian holds, or null where it holds none for this identifier. 'No such key' is a successful answer, not an error.",
+          "oneOf": [
+            { "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyRecord" },
+            { "type": "null" }
+          ]
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

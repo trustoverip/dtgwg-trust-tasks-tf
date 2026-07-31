@@ -6,6 +6,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.52] — 2026-07-31
+
+### Added
+- **`keys/*` — a new nine-task family for key custody and the signing oracle.**
+  `keys/create`, `keys/import`, `keys/show`, `keys/list`, `keys/rename`,
+  `keys/revoke`, `keys/sign`, `keys/derive-and-sign` and
+  `keys/derive-and-sign-document`, all at `0.1`. Authored top-level rather than
+  under a vendor namespace: holding keys on a producer's behalf and signing
+  without exporting them is generic to any agent, not specific to one
+  implementation.
+- **`keys/_shared/0.1/key-record`** — the shared `KeyRecord`, plus the `KeyType`,
+  `KeyStatus` and `KeyOrigin` enumerations every task in the family references.
+  `origin` distinguishes a **derived** key (reproducible from a seed the
+  custodian holds) from an **imported** one (stored material only, and gone if
+  that storage is lost) — a distinction operators reasoning about disaster
+  recovery get wrong without it.
+- **`keys/_shared/0.1/sign-algorithm`** — the shared, closed `SignAlgorithm`
+  enumeration (`EdDSA`, `ES256`), referenced by both signing tasks so they cannot
+  drift apart on what a custodian will accept.
+- **`key-management` category** — added to `specs/spec.meta.schema.json` and
+  `website/assets/data.js` together, per the taxonomy rule. Distinct from
+  `credentials`, which covers stored secrets rather than the keys that sign.
+
+Three design points worth noting for implementers:
+
+- **`keys/list` requires `total`.** A rotation sweep that reads one short page
+  and stops has silently skipped every key past the boundary, and without `total`
+  nothing in the response distinguishes "all of them" from "the first twenty".
+- **`keys/revoke` is `destructive` and retains the record.** Revocation is not
+  deletion: signatures made before it remain verifiable artefacts, and a deleted
+  record would leave them unattributable. Reactivation is forbidden.
+- **`keys/import` names the carrier as a confidentiality decision.** The cleartext
+  `privateKeyMultibase` member is admissible only where the transport is
+  end-to-end confidential; a custodian behind a TLS-terminating intermediary MUST
+  refuse it.
+
 ## [0.2.51] — 2026-07-29
 
 ### Added

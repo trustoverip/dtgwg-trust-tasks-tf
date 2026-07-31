@@ -96,6 +96,13 @@ window.TT_CATEGORIES = [
     icon: "user-circle"
   },
   {
+    id: "key-management",
+    name: "Key Management",
+    color: "navy",
+    blurb: "Custody and lifecycle of cryptographic key material held on a producer's behalf — create, import, list, rename, revoke, and the signing-oracle surface that exercises a key without ever exporting it (keys/*).",
+    icon: "key"
+  },
+  {
     id: "messaging",
     name: "Messaging",
     color: "teal",

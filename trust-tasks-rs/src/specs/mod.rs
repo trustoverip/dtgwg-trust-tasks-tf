@@ -62,6 +62,7 @@ pub mod device;
 pub mod did_management;
 pub mod git_trust;
 pub mod governance;
+pub mod keys;
 pub mod messaging;
 pub mod policy;
 pub mod provision;

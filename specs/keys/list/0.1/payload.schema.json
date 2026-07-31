@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/list/0.1",
+  "title": "Keys List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyStatus",
+      "description": "Return only keys in this lifecycle state. Omitted returns every state, including revoked keys."
+    },
+    "contextId": {
+      "type": "string",
+      "description": "Return only keys filed under this scope."
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero-based index of the first record to return."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum records to return. The custodian MAY return fewer and MAY impose its own ceiling; `total` says how many matched."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys List — response payload",
+      "description": "The success response to a keys/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keys", "total", "offset", "limit"],
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": { "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyRecord" },
+          "description": "The page of records, in the custodian's own order."
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many records matched the filters in total. Required so a short page is never mistaken for the end of the set — the failure that makes a key audit or rotation sweep look complete when it is not."
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The offset this page starts at."
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The page size actually applied, which MAY be smaller than the one requested."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "note": "Missing required `algorithm` — the custodian must never infer it from the key, because a key that supports more than one would then sign under whichever the implementation happened to prefer.",
+    "payload": {
+      "keyId": "signing-key-1",
+      "payload": "aGVsbG8tY2hhbGxlbmdl"
+    }
+  },
+  {
+    "note": "Missing required `payload` — nothing to sign.",
+    "payload": {
+      "keyId": "signing-key-1",
+      "algorithm": "EdDSA"
+    }
+  },
+  {
+    "note": "Unknown algorithm. The enum is closed so an unrecognised algorithm is refused rather than silently downgraded to a supported one.",
+    "payload": {
+      "keyId": "signing-key-1",
+      "payload": "aGVsbG8tY2hhbGxlbmdl",
+      "algorithm": "RS256"
+    }
+  },
+  {
+    "note": "Empty `keyId` — additionalProperties/minLength guard against a request that names no key at all.",
+    "payload": {
+      "keyId": "",
+      "payload": "aGVsbG8tY2hhbGxlbmdl",
+      "algorithm": "EdDSA"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "keyId": "signing-key-1",
+      "payload": "aGVsbG8tY2hhbGxlbmdl",
+      "algorithm": "EdDSA",
+      "ext": {
+        "no-dots": {}
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member. `additionalProperties: false` stops a caller smuggling a second key or a policy override past the schema.",
+    "payload": {
+      "keyId": "signing-key-1",
+      "payload": "aGVsbG8tY2hhbGxlbmdl",
+      "algorithm": "EdDSA",
+      "fallbackKeyId": "signing-key-2"
+    }
+  }
+]

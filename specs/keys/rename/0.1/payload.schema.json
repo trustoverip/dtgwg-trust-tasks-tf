@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/rename/0.1",
+  "title": "Keys Rename — payload",
+  "description": "Change a key's identifier. The key material is untouched — only the name it is addressed by changes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keyId", "newKeyId"],
+  "properties": {
+    "keyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The identifier the key is addressed by today."
+    },
+    "newKeyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The identifier it should be addressed by afterwards. MUST NOT collide with an existing record."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Rename — response payload",
+      "description": "The success response to a keys/rename request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/rename/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keyId", "updatedAt"],
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "description": "The identifier now in effect — the request's `newKeyId`."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp of the rename."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

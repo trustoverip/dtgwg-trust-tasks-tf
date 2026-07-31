@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/import/0.1",
+  "title": "Keys Import — payload",
+  "description": "Hand an externally-created private key to a custodian. Exactly one carrier member MUST be present; the choice of carrier is a confidentiality decision, not a formatting one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keyType"],
+  "oneOf": [
+    { "required": ["privateKeySealed"] },
+    { "required": ["privateKeyJwe"] },
+    { "required": ["privateKeyMultibase"] }
+  ],
+  "properties": {
+    "keyType": {
+      "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyType",
+      "description": "Algorithm of the key being imported. The custodian MUST verify the supplied material is of this type rather than trusting the claim."
+    },
+    "privateKeySealed": {
+      "type": "string",
+      "description": "The private key inside an armored sealed-transfer bundle, encrypted to the custodian's own public key. The only carrier that keeps the key confidential from every intermediary, including a transport terminator, so it is the one to prefer."
+    },
+    "privateKeyJwe": {
+      "type": "string",
+      "description": "The private key as a JWE compact serialization, encrypted to the custodian. Equivalent in intent to `privateKeySealed`; retained for producers that already speak JOSE."
+    },
+    "privateKeyMultibase": {
+      "type": "string",
+      "description": "The raw private key, multibase-encoded and NOT encrypted to the custodian. Admissible **only** where the transport itself provides end-to-end confidentiality between producer and custodian. A custodian reachable over a transport that terminates anywhere in between (TLS at a load balancer, for instance) MUST refuse this member — see the specification's Security section."
+    },
+    "label": {
+      "type": "string",
+      "description": "Optional human-readable label for the resulting record."
+    },
+    "contextId": {
+      "type": "string",
+      "description": "Scope to file the imported key under. Absence is the most restrictive reading, not a wildcard — see KeyRecord.contextId."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Import — response payload",
+      "description": "The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "key": {
+          "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyRecord",
+          "description": "The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

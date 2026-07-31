@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/create/0.1",
+  "title": "Keys Create — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keyType"],
+  "properties": {
+    "keyType": {
+      "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyType",
+      "description": "Algorithm to generate."
+    },
+    "derivationPath": {
+      "type": "string",
+      "description": "Hierarchical-deterministic path to derive at. Where the custodian derives from a seed, supplying the path makes the key reproducible from that seed; omitting it leaves the choice to the custodian."
+    },
+    "label": {
+      "type": "string",
+      "description": "Optional human-readable label for the resulting record."
+    },
+    "contextId": {
+      "type": "string",
+      "description": "Scope to file the key under. Absence is the most restrictive reading, not a wildcard — see KeyRecord.contextId."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Create — response payload",
+      "description": "The success response to a keys/create request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "key": {
+          "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyRecord",
+          "description": "The realized record, carrying the public half. The private half is never returned."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

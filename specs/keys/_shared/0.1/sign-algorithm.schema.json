@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/_shared/0.1/sign-algorithm",
+  "title": "SignAlgorithm — shared definition for the keys/* spec family",
+  "description": "Canonical SignAlgorithm $def, shared by every keys/* specification that produces a signature. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "SignAlgorithm": {
+      "title": "SignAlgorithm",
+      "type": "string",
+      "enum": ["EdDSA", "ES256"],
+      "description": "`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one."
+    }
+  }
+}

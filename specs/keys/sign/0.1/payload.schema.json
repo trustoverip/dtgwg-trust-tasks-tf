@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/sign/0.1",
+  "title": "Keys Sign — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keyId", "payload", "algorithm"],
+  "properties": {
+    "keyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the key to sign with. The key MUST be `active`. Which keys a producer may name is the whole of this task's authorization story — the maintainer signs the bytes it is given without inspecting them."
+    },
+    "payload": {
+      "type": "string",
+      "description": "The exact bytes to sign, base64url-encoded without padding. The maintainer signs these bytes verbatim: it does not parse, canonicalize, or wrap them."
+    },
+    "algorithm": {
+      "$ref": "../../_shared/0.1/sign-algorithm.schema.json#/$defs/SignAlgorithm",
+      "description": "Signature algorithm to use. MUST be compatible with the named key's `keyType`."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Sign — response payload",
+      "description": "The success response to a keys/sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keyId", "signature", "algorithm"],
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "description": "The key that produced the signature. Echoed so a response separated from its request is still attributable."
+        },
+        "signature": {
+          "type": "string",
+          "description": "Signature bytes, base64url-encoded without padding."
+        },
+        "algorithm": { "$ref": "../../_shared/0.1/sign-algorithm.schema.json#/$defs/SignAlgorithm" },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/derive-and-sign/0.1",
+  "title": "Keys Derive-and-Sign — payload",
+  "description": "Derive a key at a path and sign with it in one step, without adding a stored key record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keyType", "derivationPath", "payload", "algorithm"],
+  "properties": {
+    "keyType": {
+      "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyType",
+      "description": "Algorithm to derive. MUST be one that can sign."
+    },
+    "derivationPath": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Hierarchical-deterministic path to derive at. The same path against the same seed always yields the same key, which is what makes this reproducible rather than ephemeral."
+    },
+    "payload": {
+      "type": "string",
+      "description": "The exact bytes to sign, base64url-encoded without padding. Signed verbatim — not parsed, canonicalized or wrapped."
+    },
+    "algorithm": {
+      "$ref": "../../_shared/0.1/sign-algorithm.schema.json#/$defs/SignAlgorithm",
+      "description": "Signature algorithm. MUST be compatible with the derived key's type."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Derive-and-Sign — response payload",
+      "description": "The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["publicKey", "signature", "algorithm"],
+      "properties": {
+        "publicKey": {
+          "type": "string",
+          "description": "Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored."
+        },
+        "signature": {
+          "type": "string",
+          "description": "Signature bytes, base64url-encoded without padding."
+        },
+        "algorithm": {
+          "$ref": "../../_shared/0.1/sign-algorithm.schema.json#/$defs/SignAlgorithm"
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

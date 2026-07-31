@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/derive-and-sign-document/0.1",
+  "title": "Keys Derive-and-Sign-Document — payload",
+  "description": "Derive a key at a path and return the supplied JSON document with a Data Integrity proof grafted on. Unlike keys/derive-and-sign, the custodian canonicalizes the document itself.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keyType", "derivationPath", "document"],
+  "properties": {
+    "keyType": {
+      "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyType",
+      "description": "Algorithm to derive. MUST be one that can sign."
+    },
+    "derivationPath": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Hierarchical-deterministic path to derive at."
+    },
+    "document": {
+      "type": "object",
+      "description": "The JSON document to sign. Any `proof` member present is stripped before canonicalization — the custodian signs the document's content, never a previous signature over it."
+    },
+    "proofPurpose": {
+      "type": "string",
+      "description": "Proof purpose to record in the generated proof. Absent means `assertionMethod`.",
+      "default": "assertionMethod"
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Derive-and-Sign-Document — response payload",
+      "description": "The success response to a keys/derive-and-sign-document request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign-document/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signerDid", "document"],
+      "properties": {
+        "signerDid": {
+          "type": "string",
+          "description": "The `did:key` of the derived signer — the identity the document was signed as, and the DID a verifier resolves the proof's verification method against."
+        },
+        "document": {
+          "type": "object",
+          "description": "The document with the Data Integrity `proof` grafted on."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
