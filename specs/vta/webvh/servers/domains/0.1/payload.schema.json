@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/servers/domains/0.1",
+  "title": "WebVH Server Domains — payload",
+  "description": "Ask an agent which hosting domains it may use on one of the hosting servers it has registered. The agent answers by relaying the server's own caller-scoped view; the response items are the same DomainEntry the did-management family defines.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["serverId"],
+  "properties": {
+    "serverId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the registered hosting server to ask. Required: an agent may know several, and they do not share a domain namespace — omitting it would make the answer ambiguous rather than general."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "WebVH Server Domains — response payload",
+      "description": "The success response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/webvh/servers/domains/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domains"],
+      "properties": {
+        "domains": {
+          "type": "array",
+          "description": "The domains the agent may use on that server, as the server reported them. Empty is a legitimate answer — a server the agent can reach but holds no domain grant on.",
+          "items": {
+            "$ref": "../../../../../did-management/_shared/0.1/domain-entry.schema.json#/$defs/DomainEntry"
+          }
+        },
+        "default": {
+          "type": ["string", "null"],
+          "description": "The domain used when a request names none — the caller's own default where the server records one, else the server's system default. Producers SHOULD omit it when there is neither; `null` is accepted as the same answer, and consumers MUST NOT read a difference between the two."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

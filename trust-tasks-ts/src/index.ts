@@ -256,6 +256,7 @@ export * as VtaPasskeyVmsEnrollSubmit_v0_1 from "./vta/passkey-vms/enroll-submit
 export * as VtaPasskeyVmsList_v0_1 from "./vta/passkey-vms/list/0.1/payload";
 export * as VtaPasskeyVmsRevoke_v0_1 from "./vta/passkey-vms/revoke/0.1/payload";
 export * as VtaWebvhDidsUpdate_v1_0 from "./vta/webvh/dids/update/1.0/payload";
+export * as VtaWebvhServersDomains_v0_1 from "./vta/webvh/servers/domains/0.1/payload";
 export * as BackupShared_v0_1 from "./vtc/_shared/0.1/backup";
 export * as CommunityShared_v0_1 from "./vtc/_shared/0.1/community";
 export * as ConfigPortabilityShared_v0_1 from "./vtc/_shared/0.1/config-portability";

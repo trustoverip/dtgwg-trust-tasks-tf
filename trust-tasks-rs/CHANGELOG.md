@@ -33,6 +33,29 @@ the corresponding `SPEC.md` framework version.
   `registry.json` consumers see the full fragment as before. No generated-code
   effect — the code generators do not read `errorCodes`.
 
+## [0.2.54] — 2026-08-01
+
+### Added
+- **`vta/webvh/servers/domains/0.1`** — an agent relays a hosting server's
+  caller-scoped domain view. The response items `$ref` the existing
+  `did-management/_shared/0.1/domain-entry#DomainEntry` rather than restating
+  it: this is one object crossing two hops (operator → agent → hosting server),
+  and an operator comparing the agent's answer against the server's must not
+  have to reconcile two spellings of the same domain.
+
+  The request differs from [`did-management/me/domains`](https://trusttasks.org/spec/did-management/me/domains/0.1)
+  by exactly one member, `serverId`, and that is the whole reason it is a
+  separate task: "me" is unambiguous when addressed to a server, and meaningless
+  when addressed to an agent that knows several. Hosting servers do not share a
+  domain namespace, so a merged answer would carry entries no consumer could
+  attribute.
+
+  Conformance requires the agent to relay **unfiltered** and to preserve
+  `createdAt`. Both are under-reporting hazards: an agent that narrows the
+  server's list reports fewer domains than the producer may actually use, and
+  one that drops members turns "the agent did not tell me" into "the server does
+  not know".
+
 ## [0.2.53] — 2026-07-31
 
 ### Added
