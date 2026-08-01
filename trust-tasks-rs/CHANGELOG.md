@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.55] — 2026-08-01
+
+### Fixed
+- **Republish of 0.2.54's content, which never shipped.** #170 and #171 both
+  claimed version `0.2.54`; #170 merged first and published it, so when #171
+  merged the publish workflow found `0.2.54` already on crates.io and skipped —
+  correctly, and silently, reporting success. The result was a registry whose
+  `main` carried `vta/webvh/servers/domains/0.1` while the published crate did
+  not, so a consumer binding the task got an unresolved module path rather than
+  any signal that the spec was missing.
+
+  No spec content changes here. This is the version bump that lets the workflow
+  ship what is already on `main`.
+
+  **Claiming a library version at authoring time is what makes this possible.**
+  Two PRs in flight take the same number, and the second one's content
+  disappears at merge with a green check. The version is only safe to set when a
+  PR is next to merge.
+
 ## [0.2.54] — 2026-07-31
 
 ### Changed
@@ -32,6 +51,25 @@ the corresponding `SPEC.md` framework version.
   into a shared schema; the registry build resolves and inlines it, so
   `registry.json` consumers see the full fragment as before. No generated-code
   effect — the code generators do not read `errorCodes`.
+
+## [0.2.55] — 2026-08-01
+
+### Fixed
+- **Republish of 0.2.54's content, which never shipped.** #170 and #171 both
+  claimed version `0.2.54`; #170 merged first and published it, so when #171
+  merged the publish workflow found `0.2.54` already on crates.io and skipped —
+  correctly, and silently, reporting success. The result was a registry whose
+  `main` carried `vta/webvh/servers/domains/0.1` while the published crate did
+  not, so a consumer binding the task got an unresolved module path rather than
+  any signal that the spec was missing.
+
+  No spec content changes here. This is the version bump that lets the workflow
+  ship what is already on `main`.
+
+  **Claiming a library version at authoring time is what makes this possible.**
+  Two PRs in flight take the same number, and the second one's content
+  disappears at merge with a green check. The version is only safe to set when a
+  PR is next to merge.
 
 ## [0.2.54] — 2026-08-01
 
