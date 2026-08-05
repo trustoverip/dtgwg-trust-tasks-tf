@@ -11,6 +11,10 @@ export type KeyType = "ed25519" | "x25519" | "p256";
  * Signature algorithm. MUST be compatible with the derived key's type.
  */
 export type SignAlgorithm = "EdDSA" | "ES256";
+/**
+ * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
+ */
+export type SignAlgorithm1 = "EdDSA" | "ES256";
 
 /**
  * Derive a key at a path and sign with it in one step, without adding a stored key record.
@@ -34,9 +38,36 @@ export interface KeysDeriveAndSignPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.
+ */
+export interface KeysDeriveAndSignResponsePayload {
+  /**
+   * Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored.
+   */
+  publicKey: string;
+  /**
+   * Signature bytes, base64url-encoded without padding.
+   */
+  signature: string;
+  algorithm: SignAlgorithm1;
+  ext?: Ext1;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/derive-and-sign/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = KeyType;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/keys/derive-and-sign/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = KeysDeriveAndSignResponsePayload;

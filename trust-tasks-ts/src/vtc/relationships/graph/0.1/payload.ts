@@ -12,9 +12,50 @@ export interface VTCRelationshipsGraphPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCRelationshipsGraphResponsePayload {
+  /**
+   * One per distinct DID appearing in a live edge. No isolated nodes.
+   */
+  nodes: GraphNode[];
+  /**
+   * One per unrevoked relationship credential, directed issuer -> subject.
+   */
+  edges: GraphEdge[];
+  ext?: Ext;
+}
+export interface GraphNode {
+  /**
+   * A DID participating in at least one live relationship.
+   */
+  did: string;
+}
+export interface GraphEdge {
+  /**
+   * Relationship credential identifier.
+   */
+  id: string;
+  /**
+   * The vouching party.
+   */
+  issuerDid: string;
+  /**
+   * The vouched-for party.
+   */
+  subjectDid: string;
+  /**
+   * When the relationship was published.
+   */
+  createdAt: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/graph/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCRelationshipsGraphPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/graph/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCRelationshipsGraphResponsePayload;

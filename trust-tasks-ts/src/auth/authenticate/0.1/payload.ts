@@ -27,9 +27,103 @@ export interface AuthAuthenticate {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.
+ */
+export interface AuthAuthenticateResponsePayload {
+  session: Session;
+  tokens: TokenBundle;
+  ext?: Ext3;
+}
+/**
+ * The session the consumer has just created or refreshed for this subject.
+ */
+export interface Session {
+  /**
+   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
+   */
+  id: string;
+  /**
+   * The authenticated party's VID (typically a DID URL).
+   */
+  subject: string;
+  /**
+   * ISO-8601 timestamp when the session was created.
+   */
+  issuedAt: string;
+  /**
+   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
+   */
+  expiresAt: string;
+  /**
+   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
+   *
+   * @minItems 1
+   */
+  amr?: [string, ...string[]];
+  /**
+   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
+   */
+  acr?: string;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
+/**
+ * Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh.
+ */
+export interface TokenBundle {
+  /**
+   * Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.
+   */
+  accessToken: string;
+  /**
+   * Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.
+   */
+  refreshToken?: string;
+  /**
+   * Token presentation scheme. Almost always "Bearer"; reserved for future schemes.
+   */
+  tokenType: string;
+  /**
+   * Seconds from issuance until the access token expires.
+   */
+  expiresIn: number;
+  /**
+   * Seconds from issuance until the refresh token expires, when one was issued.
+   */
+  refreshExpiresIn?: number;
+  /**
+   * Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.
+   */
+  scope?: string[];
+  ext?: Ext2;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext2 {
+  [k: string]: unknown | undefined;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext3 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/authenticate/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthAuthenticate;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/authenticate/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthAuthenticateResponsePayload;

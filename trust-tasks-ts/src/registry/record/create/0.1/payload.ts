@@ -42,9 +42,26 @@ export interface TrustRecord {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface RegistryRecordCreateResponsePayload {
+  /**
+   * Whether the record was created.
+   */
+  ok: boolean;
+  /**
+   * Optional human-readable detail.
+   */
+  message?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/create/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = RecordType;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/create/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = RegistryRecordCreateResponsePayload;

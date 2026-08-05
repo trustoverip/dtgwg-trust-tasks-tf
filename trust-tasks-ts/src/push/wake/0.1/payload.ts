@@ -35,9 +35,22 @@ export interface PushWakePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface PushWakeResponsePayload {
+  /**
+   * Outcome of the wake: `delivered` (push service accepted) or `token-unregistered` (dead token; handle dropped — see push/wake:token_unregistered).
+   */
+  status: "delivered" | "token-unregistered";
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/push/wake/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = PushWakePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/push/wake/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = PushWakeResponsePayload;

@@ -28,9 +28,24 @@ export interface VaultDeletePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VaultDeleteResponsePayload {
+  id: string;
+  deletedAt: string;
+  /**
+   * Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent.
+   */
+  graceUntil: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/delete/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VaultDeletePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/delete/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VaultDeleteResponsePayload;

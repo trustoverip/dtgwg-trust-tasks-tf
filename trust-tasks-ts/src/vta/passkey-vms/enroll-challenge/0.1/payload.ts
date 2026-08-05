@@ -23,9 +23,59 @@ export interface VTAPasskeyVMEnrollChallengePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.
+ */
+export interface VTAPasskeyVMEnrollChallengeResponsePayload {
+  /**
+   * Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.
+   */
+  ceremonyId: string;
+  /**
+   * WebAuthn challenge (base64url, no padding; at least 32 random bytes).
+   */
+  challenge: string;
+  /**
+   * WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.
+   */
+  rpId: string;
+  /**
+   * Human-readable Relying-Party name.
+   */
+  rpName: string;
+  /**
+   * Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.
+   */
+  userHandle: string;
+  /**
+   * WebAuthn user name (e.g. the DID or the operator-supplied label).
+   */
+  userName: string;
+  /**
+   * WebAuthn user display name.
+   */
+  userDisplayName: string;
+  /**
+   * Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.
+   */
+  timeoutMs?: number;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTAPasskeyVMEnrollChallengePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTAPasskeyVMEnrollChallengeResponsePayload;

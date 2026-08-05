@@ -19,9 +19,26 @@ export interface CredentialExchangePendingDenyPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface CredentialExchangePendingDenyResponsePayload {
+  /**
+   * The deferral that was refused.
+   */
+  id: string;
+  /**
+   * Terminal status. A single-valued enum rather than a bare string: a denial has exactly one outcome, and leaving the field open would invite consumers to infer meaning from free text.
+   */
+  status: "denied";
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/credential-exchange/pending/deny/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = CredentialExchangePendingDenyPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/credential-exchange/pending/deny/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = CredentialExchangePendingDenyResponsePayload;

@@ -4,6 +4,11 @@
  */
 
 /**
+ * Whether the record asserts an authorization or a recognition relationship.
+ */
+export type RecordType = "authorization" | "recognition";
+
+/**
  * An administrator queries a trust registry's stored records by an optional four-part key. All four parts supplied: an exact fetch of one record (notFound on a miss). Fewer parts: a filtered, cursor-paginated enumeration — fixing the pagination gap the superseded registry/record/list conceded. Key field names are verbatim TRQP (snake_case), matching the registry/* family.
  */
 export interface RegistryRecordQueryPayload {
@@ -39,9 +44,47 @@ export interface RegistryRecordQueryPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface RegistryRecordQueryResponsePayload {
+  /**
+   * The matching trust records. Exactly one entry on a fully keyed fetch; zero or more per page on an enumeration.
+   */
+  records: TrustRecord[];
+  /**
+   * Continuation token for the next page, or null/absent when this is the last.
+   */
+  nextCursor?: string | null;
+  ext?: Ext;
+}
+export interface TrustRecord {
+  entity_id: string;
+  authority_id: string;
+  action: string;
+  resource: string;
+  /**
+   * Present on recognition records: whether the action+resource is recognised.
+   */
+  recognized?: boolean;
+  /**
+   * Present on authorization records: whether the action+resource authorization is confirmed.
+   */
+  authorized?: boolean;
+  /**
+   * Opaque governance context attached to the record.
+   */
+  context?: {
+    [k: string]: unknown | undefined;
+  };
+  record_type: RecordType;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/query/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = RecordType;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/query/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = RegistryRecordQueryResponsePayload;

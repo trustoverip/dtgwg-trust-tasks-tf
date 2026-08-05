@@ -15,9 +15,63 @@ export interface AuditVerifyPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.
+ */
+export interface AuditVerifyResponsePayload {
+  /**
+   * True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity.
+   */
+  verified: boolean;
+  /**
+   * Total envelopes walked, including those skipped.
+   */
+  entriesExamined: number;
+  /**
+   * Envelopes whose links were actually checked (examined minus skipped).
+   */
+  entriesVerified: number;
+  /**
+   * Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix.
+   */
+  legacySkipped: number;
+  /**
+   * Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed.
+   */
+  unparseableSkipped: number;
+  /**
+   * Hex `entryHash` of the newest envelope reached. Absent when the log is empty.
+   */
+  head?: string;
+  chainBreak?: ChainBreak;
+  ext?: Ext;
+}
+/**
+ * Present iff `verified` is false — the first inconsistency found. Absent when verified.
+ */
+export interface ChainBreak {
+  /**
+   * `tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication.
+   */
+  kind: "tamperedEntry" | "brokenLink";
+  /**
+   * Zero-based position in chronological order of the offending envelope.
+   */
+  index: number;
+  /**
+   * Identifier of the offending envelope, when it has one (an unparseable envelope may not).
+   */
+  eventId?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/audit/verify/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuditVerifyPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/audit/verify/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuditVerifyResponsePayload;

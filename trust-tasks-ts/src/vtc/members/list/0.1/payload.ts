@@ -24,9 +24,69 @@ export interface VTCMembersListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersListResponsePayload {
+  items: MemberResponse[];
+  /**
+   * Continuation token for the next page, or null when this is the last.
+   */
+  nextCursor?: string | null;
+  /**
+   * Approximate total matching members, when the maintainer can cheaply estimate it.
+   */
+  totalEstimate?: number | null;
+  ext?: Ext;
+}
+/**
+ * One community member as the maintainer sees it: the membership record joined with its ACL role.
+ */
+export interface MemberResponse {
+  /**
+   * The member's DID.
+   */
+  did: string;
+  /**
+   * The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).
+   */
+  role: string;
+  /**
+   * Optional human-readable label.
+   */
+  label?: string | null;
+  joinedAt: string;
+  /**
+   * Whether the member consented to being published in the community directory.
+   */
+  publishConsent: boolean;
+  /**
+   * How the member's record is handled on departure.
+   */
+  departurePreference: "purge" | "tombstone" | "historical" | "policydefault";
+  /**
+   * The member's slot on the community's membership status list, when allocated.
+   */
+  statusListIndex?: number | null;
+  /**
+   * Id of the member's current Verifiable Membership Credential, if issued.
+   */
+  currentVmcId?: string | null;
+  /**
+   * Id of the member's current role Verifiable Endorsement Credential, if issued.
+   */
+  currentRoleVecId?: string | null;
+  /**
+   * Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).
+   */
+  extensions: {};
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersListResponsePayload;

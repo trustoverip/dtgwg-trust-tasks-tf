@@ -12,9 +12,44 @@ export interface VTCRegistryDiagnosticsPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCRegistryDiagnosticsResponsePayload {
+  /**
+   * Trust-registry reachability.
+   */
+  registryStatus: "active" | "degraded";
+  /**
+   * Pending + in-flight sync jobs.
+   */
+  queueDepth: number;
+  /**
+   * Pending jobs parked behind the RTBF batch window.
+   */
+  rtbfBatchedCount: number;
+  /**
+   * Terminal-failure rows awaiting operator triage.
+   */
+  failedCount: number;
+  /**
+   * Seconds since the oldest dispatchable pending job; null when the queue is empty.
+   */
+  oldestPendingAgeSeconds?: number | null;
+  lastSuccessAt?: string | null;
+  lastFailureAt?: string | null;
+  /**
+   * Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.
+   */
+  lastError?: string | null;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCRegistryDiagnosticsPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCRegistryDiagnosticsResponsePayload;

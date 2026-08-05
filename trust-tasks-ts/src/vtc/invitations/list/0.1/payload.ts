@@ -12,9 +12,55 @@ export interface VTCInvitationsListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCInvitationsListResponsePayload {
+  /**
+   * Every issued invitation, live and revoked. Never includes credential material.
+   */
+  invitations: InvitationSummary[];
+  ext?: Ext;
+}
+/**
+ * Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.
+ */
+export interface InvitationSummary {
+  /**
+   * VIC identifier; the revoke target.
+   */
+  id: string;
+  /**
+   * DID the invitation admits.
+   */
+  subjectDid: string;
+  /**
+   * Role granted on redemption, when the invitation names one.
+   */
+  role?: string;
+  /**
+   * DID of the operator who issued it.
+   */
+  issuedBy: string;
+  /**
+   * When it was issued.
+   */
+  issuedAt: string;
+  /**
+   * Expiry, when the invitation is time-bounded.
+   */
+  validUntil?: string;
+  /**
+   * When it was revoked; absent while live.
+   */
+  revokedAt?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/invitations/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCInvitationsListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/invitations/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCInvitationsListResponsePayload;

@@ -26,9 +26,28 @@ export interface VTCMembersRotatePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersRotateResponsePayload {
+  newDid: string;
+  method: "did:key" | "did:webvh";
+  /**
+   * Membership credential re-issued to the new DID (opaque here).
+   */
+  vmc: {};
+  /**
+   * Role credential re-issued to the new DID (opaque here).
+   */
+  roleVec: {};
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/rotate/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersRotatePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/rotate/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersRotateResponsePayload;

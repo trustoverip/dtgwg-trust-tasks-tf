@@ -51,5 +51,5 @@ export interface TrustTaskErrorPayload {
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.2" as const;
 
-/** Trust Task response type URI (request type URI + "#response"). */
-export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.2#response" as const;
+/** Stable alias for this specification's request payload shape. */
+export type Payload = TrustTaskErrorPayload;

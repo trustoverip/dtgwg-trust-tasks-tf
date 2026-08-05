@@ -37,9 +37,32 @@ export interface WakeHandle {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DeviceSetWakeResponsePayload {
+  triggerPolicy?: WakeTriggerPolicy;
+  /**
+   * Whether the device now has a usable wake channel (true after a successful set, false after a clear).
+   */
+  pushCapable: boolean;
+  ext?: Ext;
+}
+/**
+ * The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared.
+ */
+export interface WakeTriggerPolicy {
+  /**
+   * DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
+   */
+  allowedTriggers: string[];
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/set-wake/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DeviceSetWakePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/set-wake/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DeviceSetWakeResponsePayload;

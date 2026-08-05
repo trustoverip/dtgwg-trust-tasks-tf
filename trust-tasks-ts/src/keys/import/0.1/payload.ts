@@ -36,6 +36,18 @@ export type KeysImportPayload = {
  * Algorithm of the key being imported. The custodian MUST verify the supplied material is of this type rather than trusting the claim.
  */
 export type KeyType = "ed25519" | "x25519" | "p256";
+/**
+ * Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).
+ */
+export type KeyType1 = "ed25519" | "x25519" | "p256";
+/**
+ * Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.
+ */
+export type KeyStatus = "active" | "revoked";
+/**
+ * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately.
+ */
+export type KeyOrigin = "derived" | "imported";
 
 /**
  * Ecosystem-defined extension members per SPEC.md §4.5.1.
@@ -43,9 +55,69 @@ export type KeyType = "ed25519" | "x25519" | "p256";
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.
+ */
+export interface KeysImportResponsePayload {
+  key: KeyRecord;
+  ext?: Ext1;
+}
+/**
+ * The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds.
+ */
+export interface KeyRecord {
+  /**
+   * Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.
+   */
+  keyId: string;
+  keyType: KeyType1;
+  status: KeyStatus;
+  /**
+   * The public half, multibase-encoded. The private half is never carried by any keys/* response.
+   */
+  publicKey: string;
+  /**
+   * Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.
+   */
+  derivationPath?: string;
+  /**
+   * Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.
+   */
+  seedId?: number;
+  origin?: KeyOrigin;
+  /**
+   * Optional human-readable label. Operator-facing only; carries no authorization meaning.
+   */
+  label?: string;
+  /**
+   * Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.
+   */
+  contextId?: string;
+  /**
+   * RFC 3339 timestamp at which the key was created or imported.
+   */
+  createdAt: string;
+  /**
+   * RFC 3339 timestamp of the last change to the record (rename, revocation).
+   */
+  updatedAt?: string;
+  ext?: Ext1;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/import/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = KeysImportPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/keys/import/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = KeysImportResponsePayload;

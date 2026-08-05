@@ -16,9 +16,46 @@ export interface PolicyListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface PolicyListResponsePayload {
+  policies: PolicyModule[];
+  truncated: boolean;
+  cursor?: string;
+  ext?: Ext;
+}
+export interface PolicyModule {
+  id: string;
+  /**
+   * Human-readable name (e.g. "default vault policy", "bank-site step-up").
+   */
+  name: string;
+  description?: string;
+  /**
+   * Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.
+   */
+  module: string;
+  /**
+   * List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).
+   */
+  appliesTo?: string[];
+  /**
+   * When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.
+   */
+  priority?: number;
+  enabled?: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/list/0.2" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = PolicyListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/list/0.2#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = PolicyListResponsePayload;

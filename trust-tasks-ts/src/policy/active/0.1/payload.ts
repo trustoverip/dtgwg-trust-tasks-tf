@@ -20,9 +20,58 @@ export interface PolicyActivePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface PolicyActiveResponsePayload {
+  /**
+   * The active (contextId, purpose) -> policy bindings that matched the request. Zero entries when the requested purpose has no active policy; the full set when purpose is omitted. Unpaginated — the active set has one entry per purpose, which is small by construction.
+   */
+  bindings: ActiveBinding[];
+  ext?: Ext;
+}
+/**
+ * One active-policy binding: the policy currently authoritative for a (contextId, purpose) decision slot.
+ */
+export interface ActiveBinding {
+  purpose: string;
+  /**
+   * Present when the binding is context-scoped.
+   */
+  contextId?: string;
+  policy: PolicyModule;
+}
+export interface PolicyModule {
+  id: string;
+  /**
+   * Human-readable name (e.g. "default vault policy", "bank-site step-up").
+   */
+  name: string;
+  description?: string;
+  /**
+   * Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.
+   */
+  module: string;
+  /**
+   * List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).
+   */
+  appliesTo?: string[];
+  /**
+   * When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.
+   */
+  priority?: number;
+  enabled?: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/active/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = PolicyActivePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/active/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = PolicyActiveResponsePayload;

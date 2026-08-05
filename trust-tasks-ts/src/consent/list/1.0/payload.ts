@@ -49,9 +49,80 @@ export interface ConsentSubject {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The grants the requesting bridge is authorized to enforce.
+ */
+export interface ConsentListResponsePayload {
+  /**
+   * Matching consent grants.
+   */
+  grants: ConsentGrant[];
+  /**
+   * Optional cursor for incremental follow-up.
+   */
+  cursor?: string;
+  ext?: Ext;
+}
+/**
+ * A recorded consent decision over a ConsentSubject.
+ */
+export interface ConsentGrant {
+  subject: ConsentSubject1;
+  /**
+   * Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
+   */
+  effect: "allow" | "deny";
+  /**
+   * Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.
+   */
+  scope?: "receive" | "converse";
+  /**
+   * VID of the approver who made the decision.
+   */
+  grantedBy: string;
+  /**
+   * RFC 3339 time the decision was recorded.
+   */
+  grantedAt: string;
+  /**
+   * Optional. After this time the grant lapses and the subject must be re-consented.
+   */
+  expiresAt?: string;
+  /**
+   * How the decision was authorized — e.g. "did-signed" (approver's DID signed the consent/decision) or "bridge-attested" (an enrolled bridge relayed the operator's out-of-band choice).
+   */
+  evidence?: string;
+}
+/**
+ * The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.
+ */
+export interface ConsentSubject1 {
+  /**
+   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
+   */
+  platform: string;
+  /**
+   * The bridge's OPAQUE conversation handle (e.g. "sig-1a2b3c4d"). NEVER the raw platform address — the VTA never learns the phone number / chat id.
+   */
+  conversationRef: string;
+  /**
+   * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
+   */
+  kind: "dm" | "group" | "channel";
+  /**
+   * VID (DID) of the AI agent the conversation would reach.
+   */
+  agent: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/list/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConsentListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/list/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConsentListResponsePayload;

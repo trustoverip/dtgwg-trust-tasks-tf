@@ -44,9 +44,82 @@ export interface AuditListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface AuditListResponsePayload {
+  /**
+   * The matching audit entries, newest first.
+   */
+  entries: AuditEnvelope[];
+  /**
+   * True when more entries match beyond this page — `cursor` is then present to fetch them.
+   */
+  truncated: boolean;
+  /**
+   * Opaque continuation token for the next page. Present iff `truncated` is true.
+   */
+  cursor?: string;
+  ext?: Ext;
+}
+/**
+ * One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.
+ */
+export interface AuditEnvelope {
+  /**
+   * Stable identifier for this event. Also the tie-breaker component of a cursor's position key.
+   */
+  eventId: string;
+  /**
+   * Wall-clock time the entry was written. The primary ordering key.
+   */
+  recordedAt: string;
+  /**
+   * The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.
+   */
+  action: string;
+  /**
+   * How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.
+   */
+  outcome?: string;
+  /**
+   * DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here.
+   */
+  actor?: string | null;
+  /**
+   * DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.
+   */
+  target?: string | null;
+  /**
+   * Trust context the event occurred in, for a maintainer that partitions its log per context.
+   */
+  contextId?: string;
+  /**
+   * Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution.
+   */
+  schemaVersion?: number;
+  /**
+   * Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks.
+   */
+  prevHash?: string;
+  /**
+   * Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here.
+   */
+  entryHash?: string;
+  /**
+   * Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.
+   */
+  detail?: {
+    [k: string]: unknown | undefined;
+  };
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/audit/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuditListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/audit/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuditListResponsePayload;

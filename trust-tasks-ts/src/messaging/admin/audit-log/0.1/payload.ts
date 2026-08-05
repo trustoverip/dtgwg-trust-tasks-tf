@@ -3,6 +3,29 @@
  * Source: specs/messaging/admin/audit-log/0.1/payload.schema.json
  */
 
+/**
+ * The authenticated account that made the change (an admin, or the owner for a self-service change).
+ */
+export type Vid = string;
+/**
+ * The account whose record changed.
+ */
+export type Vid1 = string;
+/**
+ * The kind of privileged change recorded in the audit log.
+ */
+export type AuditAction =
+  | "setAcl"
+  | "accessListAdd"
+  | "accessListRemove"
+  | "accessListClear"
+  | "accountAdd"
+  | "accountRemove"
+  | "accountChangeType"
+  | "accountChangeQueueLimits"
+  | "adminAdd"
+  | "adminStrip";
+
 export interface MessagingAuditLogPayload {
   /**
    * Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
@@ -20,9 +43,51 @@ export interface MessagingAuditLogPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a messaging/admin/audit-log request (newest-first). Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response.
+ */
+export interface MessagingAuditLogResponsePayload {
+  /**
+   * The page of audit-log records, newest first.
+   */
+  entries: AuditEntry[];
+  /**
+   * Opaque continuation token. Present only when further entries remain beyond this page; omitted on the final page.
+   */
+  nextCursor?: string;
+  ext?: Ext1;
+}
+/**
+ * One record in the mediator's privileged-change audit log: one change, by one actor, at one time.
+ */
+export interface AuditEntry {
+  /**
+   * Unix epoch seconds at which the change was recorded.
+   */
+  timestamp: number;
+  actor: Vid;
+  target: Vid1;
+  action: AuditAction;
+  /**
+   * Short human-readable summary of the change; not machine-parsed.
+   */
+  detail?: string;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Vid;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = MessagingAuditLogResponsePayload;

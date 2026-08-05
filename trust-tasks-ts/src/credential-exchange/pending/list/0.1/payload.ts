@@ -15,9 +15,70 @@ export interface CredentialExchangePendingListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface CredentialExchangePendingListResponsePayload {
+  /**
+   * The actionable deferrals. A consumer MUST omit records that are already terminal or past their `expiresAt` — they cannot be approved, so listing them would offer the approver a decision that is guaranteed to fail. An empty array means nothing is awaiting a decision.
+   */
+  pending: DeferredPresentation[];
+  ext?: Ext;
+}
+/**
+ * One presentation request awaiting the holder's decision, as the approver sees it.
+ *
+ * This is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer "should I disclose this": who is asking, why, and precisely which claims of which held credentials would leave the wallet.
+ */
+export interface DeferredPresentation {
+  /**
+   * Approval handle for this deferral — the value `pending/approve` and `pending/deny` act on.
+   */
+  id: string;
+  /**
+   * The verifier that asked. An approved presentation binds to this audience, so approving is a decision about *this* party and not a standing permission.
+   */
+  verifierDid: string;
+  /**
+   * Every held credential the query would disclose, resolved against what the holder actually holds. This is the authorization surface: the approver is consenting to these claims leaving the wallet, not to the query in the abstract.
+   */
+  requested: RequestedCredential[];
+  /**
+   * The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request.
+   */
+  purpose: string;
+  /**
+   * When the deferral was recorded.
+   */
+  createdAt: string;
+  /**
+   * After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check.
+   */
+  expiresAt: string;
+}
+/**
+ * One held credential a deferred query asked for, and the claims of it that would be disclosed.
+ */
+export interface RequestedCredential {
+  /**
+   * The DCQL `credential_query_id` this held credential satisfied.
+   */
+  credentialQueryId: string;
+  /**
+   * The held credential that would satisfy it.
+   */
+  credentialId: string;
+  /**
+   * The claims the query asks to disclose from this credential. An empty array means the query matched the credential without naming claims — a consumer SHOULD treat that as a request for the whole credential and present it to the approver as such.
+   */
+  claims: string[];
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/credential-exchange/pending/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = CredentialExchangePendingListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/credential-exchange/pending/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = CredentialExchangePendingListResponsePayload;

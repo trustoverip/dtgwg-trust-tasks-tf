@@ -67,9 +67,32 @@ export interface WebPush {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface PushRegisterResponsePayload {
+  wakeHandle: WakeHandle;
+  ext?: Ext;
+}
+/**
+ * The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.
+ */
+export interface WakeHandle {
+  /**
+   * The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.
+   */
+  gateway: string;
+  /**
+   * Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.
+   */
+  handle: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/push/register/0.2" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = PushRegistration;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/push/register/0.2#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = PushRegisterResponsePayload;

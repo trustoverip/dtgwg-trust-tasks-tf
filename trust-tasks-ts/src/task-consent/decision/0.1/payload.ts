@@ -33,9 +33,37 @@ export interface TaskConsentDecisionPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Acknowledgement of the recorded decision, and whether the approval threshold is now met.
+ */
+export interface TaskConsentDecisionResponsePayload {
+  /**
+   * `granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.
+   */
+  status: "granted" | "pending" | "denied";
+  /**
+   * The digest this decision concerned.
+   */
+  payloadDigest: string;
+  /**
+   * Distinct approvals recorded so far.
+   */
+  approvals?: number;
+  /**
+   * Distinct approvals required. Present when status is `pending`.
+   */
+  needed?: number;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/decision/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Decision;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/task-consent/decision/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = TaskConsentDecisionResponsePayload;

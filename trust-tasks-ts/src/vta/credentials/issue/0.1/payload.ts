@@ -3,6 +3,11 @@
  * Source: specs/vta/credentials/issue/0.1/payload.schema.json
  */
 
+/**
+ * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
+ */
+export type CredentialId = string;
+
 export interface VTACredentialsIssuePayload {
   /**
    * DID of the credential's subject/holder (becomes credentialSubject.id).
@@ -32,9 +37,40 @@ export interface VTACredentialsIssuePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
+ */
+export interface VTACredentialsIssueResponsePayload {
+  credentialId: CredentialId;
+  /**
+   * When the credential's validUntil falls due.
+   */
+  expiresAt: string;
+  /**
+   * The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuing context's key.
+   */
+  credential: {};
+  /**
+   * credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced.
+   */
+  supersedes?: string;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/credentials/issue/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = CredentialId;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/credentials/issue/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTACredentialsIssueResponsePayload;

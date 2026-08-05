@@ -39,9 +39,26 @@ export interface ConfirmRequest {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.
+ */
+export interface ConfirmRequestSynchronousAck {
+  status: "accepted" | "refused";
+  /**
+   * Required when status is `refused`.
+   */
+  reason?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/confirm/request/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConfirmRequest;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/confirm/request/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConfirmRequestSynchronousAck;

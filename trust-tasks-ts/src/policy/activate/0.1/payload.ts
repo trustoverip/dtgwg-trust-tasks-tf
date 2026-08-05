@@ -24,9 +24,34 @@ export interface PolicyActivatePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface PolicyActivateResponsePayload {
+  /**
+   * The id now active for `purpose` — equal to the request `id`.
+   */
+  activated: string;
+  /**
+   * Echoed from the request.
+   */
+  purpose: string;
+  /**
+   * The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement.
+   */
+  previousPolicyId?: string | null;
+  /**
+   * Echoed from the request when it was supplied.
+   */
+  contextId?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/activate/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = PolicyActivatePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/activate/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = PolicyActivateResponsePayload;

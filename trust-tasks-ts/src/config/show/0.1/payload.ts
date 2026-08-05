@@ -18,9 +18,45 @@ export interface ConfigShowPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface ConfigShowResponsePayload {
+  /**
+   * The effective value of each requested (or every) configuration key.
+   */
+  fields: ConfigField[];
+  ext?: Ext;
+}
+/**
+ * One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.
+ */
+export interface ConfigField {
+  /**
+   * The configuration key, e.g. `server.port` or `log.level`.
+   */
+  key: string;
+  /**
+   * The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.
+   */
+  value: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.
+   */
+  source: string;
+  /**
+   * True when a change to this key takes effect only after a restart, rather than on the next read.
+   */
+  requiresRestart: boolean;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/config/show/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConfigShowPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/config/show/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConfigShowResponsePayload;

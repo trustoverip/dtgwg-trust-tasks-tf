@@ -3,6 +3,11 @@
  * Source: specs/vtc/endorsements/list/0.1/payload.schema.json
  */
 
+/**
+ * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
+ */
+export type CredentialId = string;
+
 export interface VTCEndorsementsListPayload {
   /**
    * Filter to endorsements of this registered type.
@@ -32,9 +37,72 @@ export interface VTCEndorsementsListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCEndorsementsListResponsePayload {
+  items: Endorsement[];
+  /**
+   * Continuation token for the next page, or null when this is the last.
+   */
+  nextCursor?: string | null;
+  /**
+   * Approximate total matching endorsements, when the maintainer can cheaply estimate it.
+   */
+  totalEstimate?: number | null;
+  ext?: Ext;
+}
+export interface Endorsement {
+  /**
+   * Community-scoped identifier for this endorsement row.
+   */
+  endorsementId: string;
+  /**
+   * The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
+   */
+  typeUri: string;
+  /**
+   * DID of the endorsement's subject (becomes credentialSubject.id).
+   */
+  subjectDid: string;
+  /**
+   * The attested claim body, validated against the endorsement type's claimSchema when it declares one.
+   */
+  claim?: {};
+  issued: IssuedCredential;
+  /**
+   * The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.
+   */
+  statusListIndex: number;
+  /**
+   * When the endorsement was revoked, or null while live.
+   */
+  revokedAt?: string | null;
+}
+/**
+ * The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.
+ */
+export interface IssuedCredential {
+  credentialId: CredentialId;
+  /**
+   * The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
+   */
+  credential: {};
+  /**
+   * When the credential was minted.
+   */
+  issuedAt?: string;
+  /**
+   * When the credential's validUntil falls due.
+   */
+  expiresAt: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/endorsements/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = CredentialId;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/endorsements/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCEndorsementsListResponsePayload;

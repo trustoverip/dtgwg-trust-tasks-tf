@@ -24,9 +24,24 @@ export interface VTCJoinRequestsAcceptPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCJoinRequestsAcceptResponsePayload {
+  requestId: string;
+  status: "accepted";
+  /**
+   * Id the community assigned to the stored reciprocal credential.
+   */
+  reciprocalVcId?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/accept/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCJoinRequestsAcceptPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/accept/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCJoinRequestsAcceptResponsePayload;

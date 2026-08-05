@@ -18,9 +18,40 @@ export interface ConfigPatchPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface ConfigPatchResponsePayload {
+  /**
+   * Keys whose new value is now in effect.
+   */
+  applied: string[];
+  /**
+   * Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true).
+   */
+  pendingRestart: string[];
+  /**
+   * Keys that were not applied, each with a reason. Empty when every override succeeded.
+   */
+  rejected: RejectedKey[];
+  ext?: Ext;
+}
+/**
+ * A key a patch declined to apply, with the reason.
+ */
+export interface RejectedKey {
+  key: string;
+  /**
+   * Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
+   */
+  reason: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/config/patch/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConfigPatchPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/config/patch/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConfigPatchResponsePayload;

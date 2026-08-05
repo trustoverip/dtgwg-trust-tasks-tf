@@ -20,9 +20,44 @@ export interface DIDManagementListAgentNamesPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DIDManagementListAgentNamesResponsePayload {
+  /**
+   * The slot the listing is for, echoed.
+   */
+  mnemonic: string;
+  /**
+   * The slot's hosting domain. Omitted (rather than empty) for an un-domained legacy slot.
+   */
+  domain?: string;
+  /**
+   * Every name bound to the slot, including parked entries. Always present — a slot with no names answers with an empty array, so a caller never has to distinguish 'no names' from 'field missing'.
+   */
+  agentNames: AgentNameEntry[];
+  ext?: Ext;
+}
+export interface AgentNameEntry {
+  /**
+   * The name's local part, without the `@` — `alice` for `/@alice`. Bare rather than a full URL because a name is only meaningful within its domain, which is carried once on the response.
+   */
+  name: string;
+  /**
+   * Whether the name currently resolves. `false` means parked, not gone: the name still belongs to this DID and nobody else can claim it.
+   */
+  enabled: boolean;
+  /**
+   * RFC3339 timestamp of when the name was first bound to this DID.
+   */
+  createdAt: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/agent-name/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DIDManagementListAgentNamesPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/agent-name/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DIDManagementListAgentNamesResponsePayload;

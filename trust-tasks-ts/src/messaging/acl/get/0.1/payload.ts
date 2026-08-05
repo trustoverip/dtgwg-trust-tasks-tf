@@ -7,6 +7,10 @@
  * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
  */
 export type Vid = string;
+/**
+ * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
+ */
+export type Vid1 = string;
 
 export interface MessagingGetACLPayload {
   /**
@@ -23,9 +27,103 @@ export interface MessagingGetACLPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a messaging/acl/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/get/0.1#response.
+ */
+export interface MessagingGetACLResponsePayload {
+  /**
+   * One entry per queried account that has an account at the mediator. Queried DIDs with no account are omitted.
+   */
+  entries: MessagingGetACLEntry[];
+  /**
+   * Queried DIDs that have no account at this mediator and were therefore omitted from `entries`.
+   */
+  unknown?: Vid[];
+  ext?: Ext1;
+}
+/**
+ * One queried account's realized ACL.
+ */
+export interface MessagingGetACLEntry {
+  did: Vid1;
+  acl: MediatorAcl;
+}
+/**
+ * The full realized capability set the mediator holds for the account.
+ */
+export interface MediatorAcl {
+  /**
+   * How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
+   */
+  accessListMode?: "explicitAllow" | "explicitDeny";
+  /**
+   * The account is blocked from authenticating and transacting.
+   */
+  blocked?: boolean;
+  /**
+   * Messages for this account may be stored locally at this mediator for pickup.
+   */
+  local?: boolean;
+  /**
+   * May send direct messages through the mediator.
+   */
+  sendMessages?: boolean;
+  /**
+   * May receive direct messages.
+   */
+  receiveMessages?: boolean;
+  /**
+   * May send routing/forward (relay) messages.
+   */
+  sendForwarded?: boolean;
+  /**
+   * May be the next hop of a forwarded message.
+   */
+  receiveForwarded?: boolean;
+  /**
+   * May create out-of-band invitations.
+   */
+  createInvites?: boolean;
+  /**
+   * Accepts anonymous (no authenticated sender) messages.
+   */
+  anonReceive?: boolean;
+  /**
+   * May self-manage its own access list.
+   */
+  selfManageList?: boolean;
+  /**
+   * May self-manage its own send-queue limit.
+   */
+  selfManageSendQueueLimit?: boolean;
+  /**
+   * May self-manage its own receive-queue limit.
+   */
+  selfManageReceiveQueueLimit?: boolean;
+  /**
+   * The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.
+   */
+  didcommEnabled?: boolean;
+  /**
+   * The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.
+   */
+  tspEnabled?: boolean;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/acl/get/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Vid;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/acl/get/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = MessagingGetACLResponsePayload;

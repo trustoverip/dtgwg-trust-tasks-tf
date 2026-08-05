@@ -7,6 +7,10 @@
  * The target account's DID whose capabilities are being set.
  */
 export type Vid = string;
+/**
+ * The account whose ACL was set.
+ */
+export type Vid1 = string;
 
 export interface MessagingSetACLPayload {
   did: Vid;
@@ -80,9 +84,90 @@ export interface MediatorAcl {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.
+ */
+export interface MessagingSetACLResponsePayload {
+  did: Vid1;
+  acl: MediatorAcl1;
+  ext?: Ext1;
+}
+/**
+ * The full realized capability set the mediator now holds for the account.
+ */
+export interface MediatorAcl1 {
+  /**
+   * How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
+   */
+  accessListMode?: "explicitAllow" | "explicitDeny";
+  /**
+   * The account is blocked from authenticating and transacting.
+   */
+  blocked?: boolean;
+  /**
+   * Messages for this account may be stored locally at this mediator for pickup.
+   */
+  local?: boolean;
+  /**
+   * May send direct messages through the mediator.
+   */
+  sendMessages?: boolean;
+  /**
+   * May receive direct messages.
+   */
+  receiveMessages?: boolean;
+  /**
+   * May send routing/forward (relay) messages.
+   */
+  sendForwarded?: boolean;
+  /**
+   * May be the next hop of a forwarded message.
+   */
+  receiveForwarded?: boolean;
+  /**
+   * May create out-of-band invitations.
+   */
+  createInvites?: boolean;
+  /**
+   * Accepts anonymous (no authenticated sender) messages.
+   */
+  anonReceive?: boolean;
+  /**
+   * May self-manage its own access list.
+   */
+  selfManageList?: boolean;
+  /**
+   * May self-manage its own send-queue limit.
+   */
+  selfManageSendQueueLimit?: boolean;
+  /**
+   * May self-manage its own receive-queue limit.
+   */
+  selfManageReceiveQueueLimit?: boolean;
+  /**
+   * The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.
+   */
+  didcommEnabled?: boolean;
+  /**
+   * The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.
+   */
+  tspEnabled?: boolean;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/acl/set/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Vid;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/acl/set/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = MessagingSetACLResponsePayload;

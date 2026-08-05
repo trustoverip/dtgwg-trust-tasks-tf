@@ -12,9 +12,40 @@ export interface VTCMembersRemovedPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersRemovedResponsePayload {
+  /**
+   * One entry per tombstone. Purged members are absent.
+   */
+  removed: RemovedMember[];
+  ext?: Ext;
+}
+export interface RemovedMember {
+  /**
+   * DID of the departed member.
+   */
+  did: string;
+  /**
+   * When the removal took effect.
+   */
+  removedAt: string;
+  /**
+   * Slot in the community's published status list holding this member's revocation bit.
+   */
+  statusListIndex?: number | null;
+  /**
+   * Tombstone state, e.g. how the departure was dispositioned.
+   */
+  status: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/removed/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersRemovedPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/removed/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersRemovedResponsePayload;

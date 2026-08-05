@@ -20,9 +20,22 @@ export interface VTCMembersRequestVMCPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersRequestVMCResponsePayload {
+  /**
+   * The member received the request. NOT a commitment to issue — the credential arrives separately as vtc/members/vmc, or never.
+   */
+  acknowledged: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/request-vmc/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersRequestVMCPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/request-vmc/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersRequestVMCResponsePayload;

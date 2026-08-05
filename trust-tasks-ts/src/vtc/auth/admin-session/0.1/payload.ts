@@ -16,9 +16,26 @@ export interface VTCAuthAdminSessionPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCAuthAdminSessionResponsePayload {
+  /**
+   * The cookie-backed session's identifier.
+   */
+  sessionId: string;
+  /**
+   * Session expiry as a Unix timestamp. Matches the presented token's — the exchange does not extend a session.
+   */
+  expiresAt: number;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/auth/admin-session/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCAuthAdminSessionPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/auth/admin-session/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCAuthAdminSessionResponsePayload;

@@ -31,9 +31,36 @@ export interface DeviceWipePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.
+ */
+export interface DeviceWipeResponsePayload {
+  deviceId: string;
+  scope: "cache" | "cache-and-keys" | "full";
+  completedAt: string;
+  diagnostics?: {
+    cacheBytesWiped?: number;
+    keysWiped?: number;
+    /**
+     * OS-level revocation hooks the target managed to invoke (e.g. "navigator.credentials.preventSilentAccess", "ASCredentialIdentityStore.removeAllCredentialIdentities").
+     */
+    osHooksInvoked?: string[];
+    /**
+     * Free-form reasons why the wipe was partial (e.g. "os-keychain-unavailable", "extension-storage-quota-exceeded").
+     */
+    partialReasons?: string[];
+  };
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/wipe/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DeviceWipePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/wipe/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DeviceWipeResponsePayload;

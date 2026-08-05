@@ -17,9 +17,37 @@ export interface RegistryAdminRegisterPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface RegistryAdminRegisterResponsePayload {
+  entry: ServiceInstance;
+  ext?: Ext;
+}
+export interface ServiceInstance {
+  /**
+   * Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.
+   */
+  instanceId: string;
+  /**
+   * VID identifying the registered service.
+   */
+  did: string;
+  label?: string;
+  publicUrl?: string;
+  /**
+   * Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.
+   */
+  servedDomains?: string[];
+  lastSeen?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/registry/admin-register/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = RegistryAdminRegisterPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/registry/admin-register/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = RegistryAdminRegisterResponsePayload;

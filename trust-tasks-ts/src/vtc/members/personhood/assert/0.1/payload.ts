@@ -20,9 +20,31 @@ export interface VTCMembersPersonhoodAssertPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersPersonhoodAssertResponsePayload {
+  did: string;
+  /**
+   * Always true on success — the flag flipped or stayed asserted.
+   */
+  personhood: true;
+  /**
+   * Re-issued membership credential carrying the asserted personhood (opaque here).
+   */
+  vmc: {};
+  /**
+   * Re-issued role credential (opaque here).
+   */
+  roleVec: {};
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/personhood/assert/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersPersonhoodAssertPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/personhood/assert/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersPersonhoodAssertResponsePayload;

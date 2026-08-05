@@ -16,9 +16,26 @@ export interface VTCAdminBootstrapPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCAdminBootstrapResponsePayload {
+  /**
+   * The admin DID just written to the ACL.
+   */
+  adminDid: string;
+  /**
+   * event_id of the persisted CommunityInstalled audit envelope (a UUID).
+   */
+  eventId: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCAdminBootstrapPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCAdminBootstrapResponsePayload;

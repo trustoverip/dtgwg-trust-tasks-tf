@@ -108,9 +108,32 @@ export interface CapabilityManifest {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface GovernanceCapabilityEnableResponsePayload {
+  capability: string;
+  version?: string;
+  /**
+   * True once the capability is active for the community.
+   */
+  enabled: boolean;
+  /**
+   * When the enablement took effect, per the host clock.
+   */
+  enabledAt?: string;
+  /**
+   * Additional human-readable detail.
+   */
+  message?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/governance/capability/enable/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = GovernanceCapabilityEnablePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/governance/capability/enable/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = GovernanceCapabilityEnableResponsePayload;

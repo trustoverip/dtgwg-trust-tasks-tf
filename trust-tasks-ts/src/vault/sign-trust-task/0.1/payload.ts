@@ -93,9 +93,22 @@ export interface StepUpProof {
    */
   challengeId: string;
 }
+export interface VaultSignTrustTaskResponsePayload {
+  /**
+   * The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.
+   */
+  signedEnvelope: {};
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/sign-trust-task/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VaultSignTrustTaskPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/sign-trust-task/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VaultSignTrustTaskResponsePayload;

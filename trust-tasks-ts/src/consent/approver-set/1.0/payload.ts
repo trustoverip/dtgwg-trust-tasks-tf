@@ -35,9 +35,22 @@ export interface ConsentSetApproverPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface ConsentSetApproverResponsePayload {
+  /**
+   * The binding was upserted.
+   */
+  status: "set";
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/approver-set/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConsentSetApproverPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/approver-set/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConsentSetApproverResponsePayload;

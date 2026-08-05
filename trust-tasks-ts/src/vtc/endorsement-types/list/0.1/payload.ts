@@ -14,9 +14,32 @@ export interface VTCEndorsementTypesListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCEndorsementTypesListResponsePayload {
+  items: EndorsementType[];
+  nextCursor?: string | null;
+  ext?: Ext;
+}
+export interface EndorsementType {
+  /**
+   * The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.
+   */
+  typeUri: string;
+  description?: string;
+  /**
+   * Optional JSON Schema the endorsement's claims must satisfy (opaque here).
+   */
+  claimSchema?: {};
+  createdAt?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCEndorsementTypesListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCEndorsementTypesListResponsePayload;

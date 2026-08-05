@@ -19,9 +19,53 @@ export interface AuthPasskeyRevokeStart {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Server-issued re-authentication options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/start/0.1#response.
+ */
+export interface AuthPasskeyRevokeStartResponsePayload {
+  /**
+   * Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim. The consumer binds it to the target credentialId server-side, so the finish carries no target of its own.
+   */
+  revocationId: string;
+  uvOptions: PublicKeyCredentialRequestOptions;
+  ext?: Ext1;
+}
+/**
+ * PublicKeyCredentialRequestOptions for navigator.credentials.get — a fresh user-verification ceremony proving a human with an enrolled authenticator is present right now. userVerification SHOULD be "required".
+ */
+export interface PublicKeyCredentialRequestOptions {
+  /**
+   * base64url-encoded one-time nonce.
+   */
+  challenge: string;
+  timeout?: number;
+  rpId?: string;
+  allowCredentials?: PublicKeyCredentialDescriptor[];
+  userVerification?: "discouraged" | "preferred" | "required";
+}
+export interface PublicKeyCredentialDescriptor {
+  type: "public-key";
+  /**
+   * base64url-encoded credential id.
+   */
+  id: string;
+  transports?: ("usb" | "nfc" | "ble" | "internal" | "hybrid")[];
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthPasskeyRevokeStart;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthPasskeyRevokeStartResponsePayload;

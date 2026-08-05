@@ -15,6 +15,20 @@ export type Capability =
   | "device-admin"
   | "sign"
   | "key-mint";
+/**
+ * Discriminator: is this consumer a user-driven Companion or a headless Service?
+ */
+export type ConsumerKind = Companion | Service;
+/**
+ * Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.
+ */
+export type DeviceAttestation =
+  | WebAuthnAttestation
+  | AppleAppAttest
+  | PlayIntegrity
+  | Tpm
+  | NitroEnclave
+  | NoAttestation;
 
 /**
  * List DeviceBindings known to the maintainer, optionally filtered by consumer kind, capability, status, and last-seen time.
@@ -40,9 +54,123 @@ export interface DeviceListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DeviceListResponsePayload {
+  devices: DeviceBinding[];
+  truncated: boolean;
+  cursor?: string;
+  ext?: Ext;
+}
+export interface DeviceBinding {
+  /**
+   * Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.
+   */
+  deviceId: string;
+  /**
+   * The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.
+   */
+  consumerDid: string;
+  consumerKind: ConsumerKind;
+  /**
+   * Human-readable name (e.g. "Glenn's MacBook — Chrome", "iPhone 17").
+   */
+  displayName: string;
+  /**
+   * Free-form platform descriptor (e.g. "macOS 16 / Chrome 142", "iOS 19.1", "Android 16", "Linux/x86_64"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.
+   */
+  platform?: string;
+  attestation?: DeviceAttestation;
+  /**
+   * Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device.
+   */
+  pushCapable?: boolean;
+  keyCustody?: KeyCustody;
+  /**
+   * Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.
+   */
+  capabilities?: Capability[];
+  registeredAt: string;
+  /**
+   * Updated on every device/heartbeat and on any successful auth.
+   */
+  lastSeenAt?: string;
+  /**
+   * Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit.
+   */
+  disabledAt?: string;
+  /**
+   * Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe).
+   */
+  wipedAt?: string;
+  ext?: Ext;
+}
+export interface Companion {
+  kind: "companion";
+  formFactor: "browser" | "mobile" | "desktop";
+}
+export interface Service {
+  kind: "service";
+  serviceKind: "mediator" | "ai-agent" | "daemon";
+}
+export interface WebAuthnAttestation {
+  kind: "webauthn";
+  /**
+   * WebAuthn Authenticator AAGUID (UUID).
+   */
+  aaguid: string;
+  /**
+   * Base64url-encoded WebAuthn attestation statement, when supplied by the platform.
+   */
+  attestationStatement?: string;
+}
+export interface AppleAppAttest {
+  kind: "apple-app-attest";
+  keyId: string;
+  attestation: string;
+}
+export interface PlayIntegrity {
+  kind: "play-integrity";
+  token: string;
+}
+export interface Tpm {
+  kind: "tpm";
+  quote: string;
+}
+export interface NitroEnclave {
+  kind: "nitro-enclave";
+  quote: string;
+}
+/**
+ * No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up).
+ */
+export interface NoAttestation {
+  kind: "none";
+}
+/**
+ * How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md.
+ */
+export interface KeyCustody {
+  /**
+   * `hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.
+   */
+  tier: "hardware" | "software";
+  /**
+   * JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).
+   */
+  signingAlg?: string;
+  /**
+   * Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).
+   */
+  keyAgreementCurve?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Capability;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DeviceListResponsePayload;

@@ -23,9 +23,47 @@ export interface ConsentListApproversPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface ConsentListApproversResponsePayload {
+  /**
+   * Matching approver bindings.
+   */
+  approvers: ApproverBinding[];
+  ext?: Ext;
+}
+/**
+ * Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.
+ */
+export interface ApproverBinding {
+  /**
+   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
+   */
+  platform: string;
+  /**
+   * The VTA context path this binding applies to.
+   */
+  context: string;
+  /**
+   * VID (DID) of the operator authorized to decide consent for this platform/context.
+   */
+  approver: string;
+  /**
+   * Optional. How to deliver the prompt; defaults to bridge-relay when omitted.
+   */
+  route?: "wake" | "bridge-relay";
+  /**
+   * Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.
+   */
+  routeHint?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/approver-list/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConsentListApproversPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/approver-list/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConsentListApproversResponsePayload;

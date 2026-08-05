@@ -71,9 +71,65 @@ export interface AuthenticatorAssertionResponseLogin {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.
+ */
+export interface AuthStepUpApproveResponseRelyingPartyAck {
+  status: "elevated" | "rejected";
+  session?: Session;
+  /**
+   * Present when status is `rejected` (e.g. "challenge expired", "session not found", "acr ceiling exceeded").
+   */
+  reason?: string;
+  ext?: Ext;
+}
+/**
+ * Present when status is `elevated`. The session's updated amr/acr after the approval was applied.
+ */
+export interface Session {
+  /**
+   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
+   */
+  id: string;
+  /**
+   * The authenticated party's VID (typically a DID URL).
+   */
+  subject: string;
+  /**
+   * ISO-8601 timestamp when the session was created.
+   */
+  issuedAt: string;
+  /**
+   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
+   */
+  expiresAt: string;
+  /**
+   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
+   *
+   * @minItems 1
+   */
+  amr?: [string, ...string[]];
+  /**
+   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
+   */
+  acr?: string;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.2" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = StepUpEvidence;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.2#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthStepUpApproveResponseRelyingPartyAck;

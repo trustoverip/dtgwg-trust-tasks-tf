@@ -3,6 +3,11 @@
  * Source: specs/vtc/endorsements/revoke/0.1/payload.schema.json
  */
 
+/**
+ * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
+ */
+export type CredentialId = string;
+
 export interface VTCEndorsementsRevokePayload {
   endorsementId: string;
   /**
@@ -17,9 +22,34 @@ export interface VTCEndorsementsRevokePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCEndorsementsRevokeResponsePayload {
+  endorsementId: string;
+  revocation: RevocationReceipt;
+  /**
+   * The status-list slot whose bit was flipped, so a verifier can confirm the published effect.
+   */
+  statusListIndex: number;
+  ext?: Ext;
+}
+/**
+ * The registry-wide revocation receipt for the underlying VEC.
+ */
+export interface RevocationReceipt {
+  credentialId: CredentialId;
+  /**
+   * When the revocation was recorded.
+   */
+  revokedAt: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = CredentialId;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCEndorsementsRevokeResponsePayload;

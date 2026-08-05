@@ -31,6 +31,26 @@ export type SecretKind =
  * Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelope_unsupported`. REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated.
  */
 export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
+/**
+ * Discriminator for the secret type stored in the entry. Definitions:
+ * - `password` — username + password (+ optional TOTP seed).
+ * - `passkey` — WebAuthn discoverable credential (private key + rpId + userHandle).
+ * - `oauth-tokens` — OAuth 2.0 refresh + access token bundle for a specific provider.
+ * - `did-self-issued` — Self-Issued OpenID Provider v2 (SIOP) credential: the entry points at a DID + signing key already managed by the VTA.
+ * - `didcomm-peer` — DIDComm peer identity used to authenticate against a DIDComm-speaking relying party.
+ * - `bearer-token` — opaque bearer token carried in a maintainer-named header (covers API tokens, long-lived JWTs, personal-access tokens).
+ * - `ssh-key` — SSH private key + comment.
+ * - `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.
+ */
+export type SecretKind1 =
+  | "password"
+  | "passkey"
+  | "oauth-tokens"
+  | "did-self-issued"
+  | "didcomm-peer"
+  | "bearer-token"
+  | "ssh-key"
+  | "custom";
 
 /**
  * Create a new vault entry or update an existing one. The secret material — if present — rides inside a pluggable cipher envelope (see `vault/_shared/0.1/sealed-envelope`), so the Trust Task carries ciphertext and an authenticator, not plaintext. Updates may be partial: any populated metadata field replaces the current value; omitted fields are left untouched; explicit null clears the field (per `clearFields`). Optimistic-concurrency check via `expectedVersion`.
@@ -153,9 +173,131 @@ export interface TspMessageEnvelope {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VaultUpsertResponsePayload {
+  entry: VaultEntry;
+  /**
+   * true when this upsert created a new entry; false when it updated an existing one.
+   */
+  created?: boolean;
+  ext?: Ext;
+}
+export interface VaultEntry {
+  /**
+   * Opaque vault-maintainer-assigned identifier for the entry. ULID/UUID/base32 are common; the wire spec only requires non-empty string equality.
+   */
+  id: string;
+  /**
+   * Identifier of the trust context (persona) the entry belongs to. Opaque string interpreted by the vault maintainer; corresponds to a single ContextRecord on the VTA side.
+   */
+  contextId: string;
+  /**
+   * One or more binding targets — web origins, mobile app identifiers, and/or DIDs — that this credential applies to. A request from any matching target uses this entry. A typical entry for a service that exists as both a website and mobile apps will list a web origin, an iOS bundle id, and an Android package id; passkeys for that service typically list only the origin (because iOS Associated Domains and Android Asset Links bind apps to the domain at the OS level).
+   *
+   * @minItems 1
+   */
+  targets: [SiteTarget, ...SiteTarget[]];
+  /**
+   * Human-readable display name (e.g. "Work GitHub", "Personal bank — checking"). Maintainers MAY enforce a maximum length; the wire spec does not.
+   */
+  label: string;
+  secretKind: SecretKind1;
+  /**
+   * User-defined tags for organisation and filtering (e.g. ["family", "finance"]). Maintainers MAY enforce a maximum count; the wire spec does not.
+   */
+  tags?: string[];
+  /**
+   * Non-sensitive notes the user attached to the entry. Visible in metadata view (suitable for support contact, account number, expiry policy memos). SENSITIVE notes belong in the secret payload as a `secureNotes` field — those are only released by vault/release/0.1.
+   */
+  notes?: string;
+  /**
+   * Optional URI of an icon to display in the consumer UI. Maintainers MAY fetch and cache; consumers SHOULD treat as untrusted content and fetch via a sandboxed pipeline.
+   */
+  favicon?: string;
+  /**
+   * Opaque maintainer-defined selector strings fed to the policy engine when this entry is requested (e.g. "recent_uv_required", "network_class=corp", "step_up_push"). Consumers MUST treat selectors as opaque; they exist for policy authoring on the maintainer side.
+   */
+  selectors?: string[];
+  /**
+   * Names of additional fields the user has attached (e.g. ["security-question-1", "account-number"]). The VALUES live in the secret payload and are only delivered by vault/release/0.1. Exposing names in metadata lets the consumer render the right form layout before requesting release.
+   */
+  customFieldNames?: string[];
+  /**
+   * References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor.
+   */
+  attachments?: AttachmentRef[];
+  /**
+   * Optional time after which the credential is no longer expected to be valid (e.g. an OAuth refresh token's known expiry, a time-limited API token, an enterprise password rotation policy). Maintainers MAY surface this in the consumer UI as a warning.
+   */
+  expiresAt?: string;
+  /**
+   * Set by the maintainer (via HIBP integration or equivalent) when the password material associated with this entry is known to appear in a public breach. Consumers SHOULD surface this prominently. Cleared when the user rotates the password and the new password is not in any known breach.
+   */
+  breachedAt?: string;
+  /**
+   * Set whenever the password component of the secret payload is rotated. Maintainers MUST update this on every secret-material change for entries of kind `password` (or any kind that carries a password component). Used by consumers to surface rotation-overdue warnings.
+   */
+  passwordChangedAt?: string;
+  createdAt: string;
+  /**
+   * VID of the consumer that originally created the entry.
+   */
+  createdBy?: string;
+  updatedAt: string;
+  /**
+   * VID of the consumer that last modified the entry.
+   */
+  updatedBy?: string;
+  /**
+   * Most recent time the entry was used (either released or proxy-login performed). Maintainers MAY return this with reduced precision (e.g. hour-floored) when releasing to a less-trusted consumer.
+   */
+  lastUsedAt?: string;
+  /**
+   * Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync.
+   */
+  version: number;
+  /**
+   * Optional cached DID the entry will act AS for DID-shaped flows — mirrors the `did` field of the entry's secret payload when `secretKind` carries one (`did-self-issued`, `didcomm-peer`). Absent for kinds that have no DID concept (`password`, `passkey`, `oauth-tokens`, `bearer-token`, `ssh-key`, `custom`). MAINTAINER-DERIVED, NOT CONSUMER-SUPPLIED: the maintainer MUST recompute this from the canonical secret at every upsert / secret rotation; a producer-supplied value on `vault/upsert/0.1` MUST be ignored (no error, but no honour). Read-only on the wire, present in metadata views so consumers can drive RP-side flows (e.g. fetch `/auth/challenge` keyed on the principal DID before requesting a proxy-login) without releasing the secret.
+   */
+  principalDid?: string;
+  ext?: Ext1;
+}
+export interface AttachmentRef {
+  /**
+   * Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism.
+   */
+  id: string;
+  /**
+   * User-supplied filename (e.g. "recovery-codes.txt").
+   */
+  name: string;
+  /**
+   * Size of the encrypted blob in bytes. Maintainers MAY enforce a maximum per attachment and per entry.
+   */
+  sizeBytes: number;
+  /**
+   * Hex-encoded SHA-256 of the encrypted blob bytes (post-encryption). Lets the consumer verify integrity after fetch.
+   */
+  sha256: string;
+  /**
+   * Optional MIME type hint for the consumer UI (e.g. "text/plain", "application/x-pem-file").
+   */
+  contentType?: string;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/upsert/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = SiteTarget;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/upsert/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VaultUpsertResponsePayload;

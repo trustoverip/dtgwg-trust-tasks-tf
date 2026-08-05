@@ -20,9 +20,28 @@ export interface VTCDirectoryQueryPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCDirectoryQueryResponsePayload {
+  /**
+   * The projected member's DID.
+   */
+  subject: string;
+  /**
+   * The permitted projection. A withheld field is ABSENT, never present-and-null.
+   */
+  fields: {
+    [k: string]: unknown | undefined;
+  };
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/directory/query/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCDirectoryQueryPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/directory/query/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCDirectoryQueryResponsePayload;

@@ -23,9 +23,39 @@ export interface AuthChallenge {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.
+ */
+export interface AuthChallengeResponsePayload {
+  /**
+   * base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign.
+   */
+  challenge: string;
+  /**
+   * Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque.
+   */
+  sessionId: string;
+  /**
+   * ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes.
+   */
+  expiresAt: string;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/challenge/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthChallenge;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/challenge/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthChallengeResponsePayload;

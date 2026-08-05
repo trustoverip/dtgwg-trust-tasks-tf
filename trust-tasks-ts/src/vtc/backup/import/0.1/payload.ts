@@ -88,9 +88,36 @@ export interface EncryptionParams {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCBackupImportResponsePayload {
+  /**
+   * `preview` when `confirm` was not set; `imported` after a restore.
+   */
+  status: "preview" | "imported";
+  /**
+   * The community DID the envelope was taken from.
+   */
+  sourceDid?: string | null;
+  /**
+   * Per-keyspace row counts written, or that would be written on a preview.
+   */
+  counts: {
+    [k: string]: number | undefined;
+  };
+  /**
+   * Human-readable summary for the operator.
+   */
+  message: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/backup/import/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCBackupImportPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/backup/import/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCBackupImportResponsePayload;

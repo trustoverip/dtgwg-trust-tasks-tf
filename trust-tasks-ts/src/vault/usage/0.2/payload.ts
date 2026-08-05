@@ -32,9 +32,53 @@ export interface VaultUsagePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VaultUsageResponsePayload {
+  uses: UsageRecord[];
+  truncated: boolean;
+  cursor?: string;
+  ext?: Ext;
+}
+export interface UsageRecord {
+  id: string;
+  entryId: string;
+  contextId: string;
+  /**
+   * DID of the Companion/Service that initiated the use.
+   */
+  consumerDid: string;
+  kind: "proxyLogin" | "release";
+  outcome:
+    | "allowed"
+    | "denied"
+    | "stepUpRequired"
+    | "stepUpSatisfied"
+    | "targetUnreachable"
+    | "credentialRejected"
+    | "policyDeny";
+  occurredAt: string;
+  deviceId?: string;
+  /**
+   * For successful proxy-logins, the maintainer-assigned session id; absent for releases and for failures.
+   */
+  sessionId?: string;
+  /**
+   * Pointer to the policy evaluation record for forensic detail.
+   */
+  policyDecisionId?: string;
+  /**
+   * Trust Task error code when outcome is a failure.
+   */
+  errorCode?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/usage/0.2" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VaultUsagePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/usage/0.2#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VaultUsageResponsePayload;

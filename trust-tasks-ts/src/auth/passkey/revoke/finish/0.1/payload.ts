@@ -36,9 +36,39 @@ export interface AuthenticatorAssertionResponseLogin {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.
+ */
+export interface AuthPasskeyRevokeFinishResponsePayload {
+  /**
+   * The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.
+   */
+  credentialId: string;
+  /**
+   * When the credential was unbound.
+   */
+  revokedAt: string;
+  /**
+   * How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.
+   */
+  remaining: number;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthPasskeyRevokeFinish;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthPasskeyRevokeFinishResponsePayload;

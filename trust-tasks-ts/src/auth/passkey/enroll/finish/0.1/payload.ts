@@ -39,9 +39,40 @@ export interface AuthenticatorAttestationResponseRegistration {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1#response.
+ */
+export interface AuthPasskeyEnrollFinishResponsePayload {
+  /**
+   * base64url-encoded WebAuthn credential id, durable identifier for later management.
+   */
+  credentialId: string;
+  /**
+   * The VID the credential is now bound to. Echoed for symmetry with finish-time error responses.
+   */
+  subject: string;
+  /**
+   * The label persisted with the credential.
+   */
+  deviceLabel?: string;
+  registeredAt: string;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthPasskeyEnrollFinish;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthPasskeyEnrollFinishResponsePayload;

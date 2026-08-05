@@ -23,9 +23,27 @@ export interface VTAPasskeyVMRevokePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.
+ */
+export interface VTAPasskeyVMRevokeResponsePayload {
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTAPasskeyVMRevokePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTAPasskeyVMRevokeResponsePayload;

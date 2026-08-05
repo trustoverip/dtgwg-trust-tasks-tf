@@ -67,9 +67,29 @@ export interface PublicKeyCredentialDescriptor {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.
+ */
+export interface AuthStepUpApproveRequestResponsePayload {
+  /**
+   * `accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.
+   */
+  status: "accepted" | "refused";
+  /**
+   * Required when status is `refused`.
+   */
+  reason?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-request/0.2" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthStepUpApproveRequest;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-request/0.2#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthStepUpApproveRequestResponsePayload;

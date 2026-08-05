@@ -12,9 +12,35 @@ export interface VTCMembersRenewPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersRenewResponsePayload {
+  did: string;
+  /**
+   * The freshly-issued W3C Verifiable Membership Credential (opaque here).
+   */
+  vmc: {};
+  /**
+   * The freshly-issued role Verifiable Endorsement Credential (opaque here).
+   */
+  roleVec: {};
+  /**
+   * Whether the renewed membership carries a personhood assertion.
+   */
+  personhood: boolean;
+  /**
+   * Whether the personhood state changed on this renewal.
+   */
+  personhoodChanged: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/renew/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersRenewPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/renew/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersRenewResponsePayload;

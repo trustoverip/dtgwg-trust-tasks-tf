@@ -21,9 +21,21 @@ export interface VTCMembersAdminRemovePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersAdminRemoveResponsePayload {
+  did: string;
+  disposition: "purge" | "tombstone" | "historical";
+  removed: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/admin-remove/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersAdminRemovePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/admin-remove/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersAdminRemoveResponsePayload;

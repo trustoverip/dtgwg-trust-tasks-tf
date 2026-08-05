@@ -16,9 +16,30 @@ export interface VTCInvitationsRevokePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCInvitationsRevokeResponsePayload {
+  /**
+   * The revoked invitation's identifier, echoed.
+   */
+  id: string;
+  /**
+   * When the credential was revoked. On a repeat call this is the ORIGINAL revocation time, not now.
+   */
+  revokedAt: string;
+  /**
+   * True when this call flipped the bit; false when it was already revoked.
+   */
+  newlyRevoked: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/invitations/revoke/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCInvitationsRevokePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/invitations/revoke/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCInvitationsRevokeResponsePayload;

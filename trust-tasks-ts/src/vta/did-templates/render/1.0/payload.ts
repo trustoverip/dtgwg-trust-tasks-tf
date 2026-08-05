@@ -25,9 +25,31 @@ export interface VTADIDTemplateRenderPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The rendered DID document.
+ */
+export interface VTADIDTemplateRenderResponsePayload {
+  /**
+   * The rendered DID document with all placeholders substituted.
+   */
+  document: {};
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/render/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTADIDTemplateRenderPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/render/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTADIDTemplateRenderResponsePayload;

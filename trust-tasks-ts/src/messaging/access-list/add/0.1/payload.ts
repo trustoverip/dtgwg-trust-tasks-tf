@@ -11,6 +11,10 @@ export type Vid = string;
  * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
  */
 export type Vid1 = string;
+/**
+ * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
+ */
+export type Vid2 = string;
 
 export interface MessagingAddToAccessListPayload {
   did: Vid;
@@ -28,9 +32,36 @@ export interface MessagingAddToAccessListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a messaging/access-list/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/add/0.1#response.
+ */
+export interface MessagingAddToAccessListResponsePayload {
+  did: Vid2;
+  /**
+   * The entries actually added (those not already present in the access list).
+   */
+  added: Vid1[];
+  /**
+   * The resulting number of entries in the account's access list.
+   */
+  accessListCount: number;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/access-list/add/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Vid;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/access-list/add/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = MessagingAddToAccessListResponsePayload;

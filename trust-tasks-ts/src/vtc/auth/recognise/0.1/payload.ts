@@ -20,9 +20,34 @@ export interface VTCAuthRecognisePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCAuthRecogniseResponsePayload {
+  /**
+   * A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
+   */
+  sessionId: string;
+  data: {
+    accessToken: string;
+    /**
+     * Unix-seconds expiry, clamped to min(local default, earliest of the vec/vmc validUntil).
+     */
+    accessExpiresAt: number;
+    foreignIssuerDid: string;
+    /**
+     * The LOCAL role from cross_community_roles policy — not the foreign role.
+     */
+    mappedRole: string;
+  };
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCAuthRecognisePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCAuthRecogniseResponsePayload;

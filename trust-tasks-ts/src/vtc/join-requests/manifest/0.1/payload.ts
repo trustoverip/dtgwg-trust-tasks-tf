@@ -12,9 +12,27 @@ export interface VTCJoinRequestsManifestPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCJoinRequestsManifestResponsePayload {
+  communityDid: string;
+  criteria: {
+    id: string;
+    description?: string;
+    /**
+     * The presentation-definition an applicant must satisfy for this criterion (opaque here).
+     */
+    presentationDefinition: {};
+  }[];
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCJoinRequestsManifestPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCJoinRequestsManifestResponsePayload;

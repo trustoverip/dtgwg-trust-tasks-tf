@@ -37,9 +37,35 @@ export interface StepUpFloor {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.
+ */
+export interface AuthStepUpPolicyResponsePayload {
+  /**
+   * The effective master switch the maintainer now holds.
+   */
+  enabled: boolean;
+  /**
+   * The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).
+   */
+  floors: StepUpFloor[];
+  ext?: Ext1;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/policy/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthStepUpPolicyPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/policy/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthStepUpPolicyResponsePayload;

@@ -23,9 +23,28 @@ export interface GitTrustGrantPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface GitTrustGrantResponsePayload {
+  subject: string;
+  resource: string;
+  /**
+   * True once the grant tuple is durably recorded.
+   */
+  granted: boolean;
+  /**
+   * Additional human-readable detail.
+   */
+  message?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-trust/grant/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = GitTrustGrantPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-trust/grant/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = GitTrustGrantResponsePayload;

@@ -19,9 +19,61 @@ export interface VTAPasskeyVMListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The passkey verificationMethods currently on the DID.
+ */
+export interface VTAPasskeyVMListResponsePayload {
+  /**
+   * Every passkey verificationMethod published on the DID. Empty when none are enrolled.
+   */
+  verificationMethods: PasskeyVerificationMethod[];
+  ext?: Ext1;
+}
+export interface PasskeyVerificationMethod {
+  /**
+   * The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.
+   */
+  id: string;
+  /**
+   * Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.
+   */
+  type: "Multikey";
+  /**
+   * The DID this verificationMethod is published on (the DID being augmented).
+   */
+  controller: string;
+  /**
+   * W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).
+   */
+  publicKeyMultibase: string;
+  /**
+   * The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.
+   */
+  webauthnCredentialId: string;
+  /**
+   * Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.
+   */
+  webauthnTransports?: string[];
+  /**
+   * Optional operator-supplied human-readable label (e.g. "MacBook Touch ID"). Informational; not authoritative and not a security input.
+   */
+  label?: string;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTAPasskeyVMListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTAPasskeyVMListResponsePayload;

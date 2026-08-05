@@ -12,9 +12,26 @@ export interface VTCAuthRecogniseChallengePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCAuthRecogniseChallengeResponsePayload {
+  /**
+   * Single-use, unpredictable value to bind into the presentation. Consumed on first use regardless of verdict.
+   */
+  nonce: string;
+  /**
+   * Unix timestamp after which the nonce is refused.
+   */
+  expiresAt: number;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/challenge/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCAuthRecogniseChallengePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/challenge/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCAuthRecogniseChallengeResponsePayload;

@@ -20,9 +20,34 @@ export interface VTCMembersDeliverVMCPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersDeliverVMCReceiptPayload {
+  /**
+   * The delivering member, as proven by the transport.
+   */
+  memberDid: string;
+  /**
+   * Identifier of the stored credential.
+   */
+  vmcId: string;
+  /**
+   * Terminal state of the delivery.
+   */
+  status: "stored";
+  /**
+   * Echoed when the delivery also closed a join request (the request payload carried `requestId`).
+   */
+  requestId?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/vmc/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersDeliverVMCPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/vmc/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersDeliverVMCReceiptPayload;

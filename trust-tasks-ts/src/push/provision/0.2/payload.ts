@@ -29,9 +29,29 @@ export interface WakeTriggerPolicy {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface PushProvisionResponsePayload {
+  handle: string;
+  policy: WakeTriggerPolicy1;
+  ext?: Ext;
+}
+/**
+ * The effective allowlist the gateway recorded.
+ */
+export interface WakeTriggerPolicy1 {
+  /**
+   * DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
+   */
+  allowedTriggers: string[];
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/push/provision/0.2" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = PushProvisionPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/push/provision/0.2#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = PushProvisionResponsePayload;

@@ -4,6 +4,11 @@
  */
 
 /**
+ * The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.
+ */
+export type KeyStatus = "active" | "revoked";
+
+/**
  * Retire a key from further use. The record is retained so historic signatures stay attributable; this is not a delete.
  */
 export interface KeysRevokePayload {
@@ -23,9 +28,36 @@ export interface KeysRevokePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.
+ */
+export interface KeysRevokeResponsePayload {
+  /**
+   * The key that was retired.
+   */
+  keyId: string;
+  status: KeyStatus;
+  /**
+   * RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards.
+   */
+  updatedAt: string;
+  ext?: Ext1;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/revoke/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = KeyStatus;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/keys/revoke/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = KeysRevokeResponsePayload;

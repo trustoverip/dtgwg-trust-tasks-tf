@@ -16,9 +16,31 @@ export interface VTCMembersPersonhoodRevokePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersPersonhoodRevokeResponsePayload {
+  did: string;
+  /**
+   * Always false on success.
+   */
+  personhood: false;
+  /**
+   * Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.
+   */
+  vmc?: {};
+  /**
+   * Newly-minted role credential; omitted on an idempotent no-op.
+   */
+  roleVec?: {};
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/personhood/revoke/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersPersonhoodRevokePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/personhood/revoke/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersPersonhoodRevokeResponsePayload;

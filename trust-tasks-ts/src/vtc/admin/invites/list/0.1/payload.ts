@@ -3,6 +3,11 @@
  * Source: specs/vtc/admin/invites/list/0.1/payload.schema.json
  */
 
+/**
+ * `issued` is outstanding and revocable; `consumed` and `expired` are terminal.
+ */
+export type InviteStatus = "issued" | "consumed" | "expired";
+
 export interface VTCAdminInvitesListPayload {
   ext?: Ext;
 }
@@ -12,9 +17,44 @@ export interface VTCAdminInvitesListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCAdminInvitesListResponsePayload {
+  /**
+   * Every invite the community holds, outstanding and terminal.
+   */
+  invites: InviteSummary[];
+  ext?: Ext;
+}
+/**
+ * One outstanding or historical admin invite. Consumed rows are retained as audit history and cannot be revoked.
+ */
+export interface InviteSummary {
+  /**
+   * Unique invite identifier; the revoke target.
+   */
+  jti: string;
+  status: InviteStatus;
+  /**
+   * The admin DID this invite enrols a passkey for.
+   */
+  targetDid?: string;
+  /**
+   * When an `issued` invite lapses.
+   */
+  expiresAt?: string;
+  /**
+   * When the invite was redeemed, if it was.
+   */
+  consumedAt?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/invites/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = InviteStatus;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/invites/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCAdminInvitesListResponsePayload;

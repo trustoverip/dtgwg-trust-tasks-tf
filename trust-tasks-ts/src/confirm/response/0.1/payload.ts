@@ -28,9 +28,26 @@ export interface ConfirmResponse {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Acknowledgement the relying party returns after processing the user decision. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/response/0.1#response.
+ */
+export interface ConfirmResponseRelyingPartyAck {
+  status: "recorded" | "rejected";
+  /**
+   * Present when status is `rejected` (e.g. "challenge expired").
+   */
+  reason?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/confirm/response/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConfirmResponse;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/confirm/response/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConfirmResponseRelyingPartyAck;

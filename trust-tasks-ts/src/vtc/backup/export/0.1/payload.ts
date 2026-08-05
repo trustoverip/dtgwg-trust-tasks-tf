@@ -20,9 +20,86 @@ export interface VTCBackupExportPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCBackupExportResponsePayload {
+  envelope: BackupEnvelope;
+  ext?: Ext;
+}
+/**
+ * The encrypted full-state backup.
+ */
+export interface BackupEnvelope {
+  /**
+   * Envelope schema version.
+   */
+  version: number;
+  /**
+   * Envelope format tag, e.g. `vtc-backup-v1`.
+   */
+  format: string;
+  /**
+   * When the export was taken.
+   */
+  createdAt: string;
+  /**
+   * DID of the community exported from, when it has one. An import cross-checks this against the running community.
+   */
+  sourceDid?: string | null;
+  /**
+   * Version of the software that produced the envelope.
+   */
+  sourceVersion: string;
+  kdf: KdfParams;
+  encryption: EncryptionParams;
+  /**
+   * Whether the audit log and its signed checkpoints are inside `ciphertext`.
+   */
+  includesAudit: boolean;
+  /**
+   * base64url(AEAD(JSON(payload))).
+   */
+  ciphertext: string;
+}
+export interface KdfParams {
+  /**
+   * KDF identifier, e.g. `argon2id`.
+   */
+  algorithm: string;
+  /**
+   * base64url, 32 bytes.
+   */
+  salt: string;
+  /**
+   * Argon2id memory cost (KiB).
+   */
+  mCost: number;
+  /**
+   * Argon2id time cost (iterations).
+   */
+  tCost: number;
+  /**
+   * Argon2id parallelism.
+   */
+  pCost: number;
+}
+export interface EncryptionParams {
+  /**
+   * AEAD identifier, e.g. `aes-256-gcm`.
+   */
+  algorithm: string;
+  /**
+   * base64url, 12 bytes.
+   */
+  nonce: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/backup/export/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCBackupExportPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/backup/export/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCBackupExportResponsePayload;

@@ -23,9 +23,31 @@ export interface MessagingAddAdminsPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a messaging/admin/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/add/0.1#response.
+ */
+export interface MessagingAddAdminsResponsePayload {
+  /**
+   * The accounts now holding admin rights (the requested set, post-change).
+   */
+  admins: Vid[];
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/add/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Vid;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/admin/add/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = MessagingAddAdminsResponsePayload;

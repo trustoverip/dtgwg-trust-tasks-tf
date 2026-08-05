@@ -46,9 +46,39 @@ export interface QueryContext {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface RegistryRecognitionResponsePayload {
+  entity_id: string;
+  authority_id: string;
+  action: string;
+  resource: string;
+  /**
+   * True if the action+resource has been recognised, false otherwise.
+   */
+  recognized: boolean;
+  /**
+   * Server time the query was evaluated at, per the endpoint clock.
+   */
+  time_evaluated: string;
+  /**
+   * The requested server time, echoed from the request `context.time` when supplied.
+   */
+  time_requested?: string;
+  /**
+   * Additional human-readable detail about the recognition response.
+   */
+  message?: string;
+  context?: QueryContext;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/recognition/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = RegistryRecognitionPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/recognition/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = RegistryRecognitionResponsePayload;

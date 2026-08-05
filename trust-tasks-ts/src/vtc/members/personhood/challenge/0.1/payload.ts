@@ -16,9 +16,26 @@ export interface VTCMembersPersonhoodChallengePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersPersonhoodChallengeResponsePayload {
+  /**
+   * Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.
+   */
+  challengeId: string;
+  /**
+   * The assert handler refuses the presentation past this point.
+   */
+  expiresAt: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersPersonhoodChallengePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersPersonhoodChallengeResponsePayload;

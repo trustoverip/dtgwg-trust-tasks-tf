@@ -23,9 +23,42 @@ export interface DeviceHeartbeatPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DeviceHeartbeatResponsePayload {
+  /**
+   * Authoritative timestamp — consumers MAY use to detect clock drift.
+   */
+  serverTime: string;
+  /**
+   * Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.
+   */
+  queuedOperations?: QueuedOperation[];
+  /**
+   * Tells the consumer whether to call vault/sync.
+   */
+  syncHint?: "up-to-date" | "sync-due" | "full-resync-required";
+  ext?: Ext;
+}
+export interface QueuedOperation {
+  /**
+   * Discriminator. The framework currently supports wipe; future versions may add others.
+   */
+  kind: "wipe" | "policy-reload" | "config-update";
+  /**
+   * The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.
+   */
+  task: {
+    [k: string]: unknown | undefined;
+  };
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/heartbeat/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DeviceHeartbeatPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/heartbeat/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DeviceHeartbeatResponsePayload;

@@ -138,9 +138,29 @@ export interface StatePin {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.
+ */
+export interface TaskConsentRequestResponsePayload {
+  /**
+   * `prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.
+   */
+  status: "prompted" | "refused";
+  /**
+   * REQUIRED when status is `refused`.
+   */
+  reason?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/request/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = TaskConsentRequestPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/task-consent/request/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = TaskConsentRequestResponsePayload;

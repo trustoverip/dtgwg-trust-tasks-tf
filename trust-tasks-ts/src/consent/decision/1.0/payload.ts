@@ -53,9 +53,33 @@ export interface ConsentSubject {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Acknowledgement that the decision was recorded (or rejected).
+ */
+export interface ConsentDecisionResponsePayload {
+  /**
+   * `recorded` = a grant was written. `rejected` = not accepted; `reason` MUST be set.
+   */
+  status: "recorded" | "rejected";
+  /**
+   * The VTA's id for the recorded grant (set when recorded).
+   */
+  grantId?: string;
+  /**
+   * Required when status is `rejected`.
+   */
+  reason?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/decision/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConsentDecisionPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/decision/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConsentDecisionResponsePayload;

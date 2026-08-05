@@ -19,9 +19,89 @@ export interface AuthPasskeyEnrollStart {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.
+ */
+export interface AuthPasskeyEnrollStartResponsePayload {
+  /**
+   * Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.
+   */
+  enrollmentId: string;
+  options: PublicKeyCredentialCreationOptions;
+  ext?: Ext1;
+}
+/**
+ * PublicKeyCredentialCreationOptions for navigator.credentials.create.
+ */
+export interface PublicKeyCredentialCreationOptions {
+  /**
+   * base64url-encoded one-time nonce.
+   */
+  challenge: string;
+  rp: {
+    id: string;
+    name: string;
+  };
+  user: {
+    /**
+     * base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.
+     */
+    id: string;
+    name: string;
+    displayName: string;
+  };
+  /**
+   * @minItems 1
+   */
+  pubKeyCredParams: [
+    {
+      type: "public-key";
+      /**
+       * COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).
+       */
+      alg: number;
+    },
+    ...{
+      type: "public-key";
+      /**
+       * COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).
+       */
+      alg: number;
+    }[]
+  ];
+  timeout?: number;
+  excludeCredentials?: PublicKeyCredentialDescriptor[];
+  authenticatorSelection?: {
+    authenticatorAttachment?: "platform" | "cross-platform";
+    requireResidentKey?: boolean;
+    residentKey?: "discouraged" | "preferred" | "required";
+    userVerification?: "discouraged" | "preferred" | "required";
+  };
+  attestation?: "none" | "indirect" | "direct" | "enterprise";
+}
+export interface PublicKeyCredentialDescriptor {
+  type: "public-key";
+  /**
+   * base64url-encoded credential id.
+   */
+  id: string;
+  transports?: ("usb" | "nfc" | "ble" | "internal" | "hybrid")[];
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthPasskeyEnrollStart;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthPasskeyEnrollStartResponsePayload;

@@ -20,9 +20,20 @@ export interface VTCJoinRequestsRejectPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCJoinRequestsRejectResponsePayload {
+  requestId: string;
+  status: "rejected";
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/reject/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCJoinRequestsRejectPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/reject/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCJoinRequestsRejectResponsePayload;

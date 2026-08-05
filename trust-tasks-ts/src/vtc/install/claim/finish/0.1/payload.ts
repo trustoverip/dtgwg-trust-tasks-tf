@@ -25,9 +25,26 @@ export interface VTCInstallClaimFinishPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCInstallClaimFinishResponsePayload {
+  /**
+   * Candidate admin DID derived from the passkey's Ed25519 public key.
+   */
+  adminDid: string;
+  /**
+   * EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.
+   */
+  setupSessionToken: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/install/claim/finish/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCInstallClaimFinishPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/install/claim/finish/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCInstallClaimFinishResponsePayload;

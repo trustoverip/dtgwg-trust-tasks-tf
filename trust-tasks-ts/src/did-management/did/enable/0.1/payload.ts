@@ -14,9 +14,72 @@ export interface DIDManagementEnablePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DIDManagementEnableResponsePayload {
+  record: DidRecord;
+  ext?: Ext;
+}
+export interface DidRecord {
+  /**
+   * Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
+   */
+  mnemonic: string;
+  /**
+   * VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.
+   */
+  owner: string;
+  /**
+   * RFC3339 timestamp of initial reservation.
+   */
+  createdAt: string;
+  /**
+   * RFC3339 timestamp of the most recent record mutation.
+   */
+  updatedAt: string;
+  /**
+   * Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.
+   */
+  versionCount: number;
+  /**
+   * Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.
+   */
+  didId?: string;
+  /**
+   * Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.
+   */
+  didUrl?: string;
+  /**
+   * DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.
+   */
+  method?: string;
+  /**
+   * Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.
+   */
+  domain?: string;
+  /**
+   * When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.
+   */
+  disabled?: boolean;
+  /**
+   * Lifetime resolve counter, when the host exposes per-DID statistics.
+   */
+  totalResolves?: number;
+  ext?: Ext1;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/did/enable/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DIDManagementEnablePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/did/enable/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DIDManagementEnableResponsePayload;

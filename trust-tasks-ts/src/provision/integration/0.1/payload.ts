@@ -173,9 +173,89 @@ export interface DataIntegrityProof {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Carried in a Trust Task document whose type is https://trusttasks.org/spec/provision/integration/0.1#response. The sealed `bundle` is the secret-bearing artefact; `summary` is non-secret audit metadata.
+ */
+export interface ProvisionIntegrationResponsePayload {
+  /**
+   * OpenPGP-style ASCII-armored ciphertext of `SealedPayloadV1`. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`. Recipient is the X25519 derivation of `request.holder`'s Ed25519 pubkey.
+   */
+  bundle: string;
+  /**
+   * SHA-256 of the armored ciphertext, lowercase hex. Used by holders that pin the bundle out-of-band.
+   */
+  digest: string;
+  summary: ProvisionSummary;
+  ext?: Ext1;
+}
+/**
+ * Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field.
+ */
+export interface ProvisionSummary {
+  /**
+   * Ephemeral did:key the holder signed the VP with and opens the sealed bundle with. Echo of `request.holder`.
+   */
+  clientDid: string;
+  /**
+   * Long-term admin DID after this provisioning. Equals `clientDid` when no admin rollover occurred (TemplateBootstrap with no `adminTemplate`); equals the freshly-minted admin DID when `adminTemplate` was used or when the ask was `AdminRotation`. Maintainers that pre-date admin rollover MAY omit this; consumers SHOULD default it to `clientDid` for backward compatibility.
+   */
+  adminDid?: string;
+  /**
+   * True when the maintainer minted a fresh long-term admin DID and bound the authorization VC + ACL row to it (i.e. `adminDid != clientDid`).
+   */
+  adminRolledOver?: boolean;
+  /**
+   * DID rendered from the integration template. Absent for `AdminRotation` (no integration was rendered).
+   */
+  integrationDid?: string;
+  /**
+   * Name of the integration template that was rendered. Absent for `AdminRotation`.
+   */
+  templateName?: string;
+  /**
+   * `kind` of the integration template (e.g. `mediator`, `did-hosting-control`, `app`). Absent for `AdminRotation`.
+   */
+  templateKind?: string;
+  /**
+   * Name of the admin template that was rendered. Present when an admin DID was minted (either via `TemplateBootstrap.adminTemplate` or `AdminRotation`).
+   */
+  adminTemplateName?: string;
+  /**
+   * VP nonce as lowercase hex (32 characters = 16 bytes). MUST equal the `Bundle-Id` armor header of `bundle`. Cross-check anchor: a holder that decodes the VP nonce can verify the bundle they opened matches the one the maintainer minted for them.
+   */
+  bundleIdHex: string;
+  /**
+   * Number of DIDs the sealed bundle carries private key material for. `TemplateBootstrap` with no adminTemplate typically yields 1 (the integration DID's keys). `AdminRotation` yields 0 (the `admin` field is top-level, not under `secrets`).
+   */
+  secretCount: number;
+  /**
+   * Number of template-declared side outputs the sealed bundle carries (`did.jsonl` logs, DIDComm service advertisements, etc.). Always 0 for `AdminRotation`.
+   */
+  outputCount: number;
+  /**
+   * Identifier of the registered webvh hosting server the maintainer published the integration's `did.jsonl` to, if any. Absent when the integration is self-hosted or when the template did not declare a webvh server var.
+   */
+  webvhServerId?: string;
+  /**
+   * True when `payload.createContext` was honoured and the maintainer provisioned the target context inline. False when the context already existed (or when `createContext` was omitted / false).
+   */
+  contextCreated?: boolean;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = BootstrapAsk;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ProvisionIntegrationResponsePayload;

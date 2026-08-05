@@ -16,9 +16,28 @@ export interface VTCRelationshipsPublishPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCRelationshipsPublishResponsePayload {
+  /**
+   * Id assigned to the stored relationship (a UUID).
+   */
+  id: string;
+  issuerDid: string;
+  subjectDid: string;
+  /**
+   * SHA-256 of the stored VRC, for out-of-band integrity checks.
+   */
+  vrcSha256: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/publish/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCRelationshipsPublishPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/publish/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCRelationshipsPublishResponsePayload;

@@ -15,9 +15,26 @@ export interface ConfigRestartPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface ConfigRestartResponsePayload {
+  /**
+   * The process supervisor that will bring the maintainer back up, detected by the maintainer. An opaque maintainer-defined label — the framework does not enumerate it (e.g. `systemd`, `kubernetes`, or an explicit operator opt-in). A maintainer that detects no supervisor MUST refuse (see errorCodes) rather than exit unsupervised.
+   */
+  supervisor: string;
+  /**
+   * How long the maintainer will drain in-flight work before exiting, so a caller knows the expected downtime window.
+   */
+  drainTimeoutSeconds: number;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/config/restart/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConfigRestartPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/config/restart/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConfigRestartResponsePayload;

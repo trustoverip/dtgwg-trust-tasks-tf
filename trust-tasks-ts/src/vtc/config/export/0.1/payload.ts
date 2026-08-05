@@ -15,9 +15,66 @@ export interface VTCConfigExportPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCConfigExportResponsePayload {
+  document: ConfigExportDocument;
+  ext?: Ext;
+}
+/**
+ * The portable configuration document, ready to feed back to vtc/config/import.
+ */
+export interface ConfigExportDocument {
+  /**
+   * Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.
+   */
+  schemaVersion: number;
+  /**
+   * When the export was taken. Provenance for the operator; a consumer does not act on it.
+   */
+  exportedAt: string;
+  communityProfile?: CommunityProfileSnapshot;
+  /**
+   * Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.
+   */
+  configOverrides: {
+    [k: string]: unknown | undefined;
+  };
+  ext?: Ext;
+}
+/**
+ * The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.
+ */
+export interface CommunityProfileSnapshot {
+  /**
+   * DID of the community this document was taken from. Immutable, set at install.
+   */
+  communityDid: string;
+  name: string;
+  description?: string;
+  logoUrl?: string | null;
+  publicUrl?: string | null;
+  contactEmail?: string | null;
+  /**
+   * BCP 47 language tag.
+   */
+  language: string;
+  /**
+   * Opaque community-defined extension bag.
+   */
+  extensions?: {};
+  /**
+   * When the community was created. Provenance only — an import never writes it.
+   */
+  createdAt?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/config/export/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCConfigExportPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/config/export/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCConfigExportResponsePayload;

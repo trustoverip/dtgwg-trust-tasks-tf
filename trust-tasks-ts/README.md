@@ -29,15 +29,22 @@ npm install @openvtc/trust-tasks
 import { AclGrant_v0_1, DidManagementDidRegister_v0_1 } from "@openvtc/trust-tasks";
 
 // Compose a request payload, type-checked against the spec's
-// payload.schema.json.
+// payload.schema.json. `Payload` is a stable alias every module
+// exports, so you never have to look up the title-derived interface
+// name (here, `ACLGrantPayload`).
 const grant: AclGrant_v0_1.Payload = {
-  subject: "did:key:z6MkAlice",
-  role: "admin",
-  after: { /* … */ },
+  entry: {
+    subject: "did:key:z6MkAlice",
+    role: "admin",
+  },
+  reason: "onboarding",
 };
 
 // Each module exports the Response sub-schema too when the spec
 // defines one — the framework's #response fragment convention.
+// Fire-and-forget specs export neither `Response` nor
+// `RESPONSE_TYPE_URI`, because SPEC.md §4.4.1 forbids emitting a
+// `#response` document for them.
 const reply: AclGrant_v0_1.Response = {
   entry: { /* … */ },
 };

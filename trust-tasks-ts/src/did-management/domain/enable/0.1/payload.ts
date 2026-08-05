@@ -13,9 +13,53 @@ export interface DomainEnablePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DomainEnableResponsePayload {
+  entry: DomainEntry;
+  ext?: Ext;
+}
+export interface DomainEntry {
+  /**
+   * Hosting domain name (e.g. `did.example.com`). Compared case-insensitively; producers SHOULD emit lowercase canonical form.
+   */
+  name: string;
+  /**
+   * Optional human-readable label.
+   */
+  label?: string;
+  /**
+   * Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.
+   */
+  status: "active" | "disabled";
+  /**
+   * When `true`, this domain is the host's default — new DIDs created without an explicit domain are hosted here. Exactly one entry SHOULD carry `defaultDomain: true`.
+   */
+  defaultDomain?: boolean;
+  createdAt: string;
+  /**
+   * Present iff `status === "disabled"`.
+   */
+  disabledAt?: string;
+  /**
+   * Earliest RFC3339 timestamp at which the host's background sweep is allowed to purge content for a disabled domain. Operators with administrative authority MAY override the wait via `domain/purge`.
+   */
+  purgeAt?: string;
+  ext?: Ext1;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/domain/enable/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DomainEnablePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/domain/enable/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DomainEnableResponsePayload;

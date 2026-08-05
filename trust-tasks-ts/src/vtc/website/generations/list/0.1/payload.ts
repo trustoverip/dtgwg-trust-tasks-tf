@@ -12,9 +12,28 @@ export interface VTCWebsiteGenerationsListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCWebsiteGenerationsListResponsePayload {
+  generations: {
+    /**
+     * Generation label (e.g. gen-5).
+     */
+    generation: string;
+    /**
+     * True for the generation current resolves to.
+     */
+    current: boolean;
+  }[];
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/website/generations/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCWebsiteGenerationsListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/website/generations/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCWebsiteGenerationsListResponsePayload;

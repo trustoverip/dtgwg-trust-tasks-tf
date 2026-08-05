@@ -23,9 +23,35 @@ export interface VTAContextDIDTemplateDeletePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Confirmation that the named context-scoped template was removed.
+ */
+export interface VTAContextDIDTemplateDeleteResponsePayload {
+  /**
+   * The template name that was removed; echoes the request `name`.
+   */
+  name: string;
+  /**
+   * True on successful removal.
+   */
+  deleted: boolean;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTAContextDIDTemplateDeletePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTAContextDIDTemplateDeleteResponsePayload;

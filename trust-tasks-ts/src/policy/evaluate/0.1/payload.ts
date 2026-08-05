@@ -94,9 +94,49 @@ export interface Service {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface PolicyEvaluateResponsePayload {
+  decision: PolicyDecision;
+  /**
+   * Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.
+   */
+  matchedPolicies?: string[];
+  /**
+   * Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.
+   */
+  trace?: string[];
+  ext?: Ext;
+}
+export interface PolicyDecision {
+  decision: "allow" | "deny" | "require_step_up";
+  /**
+   * When decision == "allow", whether the maintainer should proxy-login or release-for-fill. Default: proxy.
+   */
+  mode?: "proxy" | "fill";
+  /**
+   * When decision == "require_step_up", which method to demand.
+   */
+  stepUp?: {
+    method: "webauthn-uv" | "push-approval" | "totp";
+    ttlSeconds?: number;
+  };
+  /**
+   * When decision == "allow", maximum lifetime of the issued session blob / released secret.
+   */
+  ttlSecondsCap?: number;
+  /**
+   * Human-readable explanation for diagnostic display.
+   */
+  explanation?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = SiteTarget;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = PolicyEvaluateResponsePayload;

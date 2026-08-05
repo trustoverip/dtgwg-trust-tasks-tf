@@ -16,9 +16,43 @@ export interface MessagingPingPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.1#response.
+ */
+export interface MessagingPingResponsePayload {
+  /**
+   * The mediator's current time (RFC 3339). Advisory; not a trusted time source.
+   */
+  serverTime: string;
+  /**
+   * Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.
+   */
+  status: "ok" | "degraded";
+  /**
+   * The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.
+   */
+  protocols?: string[];
+  /**
+   * Echoed verbatim from the request when one was supplied.
+   */
+  nonce?: string;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/ping/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = MessagingPingPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/ping/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = MessagingPingResponsePayload;

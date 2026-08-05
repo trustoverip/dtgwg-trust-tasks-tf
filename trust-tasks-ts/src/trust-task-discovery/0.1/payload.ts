@@ -12,9 +12,42 @@ export interface TrustTaskDiscoveryPayload {
    */
   patterns?: string[];
 }
+/**
+ * List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.
+ */
+export interface TrustTaskDiscoveryResponsePayload {
+  /**
+   * Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.
+   */
+  supportedTypes: (
+    | string
+    | {
+        /**
+         * A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.
+         */
+        type: string;
+        /**
+         * Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.
+         *
+         * @minItems 1
+         */
+        requiredExt?: [string, ...string[]];
+      }
+  )[];
+  /**
+   * MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.
+   */
+  frameworkVersion?: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/trust-task-discovery/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = TrustTaskDiscoveryPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/trust-task-discovery/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = TrustTaskDiscoveryResponsePayload;

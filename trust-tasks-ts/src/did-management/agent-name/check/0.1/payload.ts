@@ -20,9 +20,34 @@ export interface DIDManagementCheckAgentNamePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DIDManagementCheckAgentNameResponsePayload {
+  /**
+   * The probed name's local part, echoed in canonical bare form (leading `@` stripped).
+   */
+  name: string;
+  /**
+   * The hosting domain the probe was evaluated against, after domain resolution.
+   */
+  domain: string;
+  /**
+   * Free to claim: neither reserved by the host nor already bound to a DID on this domain.
+   */
+  available: boolean;
+  /**
+   * On the host's reserved list (`admin`, `support`, …) — unavailable but well-formed, distinct from a grammar error (which is rejected as invalid_name).
+   */
+  reserved: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/agent-name/check/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DIDManagementCheckAgentNamePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/agent-name/check/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DIDManagementCheckAgentNameResponsePayload;

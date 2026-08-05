@@ -4,6 +4,11 @@
  */
 
 /**
+ * Resolved scope of the stored template.
+ */
+export type Scope = Builtin | Global | Context;
+
+/**
  * Replace an existing DID template scoped to a context on a VTA. Gated on the context's admin (or super-admin). `name` is the resource id within the context scope and MUST equal `template.name`. The VTA preserves the original createdAt/createdBy and advances updatedAt. The success response is the persisted DidTemplateRecord.
  */
 export interface VTAContextDIDTemplateUpdatePayload {
@@ -69,9 +74,56 @@ export interface DidTemplate {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The persisted DidTemplateRecord after replacement. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/get.
+ */
+export interface VTAContextDIDTemplateUpdateResponsePayload {
+  schemaVersion: 1;
+  name: string;
+  kind: string;
+  description?: string | null;
+  methods?: string[];
+  requiredVars?: string[];
+  optionalVars?: {
+    [k: string]: unknown | undefined;
+  };
+  defaults?: {
+    [k: string]: unknown | undefined;
+  };
+  document: {};
+  scope: Scope;
+  /**
+   * UTC unix-epoch seconds the template was first stored. Preserved across an update.
+   */
+  createdAt: number;
+  /**
+   * UTC unix-epoch seconds of the last write. Advanced by this update.
+   */
+  updatedAt: number;
+  /**
+   * DID of the admin who last wrote the template.
+   */
+  createdBy: string;
+}
+export interface Builtin {
+  type: "builtin";
+}
+export interface Global {
+  type: "global";
+}
+export interface Context {
+  type: "context";
+  contextId: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/update/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = Scope;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/update/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTAContextDIDTemplateUpdateResponsePayload;

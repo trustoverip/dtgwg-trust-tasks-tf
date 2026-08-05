@@ -19,9 +19,35 @@ export interface VTADIDTemplateDeletePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Confirmation that the named global template was removed.
+ */
+export interface VTADIDTemplateDeleteResponsePayload {
+  /**
+   * The deleted template's name, echoed for audit pipelines.
+   */
+  name: string;
+  /**
+   * Always true on success.
+   */
+  deleted: boolean;
+  ext?: Ext1;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/delete/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTADIDTemplateDeletePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/delete/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTADIDTemplateDeleteResponsePayload;

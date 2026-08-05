@@ -16,9 +16,31 @@ export interface VTCMembersRotateChallengePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersRotateChallengeResponsePayload {
+  /**
+   * A UUID identifying this rotation ceremony.
+   */
+  rotationId: string;
+  expiresAt: string;
+  /**
+   * Hex bytes the member signs with both the old and new keys to prove control of each.
+   */
+  signingPayloadHex: string;
+  /**
+   * The canonical rotation template the signatures cover (opaque here).
+   */
+  canonicalTemplate: {};
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/rotate-challenge/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersRotateChallengePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/rotate-challenge/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersRotateChallengeResponsePayload;

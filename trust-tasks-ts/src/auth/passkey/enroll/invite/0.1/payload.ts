@@ -35,9 +35,36 @@ export interface AuthPasskeyEnrollInvite {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.
+ */
+export interface AuthPasskeyEnrollInviteResponsePayload {
+  invite: {
+    /**
+     * Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.
+     */
+    token: string;
+    /**
+     * Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.
+     */
+    url: string;
+  };
+  /**
+   * Echo of the invitee's VID.
+   */
+  subject: string;
+  expiresAt: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthPasskeyEnrollInvite;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthPasskeyEnrollInviteResponsePayload;

@@ -14,9 +14,21 @@ export interface DomainUnassignPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface DomainUnassignResponsePayload {
+  instanceId: string;
+  domain: string;
+  status: "queued";
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/domain/unassign/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = DomainUnassignPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/domain/unassign/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = DomainUnassignResponsePayload;

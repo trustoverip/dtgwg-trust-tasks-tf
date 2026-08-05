@@ -16,9 +16,50 @@ export interface VTCJoinRequestsShowPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCJoinRequestsShowResponsePayload {
+  request: JoinRequest;
+  ext?: Ext;
+}
+/**
+ * One application to join a Verifiable Trust Community.
+ */
+export interface JoinRequest {
+  /**
+   * Stable id of this join request (a UUID).
+   */
+  id: string;
+  /**
+   * DID of the applicant.
+   */
+  applicantDid: string;
+  /**
+   * The W3C Verifiable Presentation the applicant submitted (opaque here).
+   */
+  vp: {};
+  submittedAt: string;
+  status: "pending" | "approved" | "rejected" | "withdrawn" | "deferred";
+  /**
+   * The community policy verdict recorded for this request (opaque here); absent while pending.
+   */
+  policyDecision?: {};
+  /**
+   * Whether the applicant consented to trust-registry publication.
+   */
+  registryConsent?: boolean;
+  /**
+   * Opaque community-defined extension bag.
+   */
+  extensions?: {};
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/show/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCJoinRequestsShowPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/show/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCJoinRequestsShowResponsePayload;

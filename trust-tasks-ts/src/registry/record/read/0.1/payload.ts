@@ -4,6 +4,11 @@
  */
 
 /**
+ * Whether the record asserts an authorization or a recognition relationship.
+ */
+export type RecordType = "authorization" | "recognition";
+
+/**
  * An administrator reads the full trust record identified by the four TRQP identifiers (both the recognized and authorized facets, unlike the filtered TRQP query responses).
  */
 export interface RegistryRecordReadPayload {
@@ -19,9 +24,27 @@ export interface RegistryRecordReadPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface RegistryRecordReadResponsePayloadATrustRecord {
+  entity_id: string;
+  authority_id: string;
+  action: string;
+  resource: string;
+  recognized?: boolean;
+  authorized?: boolean;
+  context?: {
+    [k: string]: unknown | undefined;
+  };
+  record_type: RecordType;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/read/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = RecordType;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/read/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = RegistryRecordReadResponsePayloadATrustRecord;

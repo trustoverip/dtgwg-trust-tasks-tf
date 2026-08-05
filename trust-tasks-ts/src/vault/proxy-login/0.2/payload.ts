@@ -7,6 +7,10 @@
  * Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).
  */
 export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
+/**
+ * Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`.
+ */
+export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
 
 /**
  * Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.
@@ -104,9 +108,61 @@ export interface StepUpProof {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VaultProxyLoginResponsePayload {
+  sealedSessionBlob: SealedEnvelope;
+  ext?: Ext;
+}
+/**
+ * DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.
+ *
+ * M2A is the only implementation today; this is also the canonical default for new code.
+ */
+export interface DidcommAuthcryptEnvelope {
+  envelope: "didcommAuthcrypt";
+  /**
+   * Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
+   */
+  jwe: string;
+}
+/**
+ * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.
+ *
+ * No open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.
+ */
+export interface HpkeArmoredEnvelope {
+  envelope: "hpkeArmored";
+  /**
+   * ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
+   */
+  armored: string;
+  /**
+   * did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.
+   */
+  recipientKeyId: string;
+  /**
+   * Producer-assertion mode per the sealed-transfer framework. `didSigned` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinnedOnly` = OOB SHA-256 digest only (dev/test, NOT for production).
+   */
+  producerAssertion?: "didSigned" | "attested" | "pinnedOnly";
+}
+/**
+ * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
+ */
+export interface TspMessageEnvelope {
+  envelope: "tspMessage";
+  /**
+   * Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
+   */
+  message: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/proxy-login/0.2" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = SiteTarget;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/proxy-login/0.2#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VaultProxyLoginResponsePayload;

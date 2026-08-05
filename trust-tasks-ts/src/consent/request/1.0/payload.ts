@@ -57,9 +57,33 @@ export interface ConsentSubject {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.
+ */
+export interface ConsentRequestResponsePayload {
+  /**
+   * `accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set.
+   */
+  status: "accepted" | "refused";
+  /**
+   * The VTA's id for the pending consent (set when accepted), for correlation and polling.
+   */
+  requestId?: string;
+  /**
+   * Required when status is `refused`.
+   */
+  reason?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/request/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = ConsentRequestPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/request/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = ConsentRequestResponsePayload;

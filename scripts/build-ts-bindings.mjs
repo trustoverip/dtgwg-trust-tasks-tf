@@ -8,7 +8,17 @@
 //
 // Each generated request file additionally exports:
 //   - TYPE_URI       — the Trust Task type URI (https://trusttasks.org/spec/<slug>/<version>)
-//   - RESPONSE_TYPE_URI — the response form (… + "#response"), if the schema has a Response def
+//   - RESPONSE_TYPE_URI — the response form (… + "#response"), emitted ONLY when
+//     the schema declares $defs.Response. A spec with no success response is
+//     fire-and-forget: SPEC.md §4.4.1 says its consumers MUST NOT emit a
+//     `#response`-variant document, so handing implementers a ready-made
+//     constant for one invites a conformance violation.
+//   - Payload / Response — stable type aliases for the request and response
+//     payload shapes. json-schema-to-typescript names the emitted interfaces
+//     from each schema's `title` (ACLGrantPayload, KeysSignPayload, …), so
+//     without these there is no name a consumer can rely on across specs and
+//     no way to write code generic over a Trust Task. They mirror the Rust
+//     bindings' uniform `Payload` / `Response` structs.
 //
 // Run from the repo root:
 //   npm run build-ts-bindings
@@ -24,7 +34,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { compileFromFile } from "json-schema-to-typescript";
+import { compile, compileFromFile } from "json-schema-to-typescript";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,26 +88,122 @@ function slugFromSchemaPath(schemaPath) {
   return { slug, version };
 }
 
-async function emitTypeUriHeader(outPath, slugInfo) {
-  if (!slugInfo) return ""; // shared schemas don't get URIs
+// Synthetic property name used to drag `$defs.Response` into the compiler's
+// reachability graph. Deliberately ugly so it cannot collide with a real
+// payload member; it is stripped from the output before the file is written.
+const RESPONSE_PROBE = "__ttResponseProbe";
+
+// Annotation keywords that do not constrain the instance, so a `$defs.Response`
+// carrying only these alongside `$ref` is a pure alias for its target.
+const RESPONSE_ANNOTATIONS = new Set(["$ref", "$anchor", "title", "description"]);
+
+/**
+ * The `$ref` the response probe should point at.
+ *
+ * Normally `#/$defs/Response`. But where `$defs.Response` is a bare alias for an
+ * external definition, we point the probe straight at that external target
+ * instead. Going through the local alias makes the resolver splice the foreign
+ * subschema into *this* document's context, after which the target's own
+ * internal refs (`#/$defs/Scope` in the vta/did-templates shared schema) are
+ * looked up against the wrong document and the compile dies. Referencing the
+ * external target directly is the same route every other cross-file `$ref` in
+ * the schema already takes, and resolves correctly.
+ */
+function responseProbeRef(response) {
+  const isPureAlias =
+    typeof response.$ref === "string" &&
+    Object.keys(response).every((k) => RESPONSE_ANNOTATIONS.has(k));
+  return isPureAlias ? { $ref: response.$ref } : { $ref: "#/$defs/Response" };
+}
+
+/** Name of the first interface/type the compiler emitted — always the root. */
+function rootTypeName(ts, schemaPath) {
+  const m = /^export (?:interface|type) ([A-Za-z0-9_$]+)/m.exec(ts);
+  if (!m) {
+    throw new Error(`${schemaPath}: compiled output declares no root type`);
+  }
+  return m[1];
+}
+
+/**
+ * Remove the synthetic response probe from the compiled output and return the
+ * TypeScript type it resolved to.
+ *
+ * The probe exists because `$defs.Response` is referenced by nothing in the
+ * schema — SPEC.md §4.4.1 addresses it out-of-band via the `response` anchor —
+ * and json-schema-to-typescript emits only what it can reach from the root. A
+ * plain compile therefore silently drops the response half of every
+ * request/response specification.
+ *
+ * Injecting the probe and compiling ONCE (rather than compiling the request and
+ * response halves separately) matters for correctness: the compiler
+ * de-duplicates structurally distinct types that share a name by appending a
+ * counter (`Ext`, `Ext1`, …). Two independent passes number those counters
+ * independently, so a name minted in the response pass could quietly denote a
+ * different shape than the identical name in the request pass.
+ */
+function stripResponseProbe(ts, schemaPath) {
+  const probe = new RegExp(`^[ \\t]*${RESPONSE_PROBE}\\?: (.+);[ \\t]*\\r?\\n`, "m");
+  const m = probe.exec(ts);
+  if (!m) {
+    throw new Error(
+      `${schemaPath}: response probe did not survive compilation — ` +
+        `$defs.Response could not be resolved to a TypeScript type`,
+    );
+  }
+  const stripped = ts.replace(probe, "");
+  if (probe.test(stripped)) {
+    throw new Error(`${schemaPath}: response probe matched more than once`);
+  }
+  return { ts: stripped, responseType: m[1] };
+}
+
+function emitTail(slugInfo, ts, rootType, responseType, schemaPath) {
+  if (!slugInfo) return ""; // shared schemas are not Trust Tasks
   const { slug, version } = slugInfo;
   const typeUri = `https://trusttasks.org/spec/${slug}/${version}`;
-  return [
+  const lines = [
     "",
     `/** Trust Task type URI. */`,
     `export const TYPE_URI = ${JSON.stringify(typeUri)} as const;`,
     "",
-    `/** Trust Task response type URI (request type URI + "#response"). */`,
-    `export const RESPONSE_TYPE_URI = ${JSON.stringify(typeUri + "#response")} as const;`,
-    "",
-  ].join("\n");
+    `/** Stable alias for this specification's request payload shape. */`,
+  ];
+  // If the compiler already named the root `Payload` the alias is redundant and
+  // would be a self-reference; anything else named `Payload` is a genuine clash
+  // we must not paper over.
+  if (rootType === "Payload") {
+    lines.push(`// (the root interface is already named \`Payload\`)`);
+  } else if (/^export (?:interface|type) Payload\b/m.test(ts)) {
+    throw new Error(`${schemaPath}: cannot alias Payload — the name is already taken`);
+  } else {
+    lines.push(`export type Payload = ${rootType};`);
+  }
+  lines.push("");
+
+  if (responseType && responseType !== "Response" && /^export (?:interface|type) Response\b/m.test(ts)) {
+    throw new Error(`${schemaPath}: cannot alias Response — the name is already taken`);
+  }
+  if (responseType) {
+    lines.push(
+      `/** Trust Task response type URI (request type URI + "#response"). */`,
+      `export const RESPONSE_TYPE_URI = ${JSON.stringify(typeUri + "#response")} as const;`,
+      "",
+      `/** Stable alias for this specification's success-response payload shape. */`,
+      ...(responseType === "Response"
+        ? [`// (the response interface is already named \`Response\`)`]
+        : [`export type Response = ${responseType};`]),
+      "",
+    );
+  }
+  return lines.join("\n");
 }
 
 async function generateOne(schemaPath) {
   const outPath = relativeOutPath(schemaPath);
   await ensureDir(path.dirname(outPath));
 
-  const ts = await compileFromFile(schemaPath, {
+  const opts = {
     cwd: path.dirname(schemaPath),
     bannerComment:
       "/**\n * Generated by scripts/build-ts-bindings.mjs — DO NOT EDIT BY HAND.\n * Source: " +
@@ -109,10 +215,26 @@ async function generateOne(schemaPath) {
     strictIndexSignatures: true,
     unknownAny: true,
     style: { singleQuote: false, semi: true },
-  });
+  };
+
+  const raw = JSON.parse(await fs.readFile(schemaPath, "utf8"));
+  const hasResponse = Boolean(raw?.$defs?.Response);
+
+  let ts;
+  let responseType = null;
+  if (hasResponse) {
+    const synthetic = {
+      ...raw,
+      properties: { ...raw.properties, [RESPONSE_PROBE]: responseProbeRef(raw.$defs.Response) },
+    };
+    ts = await compile(synthetic, path.basename(schemaPath), opts);
+    ({ ts, responseType } = stripResponseProbe(ts, schemaPath));
+  } else {
+    ts = await compileFromFile(schemaPath, opts);
+  }
 
   const slugInfo = slugFromSchemaPath(schemaPath);
-  const tail = await emitTypeUriHeader(outPath, slugInfo);
+  const tail = emitTail(slugInfo, ts, rootTypeName(ts, schemaPath), responseType, schemaPath);
   await fs.writeFile(outPath, ts + tail, "utf8");
   return { outPath, slugInfo };
 }

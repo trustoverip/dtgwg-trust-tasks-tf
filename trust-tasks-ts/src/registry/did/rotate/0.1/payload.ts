@@ -23,9 +23,30 @@ export interface RegistryDIDRotatePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface RegistryDIDRotateResponsePayload {
+  /**
+   * The DID whose keys were rotated.
+   */
+  did: string;
+  /**
+   * The DID's SCID after rotation.
+   */
+  new_scid: string;
+  /**
+   * The did:webvh log's new versionId after rotation.
+   */
+  new_version_id: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/did/rotate/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = RegistryDIDRotatePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/did/rotate/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = RegistryDIDRotateResponsePayload;

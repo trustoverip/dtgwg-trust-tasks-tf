@@ -23,9 +23,27 @@ export interface GovernanceCapabilityDisablePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface GovernanceCapabilityDisableResponsePayload {
+  capability: string;
+  /**
+   * False once the capability is inactive for the community.
+   */
+  enabled: boolean;
+  /**
+   * Additional human-readable detail.
+   */
+  message?: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/governance/capability/disable/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = GovernanceCapabilityDisablePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/governance/capability/disable/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = GovernanceCapabilityDisableResponsePayload;

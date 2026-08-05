@@ -24,9 +24,38 @@ export interface VTCAdminInvitesCreatePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCAdminInvitesCreateResponsePayload {
+  /**
+   * Invite identifier; the revoke target.
+   */
+  jti: string;
+  /**
+   * One-shot enrolment URL. Returned once and never retrievable again.
+   */
+  installUrl: string;
+  /**
+   * Secret that authorises the enrolment. Returned once.
+   */
+  claimCode: string;
+  /**
+   * When the invite lapses.
+   */
+  expiresAt: string;
+  /**
+   * True when the target DID had no ACL entry and one was created.
+   */
+  aclEntryCreated: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCAdminInvitesCreatePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/invites/create/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCAdminInvitesCreateResponsePayload;

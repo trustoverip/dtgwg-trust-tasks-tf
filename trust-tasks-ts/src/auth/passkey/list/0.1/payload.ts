@@ -15,9 +15,56 @@ export interface AuthPasskeyList {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/list/0.1#response.
+ */
+export interface AuthPasskeyListResponsePayload {
+  /**
+   * Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending.
+   */
+  credentials: RegisteredCredential[];
+  ext?: Ext1;
+}
+/**
+ * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.
+ */
+export interface RegisteredCredential {
+  /**
+   * Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.
+   */
+  credentialId: string;
+  /**
+   * Operator-facing label captured at enrollment (e.g. "Alice's MacBook Pro"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.
+   */
+  deviceLabel?: string;
+  /**
+   * WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.
+   */
+  transports?: string[];
+  /**
+   * When the credential was bound to the subject.
+   */
+  registeredAt: string;
+  /**
+   * When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise "usage is not tracked" SHOULD say so under `ext`.
+   */
+  lastUsedAt?: string;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AuthPasskeyList;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = AuthPasskeyListResponsePayload;

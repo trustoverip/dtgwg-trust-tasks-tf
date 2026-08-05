@@ -7,6 +7,14 @@
  * Role filter: return only accounts holding this role. Omitted = accounts of every role. Filtering on `admin` or `rootAdmin` enumerates the mediator's administrators.
  */
 export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
+/**
+ * The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept.
+ */
+export type Vid = string;
+/**
+ * The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
+ */
+export type AccountType1 = "standard" | "admin" | "rootAdmin" | "mediator";
 
 export interface MessagingListAccountsPayload {
   accountType?: AccountType;
@@ -26,9 +34,138 @@ export interface MessagingListAccountsPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a messaging/account/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/list/0.1#response.
+ */
+export interface MessagingListAccountsResponsePayload {
+  /**
+   * The page of served account views.
+   */
+  accounts: Account[];
+  /**
+   * Opaque continuation token. Present only when further accounts remain beyond this page; omitted on the final page.
+   */
+  nextCursor?: string;
+  ext?: Ext1;
+}
+/**
+ * The mediator's view of one served account.
+ */
+export interface Account {
+  did: Vid;
+  accountType: AccountType1;
+  acl: MediatorAcl;
+  queueLimits?: QueueLimits;
+  /**
+   * Current count of queued send messages.
+   */
+  sendQueueCount?: number;
+  /**
+   * Current byte size of queued send messages.
+   */
+  sendQueueBytes?: number;
+  /**
+   * Current count of queued receive messages.
+   */
+  receiveQueueCount?: number;
+  /**
+   * Current byte size of queued receive messages.
+   */
+  receiveQueueBytes?: number;
+  /**
+   * Number of entries in the account's access list.
+   */
+  accessListCount?: number;
+}
+/**
+ * The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
+ */
+export interface MediatorAcl {
+  /**
+   * How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
+   */
+  accessListMode?: "explicitAllow" | "explicitDeny";
+  /**
+   * The account is blocked from authenticating and transacting.
+   */
+  blocked?: boolean;
+  /**
+   * Messages for this account may be stored locally at this mediator for pickup.
+   */
+  local?: boolean;
+  /**
+   * May send direct messages through the mediator.
+   */
+  sendMessages?: boolean;
+  /**
+   * May receive direct messages.
+   */
+  receiveMessages?: boolean;
+  /**
+   * May send routing/forward (relay) messages.
+   */
+  sendForwarded?: boolean;
+  /**
+   * May be the next hop of a forwarded message.
+   */
+  receiveForwarded?: boolean;
+  /**
+   * May create out-of-band invitations.
+   */
+  createInvites?: boolean;
+  /**
+   * Accepts anonymous (no authenticated sender) messages.
+   */
+  anonReceive?: boolean;
+  /**
+   * May self-manage its own access list.
+   */
+  selfManageList?: boolean;
+  /**
+   * May self-manage its own send-queue limit.
+   */
+  selfManageSendQueueLimit?: boolean;
+  /**
+   * May self-manage its own receive-queue limit.
+   */
+  selfManageReceiveQueueLimit?: boolean;
+  /**
+   * The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.
+   */
+  didcommEnabled?: boolean;
+  /**
+   * The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.
+   */
+  tspEnabled?: boolean;
+}
+/**
+ * Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.
+ */
+export interface QueueLimits {
+  /**
+   * Maximum queued send messages; -1 = unlimited.
+   */
+  sendQueueLimit?: number;
+  /**
+   * Maximum queued receive messages; -1 = unlimited.
+   */
+  receiveQueueLimit?: number;
+}
+/**
+ * Ecosystem-defined extension members per SPEC.md §4.5.1.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/account/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = AccountType;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/account/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = MessagingListAccountsResponsePayload;

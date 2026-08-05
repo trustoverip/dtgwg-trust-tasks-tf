@@ -7,6 +7,18 @@
  * Return only keys in this lifecycle state. Omitted returns every state, including revoked keys.
  */
 export type KeyStatus = "active" | "revoked";
+/**
+ * Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).
+ */
+export type KeyType = "ed25519" | "x25519" | "p256";
+/**
+ * Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.
+ */
+export type KeyStatus1 = "active" | "revoked";
+/**
+ * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately.
+ */
+export type KeyOrigin = "derived" | "imported";
 
 export interface KeysListPayload {
   status?: KeyStatus;
@@ -30,9 +42,81 @@ export interface KeysListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The success response to a keys/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/list/0.1#response.
+ */
+export interface KeysListResponsePayload {
+  /**
+   * The page of records, in the custodian's own order.
+   */
+  keys: KeyRecord[];
+  /**
+   * How many records matched the filters in total. Required so a short page is never mistaken for the end of the set — the failure that makes a key audit or rotation sweep look complete when it is not.
+   */
+  total: number;
+  /**
+   * The offset this page starts at.
+   */
+  offset: number;
+  /**
+   * The page size actually applied, which MAY be smaller than the one requested.
+   */
+  limit: number;
+  ext?: Ext1;
+}
+export interface KeyRecord {
+  /**
+   * Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.
+   */
+  keyId: string;
+  keyType: KeyType;
+  status: KeyStatus1;
+  /**
+   * The public half, multibase-encoded. The private half is never carried by any keys/* response.
+   */
+  publicKey: string;
+  /**
+   * Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.
+   */
+  derivationPath?: string;
+  /**
+   * Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.
+   */
+  seedId?: number;
+  origin?: KeyOrigin;
+  /**
+   * Optional human-readable label. Operator-facing only; carries no authorization meaning.
+   */
+  label?: string;
+  /**
+   * Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.
+   */
+  contextId?: string;
+  /**
+   * RFC 3339 timestamp at which the key was created or imported.
+   */
+  createdAt: string;
+  /**
+   * RFC 3339 timestamp of the last change to the record (rename, revocation).
+   */
+  updatedAt?: string;
+  ext?: Ext1;
+}
+/**
+ * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+ */
+export interface Ext1 {
+  [k: string]: unknown | undefined;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = KeyStatus;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/keys/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = KeysListResponsePayload;

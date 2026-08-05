@@ -12,9 +12,52 @@ export interface VTCCeremoniesListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCCeremoniesListResponsePayload {
+  /**
+   * Every ceremony this maintainer implements.
+   */
+  ceremonies: CeremonyManifest[];
+  ext?: Ext;
+}
+export interface CeremonyManifest {
+  /**
+   * Governance purpose this ceremony decides, e.g. join, removal.
+   */
+  purpose: string;
+  /**
+   * Policy package backing the decision.
+   */
+  pkg?: string;
+  /**
+   * Whether the ceremony is automatic, operator-driven, or advisory.
+   */
+  nature: string;
+  /**
+   * Human-readable name for an operator UI.
+   */
+  label: string;
+  /**
+   * Whether the ceremony is actually reachable in this deployment.
+   */
+  wired?: string;
+  /**
+   * One-line explanation shown beside the label.
+   */
+  blurb?: string;
+  /**
+   * Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.
+   */
+  fields?: {}[];
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/ceremonies/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCCeremoniesListPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/ceremonies/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCCeremoniesListResponsePayload;

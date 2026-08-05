@@ -16,9 +16,34 @@ export interface VTCRecognitionCheckPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCRecognitionCheckResponsePayload {
+  /**
+   * The probed DID, echoed.
+   */
+  did: string;
+  /**
+   * Whether the community recognises this DID. Meaningless unless registryConfigured is true.
+   */
+  recognised: boolean;
+  /**
+   * Whether a trust registry backs the answer. False makes `recognised` indeterminate, not negative.
+   */
+  registryConfigured: boolean;
+  /**
+   * Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one.
+   */
+  error?: string | null;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/recognition/check/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCRecognitionCheckPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/recognition/check/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCRecognitionCheckResponsePayload;

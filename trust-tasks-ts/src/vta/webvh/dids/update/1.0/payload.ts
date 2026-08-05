@@ -49,9 +49,43 @@ export interface WebVHDIDUpdatePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+/**
+ * The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.
+ */
+export interface WebVHDIDUpdateResponsePayload {
+  did: string;
+  /**
+   * versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`.
+   */
+  newVersionId: string;
+  newScid?: string;
+  /**
+   * The appended log entry, as JSON text.
+   */
+  newLogEntry?: string;
+  /**
+   * Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything.
+   */
+  updateKeysCount?: number;
+  /**
+   * Pre-rotation commitments published by this entry.
+   */
+  preRotationKeyCount?: number;
+  /**
+   * True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`.
+   */
+  serverless?: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = WebVHDIDUpdatePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = WebVHDIDUpdateResponsePayload;

@@ -16,9 +16,27 @@ export interface VTCWebsiteRollbackPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCWebsiteRollbackResponsePayload {
+  generation: string;
+  /**
+   * True once this generation is the active one.
+   */
+  current: boolean;
+  /**
+   * True when the requested generation was already current — nothing changed.
+   */
+  noop: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/website/rollback/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCWebsiteRollbackPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/website/rollback/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCWebsiteRollbackResponsePayload;

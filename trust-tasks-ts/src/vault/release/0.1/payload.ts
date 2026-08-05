@@ -7,6 +7,22 @@
  * Optional — for entries with multiple targets, indicates which one the consumer is acting against. The maintainer's policy may decide release based on the target (e.g. release for web origin allowed, release for iOS app denied).
  */
 export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
+/**
+ * Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelope_unsupported`.
+ */
+export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
+/**
+ * Discriminator so the consumer can pre-allocate the right type before unsealing.
+ */
+export type SecretKind =
+  | "password"
+  | "passkey"
+  | "oauth-tokens"
+  | "did-self-issued"
+  | "didcomm-peer"
+  | "bearer-token"
+  | "ssh-key"
+  | "custom";
 
 /**
  * Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:not_proxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).
@@ -97,9 +113,66 @@ export interface StepUpProof {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VaultReleaseResponsePayload {
+  sealedSecret: SealedEnvelope;
+  secretKind: SecretKind;
+  /**
+   * Cache TTL the consumer MUST enforce — wipe the cleartext after this many seconds, even if the user has not finished interacting with it.
+   */
+  ttlSeconds: number;
+  ext?: Ext;
+}
+/**
+ * DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.
+ *
+ * M2A is the only implementation today; this is also the canonical default for new code.
+ */
+export interface DidcommAuthcryptEnvelope {
+  envelope: "didcomm-authcrypt";
+  /**
+   * Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
+   */
+  jwe: string;
+}
+/**
+ * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.
+ *
+ * No open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.
+ */
+export interface HpkeArmoredEnvelope {
+  envelope: "hpke-armored";
+  /**
+   * ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
+   */
+  armored: string;
+  /**
+   * did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.
+   */
+  recipientKeyId: string;
+  /**
+   * Producer-assertion mode per the sealed-transfer framework. `did-signed` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinned-only` = OOB SHA-256 digest only (dev/test, NOT for production).
+   */
+  producerAssertion?: "did-signed" | "attested" | "pinned-only";
+}
+/**
+ * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
+ */
+export interface TspMessageEnvelope {
+  envelope: "tsp-message";
+  /**
+   * Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
+   */
+  message: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/release/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = SiteTarget;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/release/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VaultReleaseResponsePayload;

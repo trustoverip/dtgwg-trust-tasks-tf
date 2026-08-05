@@ -67,9 +67,71 @@ export interface CommunityProfileSnapshot {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCConfigImportResponsePayload {
+  /**
+   * `preview` when `confirm` was not set; `imported` after the document was applied.
+   */
+  status: "preview" | "imported";
+  /**
+   * Community-profile members that differ from what is in force. Empty when the document omits `communityProfile`, or when nothing differs. On `imported` these are the changes that were written.
+   */
+  profileChanges: ConfigFieldChange[];
+  /**
+   * Configuration-override keys that differ from what is in force. Rejected keys are not listed here — they appear under `rejected`. On `imported` these are the changes that were written.
+   */
+  overrideChanges: ConfigFieldChange[];
+  /**
+   * Applied keys whose new value takes effect only after a restart. Reported on a preview too, so an operator learns before confirming that the import implies downtime.
+   */
+  pendingRestart?: string[];
+  /**
+   * Keys the consumer declined — unknown to its configuration registry, wrong type, out of range. Reported identically on preview and apply, so a preview surfaces every rejection before anything is written.
+   */
+  rejected: RejectedKey[];
+  ext?: Ext;
+}
+/**
+ * One field an import would change, or did.
+ *
+ * `oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means "leave the live value alone" rather than "clear it"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.
+ */
+export interface ConfigFieldChange {
+  /**
+   * The profile member or configuration key, e.g. `name` or `log.level`.
+   */
+  key: string;
+  /**
+   * Value in force before the import. Absent when the field is unset.
+   */
+  oldValue?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Value the imported document carries. Absent when the document omits the field.
+   */
+  newValue?: {
+    [k: string]: unknown | undefined;
+  };
+}
+/**
+ * A key a patch declined to apply, with the reason.
+ */
+export interface RejectedKey {
+  key: string;
+  /**
+   * Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
+   */
+  reason: string;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/config/import/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCConfigImportPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/config/import/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCConfigImportResponsePayload;

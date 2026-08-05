@@ -26,9 +26,36 @@ export interface VTCPoliciesTestPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCPoliciesTestResponsePayload {
+  /**
+   * The evaluated module's identifier.
+   */
+  id: string;
+  /**
+   * Governance purpose the module is classified under.
+   */
+  purpose: string;
+  /**
+   * Digest of the evaluated module, so a caller can confirm which bytes ran.
+   */
+  sha256: string;
+  /**
+   * Raw result of the queried rule, uninterpreted. May be any JSON value, including absent-as-null.
+   */
+  result: {
+    [k: string]: unknown | undefined;
+  };
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/policies/test/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCPoliciesTestPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/policies/test/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCPoliciesTestResponsePayload;

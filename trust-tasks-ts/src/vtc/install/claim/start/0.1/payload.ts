@@ -16,9 +16,30 @@ export interface VTCInstallClaimStartPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCInstallClaimStartResponsePayload {
+  /**
+   * Echoes the install token's jti (a UUID); pass it back to claim/finish.
+   */
+  registrationId: string;
+  /**
+   * WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}].
+   */
+  options: {};
+  /**
+   * Base64url-no-pad 32 random bytes the candidate did:key must sign.
+   */
+  didBindingChallenge: string;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/install/claim/start/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCInstallClaimStartPayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/install/claim/start/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCInstallClaimStartResponsePayload;

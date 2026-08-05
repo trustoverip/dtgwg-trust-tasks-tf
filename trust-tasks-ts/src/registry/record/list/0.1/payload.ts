@@ -4,6 +4,11 @@
  */
 
 /**
+ * Whether the record asserts an authorization or a recognition relationship.
+ */
+export type RecordType = "authorization" | "recognition";
+
+/**
  * An administrator lists all trust records held by the registry.
  */
 export interface RegistryRecordListPayload {
@@ -15,9 +20,43 @@ export interface RegistryRecordListPayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface RegistryRecordListResponsePayload {
+  /**
+   * All trust records held by the registry.
+   */
+  records: TrustRecord[];
+  ext?: Ext;
+}
+export interface TrustRecord {
+  entity_id: string;
+  authority_id: string;
+  action: string;
+  resource: string;
+  /**
+   * Present on recognition records: whether the action+resource is recognised.
+   */
+  recognized?: boolean;
+  /**
+   * Present on authorization records: whether the action+resource authorization is confirmed.
+   */
+  authorized?: boolean;
+  /**
+   * Opaque governance context attached to the record.
+   */
+  context?: {
+    [k: string]: unknown | undefined;
+  };
+  record_type: RecordType;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/list/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = RecordType;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/list/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = RegistryRecordListResponsePayload;

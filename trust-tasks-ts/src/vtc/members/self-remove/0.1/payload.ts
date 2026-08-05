@@ -16,9 +16,27 @@ export interface VTCMembersSelfRemovePayload {
 export interface Ext {
   [k: string]: unknown | undefined;
 }
+export interface VTCMembersSelfRemoveResponsePayload {
+  /**
+   * The removed member (the caller).
+   */
+  did: string;
+  /**
+   * The disposition actually applied (policydefault resolved to a concrete one).
+   */
+  disposition: "purge" | "tombstone" | "historical";
+  removed: boolean;
+  ext?: Ext;
+}
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/self-remove/0.1" as const;
 
+/** Stable alias for this specification's request payload shape. */
+export type Payload = VTCMembersSelfRemovePayload;
+
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/self-remove/0.1#response" as const;
+
+/** Stable alias for this specification's success-response payload shape. */
+export type Response = VTCMembersSelfRemoveResponsePayload;
