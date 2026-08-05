@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.56] — 2026-08-05
+
+### Security
+- **Twelve specifications that act with the subject's authority, release secret
+  material, or destroy state now declare `proof` REQUIRED.** `keys/sign`,
+  `keys/derive-and-sign`, `keys/derive-and-sign-document`, `audit/list`,
+  `credential-exchange/{issue,present,request}`, `vtc/auth/admin-session`,
+  `vtc/members/{personhood/assert,renew,rotate-challenge}` and
+  `webvh/sync/delete` previously declared `OPTIONAL` or `RECOMMENDED`, so
+  `IS_PROOF_REQUIRED` generated as `false` and `consume_inbound` accepted a
+  proofless document against a signing oracle, a session mint, or an
+  irreversible delete.
+
+  SPEC §7.3 item 8 already said a declaration **MUST NOT** be weaker than the
+  §4.7.1 default, but that could never be checked: §4.7.1's default is a
+  function of the *transport*, which a specification does not know when it is
+  authored. `scripts/build-registry.mjs` now derives the floor from the
+  declarations a spec does make — `sideEffects.level: destructive`,
+  `exposure.discloses: secret`, or `exposure.actsAsSubject: true` require
+  `proofRequirement.requirement: REQUIRED` — and fails the build otherwise.
+  This does not conflict with the side-effect and exposure classes being
+  "descriptive, not prescriptive": that rule forbids deriving a *consent*
+  requirement from them, and an integrity floor constrains how a document is
+  authenticated, not whether a human must approve it.
+
+  **This is a behavioural change for consumers of those twelve specs.** A
+  document previously accepted without a `proof` is now rejected with
+  `proofRequired`. All twelve are `draft`, where SPEC §5.2 permits schema and
+  prose to change in place without notice, so no new version folders were
+  minted. Producers must attach a proof, and because §7.2 item 8 then applies
+  they must also carry an in-band `recipient` — none of the twelve is a bearer
+  specification.
+
+### Fixed
+- Corrected the `Payload::extended_code` grammar doc, which described the local
+  part of an extended error code as lowercase-only. `validate_local` accepts
+  interior uppercase, as it must: SPEC §4.10 item 4 prefers lowerCamelCase
+  locals and only the first character is required to be lowercase.
+- Merged the two changelog entries that both claimed `0.2.54`, and removed the
+  `0.2.55` entry that had been duplicated verbatim above them — the residue of
+  the #170/#171 version collision described below.
+
 ## [0.2.55] — 2026-08-01
 
 ### Fixed
@@ -51,29 +93,6 @@ the corresponding `SPEC.md` framework version.
   into a shared schema; the registry build resolves and inlines it, so
   `registry.json` consumers see the full fragment as before. No generated-code
   effect — the code generators do not read `errorCodes`.
-
-## [0.2.55] — 2026-08-01
-
-### Fixed
-- **Republish of 0.2.54's content, which never shipped.** #170 and #171 both
-  claimed version `0.2.54`; #170 merged first and published it, so when #171
-  merged the publish workflow found `0.2.54` already on crates.io and skipped —
-  correctly, and silently, reporting success. The result was a registry whose
-  `main` carried `vta/webvh/servers/domains/0.1` while the published crate did
-  not, so a consumer binding the task got an unresolved module path rather than
-  any signal that the spec was missing.
-
-  No spec content changes here. This is the version bump that lets the workflow
-  ship what is already on `main`.
-
-  **Claiming a library version at authoring time is what makes this possible.**
-  Two PRs in flight take the same number, and the second one's content
-  disappears at merge with a green check. The version is only safe to set when a
-  PR is next to merge.
-
-## [0.2.54] — 2026-08-01
-
-### Added
 - **`vta/webvh/servers/domains/0.1`** — an agent relays a hosting server's
   caller-scoped domain view. The response items `$ref` the existing
   `did-management/_shared/0.1/domain-entry#DomainEntry` rather than restating

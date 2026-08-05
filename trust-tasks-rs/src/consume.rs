@@ -792,12 +792,6 @@ mod tests {
     /// (an addressed error would itself be an oracle).
     #[tokio::test]
     async fn identity_mismatch_with_no_transport_sender_is_suppressed() {
-        use crate::handlers::InMemoryHandler;
-        // Transport authenticates a peer; in-band claims a different
-        // issuer. resolve_parties returns IssuerMismatch.
-        let transport = InMemoryHandler::new()
-            .with_local("did:web:maintainer.example")
-            .with_peer("did:web:org.example");
         let mut doc = TrustTask::for_payload(
             "req-im-1",
             crate::specs::acl::list::v0_1::Payload {
@@ -813,21 +807,13 @@ mod tests {
         doc.issuer = Some("did:web:attacker.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
 
-        // To suppress, the transport's derive_parties must report no
-        // sender. NoopHandler is the right fixture for that — but then
-        // resolve_parties never fires identity_mismatch (both sides
-        // empty). So we construct a custom no-sender-but-mismatch case
-        // by using InMemoryHandler with `peer = None`: the in-band
-        // claims attacker.example, the transport authenticated nobody,
-        // and the doc's in-band issuer is "consistent" with the
-        // transport (no transport-derived value).
-        //
-        // Wait — that doesn't produce IdentityMismatch either. To
-        // exercise Suppressed precisely we need a mismatch (peer set)
-        // *and* derive_parties reporting nothing. That's a
-        // contradiction. The clean test is to construct a transport
-        // that flags the mismatch on resolve but reports no sender on
-        // derive_parties. Build one inline.
+        // Reaching Suppressed needs two things at once: resolve_parties
+        // must flag a mismatch, and derive_parties must report no
+        // transport-authenticated sender to address the error to. No
+        // stock fixture does both — NoopHandler reports no sender but
+        // never flags a mismatch, and InMemoryHandler flags a mismatch
+        // only once a peer is set, which is itself the sender. So the
+        // combination is built inline.
 
         struct MismatchingNoSenderTransport;
         impl crate::TransportHandler for MismatchingNoSenderTransport {
@@ -876,10 +862,6 @@ mod tests {
                 },
             )
             .await;
-
-        // Drop the unused transport instance; `_ = transport` keeps
-        // the earlier construction valid in case lint catches it.
-        let _ = transport;
 
         assert!(
             matches!(outcome, ConsumeOutcome::Suppressed),

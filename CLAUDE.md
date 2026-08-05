@@ -17,8 +17,8 @@ range). Verify with `git log -1 --format='%(trailers:key=Signed-off-by)'`.
 
 ## ⚠️ Adding or changing a spec category — TWO files must stay in sync
 
-The category taxonomy lives in **two hand-maintained places** and nothing in CI
-forces them to agree. When you add or rename a category you MUST update both:
+The category taxonomy lives in **two hand-maintained places**. When you add or
+rename a category you MUST update both:
 
 1. `specs/spec.meta.schema.json` → `#/properties/category` enum (the build
    validates every spec's `category` against this).
@@ -35,15 +35,19 @@ forces them to agree. When you add or rename a category you MUST update both:
   unknown category (`TypeError`, white screen).
 
 This is exactly how `chat/message/1.0` shipped "broken" on the live site. Keep the
-two lists in lockstep.
+two lists in lockstep. `checkCategoryTaxonomy()` in `scripts/build-registry.mjs`
+now **fails the build** on an enum entry missing from `data.js` (and warns on the
+reverse), so CI catches this — but the two files are still edited by hand.
 
 ## ⚠️ Changing a spec or payload schema — bump and republish the libraries
 
 The Rust and TS client libraries are generated from the specs. When you add or
 change anything under `specs/` (a new task, a schema edit, a new category used by a
 task), you MUST regenerate the bindings and bump the library versions. Both must be
-done together — the codegen-drift CI only guards the **Rust** side, so the TS
-bindings and the version bumps are easy to forget (see PR #85 → #86).
+done together. Drift CI now guards **both** sides — `rust.yml` has `codegen-drift`
+and `ts.yml` has `bindings-drift` (added after PR #85 → #86, where only Rust was
+regenerated) — but nothing checks that you bumped the versions, so that part is
+still easy to forget.
 
 **Publishing itself is automated.** `.github/workflows/publish.yml` runs on every
 push to `main` and publishes each library to its registry — the four `publish = true`

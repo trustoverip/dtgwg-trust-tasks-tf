@@ -118,8 +118,12 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// enforced by construction.
     ///
     /// `local` is validated against `spec.meta.schema.json`'s
-    /// `errorCodes[].code` grammar (the part after the colon: lowercase
-    /// letter, then lowercase letters / digits / underscores). Panics on
+    /// `errorCodes[].code` grammar (the part after the colon: a lowercase
+    /// letter, then letters of either case, digits, or underscores).
+    /// Both casings are accepted so that framework 0.2 lowerCamelCase
+    /// locals (`documentRevoked`) and frozen framework 0.1 snake_case
+    /// locals (`document_revoked`) parse under one rule; SPEC §4.10 item 4
+    /// **SHOULD**s lowerCamelCase for new specifications. Panics on
     /// an invalid `local` — this method is for static call-site usage;
     /// callers handling runtime input should use
     /// [`TrustTaskCode::new_extended`] and propagate the `Result`.
@@ -172,10 +176,13 @@ mod tests {
     #[test]
     #[should_panic(expected = "failed validation")]
     fn extended_code_panics_on_invalid_local() {
-        // Capital letters violate the `errorCodes[].code` grammar — the
-        // resulting Extended would fail to round-trip through FromStr.
-        // The trait method panics so a static-string bug fails loudly
-        // instead of silently producing a code that fails parsing later.
+        // A *leading* capital violates the `errorCodes[].code` grammar —
+        // the resulting Extended would fail to round-trip through FromStr.
+        // (Interior capitals are fine: lowerCamelCase locals are the
+        // SPEC §4.10 preference. It is only the first character that must
+        // be lowercase.) The trait method panics so a static-string bug
+        // fails loudly instead of silently producing a code that fails
+        // parsing later.
         let _ = grant::Payload::extended_code("BadLocal");
     }
 
