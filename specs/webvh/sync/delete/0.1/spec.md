@@ -17,8 +17,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: Same trust model as `webvh/sync/update` — Service-role authentication binds the producer; a transport-independent proof is useful for audit but not required for steady-state replication.
+  requirement: REQUIRED
+  rationale: Where `webvh/sync/update` is recoverable replication, this task is not. The effect is destructive — the hosting server removes the DID's content, and there is no counterpart task that puts it back — so it is held to a higher bar than the rest of the sync family. Service-role authentication binds the producer only to the immediate peer and leaves nothing behind, meaning a deletion could not afterwards be attributed to whoever ordered it. Forged or repudiated deletion is the threat addressed.
 sideEffects:
   level: destructive
   rationale: "Replicates a DID deletion to a hosting server; the server removes the DID's content."

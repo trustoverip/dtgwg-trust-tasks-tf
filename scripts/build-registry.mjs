@@ -401,6 +401,56 @@ function checkCategoryTaxonomy() {
   }
 }
 
+/*
+ * SPEC §7.3 item 8 requires a specification's declared `proof` requirement to be
+ * "no weaker than the default applicable under §4.7.1". That constraint cannot
+ * be checked as written: §4.7.1's default is a function of the *transport*
+ * (MAY omit over an authenticated channel, SHOULD otherwise, MUST where the
+ * document will be relied on by third parties), and a specification does not
+ * know its transport at authoring time. So nothing ever enforced it, and specs
+ * that exercise a subject's authority or release secrets shipped with the proof
+ * member merely RECOMMENDED.
+ *
+ * This derives the floor from the declarations the spec *does* make — the
+ * side-effect class (item 13) and exposure class (item 14) — which is the one
+ * signal available statically:
+ *
+ *   sideEffects.level == destructive   — irreversible or authority-shifting
+ *   exposure.discloses == secret       — confidential material leaves the recipient
+ *   exposure.actsAsSubject == true     — the subject's own authority is exercised
+ *
+ * Any of those and `proof` MUST be REQUIRED. Note this does not conflict with
+ * items 13/14 being "descriptive, not prescriptive": that rule forbids deriving
+ * a *consent or approval* requirement from the class. An integrity floor is a
+ * different thing — it constrains how the document is authenticated, not
+ * whether a human must approve it.
+ */
+function checkProofFloor(meta, rel) {
+  const requirement = meta.proofRequirement?.requirement;
+  if (requirement === 'REQUIRED') return;
+
+  const triggers = [];
+  if (meta.sideEffects?.level === 'destructive') {
+    triggers.push('sideEffects.level: destructive');
+  }
+  if (meta.exposure?.discloses === 'secret') {
+    triggers.push('exposure.discloses: secret');
+  }
+  if (meta.exposure?.actsAsSubject === true) {
+    triggers.push('exposure.actsAsSubject: true');
+  }
+  if (triggers.length === 0) return;
+
+  fail(
+    `${rel}/spec.md`,
+    `proofRequirement.requirement is '${requirement}' but the spec declares ` +
+      `${triggers.join(' and ')}. A task that is irreversible, releases secrets, or acts ` +
+      `with the subject's authority MUST declare proof REQUIRED — an unproven request to ` +
+      `such a task is a forgery vector, and §7.2 item 7 only rejects proofless documents ` +
+      `for specs that declare REQUIRED. See SPEC §7.3 item 8 and §4.7.1.`
+  );
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -686,6 +736,7 @@ function main() {
     if (meta.status === 'retired' && !meta.supersededBy) {
       warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
+    checkProofFloor(meta, rel);
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
       fail(rel, `duplicate slug+version ${idKey}`);

@@ -21,8 +21,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: Read-only inventory of the audit tail. Recommended so the read is itself attributable.
+  requirement: REQUIRED
+  rationale: The response discloses the audit tail, which is confidential material the caller retains, so both halves of the exchange must be attributable and tamper-evident. On the request side a proof binds who asked for the tail; on the response side it lets the returned records be relied on as evidence by a party that was not present at the read. An audit log that cannot be attributed to the consumer that produced it is not audit evidence, and an unproven request leaves no record of who obtained it.
 sideEffects:
   level: none
   rationale: "Reads the audit log; persists nothing."

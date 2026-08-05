@@ -23,8 +23,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: OPTIONAL
-  rationale: The `vp_token` already carries holder binding over the verifier's nonce and audience — that is the proof that matters, and it is inside the body rather than on the envelope. A document proof would attest the sender again without strengthening the presentation.
+  requirement: REQUIRED
+  rationale: The `vp_token` already carries holder binding over the verifier's nonce and audience, and that remains the proof that establishes the presentation — an envelope proof does not strengthen it. The envelope proof is required for a different reason. Execution exercises the subject's own authority and the response discloses secret material the caller retains, so the exchange is one a third party may later be asked to rely on, which is the case §4.7.1 makes a MUST. Without a document proof the transaction as a whole is repudiable even though the presentation inside it is not, and an intermediary can relay a genuine `vp_token` under an envelope of its own.
 sideEffects:
   level: none
   rationale: Presenting asserts; it does not mutate the verifier. Any record the verifier keeps is its own.

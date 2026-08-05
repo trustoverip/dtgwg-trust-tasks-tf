@@ -22,8 +22,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: The credential inside carries its own issuer signature, so a document proof is not what makes it trustworthy. It is RECOMMENDED rather than OPTIONAL because this message delivers an asset — a holder that receives an unexpected credential should be able to attribute the delivery itself, not only the credential's issuer, which may be a different party on a relayed path.
+  requirement: REQUIRED
+  rationale: The credential inside carries its own issuer signature, so a document proof is not what makes the credential trustworthy — that reasoning stands. What it does not cover is the delivery. This message hands over an asset, and on a relayed path the delivering party may not be the credential's issuer, so a holder receiving an unexpected credential has no way to attribute the delivery itself without an envelope proof. Repudiation of the hand-off, and substitution by an intermediary that re-wraps a genuine credential into a delivery it did not make, are the threats addressed.
 sideEffects:
   level: mutating
   rationale: The holder receives the credential into its wallet. Recoverable — a credential can be deleted, and re-issuance is an ordinary flow.

@@ -21,8 +21,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: The carried Verifiable Presentation is the personhood evidence, gated by its own proof over the challenge; a framework proof adds session attribution but is not the gate.
+  requirement: REQUIRED
+  rationale: The carried Verifiable Presentation remains the personhood evidence, gated by its own proof over the challenge — the framework proof is not that gate and does not replace it. It is required because execution acts with the subject's authority to set a personhood flag and re-issue their credentials, so the request must be attributable to the party that made it. Replay of a captured VP under a different envelope, and repudiation of the assertion afterwards, are the threats addressed.
 sideEffects:
   level: mutating
   rationale: "Sets the member's personhood flag and re-issues their credentials; reversible via personhood/revoke."

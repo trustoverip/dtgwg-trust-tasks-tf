@@ -173,6 +173,7 @@ pub struct Payload {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/credential-exchange/request/0.1";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]

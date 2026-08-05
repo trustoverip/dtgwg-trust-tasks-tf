@@ -21,8 +21,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: A member renewing their own membership is gated by the authenticated session; a proof adds attribution but is not required for a self-service refresh.
+  requirement: REQUIRED
+  rationale: A member renewing their own membership is gated by the authenticated session, but the session authenticates only to the immediate consumer. Execution re-issues the member's membership and role credentials under their own authority, producing durable artefacts that third parties verify long after the session has gone, so the request that caused them must remain attributable. Session hijack and later repudiation of the renewal are the threats addressed.
 sideEffects:
   level: mutating
   rationale: "Re-issues the member's membership and role credentials; recoverable by renewing again."

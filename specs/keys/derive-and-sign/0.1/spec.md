@@ -22,8 +22,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: As with keys/sign, the custodian is exercising a private key on the producer's say-so and must be able to attribute the request. The derived key is reachable by path rather than by stored identifier, so the custodian's policy has one less handle to check against — making producer authentication more important, not less.
+  requirement: REQUIRED
+  rationale: As with keys/sign, the custodian is exercising a private key on the producer's say-so and must be able to attribute the request. The derived key is reachable by path rather than by stored identifier, so the custodian's policy has one less handle to check against — making producer authentication more important, not less, and leaving the proof as the load-bearing control. Forgery of the request is the threat, and the resulting signature is a durable artefact relied on by parties beyond this exchange.
 sideEffects:
   level: none
   rationale: "No key record is created and no stored state changes; the derived key is used and discarded. The signature is a durable artefact."

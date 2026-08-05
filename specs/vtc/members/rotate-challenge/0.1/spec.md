@@ -21,8 +21,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: Opening the ceremony only issues a challenge; the binding proof is the paired old/new signatures presented to vtc/members/rotate.
+  requirement: REQUIRED
+  rationale: The binding proof for the rotation itself remains the paired old/new signatures presented to vtc/members/rotate — that is unchanged. Opening the ceremony is nonetheless an act taken under the subject's authority against their key material, and an unattributable open lets anyone who can reach the endpoint mint rotation challenges in a member's name, which is a denial-of-rotation and phishing surface even though the challenge alone confers nothing. The proof binds the open to the party entitled to make it.
 sideEffects:
   level: none
   rationale: "Issues a single-use rotation challenge; the ceremony is completed by a separate task."

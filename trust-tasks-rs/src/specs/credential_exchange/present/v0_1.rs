@@ -203,6 +203,7 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/credential-exchange/present/0.1";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]

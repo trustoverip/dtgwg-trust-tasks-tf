@@ -22,8 +22,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: OPTIONAL
-  rationale: The presented access token is itself the credential; it was minted against a proven identity.
+  requirement: REQUIRED
+  rationale: The presented access token was minted against a proven identity, but the token is a bearer artefact — anyone who obtains it can replay it, and the envelope proof is what binds the presentation to the party entitled to make it. Execution mints an admin session in the subject's name and returns secret session material the caller retains, so token theft and replay are the threats addressed. Requiring the proof also brings the audience-binding rule of §4.8.2 into force, which pins the session to a named recipient rather than to whoever presents the token.
 sideEffects:
   level: mutating
   rationale: "Mints a cookie-backed session bound to the token's identity."

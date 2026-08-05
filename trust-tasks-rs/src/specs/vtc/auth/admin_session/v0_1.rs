@@ -356,11 +356,13 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSessionId {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/auth/admin-session/0.1";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str =
         "https://trusttasks.org/spec/vtc/auth/admin-session/0.1#response";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
 }
 #[cfg(feature = "validate")]

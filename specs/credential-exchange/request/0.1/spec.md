@@ -22,8 +22,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: OPTIONAL
-  rationale: An authcrypted transport already proves which DID sent the request. Note that the OID4VCI key-binding proof inside the body is a *different* thing and is always required by OID4VCI itself — it binds the credential to a holder key, where a document proof would only re-attest the sender. Conflating the two is the mistake this rationale exists to prevent.
+  requirement: REQUIRED
+  rationale: The OID4VCI key-binding proof inside the body is a *different* thing from the document proof and is always required by OID4VCI itself — it binds the credential to a holder key, where a document proof attests the sender. Conflating the two is the mistake this rationale exists to prevent, and requiring both is what keeps them distinct. The document proof is required because execution acts with the subject's authority to obtain a credential in their name, and §7.3 item 8 forbids a declaration weaker than the §4.7.1 default — which is a MUST wherever the exchange may be relied on beyond the original consumer. An authcrypted transport proves the sender only to the immediate peer, leaving nothing attributable once the request is retained or relayed.
 sideEffects:
   level: none
   rationale: Asking for a credential mutates nothing at the issuer. Any state the issuer keeps to track the request is its own bookkeeping, not an effect of this task.
