@@ -451,6 +451,58 @@ function checkProofFloor(meta, rel) {
   );
 }
 
+/*
+ * SPEC §8.5 constrains the namespace of an extended error code to the emitting
+ * specification's own slug, or a *family namespace* — a proper path prefix of
+ * that slug, for a condition defined once across a family in a shared
+ * convention. `spec.meta.schema.json` states the rule and can only check the
+ * grammar: JSON Schema cannot compare `errorCodes[].code` against `slug`.
+ *
+ * Left unchecked it drifts, and it did. The registry carried 26 specifications
+ * declaring `did-management:unknown_domain` while §8.5 still said the namespace
+ * MUST equal the slug — legal now under the family rule, but it was the
+ * unenforced gap that let them diverge unnoticed in the first place. The
+ * failure is quiet in a way that matters: `Payload::extended_code` in
+ * trust-tasks-rs derives the namespace from `TYPE_URI`, so a handler emits
+ * `did-management/did/delete:unknown_domain` while the registry advertises
+ * `did-management:unknown_domain`. A consumer matching the declared code misses,
+ * falls through §8.5's unrecognized-code rule to `taskFailed`, and loses the
+ * specific meaning with nothing anywhere reporting a problem. `family_code` on
+ * the `Payload` trait is the drift-safe way to mint the family form.
+ */
+function checkErrorCodeNamespaces(meta, rel) {
+  const slug = meta.slug;
+  if (typeof slug !== 'string') return;
+
+  // The emitting slug plus each proper path prefix of it.
+  const segments = slug.split('/');
+  const permitted = new Set(
+    segments.map((_, i) => segments.slice(0, i + 1).join('/'))
+  );
+
+  for (const entry of meta.errorCodes || []) {
+    const code = entry?.code;
+    if (typeof code !== 'string') continue;
+    const colon = code.lastIndexOf(':');
+    if (colon < 0) continue; // grammar failure — the meta schema reports it
+    const namespace = code.slice(0, colon);
+    if (permitted.has(namespace)) continue;
+
+    fail(
+      `${rel}/spec.md`,
+      `errorCodes['${code}'] is namespaced '${namespace}', which is neither this ` +
+        `specification's slug nor a path prefix of it. SPEC §8.5 permits only ` +
+        `'${slug}' or a family namespace (${[...permitted]
+          .filter((p) => p !== slug)
+          .map((p) => `'${p}'`)
+          .join(', ') || 'none available for a single-segment slug'}). ` +
+        `A code namespaced under an unrelated slug is unreachable from ` +
+        `Payload::extended_code, which derives the namespace from TYPE_URI, so ` +
+        `the registry and the generated libraries would disagree silently.`
+    );
+  }
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -737,6 +789,7 @@ function main() {
       warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
     checkProofFloor(meta, rel);
+    checkErrorCodeNamespaces(meta, rel);
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
       fail(rel, `duplicate slug+version ${idKey}`);

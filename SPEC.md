@@ -4,8 +4,8 @@
 
 | | |
 |---|---|
-| **Document version** | 0.2 |
-| **Date** | 2026-05-18 |
+| **Document version** | 0.3 |
+| **Date** | 2026-08-07 |
 | **This version** | `https://trustoverip.github.io/dtgwg-trust-tasks-tf/SPEC.html` |
 | **Latest published version** | None — this document has not yet been published as a Working Group Deliverable. |
 | **Latest editor's draft** | <https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md> |
@@ -751,9 +751,16 @@ A `false` value of `retryable` represents a hard failure for that specific docum
 
 ### 8.5 Extension by individual Trust Task specifications
 
-An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` separated from the local code by a colon, e.g. `kyc-handoff:documentRevoked`. The `<slug>` **MUST** be the slug of the specification under which the *error response* is emitted — that is, the slug of the *request* the *error response* refers to — never that of a related or referenced specification. A *consumer* of `acl/change-role` that needs to surface a rejection borrowed conceptually from `acl/revoke` therefore emits `acl/change-role:<local>`, not `acl/revoke:<local>`. Extended codes **MUST NOT** shadow any code listed in [§8.3](#83-standard-error-codes).
+An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced, separated from the local code by a colon, e.g. `kyc-handoff:documentRevoked`. The namespace **MUST** be one of exactly two things:
 
-A *consumer* (not only the spec author) **MAY** mint additional slug-namespaced codes for invariants the specification did not enumerate, provided the namespacing rule above is honoured. The framework's fallback-to-`taskFailed` rule for unrecognized extended codes (see the third paragraph below) keeps these consumer-minted codes interoperable with clients that only implement the canonical set.
+1. **The emitting specification's own `<slug>`** — that is, the slug of the *request* the *error response* refers to. This is the default and covers any code the specification defines for itself.
+2. **A *family namespace*** — a proper path prefix of that slug, formed of one or more of its leading `/`-separated segments (for `did-management/did/delete`, the permitted prefixes are `did-management/did` and `did-management`). A family namespace **MUST** be used only for a code whose meaning is defined once for the whole family — in a shared convention that the family's specifications reference — and never to give a specification-specific code a broader name than it has earned.
+
+The namespace **MUST NOT** be the slug of a *related or referenced* specification, and this remains true under rule 2: a proper prefix of a specification's own slug names that specification's own family and can never name a sibling. A *consumer* of `acl/change-role` that needs to surface a rejection borrowed conceptually from `acl/revoke` therefore emits `acl/change-role:<local>` or `acl:<local>`, never `acl/revoke:<local>`. Extended codes **MUST NOT** shadow any code listed in [§8.3](#83-standard-error-codes).
+
+*This paragraph is non-normative.* Rule 2 exists because families do share failure modes. Every specification under `did-management` can reject a request naming a domain the *consumer* does not host, and that rejection means the same thing in each of them; stating it once as `did-management:unknownDomain` lets a *consumer* handle the family uniformly, where per-slug codes would oblige it to enumerate every member to recognize one condition. The narrowness of rule 2 is what keeps this safe: because a family namespace is always a prefix of the emitting slug, a *consumer* can verify the namespacing of a received code against the document's `type` alone, with no registry lookup.
+
+A *consumer* (not only the spec author) **MAY** mint additional namespaced codes for invariants the specification did not enumerate, provided the namespacing rule above is honoured. The framework's fallback-to-`taskFailed` rule for unrecognized extended codes (see the third paragraph below) keeps these consumer-minted codes interoperable with clients that only implement the canonical set.
 
 An individual *Trust Task specification* **MAY** also define the structure of `details` for its own error responses. Where it does so, the specification **MUST** state which `code` values may carry a `details` object and **MUST** provide a JSON Schema fragment describing the `details` shape for each.
 
@@ -1066,6 +1073,7 @@ If any step fails, the *consumer* returns an *error response* per [§8](#8-error
 
 ### 0.3
 
+* **Family namespaces for extended error codes ([§8.5](#85-extension-by-individual-trust-task-specifications)).** The namespace of an extended `code` may now be either the emitting specification's own slug (as before) or a *family namespace* — a proper path prefix of that slug — for a condition whose meaning is defined once across a family in a shared convention, such as `did-management:unknownDomain` on every `did-management/*` specification. Previously the namespace **MUST** have equalled the slug exactly, which gave a family-wide failure mode no way to be named once; specifications expressed it anyway, so the rule was already being broken to say something true. The relaxation is deliberately narrow: because a family namespace is always a prefix of the emitting slug, a *consumer* can still verify a received code's namespacing against the document's `type` alone, and a *sibling's* slug remains forbidden. Additive — every previously conforming code remains conforming. The prefix relationship is now enforced by the registry build, which never checked the original rule either.
 * **Draft editorial changes stay in place ([§5.2](#52-compatibility-rules)).** An editorial or normalization change to a `draft` artifact — casing normalization per [§4.10](#410-naming-conventions), a framework or shared-schema-component `$ref` re-pin with no wire effect, prose rewording — is now made in place and **MUST NOT** mint a new version. A wire-identical version minted before this rule **MAY** declare the new optional `wireCompatibleWith` front-matter field naming its predecessor, so consumers can dual-accept by mechanical normalization.
 * **Side-effect and exposure classes ([§7.3](#73-specification-requirements) items 13–14).** Every conforming specification now **MUST** declare two orthogonal, descriptive classifications of what executing the task does: a *side-effect class* (`none` / `mutating` / `destructive` — the integrity effect on recipient state) and an *exposure class* (`discloses` of `none` / `metadata` / `secret`, plus an `actsAsSubject` flag — the confidentiality and agency effect). Both are descriptive only — a specification **MUST NOT** derive a consent requirement from them — and exist so a delegated-execution consumer can decide whether to seek human approval without per-task code. This is a breaking change to the specification-authoring contract, carried by the internal `spec-meta/2.0` front-matter meta-schema; the **document wire format is unchanged from 0.2**, so `targetFrameworkVersion` and document validation are unaffected and specifications keep their existing framework-version targets.
 

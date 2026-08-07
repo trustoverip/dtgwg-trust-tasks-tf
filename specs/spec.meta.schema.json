@@ -192,7 +192,7 @@
           "code": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-zA-Z0-9_]*$",
-            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:documentRevoked' (framework 0.2 lowerCamelCase, SPEC §4.10) or 'acl/grant:permission_denied' (frozen 0.1 snake_case). The local part accepts both casings so 0.1 and 0.2 specs validate against the same schema; the namespace portion before the colon MUST equal the spec's slug."
+            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:documentRevoked' (framework 0.2 lowerCamelCase, SPEC §4.10) or 'acl/grant:permission_denied' (frozen 0.1 snake_case). The local part accepts both casings so 0.1 and 0.2 specs validate against the same schema. The namespace before the colon MUST be either the spec's own slug, or a family namespace — a proper path prefix of that slug, for a code whose meaning is defined once for the whole family in a shared convention (e.g. 'did-management:unknownDomain' on 'did-management/did/delete'). This pattern checks the grammar only; the prefix relationship is enforced by checkErrorCodeNamespaces() in scripts/build-registry.mjs, because JSON Schema cannot compare one property against another."
           },
           "meaning": { "type": "string", "minLength": 1 },
           "retryable": { "type": "boolean" },

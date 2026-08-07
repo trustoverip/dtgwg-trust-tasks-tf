@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.57] — 2026-08-07
+
+### Added
+- **`Payload::family_code(namespace, local)`** — mints an extended error code
+  under a *family namespace*, the proper-path-prefix form that SPEC §8.5 now
+  permits alongside a specification's own slug.
+
+  26 specifications in the registry declare `did-management:unknown_domain`,
+  a condition defined once for the whole family in
+  `did-management/_shared/0.1/CONVENTIONS.md`. There was no drift-safe way to
+  emit it: `extended_code` derives the namespace from `TYPE_URI`, so a
+  `did-management/did/delete` handler produced
+  `did-management/did/delete:unknown_domain` — not the code the registry
+  advertises. A consumer matching the declared code missed it and fell through
+  §8.5's unrecognized-code rule to `taskFailed`, losing the specific meaning
+  silently. The alternative was `TrustTaskCode::new_extended` with a
+  hand-written namespace, which reintroduces exactly the drift `extended_code`
+  exists to prevent.
+
+  `family_code` checks `namespace` against the slug derived from `TYPE_URI`
+  rather than taking it on trust, so the §8.5 prefix rule holds by
+  construction. A sibling's slug is rejected: it shares a prefix but is not
+  itself one, and that is precisely the confusion §8.5 forbids.
+
+### Fixed
+- **The registry build now enforces the §8.5 namespacing rule.** Neither the
+  original rule (namespace **MUST** equal the slug) nor the relaxed one was
+  ever checked — `spec.meta.schema.json` states it in prose and validates only
+  the grammar, because JSON Schema cannot compare `errorCodes[].code` against
+  `slug`. `checkErrorCodeNamespaces()` compares them.
+
 ## [0.2.56] — 2026-08-05
 
 ### Security

@@ -141,6 +141,63 @@ pub trait Payload: Serialize + DeserializeOwned {
             )
         })
     }
+
+    /// Build an extended [`TrustTaskCode`] under a *family namespace*, per
+    /// SPEC.md §8.5 rule 2.
+    ///
+    /// A family namespace is a proper path prefix of this payload's slug, used
+    /// for a condition whose meaning is defined once across a family rather
+    /// than per specification — `did-management:unknownDomain` on
+    /// `did-management/did/delete`, say, where every member of the family can
+    /// reject a request naming a domain the *consumer* does not host and the
+    /// rejection means the same thing in each.
+    ///
+    /// ```rust,ignore
+    /// // On a `did-management/did/delete` handler:
+    /// let code = Payload::family_code("did-management", "unknownDomain");
+    /// assert_eq!(code.to_string(), "did-management:unknownDomain");
+    /// ```
+    ///
+    /// Use [`extended_code`](Self::extended_code) for a code the specification
+    /// defines for itself; that is the common case. Reach for this only when
+    /// the code is genuinely shared, because a family namespace claims the
+    /// condition means the same thing across every sibling.
+    ///
+    /// `namespace` is checked against the slug derived from
+    /// [`TYPE_URI`](Self::TYPE_URI) rather than taken on trust, so the §8.5
+    /// prefix rule holds by construction and a hand-written namespace cannot
+    /// drift away from the type's identity — the same guarantee
+    /// [`extended_code`](Self::extended_code) provides for the own-slug case.
+    ///
+    /// Panics when `namespace` is neither the slug nor a proper path prefix of
+    /// it, or when `local` fails the `errorCodes[].code` grammar. Like
+    /// [`extended_code`](Self::extended_code) this method is for static
+    /// call-site usage; callers handling runtime input should use
+    /// [`TrustTaskCode::new_extended`] and propagate the `Result`.
+    fn family_code(namespace: &str, local: impl Into<String>) -> TrustTaskCode {
+        let slug = Self::type_uri().slug().to_string();
+        let local = local.into();
+
+        // The slug itself plus each proper path prefix of it.
+        let permitted = slug
+            .match_indices('/')
+            .map(|(i, _)| &slug[..i])
+            .chain(std::iter::once(slug.as_str()));
+        if !permitted.into_iter().any(|p| p == namespace) {
+            panic!(
+                "Payload::family_code({namespace:?}, {local:?}) on slug {slug:?}: \
+                 namespace is neither the slug nor a path prefix of it \
+                 (SPEC §8.5 rule 2)"
+            );
+        }
+
+        TrustTaskCode::new_extended(namespace, &local).unwrap_or_else(|e| {
+            panic!(
+                "Payload::family_code({:?}, {:?}) failed validation: {e}",
+                namespace, local
+            )
+        })
+    }
 }
 
 #[cfg(test)]
@@ -184,6 +241,55 @@ mod tests {
         // fails loudly instead of silently producing a code that fails
         // parsing later.
         let _ = grant::Payload::extended_code("BadLocal");
+    }
+
+    /// SPEC §8.5 rule 2 — a proper path prefix of the emitting slug is a
+    /// legal namespace. This is the `did-management:unknownDomain` shape:
+    /// 26 specifications in the registry declare it, and before `family_code`
+    /// existed the only drift-safe helper derived the namespace from
+    /// `TYPE_URI` and so could not mint the code the registry advertises.
+    #[test]
+    fn family_code_accepts_each_path_prefix_of_the_slug() {
+        // Two-segment slug — the one available prefix.
+        let code = change_role::Payload::family_code("acl", "permissionDenied");
+        assert_eq!(code.to_string(), "acl:permissionDenied");
+
+        // The full slug is permitted too, making family_code a superset of
+        // extended_code rather than a disjoint alternative.
+        let code = change_role::Payload::family_code("acl/change-role", "lastAuthorityProtected");
+        assert_eq!(code.to_string(), "acl/change-role:lastAuthorityProtected");
+    }
+
+    /// A sibling's slug shares a prefix but is not itself a prefix, which is
+    /// exactly the confusion §8.5 forbids ("never that of a related or
+    /// referenced specification"). Rule 2 must not open a door to it.
+    #[test]
+    #[should_panic(expected = "neither the slug nor a path prefix")]
+    fn family_code_rejects_a_sibling_slug() {
+        let _ = grant::Payload::family_code("acl/revoke", "borrowedCode");
+    }
+
+    /// An unrelated namespace with no relationship to the slug at all.
+    #[test]
+    #[should_panic(expected = "neither the slug nor a path prefix")]
+    fn family_code_rejects_an_unrelated_namespace() {
+        let _ = grant::Payload::family_code("vault", "somethingElse");
+    }
+
+    /// A prefix must end on a segment boundary — `ac` is a string prefix of
+    /// `acl/grant` but names nothing.
+    #[test]
+    #[should_panic(expected = "neither the slug nor a path prefix")]
+    fn family_code_rejects_a_partial_segment() {
+        let _ = grant::Payload::family_code("ac", "somethingElse");
+    }
+
+    /// Response payloads carry `#response` in TYPE_URI; the prefix check must
+    /// run against the bare slug, as `extended_code` does.
+    #[test]
+    fn family_code_strips_response_fragment_before_checking() {
+        let code = grant::Response::family_code("acl", "permissionDenied");
+        assert_eq!(code.to_string(), "acl:permissionDenied");
     }
 
     #[test]
