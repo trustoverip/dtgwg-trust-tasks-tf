@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist .test-build",
-    "test": "tsc -p tsconfig.test.json && node --test \".test-build/test/**/*.test.js\""
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
