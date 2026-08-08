@@ -31,47 +31,89 @@ unaffected.
 
 ## One-time setup
 
-The function is **inert until associated with the distribution** — deploying the
-website does not activate it. Associating it is a manual step, because the
-distribution configuration is not managed from this repository.
+The function is **inert until associated with a distribution** — deploying the
+website does not activate it, and the distribution configuration is not managed
+from this repository.
+
+### Create and publish the function
 
 ```sh
-# 1. Create (first time only)
 aws cloudfront create-function \
   --name trust-tasks-type-uri-negotiation \
   --function-config Comment="Type URI content negotiation (SPEC §6.2)",Runtime=cloudfront-js-2.0 \
   --function-code fileb://type-uri-negotiation.js
 
-# 2. Publish, taking the ETag from the create/describe output
+# The ETag comes from the create response (or `describe-function`).
 aws cloudfront publish-function \
-  --name trust-tasks-type-uri-negotiation --if-match <ETag>
-
-# 3. Associate with the default cache behaviour as a viewer-request function.
-#    Fetch the distribution config, add the FunctionAssociation, and update.
-aws cloudfront get-distribution-config --id <DISTRIBUTION_ID> > dist.json
-#    …add to DefaultCacheBehavior:
-#      "FunctionAssociations": { "Quantity": 1, "Items": [
-#        { "FunctionARN": "<arn from step 1>", "EventType": "viewer-request" } ] }
-aws cloudfront update-distribution --id <DISTRIBUTION_ID> \
-  --distribution-config file://dist-config.json --if-match <ETag from get>
+  --name trust-tasks-type-uri-negotiation \
+  --if-match "$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation \
+                  --query 'ETag' --output text)"
 ```
 
-**Cache behaviour matters.** The origin response varies by `Accept`, so the cache
-policy for these paths must include `Accept` in its cache key — otherwise the
-first response cached for a path is served to everyone, and either implementers
-get HTML or browsers get JSON. Either add `Accept` to the cache policy's header
-allowlist or give `/spec/*` its own behaviour.
-
-## Updating it
+### Associate it with the distribution
 
 ```sh
+./associate.sh <DISTRIBUTION_ID>          # dry run — prints the change, touches nothing
+./associate.sh <DISTRIBUTION_ID> --apply  # performs it
+```
+
+Use the script rather than doing this by hand. `get-distribution-config` returns
+a **wrapper**:
+
+```json
+{ "ETag": "E13V…", "DistributionConfig": { … } }
+```
+
+but `update-distribution --distribution-config` expects only the **inner**
+object. Passing the wrapper fails with a misleading pile of errors —
+
+```
+Missing required parameter in DistributionConfig: "CallerReference"
+Missing required parameter in DistributionConfig: "Origins"
+Unknown parameter in DistributionConfig: "ETag", must be one of: …
+```
+
+— which reads as though the config is malformed rather than double-wrapped. The
+script extracts `.DistributionConfig` and applies the edit in one `jq` pass, so
+the two cannot drift. It is idempotent, and refuses to act if a *different*
+viewer-request function is already associated.
+
+The `--if-match` value must be the `ETag` from that same
+`get-distribution-config` response. It is not a fixed constant, and it changes
+on every distribution update.
+
+### Cache keys need no change
+
+A viewer-request function runs **before** the cache lookup, and the cache key is
+computed from the URI it produces. A request for
+`/spec/acl/grant/0.1` with `Accept: application/schema+json` is rewritten to
+`/specs/acl/grant/0.1/payload.schema.json` before the lookup, so it occupies a
+different cache entry from the un-rewritten HTML request for the same Type URI.
+The two representations cannot collide.
+
+So the `Managed-CachingOptimized` policy (`HeaderBehavior: none`) is fine as-is —
+adding `Accept` to the cache key is unnecessary, and would only fragment the
+cache.
+
+## Updating the function
+
+```sh
+etag=$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation \
+         --query 'ETag' --output text)
 aws cloudfront update-function \
   --name trust-tasks-type-uri-negotiation \
   --function-config Comment="Type URI content negotiation (SPEC §6.2)",Runtime=cloudfront-js-2.0 \
   --function-code fileb://type-uri-negotiation.js \
-  --if-match <ETag>
-aws cloudfront publish-function --name trust-tasks-type-uri-negotiation --if-match <ETag>
+  --if-match "$etag"
+
+# update-function returns a fresh ETag; publish with that one.
+aws cloudfront publish-function --name trust-tasks-type-uri-negotiation \
+  --if-match "$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation \
+                  --query 'ETag' --output text)"
 ```
+
+Re-association is not needed — the distribution references the function by ARN
+and always serves the published (LIVE) stage.
 
 ## Verifying
 

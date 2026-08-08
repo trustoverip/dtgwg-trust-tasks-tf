@@ -1,0 +1,129 @@
+{
+    "ETag": "E13V1IB3VIYZZH",
+    "DistributionConfig": {
+        "CallerReference": "a3278142-4a09-4166-a893-e04d6061ccfb",
+        "Aliases": {
+            "Quantity": 1,
+            "Items": [
+                "trusttasks.org"
+            ]
+        },
+        "DefaultRootObject": "index.html",
+        "Origins": {
+            "Quantity": 1,
+            "Items": [
+                {
+                    "Id": "trusttasks-794038245035-us-east-1-an.s3.us-east-1.amazonaws.com-mont16ig1zd",
+                    "DomainName": "trusttasks-794038245035-us-east-1-an.s3.us-east-1.amazonaws.com",
+                    "OriginPath": "/website",
+                    "CustomHeaders": {
+                        "Quantity": 0
+                    },
+                    "S3OriginConfig": {
+                        "OriginAccessIdentity": "",
+                        "OriginReadTimeout": 30
+                    },
+                    "ConnectionAttempts": 3,
+                    "ConnectionTimeout": 10,
+                    "OriginShield": {
+                        "Enabled": false
+                    },
+                    "OriginAccessControlId": "E18FGIPGN69FTU"
+                }
+            ]
+        },
+        "OriginGroups": {
+            "Quantity": 0
+        },
+        "DefaultCacheBehavior": {
+            "TargetOriginId": "trusttasks-794038245035-us-east-1-an.s3.us-east-1.amazonaws.com-mont16ig1zd",
+            "TrustedSigners": {
+                "Enabled": false,
+                "Quantity": 0
+            },
+            "TrustedKeyGroups": {
+                "Enabled": false,
+                "Quantity": 0
+            },
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": {
+                "Quantity": 2,
+                "Items": [
+                    "HEAD",
+                    "GET"
+                ],
+                "CachedMethods": {
+                    "Quantity": 2,
+                    "Items": [
+                        "HEAD",
+                        "GET"
+                    ]
+                }
+            },
+            "SmoothStreaming": false,
+            "Compress": true,
+            "LambdaFunctionAssociations": {
+                "Quantity": 0
+            },
+            "FunctionAssociations": {
+                "Quantity": 1,
+              "Items": [
+        { "FunctionARN": "arn:aws:cloudfront::794038245035:function/trust-tasks-type-uri-negotiation", "EventType": "viewer-request" }
+        ]
+            },
+            "FieldLevelEncryptionId": "",
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "GrpcConfig": {
+                "Enabled": false
+            }
+        },
+        "CacheBehaviors": {
+            "Quantity": 0
+        },
+        "CustomErrorResponses": {
+            "Quantity": 2,
+            "Items": [
+                {
+                    "ErrorCode": 403,
+                    "ResponsePagePath": "/index.html",
+                    "ResponseCode": "200",
+                    "ErrorCachingMinTTL": 10
+                },
+                {
+                    "ErrorCode": 404,
+                    "ResponsePagePath": "/index.html",
+                    "ResponseCode": "200",
+                    "ErrorCachingMinTTL": 10
+                }
+            ]
+        },
+        "Comment": "Trust Task Website",
+        "Logging": {
+            "Enabled": false,
+            "IncludeCookies": false,
+            "Bucket": "",
+            "Prefix": ""
+        },
+        "PriceClass": "PriceClass_All",
+        "Enabled": true,
+        "ViewerCertificate": {
+            "CloudFrontDefaultCertificate": false,
+            "ACMCertificateArn": "arn:aws:acm:us-east-1:794038245035:certificate/e0e72fcb-98c5-44c8-bd7e-fcd935c20fa4",
+            "SSLSupportMethod": "sni-only",
+            "MinimumProtocolVersion": "TLSv1.2_2021",
+            "Certificate": "arn:aws:acm:us-east-1:794038245035:certificate/e0e72fcb-98c5-44c8-bd7e-fcd935c20fa4",
+            "CertificateSource": "acm"
+        },
+        "Restrictions": {
+            "GeoRestriction": {
+                "RestrictionType": "none",
+                "Quantity": 0
+            }
+        },
+        "WebACLId": "",
+        "HttpVersion": "http2",
+        "IsIPV6Enabled": true,
+        "ContinuousDeploymentPolicyId": "",
+        "Staging": false
+    }
+}
