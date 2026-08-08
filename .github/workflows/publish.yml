@@ -65,6 +65,8 @@ jobs:
         run: |
           set -euo pipefail
           to_publish=""
+          needs_manual=""
+          already=""
           for crate in $CRATES; do
             meta=$(cargo metadata --no-deps --format-version 1 \
               --manifest-path "$crate/Cargo.toml")
@@ -88,12 +90,19 @@ jobs:
               -H "User-Agent: trust-tasks-ci (github-actions)" \
               "https://crates.io/api/v1/crates/$crate" || echo "000")
             if [ "$http_code" = "404" ]; then
-              echo "::notice::$crate is not on crates.io yet — will publish."
-              to_publish="$to_publish $crate"
+              # A crate that does not exist yet CANNOT be published from here.
+              # crates.io rejects it with "Trusted Publishing tokens do not
+              # support creating new crates" — by design, since there is no
+              # crate for a Trusted Publisher to be attached to. Collect these
+              # and report them together at the end rather than letting the
+              # publish step die on a mid-run 403 with no summary.
+              echo "::warning::$crate is not on crates.io yet — needs a manual first publish."
+              needs_manual="$needs_manual $crate"
             elif [ "$http_code" = "200" ]; then
               existing=$(jq -r --arg v "$version" '[.versions[]?.num] | index($v) // "no"' crate.json)
               if [ "$existing" != "no" ]; then
                 echo "::notice::$crate $version already on crates.io — skipping."
+                already="$already $crate@$version"
               else
                 echo "::notice::$crate $version is new — will publish."
                 to_publish="$to_publish $crate"
@@ -104,7 +113,35 @@ jobs:
             fi
           done
           to_publish="$(echo "$to_publish" | xargs || true)"
+          needs_manual="$(echo "$needs_manual" | xargs || true)"
+          already="$(echo "$already" | xargs || true)"
           echo "to_publish=$to_publish" >> "$GITHUB_OUTPUT"
+          echo "needs_manual=$needs_manual" >> "$GITHUB_OUTPUT"
+          echo "already=$already" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### crates.io"
+            echo
+            if [ -n "$to_publish" ]; then
+              echo "**To publish:** $to_publish"
+            else
+              echo "**To publish:** nothing — every version is already on crates.io."
+            fi
+            [ -n "$already" ] && echo && echo "**Already current:** $already"
+            if [ -n "$needs_manual" ]; then
+              echo
+              echo "**⚠ Needs a manual first publish:** $needs_manual"
+              echo
+              echo 'Trusted Publishing cannot create a crate that does not exist yet. For each:'
+              echo
+              echo '```sh'
+              for c in $needs_manual; do echo "cargo publish -p $c"; done
+              echo '```'
+              echo
+              echo 'Then add a Trusted Publisher for it on crates.io (this repo + publish.yml)'
+              echo 'so the next release goes through CI.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Mint a short-lived crates.io token via OIDC (trusted publishing). No
       # long-lived CRATES_API_KEY secret needed. The token is scoped to the
@@ -123,12 +160,45 @@ jobs:
         # `cargo publish` waits for each new version to appear in the index
         # before returning, so a dependent published next resolves cleanly.
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          published=""
+          failed=""
           for crate in ${{ steps.decide.outputs.to_publish }}; do
             echo "::group::cargo publish -p $crate"
-            cargo publish -p "$crate"
+            if cargo publish -p "$crate"; then
+              published="$published $crate"
+            else
+              # Stop at the first failure: the crates are ordered by dependency,
+              # so continuing risks publishing a dependent against a version of
+              # trust-tasks-rs that never landed. Record what did publish so the
+              # partial state is stated rather than inferred from the log.
+              failed="$crate"
+              echo "::endgroup::"
+              break
+            fi
             echo "::endgroup::"
           done
+
+          {
+            echo
+            echo "**Published:** ${published:-none}"
+            if [ -n "$failed" ]; then
+              echo
+              echo "**Failed:** $failed"
+              remaining=$(echo "${{ steps.decide.outputs.to_publish }}" \
+                | tr ' ' '\n' | sed -n "/^$failed\$/,\$p" | tail -n +2 | xargs || true)
+              [ -n "$remaining" ] && echo && echo "**Not attempted:** $remaining"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          [ -z "$failed" ] || exit 1
+
+      - name: Report crates needing a manual first publish
+        if: steps.decide.outputs.needs_manual != ''
+        run: |
+          echo "::error::These crates are not on crates.io and cannot be created by Trusted Publishing: ${{ steps.decide.outputs.needs_manual }}"
+          echo "Publish each manually once, then add its Trusted Publisher. See the job summary."
+          exit 1
 
   publish-npm:
     name: Publish @openvtc/trust-tasks to npm
