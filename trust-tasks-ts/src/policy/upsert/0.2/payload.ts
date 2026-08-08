@@ -65,3 +65,27 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/upsert/0.2#
 
 /** Stable alias for this specification's success-response payload shape. */
 export type Response = PolicyUpsertResponsePayload;
+
+/**
+ * SPEC.md §7.2 policy for the request variant, from this specification's
+ * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
+ * per-specification and cannot be derived from the document alone.
+ */
+export const SPEC = {
+  typeUri: TYPE_URI,
+  isBearer: false,
+  isProofRequired: true,
+  isRecipientRequired: true,
+} as const;
+
+/**
+ * SPEC.md §7.2 policy for the success-response variant. `isRecipientRequired`
+ * tracks the *issuer* party's requirement because a response swaps the
+ * parties (§7.3 item 5).
+ */
+export const RESPONSE_SPEC = {
+  typeUri: RESPONSE_TYPE_URI,
+  isBearer: false,
+  isProofRequired: true,
+  isRecipientRequired: true,
+} as const;

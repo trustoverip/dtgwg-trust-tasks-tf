@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.58] — 2026-08-08
+
+No changes to `trust-tasks-rs` itself; the version moves to stay in step with
+`@openvtc/trust-tasks`, which gains the TypeScript consumer pipeline.
+
+### Added (TypeScript side)
+- **`consumeInbound` — the SPEC §7.2 pipeline for TypeScript.** The npm package
+  was types-only, so a TypeScript implementation had to hand-roll all eight
+  §7.2 rules: expiry, recipient enforcement, the §4.8.1 identity cross-check,
+  proof handling, audience binding, and the §8.1 error-routing rule that
+  suppresses a response under `identityMismatch` when the transport
+  authenticated no sender. One of the two reference languages offered no path
+  to a conforming consumer.
+
+  `src/_runtime/` is hand-written and mirrors `consume.rs`, `document.rs`,
+  `transport.rs` and `error.rs` check for check, with a test suite that mirrors
+  the Rust one — the two implementations must reach the same verdict on the
+  same document.
+
+- **Per-specification policy on every generated module.** §7.2 items 5b, 7 and
+  8 are declared per specification and cannot be derived from a document, so
+  each module now exports `SPEC` (and `RESPONSE_SPEC` where a response is
+  defined) carrying `isBearer` / `isProofRequired` / `isRecipientRequired`.
+  These mirror the Rust `Payload` associated constants and are derived from the
+  same front matter, including the response-variant party swap of §7.3 item 5.
+  Verified across all 556 Rust impls: zero disagreements.
+
+  Also exported: `extendedCode` / `familyCode` (the §8.5 minting helpers, with
+  the same prefix checks as their Rust counterparts), `normalizeCode` for
+  reading a 0.1 peer's snake_case error codes, and `respondWith` / `rejectWith`
+  document builders.
+
 ## [0.2.57] — 2026-08-07
 
 ### Added

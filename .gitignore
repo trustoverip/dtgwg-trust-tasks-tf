@@ -23,3 +23,6 @@ target/
 .idea/
 .vscode/
 *.swp
+
+# TypeScript test build output
+trust-tasks-ts/.test-build/

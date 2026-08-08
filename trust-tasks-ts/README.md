@@ -1,7 +1,12 @@
 # @openvtc/trust-tasks
 
-Generated TypeScript bindings for the [Trust Tasks
+TypeScript bindings **and the consumer pipeline** for the [Trust Tasks
 framework](https://trusttasks.org) registry.
+
+Two halves: generated types for every specification in the registry, and a
+hand-written implementation of the SPEC.md §7.2 checks that decide whether an
+inbound document may be acted on. See [Consuming a document](#consuming-a-document)
+— types alone will not make a conforming consumer.
 
 Every spec under [`dtgwg-trust-tasks-tf/specs/`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/specs)
 that defines a `payload.schema.json` is compiled — via
@@ -80,10 +85,70 @@ appending `_v<MAJOR>_<MINOR>`. Multiple versions of the same spec
 land in sibling directories (`0.1/`, `1.0/`, …) and export
 distinct names — there is no "latest" alias by design.
 
+## Consuming a document
+
+A conforming *consumer* applies all eight checks in
+[SPEC.md §7.2](https://trusttasks.org/SPEC#72-consumer-requirements) before
+acting on an inbound document. Three of them — recipient-REQUIRED, proof-REQUIRED
+and audience binding — are declared *per specification* and cannot be derived
+from the document itself, so every generated module exports the declarations as
+`SPEC` (and `RESPONSE_SPEC`, where the spec defines a response).
+
+`consumeInbound` runs items 4–8 and then calls your handler. Items 1–3
+(framework schema, payload schema, unknown `type`) belong to your parse and
+dispatch, and have already succeeded by the time you hold a typed document.
+
+```ts
+import {
+  consumeInbound,
+  respondWith,
+  StaticTransport,
+  AclGrant_v0_1,
+} from "@openvtc/trust-tasks";
+
+const outcome = await consumeInbound<AclGrant_v0_1.Payload, AclGrant_v0_1.Response>({
+  transport: new StaticTransport({ issuer: peerVid }), // what the transport authenticated
+  spec: AclGrant_v0_1.SPEC,
+  proofPolicy: { kind: "verify", verify: myVerifier },
+  doc,
+  myVid: "did:web:maintainer.example",
+  now: Date.now(),
+  newErrorId: () => crypto.randomUUID(),
+  handler: async (accepted, parties) =>
+    respondWith(accepted, crypto.randomUUID(), await applyGrant(accepted.payload, parties)),
+});
+
+switch (outcome.kind) {
+  case "handled":
+    return send(outcome.response);
+  case "rejected":
+    return send(outcome.error); // already addressed per §8.1
+  case "suppressed":
+    // §8.1: an `identityMismatch` the transport cannot safely answer. Emitting
+    // anything here would be an oracle. Log it — silent is the rule, invisible
+    // is a footgun.
+    return log(outcome.reason);
+}
+```
+
+**Choose a proof policy deliberately.** `{ kind: "verify" }` honours in-band
+proofs. `{ kind: "rejectIfPresent" }` is for consumers with integrity from
+another layer — it refuses a proof-bearing document rather than silently
+dropping the proof, which would mislead the producer about the guarantees of
+the exchange. `{ kind: "acceptUnverified" }` is the explicit opt-out and only
+safe where the transport already provides equivalent end-to-end integrity. A
+specification that declares `proof` REQUIRED rejects a proofless document under
+all three.
+
+The pipeline mirrors `consume_inbound` in
+[`trust-tasks-rs`](https://crates.io/crates/trust-tasks-rs) check for check, so
+a TypeScript consumer and a Rust one reach the same verdict on the same
+document.
+
 ## Validating payloads at runtime
 
-This package ships TypeScript types only — it does not bundle a
-JSON-Schema validator. If you need runtime validation, fetch the
+This package does not bundle a JSON-Schema validator, so §7.2 items 1–2
+(framework and payload schema validation) are yours to wire up. Fetch the
 `payload.schema.json` from
 `https://trusttasks.org/spec/<slug>/<version>` and feed it to
 [`ajv`](https://www.npmjs.com/package/ajv) or any other Draft 2020-12

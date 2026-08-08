@@ -31,9 +31,10 @@
 // tree small and lets consumers import a single `VaultEntry` type that's
 // the same across every spec referencing it.
 
-import { promises as fs } from "node:fs";
+import fsSync, { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import YAML from "yaml";
 import { compile, compileFromFile } from "json-schema-to-typescript";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -41,6 +42,7 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..");
 const SPECS_DIR = path.join(REPO_ROOT, "specs");
 const OUT_DIR = path.join(REPO_ROOT, "trust-tasks-ts", "src");
+const RUNTIME_DIR = "_runtime";
 
 // Slug → ts type renames go here when json-schema-to-typescript's
 // auto-naming clashes with reserved words or produces awkward identifiers.
@@ -86,6 +88,47 @@ function slugFromSchemaPath(schemaPath) {
   const version = segments[segments.length - 2];
   const slug = segments.slice(0, -2).join("/");
   return { slug, version };
+}
+
+/**
+ * Read the SPEC §7.2 policy flags out of a spec's front matter.
+ *
+ * These mirror `Payload::IS_BEARER` / `IS_PROOF_REQUIRED` /
+ * `IS_RECIPIENT_REQUIRED` in trust-tasks-rs, and are derived the same way, so
+ * a TypeScript consumer reaches the same verdict as a Rust one on the same
+ * document. Without them a TypeScript implementation cannot apply §7.2 items
+ * 5b, 7 or 8 at all — the requirement is per-specification, and nothing else
+ * on the wire carries it.
+ *
+ * Note the response-variant asymmetry (§7.3 item 5): a response document swaps
+ * the parties, so the requirement governing a *response*'s `recipient` member
+ * is the one declared for the *issuer* party of the request.
+ */
+function readSpecPolicy(schemaPath) {
+  const specPath = path.join(path.dirname(schemaPath), "spec.md");
+  let meta;
+  try {
+    const src = fsSync.readFileSync(specPath, "utf8");
+    if (!src.startsWith("---")) return null;
+    const end = src.indexOf("\n---", 3);
+    if (end < 0) return null;
+    meta = YAML.parse(src.slice(3, end).replace(/^\r?\n/, ""));
+  } catch {
+    return null;
+  }
+  if (!meta) return null;
+
+  const partyRequirement = (member) =>
+    (meta.parties || []).find((p) => p && p.member === member)?.requirement === "REQUIRED";
+
+  return {
+    isBearer: meta.bearer === true,
+    isProofRequired: meta.proofRequirement?.requirement === "REQUIRED",
+    // Request: the party tagged `recipient`. Response: the party tagged
+    // `issuer`, because the response addresses the original producer.
+    isRecipientRequired: partyRequirement("recipient"),
+    responseIsRecipientRequired: partyRequirement("issuer"),
+  };
 }
 
 // Synthetic property name used to drag `$defs.Response` into the compiler's
@@ -158,7 +201,7 @@ function stripResponseProbe(ts, schemaPath) {
   return { ts: stripped, responseType: m[1] };
 }
 
-function emitTail(slugInfo, ts, rootType, responseType, schemaPath) {
+function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
   if (!slugInfo) return ""; // shared schemas are not Trust Tasks
   const { slug, version } = slugInfo;
   const typeUri = `https://trusttasks.org/spec/${slug}/${version}`;
@@ -195,6 +238,43 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath) {
         : [`export type Response = ${responseType};`]),
       "",
     );
+  }
+
+  if (policy) {
+    const obj = (uri, isRecipientRequired) =>
+      [
+        `{`,
+        `  typeUri: ${uri},`,
+        `  isBearer: ${policy.isBearer},`,
+        `  isProofRequired: ${policy.isProofRequired},`,
+        `  isRecipientRequired: ${isRecipientRequired},`,
+        `} as const;`,
+      ].join("\n");
+
+    lines.push(
+      `/**`,
+      ` * SPEC.md §7.2 policy for the request variant, from this specification's`,
+      ` * front matter. Pass to \`consumeInbound\` — items 5b, 7 and 8 are`,
+      ` * per-specification and cannot be derived from the document alone.`,
+      ` */`,
+      `export const SPEC = ${obj("TYPE_URI", policy.isRecipientRequired)}`,
+      "",
+    );
+
+    if (responseType) {
+      lines.push(
+        `/**`,
+        ` * SPEC.md §7.2 policy for the success-response variant. \`isRecipientRequired\``,
+        ` * tracks the *issuer* party's requirement because a response swaps the`,
+        ` * parties (§7.3 item 5).`,
+        ` */`,
+        `export const RESPONSE_SPEC = ${obj(
+          "RESPONSE_TYPE_URI",
+          policy.responseIsRecipientRequired,
+        )}`,
+        "",
+      );
+    }
   }
   return lines.join("\n");
 }
@@ -234,7 +314,21 @@ async function generateOne(schemaPath) {
   }
 
   const slugInfo = slugFromSchemaPath(schemaPath);
-  const tail = emitTail(slugInfo, ts, rootTypeName(ts, schemaPath), responseType, schemaPath);
+  const policy = slugInfo ? readSpecPolicy(schemaPath) : null;
+  if (slugInfo && !policy) {
+    // Every task spec has front matter (the registry build enforces it). A
+    // miss here would silently emit a module with no SPEC, and a consumer
+    // would then have nothing to apply §7.2 items 5b/7/8 with.
+    throw new Error(`${schemaPath}: could not read spec.md front matter for the §7.2 policy`);
+  }
+  const tail = emitTail(
+    slugInfo,
+    ts,
+    rootTypeName(ts, schemaPath),
+    responseType,
+    schemaPath,
+    policy,
+  );
   await fs.writeFile(outPath, ts + tail, "utf8");
   return { outPath, slugInfo };
 }
@@ -245,6 +339,11 @@ async function emitIndex(generated) {
   // export name is `VaultList_v0_1`.
   const lines = [
     "/** Generated by scripts/build-ts-bindings.mjs — DO NOT EDIT BY HAND. */",
+    "",
+    "// The hand-written §7.2 consumer pipeline. Re-exported flat (rather than",
+    "// namespaced like the generated modules) because it is the framework API,",
+    "// not one specification among many.",
+    `export * from "./${RUNTIME_DIR}/index";`,
     "",
   ];
   for (const { outPath, slugInfo } of generated) {
@@ -308,10 +407,21 @@ async function emitIndex(generated) {
   await fs.writeFile(path.join(OUT_DIR, "index.ts"), lines.join("\n") + "\n", "utf8");
 }
 
+// Hand-written directories under src/ that the generator must not touch. The
+// underscore prefix matches the `_shared` / `_framework` convention already
+// used for non-task directories.
+const HAND_WRITTEN = new Set([RUNTIME_DIR]);
+
 async function clean() {
-  // Wipe and recreate src/ so removed specs don't linger.
-  await fs.rm(OUT_DIR, { recursive: true, force: true });
+  // Wipe src/ so removed specs don't linger — but preserve the hand-written
+  // runtime, which lives alongside the generated tree so that consumers get
+  // types and the §7.2 consumer pipeline from one package (as trust-tasks-rs
+  // does) rather than having to assemble them from two.
   await ensureDir(OUT_DIR);
+  for (const entry of await fs.readdir(OUT_DIR)) {
+    if (HAND_WRITTEN.has(entry)) continue;
+    await fs.rm(path.join(OUT_DIR, entry), { recursive: true, force: true });
+  }
 }
 
 async function main() {

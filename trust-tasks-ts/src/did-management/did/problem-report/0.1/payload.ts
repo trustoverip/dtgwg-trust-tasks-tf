@@ -28,3 +28,15 @@ export const TYPE_URI = "https://trusttasks.org/spec/did-management/did/problem-
 
 /** Stable alias for this specification's request payload shape. */
 export type Payload = DIDManagementProblemReportPayload;
+
+/**
+ * SPEC.md §7.2 policy for the request variant, from this specification's
+ * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
+ * per-specification and cannot be derived from the document alone.
+ */
+export const SPEC = {
+  typeUri: TYPE_URI,
+  isBearer: false,
+  isProofRequired: false,
+  isRecipientRequired: true,
+} as const;

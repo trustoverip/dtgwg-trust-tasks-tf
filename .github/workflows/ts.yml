@@ -55,3 +55,25 @@ jobs:
       - name: Typecheck generated bindings
         working-directory: trust-tasks-ts
         run: npx tsc -p tsconfig.json --noEmit
+
+  # The generated bindings are only types; the SPEC §7.2 consumer pipeline in
+  # src/_runtime is hand-written, so unlike the rest of the package it can
+  # regress without the drift guard noticing. These are the conformance tests
+  # for it, and they mirror the set in trust-tasks-rs/src/consume.rs — the two
+  # reference implementations must reach the same verdict on the same document.
+  test:
+    name: node --test (runtime)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install trust-tasks-ts dev dependencies
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund
+      - name: Run the runtime conformance tests
+        working-directory: trust-tasks-ts
+        run: npm test
