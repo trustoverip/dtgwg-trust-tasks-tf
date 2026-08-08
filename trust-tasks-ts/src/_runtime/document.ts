@@ -5,7 +5,7 @@
  * Hand-written. Mirrors `document.rs` in trust-tasks-rs.
  */
 
-import type { StandardCode } from "./codes.js";
+import { normalizeCode, type StandardCode } from "./codes.js";
 
 /** A W3C Data Integrity Proof object (SPEC.md §4.7). Opaque to the framework. */
 export interface Proof {
@@ -54,9 +54,37 @@ export interface TrustTaskDocument<P> {
   [k: string]: unknown;
 }
 
+/** Names the Trust Task document an {@link ErrorPayload} reports on (§8.2). */
+export interface InResponseTo {
+  /**
+   * The reported-on document's `type`, including any `#request` / `#response`
+   * fragment — that fragment is what tells a consumer which variant's semantics
+   * apply.
+   */
+  typeUri: string;
+  /**
+   * The reported-on document's `id`. Globally unique and never reused (§4.3),
+   * so it names one instance where `threadId` names an exchange.
+   *
+   * Omitted under `identityMismatch`: per §8.1 the response goes to the
+   * transport-authenticated sender rather than the in-band `issuer`, and that
+   * party did not necessarily compose the document.
+   */
+  id?: string;
+}
+
 /** The `payload` of an error response (SPEC.md §8.2). */
 export interface ErrorPayload {
   code: string;
+  /**
+   * Identifies the document this error reports on (§8.2).
+   *
+   * `threadId` correlates the exchange for a party that saw the request and
+   * identifies nothing to anyone else, so without this a retained error names
+   * neither the specification the failure occurred under nor the instance. The
+   * builders below populate it.
+   */
+  inResponseTo?: InResponseTo;
   message?: string;
   retryable: boolean;
   retryAfter?: string;
@@ -92,8 +120,15 @@ export interface RejectReason {
   details?: Record<string, unknown>;
 }
 
-/** The Type URI a consumer emits error responses under. */
-export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.2";
+/**
+ * The Type URI a consumer emits error responses under.
+ *
+ * `0.3`, because this runtime populates the `inResponseTo` member of §8.2 and
+ * `0.2`'s payload schema is `additionalProperties: false` — a document carrying
+ * it would not validate as `0.2`. Per §5.2 forward-minor compatibility a `0.2`
+ * consumer SHOULD accept it.
+ */
+export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.3";
 
 /**
  * SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.
@@ -205,6 +240,22 @@ export function rejectWithRecipient<P>(
   recipient: string | undefined,
   now: () => string = () => new Date().toISOString(),
 ): ErrorResponse {
+  // §8.2 — name the document this error reports on, so it means something to a
+  // party that did not see the request. Filled here rather than left to the
+  // caller because the builder is the only place that reliably has the
+  // originating document in hand; a caller-supplied value is kept.
+  const withOrigin: ErrorPayload = { ...payload };
+  if (withOrigin.inResponseTo === undefined) {
+    const about: InResponseTo = { typeUri: request.type };
+    // §8.1/§8.2 — under identityMismatch the response is addressed to the
+    // transport-authenticated sender, not the in-band issuer. That party did
+    // not necessarily compose the document, so its id is not echoed back.
+    if (normalizeCode(payload.code) !== "identityMismatch") {
+      about.id = request.id;
+    }
+    withOrigin.inResponseTo = about;
+  }
+
   const response: ErrorResponse = {
     id,
     // §4.9: continue the thread, falling back to the request's own id.
@@ -213,7 +264,7 @@ export function rejectWithRecipient<P>(
     issuer: request.recipient,
     recipient,
     issuedAt: now(),
-    payload,
+    payload: withOrigin,
   };
   // §4.9.2 — the whole exchange shares one parent, so the error response stays
   // inside the same enclosing exchange. Assigned conditionally so an absent

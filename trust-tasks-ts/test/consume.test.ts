@@ -13,6 +13,7 @@ import { describe, it } from "node:test";
 import {
   consumeInbound,
   refuse,
+  rejectWithRecipient,
   respondWith,
   StaticTransport,
   UnauthenticatedTransport,
@@ -362,5 +363,57 @@ describe("§4.9.2 parentThreadId", () => {
     // alone.
     const outcome = await run({ proof: PROOF, threadId: "same", parentThreadId: "same" });
     assert.equal(outcome.kind, "handled");
+  });
+});
+
+describe("§8.2 inResponseTo", () => {
+  it("names the document the error reports on", () => {
+    const err = refuse(doc({}), "err-1", { code: "proofRequired", message: "no proof", retryable: false }, CLOCK);
+    assert.deepEqual(err.payload.inResponseTo, {
+      typeUri: REQUIRED_SPEC.typeUri,
+      id: "req-1",
+    });
+  });
+
+  it("withholds the originating id under identityMismatch", () => {
+    // §8.1 — the response goes to the transport-authenticated sender, not the
+    // in-band issuer, and that party did not necessarily compose the document.
+    // The typeUri stays: it is not identifying.
+    const err = refuse(
+      doc({}),
+      "err-1",
+      { code: "identityMismatch", message: "mismatch", retryable: false },
+      CLOCK,
+    );
+    assert.equal(err.payload.inResponseTo?.typeUri, REQUIRED_SPEC.typeUri);
+    assert.equal(err.payload.inResponseTo?.id, undefined);
+  });
+
+  it("keeps a caller-supplied value", () => {
+    // The builder fills a gap; it does not overwrite a deliberate choice.
+    const req = doc({});
+    const err = rejectWithRecipient(
+      req,
+      "err-1",
+      { code: "taskFailed", retryable: false, inResponseTo: { typeUri: "https://trusttasks.org/spec/acl/revoke/0.1" } },
+      req.issuer,
+      CLOCK,
+    );
+    assert.equal(err.payload.inResponseTo?.typeUri, "https://trusttasks.org/spec/acl/revoke/0.1");
+    assert.equal(err.payload.inResponseTo?.id, undefined);
+  });
+
+  it("emits trust-task-error/0.3, the version whose schema has the member", () => {
+    // 0.2's payload schema is additionalProperties:false, so a document
+    // carrying inResponseTo would not validate as 0.2.
+    const err = refuse(doc({}), "err-1", { code: "taskFailed", message: "failed", retryable: false }, CLOCK);
+    assert.equal(err.type, "https://trusttasks.org/spec/trust-task-error/0.3");
+  });
+
+  it("carries through the full pipeline on a framework rejection", async () => {
+    const outcome = await run({}, { handlerShouldNotRun: true }); // proofRequired
+    assert.ok(outcome.kind === "rejected");
+    assert.equal(outcome.error.payload.inResponseTo?.typeUri, REQUIRED_SPEC.typeUri);
+    assert.equal(outcome.error.payload.inResponseTo?.id, "req-1");
   });
 });

@@ -41,7 +41,9 @@ pub mod validate;
 pub use consume::{consume_inbound, ConsumeOutcome, ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY};
 pub use dispatcher::Dispatcher;
 pub use document::{ErrorResponse, JsonLdContext, TrustTask};
-pub use error::{ErrorPayload, ParseCodeError, RejectReason, StandardCode, TrustTaskCode};
+pub use error::{
+    ErrorPayload, InResponseTo, ParseCodeError, RejectReason, StandardCode, TrustTaskCode,
+};
 pub use payload::Payload;
 pub use proof::{
     erase_verifier, DynProofVerifier, ErasedVerifier, Proof, ProofVerifier, VerificationError,

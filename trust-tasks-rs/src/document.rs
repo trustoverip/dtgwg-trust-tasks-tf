@@ -313,6 +313,24 @@ impl<P> TrustTask<P> {
         recipient: Option<String>,
     ) -> ErrorResponse {
         let thread_id = self.thread_id.clone().or_else(|| Some(self.id.clone()));
+        let mut payload = payload.into();
+        // §8.2 — name the document this error reports on, so the error means
+        // something to a party that did not see the request. Populated here
+        // rather than left to the caller because the builder is the only place
+        // that reliably has the originating document in hand.
+        if payload.in_response_to.is_none() {
+            payload.in_response_to = Some(crate::InResponseTo {
+                type_uri: self.type_uri.to_string(),
+                // §8.1/§8.2 — under `identityMismatch` the response is
+                // addressed to the transport-authenticated sender, not the
+                // in-band issuer. That party did not necessarily compose the
+                // document, so its identifier is not echoed back.
+                id: match &payload.code {
+                    crate::TrustTaskCode::Standard(crate::StandardCode::IdentityMismatch) => None,
+                    _ => Some(self.id.clone()),
+                },
+            });
+        }
         ErrorResponse {
             id: id.into(),
             thread_id,
@@ -324,7 +342,7 @@ impl<P> TrustTask<P> {
             recipient,
             issued_at: Some(Utc::now()),
             expires_at: None,
-            payload: payload.into(),
+            payload,
             context: None,
             proof: None,
             extra: Default::default(),
@@ -370,10 +388,13 @@ impl<P> TrustTask<P> {
 
 pub(crate) fn trust_task_error_type_uri() -> TypeUri {
     // The `trust-task-error` slug is a framework-defined reserved name, so
-    // `TypeUri::canonical` accepts it. Framework 0.2 carries the lowerCamelCase
-    // standard codes (SPEC.md §8.3 / Appendix B); the SDK emits the 0.2 spec.
-    TypeUri::canonical("trust-task-error", 0, 2)
-        .expect("trust-task-error/0.2 is a valid framework Type URI")
+    // `TypeUri::canonical` accepts it. The SDK emits `0.3`: it populates the
+    // `inResponseTo` member of §8.2, and `0.2`'s payload schema is
+    // `additionalProperties: false`, so a document carrying it would not
+    // validate as `0.2`. Per §5.2 forward-minor compatibility a `0.2` consumer
+    // SHOULD accept it.
+    TypeUri::canonical("trust-task-error", 0, 3)
+        .expect("trust-task-error/0.3 is a valid framework Type URI")
 }
 
 impl fmt::Display for ErrorResponse {

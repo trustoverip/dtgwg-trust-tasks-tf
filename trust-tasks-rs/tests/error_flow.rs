@@ -4,7 +4,7 @@
 //!
 //!   1. Resolve party identity through the [`TransportHandler`].
 //!   2. Run framework-level checks (§7.2 items 4 and 5).
-//!   3. On failure, mint a `trust-task-error/0.2` response that satisfies the
+//!   3. On failure, mint a `trust-task-error/0.3` response that satisfies the
 //!      spec's "Reporting consumer" conformance rules.
 //!
 //! Each step uses the public surface only.
@@ -52,7 +52,7 @@ fn reject_with_wires_framework_members() {
     assert_eq!(err.id, "err-1");
     assert_eq!(
         err.type_uri,
-        "https://trusttasks.org/spec/trust-task-error/0.2"
+        "https://trusttasks.org/spec/trust-task-error/0.3"
             .parse()
             .unwrap()
     );
@@ -140,7 +140,7 @@ fn full_consumer_flow_emits_well_formed_error_response() {
     let json = serde_json::to_value(&err).unwrap();
     assert_eq!(
         json["type"],
-        serde_json::json!("https://trusttasks.org/spec/trust-task-error/0.2")
+        serde_json::json!("https://trusttasks.org/spec/trust-task-error/0.3")
     );
     assert_eq!(
         json["payload"]["code"],
@@ -315,4 +315,75 @@ fn error_response_implements_std_error() {
     let as_dyn: &dyn Error = &err;
     assert!(as_dyn.source().is_some());
     assert!(format!("{err}").contains("expired"));
+}
+
+/// SPEC §8.2 — an error response names the document it reports on, so it means
+/// something to a party that did not see the request. Populated by the builder
+/// rather than the caller: it is the only place that reliably has the
+/// originating document in hand.
+#[test]
+fn error_response_names_the_document_it_reports_on() {
+    let mut req = request(
+        Some("did:web:org.example"),
+        Some("did:web:maintainer.example"),
+    );
+    req.id = "req-77".into();
+
+    let err = req.reject_with(
+        "err-77",
+        ErrorPayload::new(TrustTaskCode::from(StandardCode::ProofRequired)),
+    );
+    let about = err
+        .payload
+        .in_response_to
+        .as_ref()
+        .expect("inResponseTo must be populated");
+    assert_eq!(
+        about.type_uri,
+        "https://trusttasks.org/spec/kyc-handoff/1.0"
+    );
+    assert_eq!(about.id.as_deref(), Some("req-77"));
+}
+
+/// SPEC §8.1/§8.2 — under `identityMismatch` the response goes to the
+/// transport-authenticated sender, not the in-band issuer. That party did not
+/// necessarily compose the document, so its identifier is withheld. The
+/// `typeUri` stays: it is not identifying.
+#[test]
+fn identity_mismatch_withholds_the_originating_id() {
+    let mut req = request(
+        Some("did:web:attacker.example"),
+        Some("did:web:maintainer.example"),
+    );
+    req.id = "req-88".into();
+
+    let err = req.reject_with(
+        "err-88",
+        ErrorPayload::new(TrustTaskCode::from(StandardCode::IdentityMismatch)),
+    );
+    let about = err.payload.in_response_to.as_ref().unwrap();
+    assert_eq!(
+        about.type_uri,
+        "https://trusttasks.org/spec/kyc-handoff/1.0"
+    );
+    assert_eq!(
+        about.id, None,
+        "the contested party's document id must not be echoed"
+    );
+}
+
+/// A caller that supplies its own `inResponseTo` keeps it — the builder fills a
+/// gap, it does not overwrite a deliberate choice.
+#[test]
+fn caller_supplied_in_response_to_is_preserved() {
+    let mut req = request(None, None);
+    req.id = "req-99".into();
+    let err = req.reject_with(
+        "err-99",
+        ErrorPayload::new(TrustTaskCode::from(StandardCode::TaskFailed))
+            .about("https://trusttasks.org/spec/acl/revoke/0.1", None),
+    );
+    let about = err.payload.in_response_to.as_ref().unwrap();
+    assert_eq!(about.type_uri, "https://trusttasks.org/spec/acl/revoke/0.1");
+    assert_eq!(about.id, None);
 }

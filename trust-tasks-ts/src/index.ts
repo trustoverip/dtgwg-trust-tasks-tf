@@ -204,6 +204,7 @@ export * as TaskConsentRequest_v0_1 from "./task-consent/request/0.1/payload.js"
 export * as TrustTaskDiscovery_v0_1 from "./trust-task-discovery/0.1/payload.js";
 export * as TrustTaskError_v0_1 from "./trust-task-error/0.1/payload.js";
 export * as TrustTaskError_v0_2 from "./trust-task-error/0.2/payload.js";
+export * as TrustTaskError_v0_3 from "./trust-task-error/0.3/payload.js";
 export * as ConsumerContextShared_v0_1 from "./vault/_shared/0.1/consumer-context.js";
 export * as SealedEnvelopeShared_v0_1 from "./vault/_shared/0.1/sealed-envelope.js";
 export * as SessionBlobShared_v0_1 from "./vault/_shared/0.1/session-blob.js";

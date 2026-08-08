@@ -21,6 +21,7 @@ export {
   validateBasic,
   type ErrorPayload,
   type ErrorResponse,
+  type InResponseTo,
   type Proof,
   type RejectReason,
   type SpecPolicy,

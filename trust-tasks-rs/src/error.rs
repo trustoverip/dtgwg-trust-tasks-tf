@@ -1,6 +1,7 @@
 //! Error-response payload for the `trust-task-error` framework spec. The SDK
-//! emits the `0.2` form (lowerCamelCase codes); the parser also accepts the
-//! `0.1` snake_case codes so a `0.2` consumer can read a `0.1` peer.
+//! emits the `0.3` form — lowerCamelCase codes, and the `inResponseTo` member
+//! that names the document being reported on. The parser also accepts the `0.1`
+//! snake_case codes, so a current consumer can read a `0.1` peer.
 //!
 //! Models the structure defined in SPEC.md §8.2 and §8.3. The set of standard
 //! codes is encoded as the [`StandardCode`] enum; task-specific extensions
@@ -19,15 +20,55 @@ use thiserror::Error;
 
 use crate::transport::ConsistencyError;
 
-/// The `payload` of a `trust-task-error/0.2` document, per SPEC.md §8.2.
+/// Names the *Trust Task document* an [`ErrorPayload`] reports on (SPEC.md
+/// §8.2).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct InResponseTo {
+    /// The reported-on document's `type`, **including** any `#request` or
+    /// `#response` fragment it carried — that fragment is what tells a consumer
+    /// which variant's semantics apply.
+    #[serde(rename = "typeUri")]
+    pub type_uri: String,
+
+    /// The reported-on document's `id`. Globally unique and never reused
+    /// (SPEC.md §4.3), so it names one instance where `threadId` names an
+    /// exchange.
+    ///
+    /// Omitted under `identityMismatch`: per §8.1 the response is addressed to
+    /// the transport-authenticated sender rather than the in-band `issuer`, and
+    /// that party did not necessarily compose the document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+}
+
+/// The `payload` of a `trust-task-error/0.3` document, per SPEC.md §8.2.
 ///
-/// Correlation back to the document this error reports on is carried at the
-/// framework level by the `threadId` member of the surrounding
-/// [`TrustTask`](crate::TrustTask), not here.
+/// Exchange-level correlation is carried by the surrounding
+/// [`TrustTask`](crate::TrustTask)'s `threadId`; *which document* this error
+/// reports on is carried here, by [`in_response_to`](Self::in_response_to).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ErrorPayload {
     /// Short identifier for the failure category.
     pub code: TrustTaskCode,
+
+    /// Identifies the *Trust Task document* this error reports on (SPEC.md
+    /// §8.2).
+    ///
+    /// `threadId` correlates the exchange for a party that saw the originating
+    /// request, and identifies nothing to anyone else. Without this, a retained
+    /// error names neither the specification the failure occurred under nor the
+    /// instance that triggered it — and for the standard codes of §8.3 there is
+    /// no other signal of origin at all.
+    ///
+    /// **SHOULD** be populated in general, and **MUST** be where the error will
+    /// be retained, replayed, or relied upon beyond the original producer. The
+    /// document builders on [`TrustTask`](crate::TrustTask) populate it for you.
+    #[serde(
+        rename = "inResponseTo",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub in_response_to: Option<InResponseTo>,
 
     /// Human-readable description. Non-normative; intended for logs and
     /// operator UI.
@@ -69,11 +110,26 @@ impl ErrorPayload {
         };
         Self {
             code,
+            in_response_to: None,
             message: None,
             retryable,
             retry_after: None,
             details: None,
         }
+    }
+
+    /// Name the document this error reports on (SPEC.md §8.2).
+    ///
+    /// Prefer the builders on [`TrustTask`](crate::TrustTask), which populate
+    /// this from the request being rejected — including the §8.1 rule that the
+    /// `id` is omitted under `identityMismatch`. Use this directly only when
+    /// constructing a payload without the originating document in hand.
+    pub fn about(mut self, type_uri: impl Into<String>, id: Option<String>) -> Self {
+        self.in_response_to = Some(InResponseTo {
+            type_uri: type_uri.into(),
+            id,
+        });
+        self
     }
 
     /// Attach a human-readable message.
@@ -679,6 +735,7 @@ mod tests {
     fn serializes_payload_as_json() {
         let payload = ErrorPayload {
             code: StandardCode::Expired.into(),
+            in_response_to: None,
             message: Some("expired".to_string()),
             retryable: false,
             retry_after: None,

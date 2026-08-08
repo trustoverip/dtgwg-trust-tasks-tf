@@ -163,6 +163,7 @@ impl<R> Dispatcher<R> {
         let id = doc.id.clone();
         let thread_id = doc.thread_id.clone();
         let parent_thread_id = doc.parent_thread_id.clone();
+        let type_uri = doc.type_uri.to_string();
         let issuer = doc.issuer.clone();
         let recipient = doc.recipient.clone();
 
@@ -170,11 +171,14 @@ impl<R> Dispatcher<R> {
             Ok(value) => Ok(value),
             Err(reason) => Err(build_error_response(
                 error_id.into(),
-                id,
-                thread_id,
-                parent_thread_id,
-                issuer,
-                recipient,
+                RequestOrigin {
+                    id,
+                    thread_id,
+                    parent_thread_id,
+                    type_uri,
+                    issuer,
+                    recipient,
+                },
                 ErrorPayload::from(reason),
             )),
         }
@@ -186,15 +190,42 @@ impl<R> Dispatcher<R> {
 /// intact `TrustTask` — the dispatcher has already moved the inbound
 /// document into the handler by the time we know we need an error
 /// response, so we work from the metadata cloned beforehand.
+/// The parts of an inbound document a routing-time rejection needs, captured
+/// before the handler consumes it.
+struct RequestOrigin {
+    id: String,
+    thread_id: Option<String>,
+    parent_thread_id: Option<String>,
+    type_uri: String,
+    issuer: Option<String>,
+    recipient: Option<String>,
+}
+
 fn build_error_response(
     error_id: String,
-    request_id: String,
-    request_thread_id: Option<String>,
-    request_parent_thread_id: Option<String>,
-    request_issuer: Option<String>,
-    request_recipient: Option<String>,
-    payload: ErrorPayload,
+    origin: RequestOrigin,
+    mut payload: ErrorPayload,
 ) -> ErrorResponse {
+    let RequestOrigin {
+        id: request_id,
+        thread_id: request_thread_id,
+        parent_thread_id: request_parent_thread_id,
+        type_uri: request_type_uri,
+        issuer: request_issuer,
+        recipient: request_recipient,
+    } = origin;
+    // §8.2 — see TrustTask::reject_with_recipient for why this is populated by
+    // the builder rather than the caller, and why the id is withheld under
+    // identityMismatch.
+    if payload.in_response_to.is_none() {
+        payload.in_response_to = Some(crate::InResponseTo {
+            type_uri: request_type_uri,
+            id: match &payload.code {
+                crate::TrustTaskCode::Standard(crate::StandardCode::IdentityMismatch) => None,
+                _ => Some(request_id.clone()),
+            },
+        });
+    }
     let thread_id = request_thread_id.or(Some(request_id));
     ErrorResponse {
         id: error_id,
