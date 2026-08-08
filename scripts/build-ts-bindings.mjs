@@ -24,12 +24,18 @@
 //   npm run build-ts-bindings
 //
 // Strategy: use json-schema-to-typescript. Cross-file $refs are resolved by
-// json-schema-to-typescript's built-in reference walker against the on-disk
-// schemas. We do NOT inline shared definitions into each spec's TS output —
-// instead, generated TS files import from the shared TS modules using
-// relative paths matching the directory layout. This keeps the generated
-// tree small and lets consumers import a single `VaultEntry` type that's
-// the same across every spec referencing it.
+// its built-in reference walker against the on-disk schemas, and the resulting
+// definitions are **inlined** into each spec's module — a spec that references
+// `AclEntry` gets its own copy rather than importing one. Each generated module
+// is therefore self-contained, with no relative imports at all. (An earlier
+// version of this comment claimed the opposite; `declareExternallyReferenced`
+// does not produce cross-module imports here.) Shared schemas are still emitted
+// as their own modules and re-exported from the barrel, so a consumer wanting
+// one canonical `VaultEntry` can import it directly — and TypeScript's
+// structural typing means the inlined copies remain mutually assignable.
+//
+// Only `index.ts` carries relative specifiers, and they MUST end in `.js`; see
+// the note where they are built.
 
 import fsSync, { promises as fs } from "node:fs";
 import path from "node:path";
@@ -343,11 +349,22 @@ async function emitIndex(generated) {
     "// The hand-written §7.2 consumer pipeline. Re-exported flat (rather than",
     "// namespaced like the generated modules) because it is the framework API,",
     "// not one specification among many.",
-    `export * from "./${RUNTIME_DIR}/index";`,
+    `export * from "./${RUNTIME_DIR}/index.js";`,
     "",
   ];
   for (const { outPath, slugInfo } of generated) {
-    const rel = "./" + path.relative(OUT_DIR, outPath).replace(/\\/g, "/").replace(/\.ts$/, "");
+    // `.js`, not extensionless. The package is ESM ("type": "module"), and Node
+    // requires an explicit extension on a relative ESM specifier — it does not
+    // probe for `.js` the way CommonJS resolution did. TypeScript's `Bundler`
+    // moduleResolution accepts the extensionless form and emits it verbatim, so
+    // `tsc` stayed quiet while `dist/index.js` shipped specifiers Node cannot
+    // resolve: any `import … from "@openvtc/trust-tasks"` died with
+    // ERR_MODULE_NOT_FOUND. It went unnoticed because the package was types
+    // only until the runtime landed — `import type` is erased, and bundlers
+    // tolerate extensionless paths. In TypeScript a `.js` specifier resolves to
+    // the `.ts` source, so this is correct at both ends.
+    const rel =
+      "./" + path.relative(OUT_DIR, outPath).replace(/\\/g, "/").replace(/\.ts$/, ".js");
     if (slugInfo) {
       const id =
         slugInfo.slug

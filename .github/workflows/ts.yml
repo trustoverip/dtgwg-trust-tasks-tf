@@ -77,3 +77,13 @@ jobs:
       - name: Run the runtime conformance tests
         working-directory: trust-tasks-ts
         run: npm test
+
+      # Imports the *built* package from Node, as a consumer does. `tsc
+      # --noEmit` cannot see this failure mode: the package is ESM and Node
+      # demands an explicit extension on a relative specifier, while
+      # TypeScript's `Bundler` resolution accepts an extensionless one and
+      # emits it verbatim. That shipped a broken root import for four releases
+      # with every check green.
+      - name: Smoke-test the built package
+        working-directory: trust-tasks-ts
+        run: npm run smoke

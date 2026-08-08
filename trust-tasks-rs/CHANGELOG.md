@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
 the corresponding `SPEC.md` framework version.
 
+## [0.2.59] — 2026-08-08
+
+### Fixed
+- **The root import of `@openvtc/trust-tasks` was broken, and had been since
+  0.2.55.** `dist/index.js` re-exported every module with an extensionless
+  relative specifier. The package is ESM, and Node requires an explicit
+  extension on a relative ESM specifier — it does not probe for `.js` the way
+  CommonJS resolution did — so `import … from @openvtc/trust-tasks` failed
+  with `ERR_MODULE_NOT_FOUND`.
+
+  Every check stayed green throughout: TypeScript's `Bundler` moduleResolution
+  accepts the extensionless form and emits it verbatim, so `tsc --noEmit` saw
+  nothing wrong. It went unnoticed because the package was types only — an
+  `import type` is erased before it reaches Node, and bundlers tolerate
+  extensionless paths. The 0.2.58 runtime is what made it fatal: real code
+  that could not be imported.
+
+  Subpath imports (`@openvtc/trust-tasks/acl/grant/0.1/payload`) were always
+  fine; only the barrel was affected.
+
+  `npm run smoke` now imports the built `dist/` from Node and exercises the
+  pipeline through it, and runs in CI. A type-level check cannot cover this.
+
 ## [0.2.58] — 2026-08-08
 
 No changes to `trust-tasks-rs` itself; the version moves to stay in step with
