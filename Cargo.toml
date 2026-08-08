@@ -6,6 +6,7 @@ members = [
     "trust-tasks-https",
     "trust-tasks-proof",
     "trust-tasks-didcomm",
+    "trust-tasks-didcomm-v1",
     "trust-tasks-tsp",
     "trust-tasks-capability-client",
 ]

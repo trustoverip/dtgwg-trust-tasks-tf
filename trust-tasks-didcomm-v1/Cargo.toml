@@ -1,0 +1,19 @@
+[package]
+name = "trust-tasks-didcomm-v1"
+version = "0.1.0"
+edition.workspace = true
+rust-version = "1.95"
+license.workspace = true
+repository.workspace = true
+description = "DIDComm v1 transport binding for the Trust Tasks framework, built on affinidi-messaging-didcomm-v1. Carries Trust Task documents to Aries-lineage agents, which speak v1 only, and maps the connection's theirDid into the framework's §4.8.1 precedence."
+keywords = ["trust-tasks", "didcomm", "aries", "did", "transport"]
+categories = ["network-programming", "cryptography"]
+publish = true
+
+[dependencies]
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.3" }
+affinidi-messaging-didcomm-v1 = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4"] }
