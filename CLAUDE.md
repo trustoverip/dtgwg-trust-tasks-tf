@@ -77,6 +77,25 @@ Per the established release housekeeping (#82, #86 precedent):
 Additive spec changes are a patch/minor bump; breaking schema changes require a new
 spec **version** folder (per SPEC §5), not an in-place edit.
 
+### ⚠️ Library versions are semver over the *library's* API, not the framework's
+
+The libraries version independently of `SPEC.md`. A breaking change to what a
+consumer compiles, links, or relies on bumps the leading non-zero component
+(`0.2.x` → `0.3.0` below 1.0); anything additive is a patch.
+
+**Behavioural breaks count even when the wire format is unchanged.** A spec that
+starts declaring `proof` REQUIRED flips `IS_PROOF_REQUIRED`, and a consumer then
+rejects documents it used to accept — that is a breaking change to the library
+even though no schema moved. Judge the bump by what a consumer observes, not by
+whether a `.json` file changed.
+
+**Bumping the leading component is a workspace event, not a one-line edit.**
+`trust-tasks-https`, `-didcomm`, `-proof`, `-tsp` and `-capability-client` each
+declare `trust-tasks-rs = { path = "…", version = "0.2" }`. Going to `0.3.0`
+means updating all five requirements and releasing those crates too, in the
+dependency order `publish.yml` uses. `cargo check` fails immediately if you
+miss one, so the trap is discovering it mid-release rather than planning for it.
+
 ## Build / validate / publish
 
 ```sh

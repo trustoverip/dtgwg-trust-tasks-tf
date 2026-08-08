@@ -156,15 +156,26 @@ validator.
 
 ## Versioning
 
-The package version (`MAJOR.MINOR.PATCH`) tracks the framework
-spec's [`SPEC.md` revision](https://trusttasks.org/SPEC) `MAJOR.MINOR`
-with the patch component bumped per published binding revision. A
-bump in any individual spec's `MAJOR.MINOR` ships as a new exported
-module name (e.g. `AclGrant_v1_0` alongside `AclGrant_v0_1`); the
-package version itself only bumps when the binding-generation or
-re-exported surface changes.
+The package version follows [Semantic Versioning](https://semver.org/) over
+**this package's own API** — the exported types, the runtime, and the generated
+module surface. A breaking change to any of those bumps the leading non-zero
+component (`0.2.x` → `0.3.0` while below 1.0); anything additive is a patch.
+Behavioural changes count: when a specification starts declaring `proof`
+REQUIRED, `consumeInbound` rejects documents it previously accepted, and the
+version has to reflect that even though the wire format is unchanged.
 
-The Rust crate `trust-tasks-rs` follows the same release cadence.
+The version is **not** tied to the [`SPEC.md`](https://trusttasks.org/SPEC)
+framework revision, which it once claimed to track. The two move for different
+reasons — a framework revision can change the spec-authoring contract without
+altering a single generated type. Read a document's framework version from the
+specification's `targetFrameworkVersion` declaration instead.
+
+A bump in an individual spec's own `MAJOR.MINOR` ships as a new exported module
+name (`AclGrant_v1_0` alongside `AclGrant_v0_1`) and so is additive here.
+
+`trust-tasks-rs` and `@openvtc/trust-tasks` are released together and carry
+matching version numbers, so a given pair is known to be generated from the
+same registry revision.
 
 ## License
 

@@ -2,9 +2,55 @@
 
 All notable changes to `trust-tasks-rs` are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to a `MAJOR.MINOR` versioning scheme that tracks
-the corresponding `SPEC.md` framework version.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+**Versioning follows [Semantic Versioning](https://semver.org/) over this
+library's own API — not the framework's.** A breaking change to what a consumer
+compiles or links against bumps the leading non-zero component (`0.2.x` →
+`0.3.0` while below 1.0); anything additive is a patch. That includes changes
+that alter *behaviour* against an unchanged wire format: when a specification
+starts declaring `proof` REQUIRED, documents a consumer previously accepted are
+now rejected, and the library version has to say so.
+
+This scheme is deliberately **decoupled from the `SPEC.md` framework version**,
+which the crate version once claimed to track. The two move for different
+reasons — a framework revision can change the spec-authoring contract without
+touching a single generated type, and the library can break its own API without
+any framework change — so tying them meant one number trying to answer two
+questions. A document's framework version is carried by each specification's
+`targetFrameworkVersion` declaration (SPEC §7.3 item 3), which is where a
+consumer should read it.
+
+> **Bumping the leading component is a workspace event.** `trust-tasks-https`,
+> `-didcomm`, `-proof`, `-tsp` and `-capability-client` each depend on
+> `trust-tasks-rs` with a `version = "0.2"` requirement. Moving to `0.3.0` means
+> updating all five requirements and releasing those crates too, in the
+> dependency order `publish.yml` uses. Plan it as one change rather than
+> discovering it mid-bump.
+
+## [0.2.60] — 2026-08-08
+
+### Changed
+- **Versioning policy restated.** The header of this file claimed the crate
+  version tracked the `SPEC.md` framework version. That stopped being true when
+  the framework moved to 0.3 while the libraries stayed on 0.2.x, and it was
+  never quite the right claim: a framework revision can change the
+  spec-authoring contract without touching a generated type, and the library can
+  break its own API with no framework change at all. One number cannot answer
+  both questions.
+
+  The libraries now version by semver over their **own** API, independently of
+  the framework. Read a document's framework version from the specification's
+  `targetFrameworkVersion` (SPEC §7.3 item 3).
+
+  Two consequences worth stating plainly, both now documented in CLAUDE.md:
+  behavioural breaks count even when the wire format is unchanged (a spec that
+  starts declaring `proof` REQUIRED makes a consumer reject documents it used
+  to accept — that is breaking), and bumping the leading component is a
+  workspace event, because five binding crates pin `trust-tasks-rs = 0.2`
+  and must be updated and released with it.
+
+  Documentation only; no code change.
 
 ## [0.2.59] — 2026-08-08
 
