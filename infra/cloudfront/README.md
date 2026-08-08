@@ -23,11 +23,32 @@ schemas were deployed the whole time, just at `/specs/<slug>/<version>/payload.s
 ```
 /spec/trust-task/<M.m>  + application/schema+json  ->  /specs/_framework/<M.m>/trust-task.schema.json
 /spec/<slug…>/<M.m>     + application/schema+json  ->  /specs/<slug…>/<M.m>/payload.schema.json
-anything else                                      ->  unchanged, SPA renders prose
+/assets/…, /specs/…, /bindings/…, root files       ->  unchanged (a missing one 404s honestly)
+anything else                                      ->  /index.html (SPA renders the route)
 ```
 
-Requests without that `Accept` value are untouched, so the human-facing site is
-unaffected.
+The second job used to be a distribution-level `404 -> /index.html as 200`
+custom error response. That is the conventional SPA catch-all and fine for
+browsers, but it meant an unknown or mistyped Type URI returned the site shell
+under a **success** status — so a consumer following §7.2 items 1–2 ("fetch the
+schema and validate against it") quietly validated against nothing.
+
+It could not be narrowed in place. `CustomErrorResponses` is distribution-wide
+with no per-cache-behaviour override, and it cannot be corrected on the way out
+either: **viewer-response functions do not run for responses CloudFront
+generates itself**, and a custom error page is exactly that. (Confirmed
+empirically — a viewer-response function fired for `/` and never for
+`/spec/does-not-exist/0.1`.) So the mapping is removed and the fallback happens
+in the viewer-request function, where the rule is ours to scope.
+
+The rule is inverted from the usual "no file extension means an SPA route",
+which fails here because `/spec/acl/grant/0.1` ends in what looks like a `.1`
+extension. Instead everything is an SPA route *except* the real asset trees and
+root files — precisely what should 404 when absent. Nothing can be missed,
+because the SPA is the default.
+
+⚠️ `ROOT_FILES` in the function must track the root of `website/`. A new root
+file added without updating it is served the shell instead of itself.
 
 ## One-time setup
 
@@ -81,6 +102,22 @@ viewer-request function is already associated.
 The `--if-match` value must be the `ETag` from that same
 `get-distribution-config` response. It is not a fixed constant, and it changes
 on every distribution update.
+
+### Remove the SPA error mapping
+
+⚠️ **Order matters.** Update and publish the function *first*, then remove the
+mapping. The other way round 404s every client-side route until the function
+catches up. `remove-spa-error-mapping.sh` refuses to run unless the deployed
+LIVE function already contains the fallback, so the order is enforced rather
+than remembered.
+
+```sh
+./remove-spa-error-mapping.sh <DISTRIBUTION_ID>          # dry run
+./remove-spa-error-mapping.sh <DISTRIBUTION_ID> --apply
+```
+
+The `403` mapping is deliberately left in place — this origin returns 404 for a
+missing key, so 403 is not in play, and removing it is a separate decision.
 
 ### Cache keys need no change
 

@@ -26,3 +26,9 @@ target/
 
 # TypeScript test build output
 trust-tasks-ts/.test-build/
+
+# Scratch dumps from `aws cloudfront get-distribution-config`. These carry the
+# AWS account id, bucket name and certificate ARN — infrastructure identifiers
+# that do not belong in a public repository. infra/cloudfront/associate.sh uses
+# a mktemp directory precisely so none of this lands in the tree.
+infra/cloudfront/dist*.json

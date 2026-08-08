@@ -69,37 +69,72 @@ describe("rewrites a Type URI to its schema", () => {
   });
 });
 
-describe("leaves everything else alone", () => {
-  it("does not touch a request without the schema Accept", () => {
-    // The human-facing site must keep working; this is the check that catches a
-    // rewrite condition broad enough to break it.
-    assert.equal(route("/spec/acl/grant/0.1", HTML), "/spec/acl/grant/0.1");
-    assert.equal(route("/spec/acl/grant/0.1", undefined), "/spec/acl/grant/0.1");
+describe("passes real files through untouched", () => {
+  it("does not re-enter on the asset trees", () => {
+    // /specs/ is where the schema rewrite points; rewriting again would loop.
+    // These must also stay untouched so a missing object 404s honestly rather
+    // than returning the SPA shell under a 200 — the bug this function exists
+    // to fix.
+    for (const uri of [
+      "/specs/acl/grant/0.1/payload.schema.json",
+      "/specs/_framework/0.2/trust-task.schema.json",
+      "/bindings/didcomm/0.1/spec.md",
+      "/assets/data.js",
+    ]) {
+      assert.equal(route(uri, SCHEMA), uri);
+      assert.equal(route(uri, HTML), uri);
+    }
   });
 
-  it("does not re-enter on the asset tree", () => {
-    // /specs/ is where the rewrite points. Rewriting it again would loop.
-    const asset = "/specs/acl/grant/0.1/payload.schema.json";
-    assert.equal(route(asset, SCHEMA), asset);
+  it("passes root files through", () => {
+    for (const uri of ["/index.html", "/registry.json", "/SPEC.md"]) {
+      assert.equal(route(uri, HTML), uri);
+    }
   });
 
-  it("ignores paths that do not end in a MAJOR.MINOR version", () => {
-    assert.equal(route("/spec/acl/grant", SCHEMA), "/spec/acl/grant");
-    assert.equal(route("/spec/categories", SCHEMA), "/spec/categories");
-    assert.equal(route("/", SCHEMA), "/");
+  it("404s a missing asset rather than swallowing it", () => {
+    // The point of the inverted rule: anything under an asset prefix is left
+    // for the origin to answer, so a typo produces a real 404.
+    const missing = "/specs/does/not/exist.schema.json";
+    assert.equal(route(missing, SCHEMA), missing);
+  });
+});
+
+describe("falls back to the SPA for client-side routes", () => {
+  it("serves the shell for app routes", () => {
+    for (const uri of ["/", "/categories", "/about", "/registry", "/specification"]) {
+      assert.equal(route(uri, HTML), "/index.html");
+    }
+  });
+
+  it("serves the shell for a Type URI viewed in a browser", () => {
+    // No schema Accept, so this is a human reading prose — the SPA renders it.
+    assert.equal(route("/spec/acl/grant/0.1", HTML), "/index.html");
+    assert.equal(route("/spec/acl/grant/0.1", undefined), "/index.html");
+  });
+
+  it("serves the shell for an unknown Type URI in a browser", () => {
+    // The SPA shows its own not-found UI. Only the schema request 404s.
+    assert.equal(route("/spec/does-not-exist/0.1", HTML), "/index.html");
   });
 });
 
 describe("refuses to rewrite anything that is not a plain slug", () => {
+  // These fall through to the SPA rather than building a path into the specs
+  // tree. That is the safe direction: a bogus URL renders the site, it does not
+  // reach for a file.
   it("rejects path traversal", () => {
-    // Rewriting this would build a path escaping the specs tree.
-    assert.equal(route("/spec/../../etc/0.1", SCHEMA), "/spec/../../etc/0.1");
-    assert.equal(route("/spec/acl/../../../x/0.1", SCHEMA), "/spec/acl/../../../x/0.1");
+    assert.equal(route("/spec/../../etc/0.1", SCHEMA), "/index.html");
+    assert.equal(route("/spec/acl/../../../x/0.1", SCHEMA), "/index.html");
   });
 
   it("rejects segments outside the §6.1 slug grammar", () => {
-    assert.equal(route("/spec/AcL/grant/0.1", SCHEMA), "/spec/AcL/grant/0.1");
-    assert.equal(route("/spec/acl_grant/0.1", SCHEMA), "/spec/acl_grant/0.1");
-    assert.equal(route("/spec/-leading/0.1", SCHEMA), "/spec/-leading/0.1");
+    assert.equal(route("/spec/AcL/grant/0.1", SCHEMA), "/index.html");
+    assert.equal(route("/spec/acl_grant/0.1", SCHEMA), "/index.html");
+    assert.equal(route("/spec/-leading/0.1", SCHEMA), "/index.html");
+  });
+
+  it("does not rewrite a path with no version segment", () => {
+    assert.equal(route("/spec/acl/grant", SCHEMA), "/index.html");
   });
 });

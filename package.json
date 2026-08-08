@@ -9,7 +9,7 @@
     "validate": "node scripts/build-registry.mjs --validate-only",
     "serve": "node scripts/serve-website.mjs",
     "build-ts-bindings": "node scripts/build-ts-bindings.mjs",
-    "test:infra": "node --test infra/cloudfront/type-uri-negotiation.test.mjs"
+    "test:infra": "node --test infra/cloudfront/*.test.mjs"
   },
   "engines": {
     "node": ">=24"

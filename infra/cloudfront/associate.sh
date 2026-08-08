@@ -20,7 +20,12 @@
 
 set -euo pipefail
 
-FUNCTION_NAME="trust-tasks-type-uri-negotiation"
+# name:eventType. Associated in a single distribution update — each update
+# invalidates the ETag, so two sequential updates would need a refetch between
+# them.
+FUNCTIONS=(
+  "trust-tasks-type-uri-negotiation:viewer-request"
+)
 DIST_ID="${1:-}"
 APPLY="${2:-}"
 
@@ -36,46 +41,60 @@ done
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-# The ARN is stage-independent; CloudFront serves whichever stage is published,
-# so the function must be published (LIVE) before this has any effect.
-arn=$(aws cloudfront describe-function --name "$FUNCTION_NAME" \
-        --query 'FunctionSummary.FunctionMetadata.FunctionARN' --output text)
-stage=$(aws cloudfront describe-function --name "$FUNCTION_NAME" --stage LIVE \
-        --query 'FunctionSummary.FunctionMetadata.Stage' --output text 2>/dev/null || echo "")
-if [[ "$stage" != "LIVE" ]]; then
-  echo "error: $FUNCTION_NAME has no LIVE stage — run publish-function first (see README.md)" >&2
-  exit 1
-fi
-
 aws cloudfront get-distribution-config --id "$DIST_ID" > "$work/wrapper.json"
 etag=$(jq -r '.ETag' "$work/wrapper.json")
 
-current=$(jq -r '.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items[]?
-                 | select(.EventType=="viewer-request") | .FunctionARN' "$work/wrapper.json")
-if [[ "$current" == "$arn" ]]; then
-  echo "already associated — $FUNCTION_NAME is the viewer-request function on $DIST_ID"
+# The ARN is stage-independent; CloudFront serves whichever stage is published,
+# so each function must be published (LIVE) before association has any effect.
+items="[]"
+changes=()
+for entry in "${FUNCTIONS[@]}"; do
+  name="${entry%%:*}"
+  event="${entry##*:}"
+
+  arn=$(aws cloudfront describe-function --name "$name" \
+          --query 'FunctionSummary.FunctionMetadata.FunctionARN' --output text 2>/dev/null || echo "")
+  if [[ -z "$arn" || "$arn" == "None" ]]; then
+    echo "error: function $name does not exist — create and publish it first (see README.md)" >&2
+    exit 1
+  fi
+  stage=$(aws cloudfront describe-function --name "$name" --stage LIVE \
+            --query 'FunctionSummary.FunctionMetadata.Stage' --output text 2>/dev/null || echo "")
+  if [[ "$stage" != "LIVE" ]]; then
+    echo "error: $name has no LIVE stage — run publish-function first (see README.md)" >&2
+    exit 1
+  fi
+
+  current=$(jq -r --arg e "$event" '.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items[]?
+                   | select(.EventType==$e) | .FunctionARN' "$work/wrapper.json")
+  if [[ -n "$current" && "$current" != "$arn" ]]; then
+    echo "error: a different $event function is already associated:" >&2
+    echo "         $current" >&2
+    echo "       refusing to replace it. Resolve by hand." >&2
+    exit 1
+  fi
+  [[ "$current" == "$arn" ]] || changes+=("$event -> $name")
+
+  items=$(jq -c --arg arn "$arn" --arg e "$event" '. + [{FunctionARN:$arn, EventType:$e}]' <<<"$items")
+done
+
+if [[ ${#changes[@]} -eq 0 ]]; then
+  echo "already associated — nothing to do on $DIST_ID"
   exit 0
-fi
-if [[ -n "$current" ]]; then
-  echo "error: a different viewer-request function is already associated:" >&2
-  echo "         $current" >&2
-  echo "       refusing to replace it. Resolve by hand." >&2
-  exit 1
 fi
 
 # Extract the inner DistributionConfig *and* apply the edit in one pass.
-jq --arg arn "$arn" '
+jq --argjson items "$items" '
   .DistributionConfig
   | .DefaultCacheBehavior.FunctionAssociations = {
-      Quantity: 1,
-      Items: [ { FunctionARN: $arn, EventType: "viewer-request" } ]
+      Quantity: ($items | length),
+      Items: $items
     }
 ' "$work/wrapper.json" > "$work/config.json"
 
 echo "distribution : $DIST_ID"
-echo "function     : $arn"
 echo "if-match     : $etag"
-echo "change       : DefaultCacheBehavior.FunctionAssociations 0 -> 1 (viewer-request)"
+for c in "${changes[@]}"; do echo "change       : associate $c"; done
 
 if [[ "$APPLY" != "--apply" ]]; then
   echo
