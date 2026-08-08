@@ -176,15 +176,28 @@ fn read_bearer_flag(spec_md_path: &Path) -> Result<bool> {
         .unwrap_or(false))
 }
 
-/// Scan a `spec.md`'s YAML front matter for
-/// `proofRequirement.requirement == "REQUIRED"`. Returns `false` when the
-/// field is absent, when the value is `OPTIONAL` / `RECOMMENDED`, or when
-/// the file is missing. Per SPEC.md §7.3 item 8 and `spec.meta.schema.json`,
-/// the only value that obliges the consumer to reject a missing proof is
-/// `REQUIRED`.
-fn read_proof_required_flag(spec_md_path: &Path) -> Result<bool> {
+/// The `proof` requirement each document variant carries, per SPEC.md §7.3
+/// item 8.
+///
+/// The declaration is either a single `requirement` covering every variant, or
+/// a per-variant `request` / `response` pair. Both are normalised here so the
+/// emitter never branches.
+#[derive(Debug, Clone, Copy, Default)]
+struct ProofRequired {
+    request: bool,
+    response: bool,
+}
+
+/// Scan a `spec.md`'s YAML front matter for the §7.3 item 8 proof declaration.
+///
+/// Only `REQUIRED` obliges a consumer to reject a proofless document, so each
+/// variant reduces to a bool. Returns both `false` when the field is absent or
+/// the file is missing. A per-variant declaration that omits `response` takes
+/// the request's value — the conservative reading, and the only one that cannot
+/// weaken a variant by omission.
+fn read_proof_required_flag(spec_md_path: &Path) -> Result<ProofRequired> {
     if !spec_md_path.exists() {
-        return Ok(false);
+        return Ok(ProofRequired::default());
     }
     let text = fs::read_to_string(spec_md_path)
         .with_context(|| format!("read {}", spec_md_path.display()))?;
@@ -192,7 +205,7 @@ fn read_proof_required_flag(spec_md_path: &Path) -> Result<bool> {
     let mut lines = text.lines();
     let first = lines.next().unwrap_or("");
     if first.trim() != "---" {
-        return Ok(false);
+        return Ok(ProofRequired::default());
     }
     let mut front_matter = String::new();
     for line in lines {
@@ -205,12 +218,28 @@ fn read_proof_required_flag(spec_md_path: &Path) -> Result<bool> {
 
     let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    Ok(value
-        .get("proofRequirement")
-        .and_then(|v| v.get("requirement"))
-        .and_then(|v| v.as_str())
-        .map(|s| s == "REQUIRED")
-        .unwrap_or(false))
+    let pr = match value.get("proofRequirement") {
+        Some(v) => v,
+        None => return Ok(ProofRequired::default()),
+    };
+    let level = |key: &str| {
+        pr.get(key)
+            .and_then(|v| v.as_str())
+            .map(|s| s == "REQUIRED")
+    };
+
+    // Single-value form applies to every variant.
+    if let Some(all) = level("requirement") {
+        return Ok(ProofRequired {
+            request: all,
+            response: all,
+        });
+    }
+    let request = level("request").unwrap_or(false);
+    Ok(ProofRequired {
+        request,
+        response: level("response").unwrap_or(request),
+    })
 }
 
 /// Read whether the party filling the framework `member` (`"issuer"` or
@@ -826,7 +855,7 @@ fn render_module(
     examples: &SpecExamples,
     invalid_examples: &[InvalidExample],
     is_bearer: bool,
-    is_proof_required: bool,
+    is_proof_required: ProofRequired,
     recipient_required: bool,
     issuer_required: bool,
     schema_json: &str,
@@ -843,11 +872,17 @@ fn render_module(
         quote! {}
     };
 
-    // Per SPEC §7.3 item 8, only specs whose front-matter
-    // `proofRequirement.requirement` is `REQUIRED` override
-    // Payload::IS_PROOF_REQUIRED. `RECOMMENDED` / `OPTIONAL` (or absent)
-    // leave the trait default `false` in place.
-    let proof_required_const = if is_proof_required {
+    // Per SPEC §7.3 item 8, only `REQUIRED` overrides
+    // Payload::IS_PROOF_REQUIRED; `RECOMMENDED` / `OPTIONAL` (or absent) leave
+    // the trait default `false` in place. The two variants are emitted
+    // independently: a spec may require a proof on the response it returns
+    // without requiring one on the request that triggered it, or the reverse.
+    let req_proof_const = if is_proof_required.request {
+        quote! { const IS_PROOF_REQUIRED: bool = true; }
+    } else {
+        quote! {}
+    };
+    let resp_proof_const = if is_proof_required.response {
         quote! { const IS_PROOF_REQUIRED: bool = true; }
     } else {
         quote! {}
@@ -874,7 +909,7 @@ fn render_module(
             impl crate::Payload for Response {
                 const TYPE_URI: &'static str = #response_uri;
                 #bearer_const
-                #proof_required_const
+                #resp_proof_const
                 #resp_recipient_const
             }
         }
@@ -904,7 +939,7 @@ fn render_module(
         impl crate::Payload for Payload {
             const TYPE_URI: &'static str = #type_uri;
             #bearer_const
-            #proof_required_const
+            #req_proof_const
             #req_recipient_const
         }
 

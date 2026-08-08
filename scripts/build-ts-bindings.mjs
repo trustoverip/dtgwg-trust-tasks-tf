@@ -127,9 +127,25 @@ function readSpecPolicy(schemaPath) {
   const partyRequirement = (member) =>
     (meta.parties || []).find((p) => p && p.member === member)?.requirement === "REQUIRED";
 
+  // §7.3 item 8 is either a single `requirement` covering every variant, or a
+  // per-variant `request` / `response` pair. Only REQUIRED obliges a consumer to
+  // reject a proofless document, so each reduces to a boolean. A per-variant
+  // declaration omitting `response` takes the request's value — the
+  // conservative reading, and the only one that cannot weaken a variant by
+  // omission.
+  const pr = meta.proofRequirement || {};
+  const proofRequired =
+    typeof pr.requirement === "string"
+      ? { request: pr.requirement === "REQUIRED", response: pr.requirement === "REQUIRED" }
+      : {
+          request: pr.request === "REQUIRED",
+          response: (pr.response ?? pr.request) === "REQUIRED",
+        };
+
   return {
     isBearer: meta.bearer === true,
-    isProofRequired: meta.proofRequirement?.requirement === "REQUIRED",
+    isProofRequired: proofRequired.request,
+    responseIsProofRequired: proofRequired.response,
     // Request: the party tagged `recipient`. Response: the party tagged
     // `issuer`, because the response addresses the original producer.
     isRecipientRequired: partyRequirement("recipient"),
@@ -247,12 +263,12 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
   }
 
   if (policy) {
-    const obj = (uri, isRecipientRequired) =>
+    const obj = (uri, isProofRequired, isRecipientRequired) =>
       [
         `{`,
         `  typeUri: ${uri},`,
         `  isBearer: ${policy.isBearer},`,
-        `  isProofRequired: ${policy.isProofRequired},`,
+        `  isProofRequired: ${isProofRequired},`,
         `  isRecipientRequired: ${isRecipientRequired},`,
         `} as const;`,
       ].join("\n");
@@ -263,7 +279,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
       ` * front matter. Pass to \`consumeInbound\` — items 5b, 7 and 8 are`,
       ` * per-specification and cannot be derived from the document alone.`,
       ` */`,
-      `export const SPEC = ${obj("TYPE_URI", policy.isRecipientRequired)}`,
+      `export const SPEC = ${obj("TYPE_URI", policy.isProofRequired, policy.isRecipientRequired)}`,
       "",
     );
 
@@ -276,6 +292,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
         ` */`,
         `export const RESPONSE_SPEC = ${obj(
           "RESPONSE_TYPE_URI",
+          policy.responseIsProofRequired,
           policy.responseIsRecipientRequired,
         )}`,
         "",

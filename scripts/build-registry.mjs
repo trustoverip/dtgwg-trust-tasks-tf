@@ -402,6 +402,28 @@ function checkCategoryTaxonomy() {
 }
 
 /*
+ * Resolve a spec's proof requirement for each document variant.
+ *
+ * §7.3 item 8 accepts a single `requirement` covering every variant, or a
+ * per-variant `request` / `response` pair. The single form is normalised onto
+ * both so callers never branch.
+ */
+function resolveProofRequirement(meta) {
+  const pr = meta.proofRequirement || {};
+  if (typeof pr.requirement === 'string') {
+    return { request: pr.requirement, response: pr.requirement, perVariant: false };
+  }
+  return {
+    request: pr.request,
+    // A spec that declares no `response` level takes the request's — the
+    // conservative reading, and the only one that cannot silently weaken a
+    // variant by omission.
+    response: pr.response ?? pr.request,
+    perVariant: true,
+  };
+}
+
+/*
  * SPEC §7.3 item 8 requires a specification's declared `proof` requirement to be
  * "no weaker than the default applicable under §4.7.1". That constraint cannot
  * be checked as written: §4.7.1's default is a function of the *transport*
@@ -412,64 +434,71 @@ function checkCategoryTaxonomy() {
  * member merely RECOMMENDED.
  *
  * This derives the floor from the declarations the spec *does* make — the
- * side-effect class (item 13) and exposure class (item 14) — which is the one
- * signal available statically:
+ * side-effect class (item 13) and exposure class (item 14) — and applies each
+ * to the variant it actually describes:
  *
- *   sideEffects.level == destructive   — irreversible or authority-shifting
- *   exposure.discloses == secret       — confidential material leaves the recipient
- *   exposure.actsAsSubject == true     — the subject's own authority is exercised
+ *   sideEffects.level == destructive   the REQUEST causes an irreversible
+ *   exposure.actsAsSubject == true     effect, or exercises the subject's
+ *                                      authority -> the request must be proven
  *
- * Any of those and `proof` MUST be REQUIRED. Note this does not conflict with
- * items 13/14 being "descriptive, not prescriptive": that rule forbids deriving
- * a *consent or approval* requirement from the class. An integrity floor is a
- * different thing — it constrains how the document is authenticated, not
- * whether a human must approve it.
+ *   exposure.discloses == secret       the RESPONSE carries the confidential
+ *                                      material -> the response must be proven
+ *
+ * Splitting them is the point. A task that destroys state but returns only an
+ * acknowledgement needs its request attributable and has nothing to protect on
+ * the way back; a task that returns a secret in answer to a harmless read is the
+ * reverse. Before the per-variant form both were forced to REQUIRED on
+ * everything, overstating whichever half did not need it.
+ *
+ * Note this does not conflict with items 13/14 being "descriptive, not
+ * prescriptive": that rule forbids deriving a *consent or approval* requirement
+ * from the class. An integrity floor governs how a document is authenticated,
+ * not whether a human must approve it.
  */
-function checkProofFloor(meta, rel) {
-  const requirement = meta.proofRequirement?.requirement;
-  if (requirement === 'REQUIRED') return;
+function checkProofFloor(meta, rel, hasResponse) {
+  const declared = resolveProofRequirement(meta);
 
-  const triggers = [];
+  const requestTriggers = [];
   if (meta.sideEffects?.level === 'destructive') {
-    triggers.push('sideEffects.level: destructive');
-  }
-  if (meta.exposure?.discloses === 'secret') {
-    triggers.push('exposure.discloses: secret');
+    requestTriggers.push('sideEffects.level: destructive');
   }
   if (meta.exposure?.actsAsSubject === true) {
-    triggers.push('exposure.actsAsSubject: true');
+    requestTriggers.push('exposure.actsAsSubject: true');
   }
-  if (triggers.length === 0) return;
+  const responseTriggers = [];
+  if (meta.exposure?.discloses === 'secret') {
+    responseTriggers.push('exposure.discloses: secret');
+  }
 
-  fail(
-    `${rel}/spec.md`,
-    `proofRequirement.requirement is '${requirement}' but the spec declares ` +
-      `${triggers.join(' and ')}. A task that is irreversible, releases secrets, or acts ` +
-      `with the subject's authority MUST declare proof REQUIRED — an unproven request to ` +
-      `such a task is a forgery vector, and §7.2 item 7 only rejects proofless documents ` +
-      `for specs that declare REQUIRED. See SPEC §7.3 item 8 and §4.7.1.`
-  );
+  const complain = (variant, level, triggers, why) => {
+    fail(
+      `${rel}/spec.md`,
+      `proofRequirement for the ${variant} variant is '${level}' but the spec declares ` +
+        `${triggers.join(' and ')}. ${why} MUST declare proof REQUIRED — ` +
+        `§7.2 item 7 only rejects proofless documents for specs that declare it. ` +
+        `See SPEC §7.3 item 8 and §4.7.1.`
+    );
+  };
+
+  if (requestTriggers.length && declared.request !== 'REQUIRED') {
+    complain(
+      'request',
+      declared.request,
+      requestTriggers,
+      'A request that is irreversible or acts with the subject\'s authority'
+    );
+  }
+  // A fire-and-forget spec has no response document to constrain (§4.4.1).
+  if (hasResponse && responseTriggers.length && declared.response !== 'REQUIRED') {
+    complain(
+      'response',
+      declared.response,
+      responseTriggers,
+      'A response that carries secret material back to the caller'
+    );
+  }
 }
 
-/*
- * SPEC §8.5 constrains the namespace of an extended error code to the emitting
- * specification's own slug, or a *family namespace* — a proper path prefix of
- * that slug, for a condition defined once across a family in a shared
- * convention. `spec.meta.schema.json` states the rule and can only check the
- * grammar: JSON Schema cannot compare `errorCodes[].code` against `slug`.
- *
- * Left unchecked it drifts, and it did. The registry carried 26 specifications
- * declaring `did-management:unknown_domain` while §8.5 still said the namespace
- * MUST equal the slug — legal now under the family rule, but it was the
- * unenforced gap that let them diverge unnoticed in the first place. The
- * failure is quiet in a way that matters: `Payload::extended_code` in
- * trust-tasks-rs derives the namespace from `TYPE_URI`, so a handler emits
- * `did-management/did/delete:unknown_domain` while the registry advertises
- * `did-management:unknown_domain`. A consumer matching the declared code misses,
- * falls through §8.5's unrecognized-code rule to `taskFailed`, and loses the
- * specific meaning with nothing anywhere reporting a problem. `family_code` on
- * the `Payload` trait is the drift-safe way to mint the family form.
- */
 function checkErrorCodeNamespaces(meta, rel) {
   const slug = meta.slug;
   if (typeof slug !== 'string') return;
@@ -884,7 +913,6 @@ function main() {
     if (meta.status === 'retired' && !meta.supersededBy) {
       warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
-    checkProofFloor(meta, rel);
     checkErrorCodeNamespaces(meta, rel);
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
@@ -894,6 +922,7 @@ function main() {
     seen.add(idKey);
     const schema = checkPayloadSchema(slug, version, dir);
     if (!schema) continue;
+    checkProofFloor(meta, rel, Boolean(schema.$defs?.Response));
     const payloadSchemaPath = path.join(dir, 'payload.schema.json');
     const { uses: refUses, unresolved } = computeUses(schema, payloadSchemaPath, sharedByPath);
     for (const u of unresolved) {

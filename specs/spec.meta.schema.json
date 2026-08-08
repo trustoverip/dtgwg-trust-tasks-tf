@@ -25,8 +25,20 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$",
       "anyOf": [
-        { "not": { "pattern": "^trust-task($|-|/)" } },
-        { "enum": ["trust-task", "trust-task-error", "trust-task-ok", "trust-task-next-step", "trust-task-discovery"] }
+        {
+          "not": {
+            "pattern": "^trust-task($|-|/)"
+          }
+        },
+        {
+          "enum": [
+            "trust-task",
+            "trust-task-error",
+            "trust-task-ok",
+            "trust-task-next-step",
+            "trust-task-discovery"
+          ]
+        }
       ],
       "description": "Lowercase, hyphen-separated short name; may be organized into one or more `/`-delimited path segments (e.g. `acl/grant`). Each segment satisfies the single-segment grammar. The slug `trust-task` and any slug whose first segment is `trust-task` or begins with `trust-task-` are reserved per SPEC §6.1; only the framework-defined slugs `trust-task`, `trust-task-error`, `trust-task-ok`, `trust-task-next-step`, and `trust-task-discovery` may use the reserved namespace (the registry hosts those itself). The slug MUST match the relative folder path from `specs/` to the version directory's parent."
     },
@@ -48,7 +60,12 @@
     },
     "status": {
       "type": "string",
-      "enum": ["draft", "candidate", "standard", "retired"],
+      "enum": [
+        "draft",
+        "candidate",
+        "standard",
+        "retired"
+      ],
       "description": "Lifecycle status per SPEC §5.3. `retired` is terminal; a retired spec SHOULD declare `supersededBy`."
     },
     "targetFrameworkVersion": {
@@ -81,13 +98,19 @@
     "keywords": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "string", "minLength": 1 },
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "description": "Free-text keywords used by registry search."
     },
     "authors": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "string", "minLength": 1 },
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "description": "Editor names or working group attributions."
     },
     "parties": {
@@ -96,16 +119,29 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["role", "requirement"],
+        "required": [
+          "role",
+          "requirement"
+        ],
         "properties": {
-          "role": { "type": "string", "minLength": 1 },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
           "requirement": {
             "type": "string",
-            "enum": ["REQUIRED", "RECOMMENDED", "OPTIONAL"]
+            "enum": [
+              "REQUIRED",
+              "RECOMMENDED",
+              "OPTIONAL"
+            ]
           },
           "member": {
             "type": "string",
-            "enum": ["issuer", "recipient"],
+            "enum": [
+              "issuer",
+              "recipient"
+            ],
             "description": "Which framework document member (SPEC §4.8) this party fills, when it maps to one. Omit for a party that is named in the payload but is neither the document's `issuer` nor its `recipient`. At most one party may declare `member: issuer` and at most one `member: recipient`. A party declared `member: recipient` with `requirement: REQUIRED` obliges consumers to reject a document lacking an in-band `recipient` (SPEC §7.2 item 5)."
           }
         }
@@ -113,26 +149,77 @@
       "description": "Roles expected in a conforming document, per SPEC §7.3 item 5. VID scheme acceptance is a per-consumer trust-framework concern and is deliberately not constrained here."
     },
     "proofRequirement": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["requirement", "rationale"],
-      "properties": {
-        "requirement": {
-          "type": "string",
-          "enum": ["OPTIONAL", "RECOMMENDED", "REQUIRED"]
+      "description": "Proof declaration per SPEC §7.3 item 8. Either a single `requirement` applying to every variant of the specification, or a per-variant pair of `request` and `response`. The per-variant form exists because the request and the response are relied on differently: a response retained as evidence may need a proof where the request that triggered it does not, and forcing one value on both overstates the requirement on whichever variant needs it less. Only declare `response` where the specification defines one. The error variant is not declarable here: an error response's `type` resolves to `trust-task-error`, a different specification, so a task specification's declaration cannot reach it (SPEC §7.2 item 7).",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requirement",
+            "rationale"
+          ],
+          "properties": {
+            "requirement": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL",
+                "RECOMMENDED",
+                "REQUIRED"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
         },
-        "rationale": { "type": "string", "minLength": 1 }
-      },
-      "description": "Proof declaration per SPEC §7.3 item 8."
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "request",
+            "rationale"
+          ],
+          "properties": {
+            "request": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL",
+                "RECOMMENDED",
+                "REQUIRED"
+              ]
+            },
+            "response": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL",
+                "RECOMMENDED",
+                "REQUIRED"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
     },
     "sideEffects": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["level", "rationale"],
+      "required": [
+        "level",
+        "rationale"
+      ],
       "properties": {
         "level": {
           "type": "string",
-          "enum": ["none", "mutating", "destructive"],
+          "enum": [
+            "none",
+            "mutating",
+            "destructive"
+          ],
           "description": "How much a successful execution changes at the recipient. `none`: read-only / idempotent probe, no persisted state change (list, get, check-name, discovery). `mutating`: creates or alters recoverable state (publish a log entry, grant a role, register a device). `destructive`: irreversible or authority-shifting (deactivate a DID, rotate the only update key, delete, change-owner, wipe a device)."
         },
         "rationale": {
@@ -145,7 +232,10 @@
     },
     "consequences": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "description": "Human-facing second-order effects a consent surface SHOULD surface alongside the primary action — the effects a naive payload diff would miss because they live in the handler's semantics, not the payload's shape (e.g. 'Any document change also rotates this DID's update keys'). Static fallback text; a live executor MAY instead compute a per-request effects list by dry-running the real handler."
     },
     "subjectPath": {
@@ -156,11 +246,18 @@
     "exposure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["discloses", "actsAsSubject"],
+      "required": [
+        "discloses",
+        "actsAsSubject"
+      ],
       "properties": {
         "discloses": {
           "type": "string",
-          "enum": ["none", "metadata", "secret"],
+          "enum": [
+            "none",
+            "metadata",
+            "secret"
+          ],
           "description": "Sensitivity of data returned to the caller. `none`: an acknowledgement or determination only. `metadata`: non-secret descriptive data about a subject or resource (an enumeration, a status read). `secret`: confidential material the caller retains (released credential material, a usable session blob)."
         },
         "actsAsSubject": {
@@ -175,11 +272,27 @@
       },
       "if": {
         "anyOf": [
-          { "properties": { "discloses": { "const": "secret" } } },
-          { "properties": { "actsAsSubject": { "const": true } } }
+          {
+            "properties": {
+              "discloses": {
+                "const": "secret"
+              }
+            }
+          },
+          {
+            "properties": {
+              "actsAsSubject": {
+                "const": true
+              }
+            }
+          }
         ]
       },
-      "then": { "required": ["rationale"] },
+      "then": {
+        "required": [
+          "rationale"
+        ]
+      },
       "description": "Exposure class per SPEC.md §7.3 item 14 — the confidentiality-and-agency dimension, orthogonal to the integrity-focused `sideEffects` of item 13. States what leaves the recipient (`discloses`) and whether the subject's authority is exercised (`actsAsSubject`), independent of any state change. DESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as `sideEffects`: a consumer MUST derive authoritative values from the handler it invokes and MUST treat an absent declaration as no less exposed than `discloses: secret` with `actsAsSubject: true`."
     },
     "errorCodes": {
@@ -187,15 +300,24 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["code", "meaning", "retryable"],
+        "required": [
+          "code",
+          "meaning",
+          "retryable"
+        ],
         "properties": {
           "code": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-zA-Z0-9_]*$",
             "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:documentRevoked' (framework 0.2 lowerCamelCase, SPEC §4.10) or 'acl/grant:permission_denied' (frozen 0.1 snake_case). The local part accepts both casings so 0.1 and 0.2 specs validate against the same schema. The namespace before the colon MUST be either the spec's own slug, or a family namespace — a proper path prefix of that slug, for a code whose meaning is defined once for the whole family in a shared convention (e.g. 'did-management:unknownDomain' on 'did-management/did/delete'). This pattern checks the grammar only; the prefix relationship is enforced by checkErrorCodeNamespaces() in scripts/build-registry.mjs, because JSON Schema cannot compare one property against another."
           },
-          "meaning": { "type": "string", "minLength": 1 },
-          "retryable": { "type": "boolean" },
+          "meaning": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retryable": {
+            "type": "boolean"
+          },
           "detailsSchema": {
             "description": "Optional JSON Schema fragment describing the shape of the error's details object.",
             "type": "object"
@@ -222,7 +344,10 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["method", "schema"],
+        "required": [
+          "method",
+          "schema"
+        ],
         "properties": {
           "method": {
             "type": "string",
@@ -236,7 +361,11 @@
           },
           "requirement": {
             "type": "string",
-            "enum": ["OPTIONAL", "RECOMMENDED", "REQUIRED"],
+            "enum": [
+              "OPTIONAL",
+              "RECOMMENDED",
+              "REQUIRED"
+            ],
             "default": "OPTIONAL",
             "description": "How strongly producers should populate this extension when their `method` matches. Default OPTIONAL — extension is purely advisory metadata."
           }
