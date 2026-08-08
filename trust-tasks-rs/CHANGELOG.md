@@ -28,6 +28,72 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.3.0] — 2026-08-08
+
+The framework 0.3 release. Four spec changes land together, and the leading
+component moves because the document envelope gained members — adding a public
+field to `TrustTask` breaks struct-literal construction.
+
+Bumped as one workspace event, as the versioning policy warns: `trust-tasks-rs`
+0.3.0, `trust-tasks-https` / `-didcomm` / `-proof` / `-tsp` 0.3.0,
+`trust-tasks-capability-client` 0.2.0 (its own line), and
+`@openvtc/trust-tasks` 0.3.0.
+
+### Migration
+
+- **`TrustTask` gained `parent_thread_id`** and **`ErrorPayload` gained
+  `in_response_to`.** Struct-literal construction of either needs the new field;
+  `TrustTask::new` / `for_payload` and `ErrorPayload::new` are unaffected.
+- **Error responses are now emitted as `trust-task-error/0.3`**, not `0.2`. The
+  runtimes populate `inResponseTo`, and `0.2`'s payload schema is
+  `additionalProperties: false`, so a document carrying it would not validate as
+  `0.2`. Per SPEC §5.2 forward-minor compatibility a `0.2` consumer SHOULD
+  accept a `0.3` document. Anything asserting the emitted Type URI needs
+  updating.
+- **`trust-tasks-didcomm` now sets the DIDComm `thid` from the document's
+  `threadId`**, falling back to its `id`, where it previously always used `id`.
+  A response now continues its request's DIDComm thread instead of starting a
+  new one.
+- `DidcommError` gained a `ThreadMismatch` variant.
+
+### Added
+
+- **`parentThreadId` (SPEC §4.9.2).** An optional envelope member naming the
+  `threadId` of the exchange containing this one. Exchanges nest — a Trust Task
+  run to complete a step of a broader interaction is still its own exchange —
+  and nothing recorded that, so specifications were inventing per-family payload
+  conventions for it. Carried onto responses and error responses, since the
+  whole exchange shares one parent. One level of containment, matching DIDComm's
+  single `pthid`.
+- **Per-variant proof declarations (SPEC §7.3 item 8).** `proofRequirement` now
+  accepts a `request` / `response` pair as well as a single value. A response
+  retained as evidence can need a proof where the request that triggered it does
+  not, and the reverse is equally common; one value forced the stricter onto
+  both. The floor derived from the side-effect and exposure classes splits the
+  same way — `destructive` and `actsAsSubject` constrain the request,
+  `discloses: secret` the response.
+- **`inResponseTo` on the error payload (SPEC §8.2).** An error response
+  correlated back only by `threadId`, which means something to a party that saw
+  the request and nothing to anyone else, so a retained error named neither the
+  task it terminated nor the instance. Optional in `trust-task-error/0.3` so a
+  `0.2` consumer's output stays valid; a future major will require it. The `id`
+  is withheld under `identityMismatch`, per §8.1.
+- **`bindings/didcomm/0.2`** maps `thid` / `pthid` onto `threadId` /
+  `parentThreadId`. Agreement is required only when both values are explicitly
+  present — the layers default into their own identifier spaces, so an
+  unconditional rule would reject conforming exchanges. A disagreement is
+  `malformedRequest`, not `identityMismatch`: no party's identity is contested.
+- **Naming an exchange from outside the framework (SPEC §4.9.1).** A citation
+  treating an exchange as evidence names the innermost exchange that attests the
+  event, by the `id` of the document that initiated it.
+- **The document envelope schema now exists and resolves.** SPEC §7.2 item 1
+  required consumers to validate against a schema at
+  `https://trusttasks.org/spec/trust-task/<M.m>` that had never been published,
+  and no Type URI honoured content negotiation at all — so item 2 was equally
+  unimplementable and §7.3 item 7.5 unmet by every specification. Both fixed;
+  the envelope schemas are validated against all 402 example documents in the
+  registry.
+
 ## [0.2.60] — 2026-08-08
 
 ### Changed

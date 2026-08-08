@@ -40,10 +40,20 @@ where
     P: Payload + Serialize,
 {
     let body = serde_json::to_value(doc).map_err(DidcommError::SerialiseBody)?;
-    let msg = Message::new(ENVELOPE_TYPE, body)
+    // Binding §3.1 — populate the DIDComm thread headers *from* the framework
+    // members, never the reverse. `thid` previously took `doc.id`, which starts
+    // a fresh DIDComm thread for every document: correct only for a document
+    // that opens an exchange, and wrong for every response, which carries the
+    // originating `threadId`. §4.9's own fallback is the same one used here, so
+    // the DIDComm thread and the Trust Task exchange end up named by one value.
+    let thid = doc.thread_id.clone().unwrap_or_else(|| doc.id.clone());
+    let mut msg = Message::new(ENVELOPE_TYPE, body)
         .from(sender_did.to_string())
         .to(vec![recipient_did.to_string()])
-        .thid(doc.id.clone());
+        .thid(thid);
+    if let Some(parent) = doc.parent_thread_id.clone() {
+        msg = msg.pthid(parent);
+    }
     let wire = agent.pack_authcrypt(&msg, sender_did, recipient_did)?;
     Ok(wire)
 }
@@ -116,8 +126,47 @@ where
 
     let doc: TrustTask<P> =
         serde_json::from_value(message.body).map_err(DidcommError::InvalidBody)?;
+
+    // Binding §3.1 — where both a DIDComm thread header and its framework
+    // member are explicitly present they MUST agree. Scoped to both-present on
+    // purpose: DIDComm's `thid` defaults to the DIDComm message `id` and the
+    // framework's `threadId` falls back to the document's `id`, and those are
+    // different identifier spaces (§2), so an unconditional comparison would
+    // reject exchanges that conform on both layers.
+    check_thread(
+        "thid",
+        "threadId",
+        message.thid.as_deref(),
+        doc.thread_id.as_deref(),
+    )?;
+    check_thread(
+        "pthid",
+        "parentThreadId",
+        message.pthid.as_deref(),
+        doc.parent_thread_id.as_deref(),
+    )?;
+
     let handler = DidcommHandler::new(local_did, peer_did);
     Ok((doc, handler))
+}
+
+/// Compare a DIDComm thread header against its framework member, per binding
+/// §3.1. Silent unless both are present and differ.
+fn check_thread(
+    header: &'static str,
+    member: &'static str,
+    transport: Option<&str>,
+    in_band: Option<&str>,
+) -> Result<(), DidcommError> {
+    match (transport, in_band) {
+        (Some(t), Some(b)) if t != b => Err(DidcommError::ThreadMismatch {
+            header,
+            member,
+            transport: t.to_string(),
+            in_band: b.to_string(),
+        }),
+        _ => Ok(()),
+    }
 }
 
 /// `did:peer:2.Ez6...#key-agreement-1` → `did:peer:2.Ez6...`.
@@ -126,4 +175,47 @@ where
 /// cares about the DID portion.
 fn did_from_kid(kid: &str) -> Option<String> {
     kid.split_once('#').map(|(did, _)| did.to_string())
+}
+
+#[cfg(test)]
+mod thread_tests {
+    use super::*;
+
+    /// Binding §3.1 — the comparison engages only when both sides are present.
+    /// DIDComm's `thid` defaults to the DIDComm message id and the framework's
+    /// `threadId` falls back to the document's id, and those are different
+    /// identifier spaces (§2), so comparing unconditionally would reject
+    /// exchanges that conform on both layers.
+    #[test]
+    fn absent_on_either_side_is_not_a_mismatch() {
+        assert!(check_thread("thid", "threadId", None, Some("a")).is_ok());
+        assert!(check_thread("thid", "threadId", Some("a"), None).is_ok());
+        assert!(check_thread("thid", "threadId", None, None).is_ok());
+    }
+
+    #[test]
+    fn equal_values_pass() {
+        assert!(check_thread("thid", "threadId", Some("a"), Some("a")).is_ok());
+    }
+
+    /// A disagreement is `malformedRequest`, never `identityMismatch`: no
+    /// party's identity is contested, so §8.1's suppression rules must not be
+    /// reached.
+    #[test]
+    fn disagreement_is_a_malformed_request() {
+        let err = check_thread("pthid", "parentThreadId", Some("outer"), Some("other"))
+            .expect_err("both present and different must fail");
+        assert!(matches!(
+            err,
+            DidcommError::ThreadMismatch {
+                header: "pthid",
+                member: "parentThreadId",
+                ..
+            }
+        ));
+        match err.into_reject_reason() {
+            trust_tasks_rs::RejectReason::MalformedRequest { .. } => {}
+            other => panic!("expected malformedRequest, got {other:?}"),
+        }
+    }
 }

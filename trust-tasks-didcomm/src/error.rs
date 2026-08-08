@@ -31,6 +31,25 @@ pub enum DidcommError {
     #[error("envelope body did not parse as a Trust Task document: {0}")]
     InvalidBody(serde_json::Error),
 
+    /// A DIDComm thread header and its framework member were both present and
+    /// disagreed (binding §3.1).
+    ///
+    /// Maps to `malformedRequest`, **not** `identityMismatch`: a thread
+    /// disagreement contests no party's identity, so §8.1's response
+    /// suppression rules do not apply. It is a structurally inconsistent
+    /// document, and the producer should be told so.
+    #[error("DIDComm {header} is {transport:?} but the document's {member} is {in_band:?}")]
+    ThreadMismatch {
+        /// The DIDComm header name (`thid` or `pthid`).
+        header: &'static str,
+        /// The framework member name (`threadId` or `parentThreadId`).
+        member: &'static str,
+        /// Value carried in the DIDComm header.
+        transport: String,
+        /// Value carried in the Trust Task document.
+        in_band: String,
+    },
+
     /// The framework's [`TrustTask`](trust_tasks_rs::TrustTask) failed to
     /// serialise into a JSON value for placement in the DIDComm `body`.
     /// This is effectively impossible for well-formed payload types and
