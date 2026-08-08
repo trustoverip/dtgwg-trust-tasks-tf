@@ -141,7 +141,7 @@ jobs:
         with:
           # npm@latest (v12+, installed below for OIDC trusted publishing)
           # requires Node >= 22.22.2; Node 20 fails with EBADENGINE.
-          node-version: "22"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
       # Trusted publishing (OIDC) requires npm >= 11.5.1; Node 20 ships older.
