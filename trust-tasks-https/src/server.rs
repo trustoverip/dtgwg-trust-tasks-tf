@@ -380,6 +380,7 @@ fn downcast<P: Payload>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectRea
     let TrustTask {
         id,
         thread_id,
+        parent_thread_id,
         type_uri,
         issuer,
         recipient,
@@ -397,6 +398,7 @@ fn downcast<P: Payload>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectRea
     Ok(TrustTask {
         id,
         thread_id,
+        parent_thread_id,
         type_uri,
         issuer,
         recipient,

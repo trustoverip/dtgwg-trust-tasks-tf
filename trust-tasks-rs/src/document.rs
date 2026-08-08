@@ -38,6 +38,21 @@ pub struct TrustTask<P> {
     #[serde(rename = "threadId", default, skip_serializing_if = "Option::is_none")]
     pub thread_id: Option<String>,
 
+    /// The `threadId` of the exchange containing this one, where this exchange
+    /// is conducted inside another (SPEC.md §4.9.2).
+    ///
+    /// A navigation aid. It records one level of containment and does **not**
+    /// change which exchange attests an event — §4.9.1 governs that, and holds
+    /// whether or not this member is present. Like `thread_id` it carries no
+    /// normative validation semantics: a consumer MUST NOT reject a document on
+    /// the basis of `parentThreadId` alone.
+    #[serde(
+        rename = "parentThreadId",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub parent_thread_id: Option<String>,
+
     /// The *Type URI* identifying the specification and version this document
     /// conforms to.
     #[serde(rename = "type")]
@@ -85,6 +100,7 @@ impl<P> TrustTask<P> {
         Self {
             id: id.into(),
             thread_id: None,
+            parent_thread_id: None,
             type_uri,
             issuer: None,
             recipient: None,
@@ -300,6 +316,9 @@ impl<P> TrustTask<P> {
         ErrorResponse {
             id: id.into(),
             thread_id,
+            // §4.9.2 — the whole exchange shares one parent, so the error
+            // response stays inside the same enclosing exchange.
+            parent_thread_id: self.parent_thread_id.clone(),
             type_uri: trust_task_error_type_uri(),
             issuer: self.recipient.clone(),
             recipient,
@@ -334,6 +353,8 @@ impl<P> TrustTask<P> {
         TrustTask {
             id: id.into(),
             thread_id,
+            // §4.9.2 — the whole exchange shares one parent.
+            parent_thread_id: self.parent_thread_id.clone(),
             type_uri: self.type_uri.with_response(),
             issuer: self.recipient.clone(),
             recipient: self.issuer.clone(),
@@ -419,6 +440,62 @@ mod tests {
         assert!(doc.thread_id.is_none());
         assert!(doc.proof.is_none());
         assert!(doc.extra.is_empty());
+    }
+
+    /// SPEC §4.9.2 — the whole inner exchange shares one parent, so both the
+    /// success response and the error response stay inside the enclosing
+    /// exchange. A response that dropped it would strand the inner exchange.
+    #[test]
+    fn parent_thread_id_is_carried_onto_responses() {
+        const PARENT: &str = "urn:uuid:9b1d3f60-52a8-4c17-8e44-1d9c7b05f3ae";
+        let mut req = TrustTask::new(
+            "req-1",
+            "https://trusttasks.org/spec/acl/grant/0.1".parse().unwrap(),
+            serde_json::json!({}),
+        );
+        req.thread_id = Some("inner-1".into());
+        req.parent_thread_id = Some(PARENT.into());
+        req.issuer = Some("did:web:org.example".into());
+        req.recipient = Some("did:web:maintainer.example".into());
+
+        let ok = req.respond_with("resp-1", serde_json::json!({}));
+        assert_eq!(ok.parent_thread_id.as_deref(), Some(PARENT));
+        assert_eq!(ok.thread_id.as_deref(), Some("inner-1"));
+
+        let err = req.reject_with(
+            "err-1",
+            ErrorPayload::new(crate::TrustTaskCode::from(crate::StandardCode::TaskFailed)),
+        );
+        assert_eq!(err.parent_thread_id.as_deref(), Some(PARENT));
+    }
+
+    /// Absent, not null. An explicit `None` that serialised would imply the
+    /// exchange has a null parent rather than no parent.
+    #[test]
+    fn parent_thread_id_is_omitted_from_the_wire_when_unset() {
+        let req = TrustTask::new(
+            "req-1",
+            "https://trusttasks.org/spec/acl/grant/0.1".parse().unwrap(),
+            serde_json::json!({}),
+        );
+        let wire = serde_json::to_string(&req).unwrap();
+        assert!(!wire.contains("parentThreadId"), "wire: {wire}");
+    }
+
+    /// Round-trips under the wire name from §4.2, not the Rust field name.
+    #[test]
+    fn parent_thread_id_round_trips_under_its_wire_name() {
+        let json = serde_json::json!({
+            "id": "req-1",
+            "type": "https://trusttasks.org/spec/acl/grant/0.1",
+            "threadId": "inner-1",
+            "parentThreadId": "outer-1",
+            "payload": {}
+        });
+        let doc: TrustTask<serde_json::Value> = serde_json::from_value(json).unwrap();
+        assert_eq!(doc.parent_thread_id.as_deref(), Some("outer-1"));
+        let back = serde_json::to_value(&doc).unwrap();
+        assert_eq!(back["parentThreadId"], "outer-1");
     }
 
     #[test]

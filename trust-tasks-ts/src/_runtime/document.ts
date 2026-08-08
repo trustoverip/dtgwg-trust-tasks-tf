@@ -24,6 +24,17 @@ export interface TrustTaskDocument<P> {
   id: string;
   /** Correlates this document with others in the same exchange (§4.9). */
   threadId?: string;
+  /**
+   * The `threadId` of the exchange containing this one, where this exchange is
+   * conducted inside another (§4.9.2).
+   *
+   * A navigation aid. It records one level of containment and does **not**
+   * change which exchange attests an event — §4.9.1 governs that, and holds
+   * whether or not this member is present. Like `threadId` it carries no
+   * normative validation semantics: a consumer MUST NOT reject a document on
+   * the basis of `parentThreadId` alone.
+   */
+  parentThreadId?: string;
   /** The Type URI identifying specification and version (§4.4). */
   type: string;
   /** VID of the party responsible for the content (§4.8). */
@@ -194,7 +205,7 @@ export function rejectWithRecipient<P>(
   recipient: string | undefined,
   now: () => string = () => new Date().toISOString(),
 ): ErrorResponse {
-  return {
+  const response: ErrorResponse = {
     id,
     // §4.9: continue the thread, falling back to the request's own id.
     threadId: request.threadId ?? request.id,
@@ -204,6 +215,13 @@ export function rejectWithRecipient<P>(
     issuedAt: now(),
     payload,
   };
+  // §4.9.2 — the whole exchange shares one parent, so the error response stays
+  // inside the same enclosing exchange. Assigned conditionally so an absent
+  // parent does not become an explicit `undefined` on the wire.
+  if (request.parentThreadId !== undefined) {
+    response.parentThreadId = request.parentThreadId;
+  }
+  return response;
 }
 
 /**
@@ -247,7 +265,7 @@ export function respondWith<P, R>(
   now: () => string = () => new Date().toISOString(),
 ): TrustTaskDocument<R> {
   const bare = request.type.split("#")[0]!;
-  return {
+  const response: TrustTaskDocument<R> = {
     id,
     threadId: request.threadId ?? request.id,
     type: `${bare}#response`,
@@ -256,4 +274,9 @@ export function respondWith<P, R>(
     issuedAt: now(),
     payload,
   };
+  // §4.9.2 — the whole exchange shares one parent.
+  if (request.parentThreadId !== undefined) {
+    response.parentThreadId = request.parentThreadId;
+  }
+  return response;
 }

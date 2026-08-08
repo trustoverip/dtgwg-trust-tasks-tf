@@ -95,6 +95,7 @@ The key terms in this document are defined here. Where a term is *italicized* on
 * *Consumer* — A *party* that receives and processes a *Trust Task document*. Synonym: *recipient party* when emphasizing the consumer's acceptance role (for example, in error-response prose). The two terms refer to the same entity and are used interchangeably throughout this specification.
 * *Document identifier* — The string carried in the `id` member of a *Trust Task document* that uniquely identifies that instance.
 * *Thread identifier* — An optional string carried in the `threadId` member that correlates a *Trust Task document* with other documents belonging to the same logical exchange. See [§4.9](#49-the-threadid-member).
+* *Parent thread identifier* — An optional string carried in the `parentThreadId` member that names the exchange containing this one, where a *Trust Task* is conducted inside a broader exchange. See [§4.9.2](#492-the-parentthreadid-member).
 * *Payload* — The task-specific portion of a *Trust Task document*, carried in the `payload` member. Its internal structure is defined by the *Trust Task specification* identified by the document's `type`.
 * *Type URI* — A URI that identifies a *Trust Task specification* at a specific version and serves as the single resolvable namespace for that version. The canonical form is defined in [§6.1](#61-type-uri).
 * *Proof* — An optional integrity-providing object attached to a *Trust Task document*, in the form of a W3C *Data Integrity Proof* (see [§4.7](#47-proof)).
@@ -129,6 +130,7 @@ A *Trust Task document* has the following top-level members.
 |---|---|---|---|
 | `id` | **MUST** | string | The *Document identifier* — a globally unique string for this instance of the task. UUIDv4 is **RECOMMENDED**; any uniquely-assignable string is permitted. See [§4.3](#43-the-id-member). |
 | `threadId` | **MAY** | string | The *Thread identifier* — correlates this document with others in the same logical exchange (e.g. a response back to its originating request). See [§4.9](#49-the-threadid-member). |
+| `parentThreadId` | **MAY** | string | The *Parent thread identifier* — the `threadId` of the exchange that contains this one, where this exchange is conducted inside another. See [§4.9.2](#492-the-parentthreadid-member). |
 | `type` | **MUST** | string (URI) | The *Type URI* identifying the *Trust Task specification* and version this document conforms to. See [§4.4](#44-the-type-member). |
 | `issuer` | **MAY** | string (VID) | A *Verifiable Identifier* identifying the *party* responsible for the document's content. See [§4.8](#48-the-issuer-and-recipient-members). |
 | `recipient` | **MAY** | string (VID) | A *Verifiable Identifier* identifying the *party* the *issuer* expects to act upon the document. See [§4.8](#48-the-issuer-and-recipient-members). |
@@ -352,13 +354,46 @@ The framework places no constraint on the form of a `threadId` beyond requiring 
 
 #### 4.9.1 Naming an exchange from outside the framework
 
-A `threadId` names one exchange and expresses no relationship to any other. Exchanges nest in practice — a *Trust Task* conducted to complete a step of some broader interaction is still its own exchange, with its own `threadId` — and the framework does not represent that containment. Two nested exchanges are, at this layer, simply two threads.
+A `threadId` names one exchange and expresses no relationship to any other. Exchanges nest in practice — a *Trust Task* conducted to complete a step of some broader interaction is still its own exchange, with its own `threadId`. The optional `parentThreadId` member ([§4.9.2](#492-the-parentthreadid-member)) records that containment, but it is a navigation aid: it does not change which exchange attests an event, and the rule below holds whether or not it is present.
 
 This matters whenever something outside the framework refers to an exchange as evidence that an event occurred: a credential that cites the exchange which established what it attests, an audit record, a governance decision that turns on some task having been performed. Nesting makes the reference ambiguous, because more than one thread was open when the event happened, and only one of them attests it.
 
 The rule is that such a reference **MUST** name the *innermost* exchange whose documents attest the event being cited, and **MUST** name it by the `id` of the document that initiated that exchange — the value every document in the thread traces back to under the convention above ([§4.3](#43-the-id-member) makes that `id` globally unique and non-reusable, which a `threadId` is not required to be).
 
 Naming an enclosing exchange instead collects evidence of the wrong event. Where a witnessing ceremony is conducted inside a broader relationship exchange, for example, only the ceremony's own response attests that the witnessing took place; the enclosing exchange's response attests the relationship interaction and says nothing about the witnessing. A consumer verifying the outer reference would conclude something the documents do not support.
+
+#### 4.9.2 The `parentThreadId` member
+
+A *Trust Task document* **MAY** include a `parentThreadId` member whose value is the `threadId` of the exchange that contains this one. Its purpose is navigation: it lets a party holding a document from the inner exchange find the exchange it was conducted within, which a flat `threadId` cannot express.
+
+The member takes the same posture as `threadId` ([§4.9](#49-the-threadid-member)):
+
+* A *producer* that emits a *Trust Task document* within an enclosing exchange **SHOULD** set `parentThreadId` to that exchange's `threadId`, and **SHOULD** carry the same value onto every document of the inner exchange — including its *response* and any *error response* — since the whole exchange shares one parent.
+* A *producer* **MUST NOT** set `parentThreadId` equal to the document's own `threadId`. An exchange cannot contain itself.
+* `parentThreadId` carries no normative validation semantics. *Consumers* **MUST NOT** reject a document on the basis of `parentThreadId` alone, but **MAY** use it for routing, correlation, aggregation, or audit.
+
+The member records **one** level of containment. Reconstructing a deeper ancestry requires the intervening documents, and the framework defines no representation for a full chain; a specification needing one is better served by an explicit payload structure than by inferring it from thread metadata.
+
+Where the transport carries its own parent-thread concept, the two **MUST** agree when both are present, and the in-band member remains authoritative for framework-level processing; see [§9.1](#91-what-a-transport-binding-specifies). A transport binding that maps the two states the rule for its own protocol.
+
+> **Example 4a — A ceremony nested inside a broader exchange** *(non-normative)*
+>
+> A relationship exchange is under way on thread `9b1d…`. Completing it requires a witnessing ceremony, which is its own *Trust Task* exchange with its own thread:
+>
+> ```json
+> {
+>   "id": "urn:uuid:2c7f5e10-6a4b-4f8e-9d31-0b6a2f4c8e15",
+>   "type": "https://trusttasks.org/spec/webvh/witness/publish/0.1",
+>   "threadId": "urn:uuid:4a0e2b77-88c1-4d55-9f2a-6c3d1e5b7a92",
+>   "parentThreadId": "9b1d3f60-52a8-4c17-8e44-1d9c7b05f3ae",
+>   "issuer": "did:web:witness.example",
+>   "recipient": "did:web:host.example",
+>   "issuedAt": "2026-08-08T10:15:00Z",
+>   "payload": { "…": "…" }
+> }
+> ```
+>
+> A credential citing the witnessing as evidence anchors to this inner exchange, per [§4.9.1](#491-naming-an-exchange-from-outside-the-framework) — the enclosing exchange attests the relationship interaction, not the witnessing. The `parentThreadId` is what lets a holder of this document find that enclosing exchange; it is not what the citation names.
 
 > **Example 4 — Request and response correlated by `threadId`** *(non-normative)*
 >
@@ -395,7 +430,7 @@ Naming an enclosing exchange instead collects evidence of the wrong event. Where
 
 JSON member names and enumerated string values in *Trust Task documents* follow the casing rules below, so that documents are consistent across specifications both for human readers and for code generators.
 
-1. **Framework-defined members.** Every member defined by this framework — `id`, `threadId`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `proof`, and the members of the error payload in [§8.2](#82-error-payload) — **MUST** be named in **lowerCamelCase**. The sole exception is `@context`, which is named as required by JSON-LD.
+1. **Framework-defined members.** Every member defined by this framework — `id`, `threadId`, `parentThreadId`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `proof`, and the members of the error payload in [§8.2](#82-error-payload) — **MUST** be named in **lowerCamelCase**. The sole exception is `@context`, which is named as required by JSON-LD.
 
 2. **Framework-defined values.** Enumerated string values defined by this framework — notably the standard error `code` identifiers of [§8.3](#83-standard-error-codes) — **MUST** be expressed in **lowerCamelCase**.
 
@@ -546,7 +581,7 @@ Every representation returned **MUST** describe the same version of the specific
 
 The JSON Schema served at the *Type URI* of an individual *Trust Task specification* describes **only** the contents of that specification's `payload` member.
 
-The outer document structure (`id`, `threadId`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `@context`, `proof`) is described by the JSON Schema served at the framework's own *Type URI* — `https://trusttasks.org/spec/trust-task/<MAJOR.MINOR>` — under content negotiation for `application/schema+json`. A complete document validation therefore composes the framework schema (outer structure) with the task-specific payload schema.
+The outer document structure (`id`, `threadId`, `parentThreadId`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `@context`, `proof`) is described by the JSON Schema served at the framework's own *Type URI* — `https://trusttasks.org/spec/trust-task/<MAJOR.MINOR>` — under content negotiation for `application/schema+json`. A complete document validation therefore composes the framework schema (outer structure) with the task-specific payload schema.
 
 The JSON Schema served at any *Type URI* **MUST** declare:
 
@@ -609,7 +644,7 @@ A *conforming producer* **MUST**:
 3. Place all task-specific data in `payload`, and emit a `payload` value that validates against the JSON Schema obtained by content-negotiating the *Type URI* for `application/schema+json` (see [§6.2](#62-content-negotiation)).
 4. Populate `id` with a value satisfying [§4.3](#43-the-id-member).
 
-A *conforming producer* **SHOULD** populate `issuedAt` to support freshness checks downstream, **SHOULD** populate `issuer` and `recipient` when the transport in use does not provide authenticated party identity end-to-end between *producer* and *consumer*, **SHOULD** set `threadId` when emitting a *Trust Task document* in response to another (see [§4.9](#49-the-threadid-member)), and **SHOULD** preserve any unrecognized members received from upstream parties when forwarding a *Trust Task document*.
+A *conforming producer* **SHOULD** populate `issuedAt` to support freshness checks downstream, **SHOULD** populate `issuer` and `recipient` when the transport in use does not provide authenticated party identity end-to-end between *producer* and *consumer*, **SHOULD** set `threadId` when emitting a *Trust Task document* in response to another (see [§4.9](#49-the-threadid-member)), **SHOULD** set `parentThreadId` when the exchange is conducted inside another and carry it onto every document of the inner exchange (see [§4.9.2](#492-the-parentthreadid-member)), and **SHOULD** preserve any unrecognized members received from upstream parties when forwarding a *Trust Task document*.
 
 A *conforming producer* that emits an `ext` member (see [§4.5.1](#451-the-ext-extension-member)) **MUST** namespace every immediate child key of `ext` under a reverse-DNS prefix the producer controls; bare or un-namespaced child keys are non-conforming.
 
@@ -826,6 +861,7 @@ A *transport binding* **SHOULD** specify each of the following:
 * **Document carriage.** How a *Trust Task document* is placed onto and retrieved from the transport (request body, message payload, envelope field, attachment, etc.).
 * **Field population from transport context.** Which framework members the binding **derives** from transport-derived information — typically `issuer` (from a transport-authenticated sender), `recipient` (from a transport-authenticated addressee), and any signature metadata that lets a *consumer* verify the framework `proof` against transport-bound keys or, per [§4.7.1](#471-when-to-include-a-proof), accept the document without an in-band `proof`. Per [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), the binding fills these members from the transport **only when the corresponding in-band member is absent**; when the in-band member is present, the transport-derived value is used as a cross-check, not as a substitute.
 * **Consistency enforcement.** The behavior when an in-band framework member and its transport-derived equivalent disagree. The framework requires they **MUST** be consistent (see [§4.8](#48-the-issuer-and-recipient-members), [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), and [§7.2](#72-consumer-requirements)); the binding states how the comparison is performed for the transport in question (for example, how a DID carried in-band is matched against a transport-authenticated DID).
+* **Thread correlation (where the transport has its own).** Several transports carry their own correlation and parent-correlation identifiers — DIDComm's `thid` and `pthid`, for example. Where a binding maps these onto the framework's `threadId` ([§4.9](#49-the-threadid-member)) and `parentThreadId` ([§4.9.2](#492-the-parentthreadid-member)), it **MUST** state that mapping, and the mapping **MUST** require the two to agree only when **both** are explicitly present. The two layers identify different things and typically default into their own identifier spaces — a transport's correlation identifier commonly falls back to that transport's own message identifier, which is not the *Trust Task document*'s `id` — so requiring agreement unconditionally would fail exchanges that are otherwise conforming. As everywhere else in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity), the in-band member is authoritative and the transport value is a cross-check; a *producer* **SHOULD** populate the transport's identifiers from the framework members rather than the reverse. A disagreement is a structural inconsistency and is reported as `malformedRequest`, not `identityMismatch` — no party's identity is in dispute.
 * **Transport security profile.** The integrity, authentication, confidentiality, and freshness guarantees the transport provides, so that *consumers* can correctly evaluate the `proof` requirement under [§4.7.1](#471-when-to-include-a-proof).
 * **Error and response delivery.** How an *error response* ([§8](#8-error-responses)) is returned to the *producer* of the original document, including the behavior when the transport is fire-and-forget.
 
@@ -1083,6 +1119,7 @@ If any step fails, the *consumer* returns an *error response* per [§8](#8-error
 
 ### 0.3
 
+* **The `parentThreadId` member ([§4.9.2](#492-the-parentthreadid-member)).** A *Trust Task document* **MAY** now carry the `threadId` of the exchange that contains it, so a party holding a document from a nested exchange can find the exchange it was conducted within — something a flat `threadId` cannot express, and which specifications were otherwise forced to invent per-family payload conventions for. It takes `threadId`'s posture: optional, no normative validation semantics, consumers **MUST NOT** reject on it alone. It records one level of containment deliberately, rather than half-defining an ancestry chain. Where a transport carries its own parent-thread concept the two **MUST** agree when both are present, with the in-band member authoritative. Additive: the document wire format gains an optional member, and every document conforming to 0.2 still conforms.
 * **Naming an exchange from outside the framework ([§4.9.1](#491-naming-an-exchange-from-outside-the-framework)).** Added the rule that anything referring to an exchange as evidence of an event — a credential citing the exchange that established what it attests, an audit record, a governance decision — **MUST** name the *innermost* exchange whose documents attest that event, by the `id` of the document that initiated it. A `threadId` names one exchange and expresses no containment, so where exchanges nest, more than one thread is open when an event occurs and only one attests it; naming an enclosing exchange collects evidence of the wrong event. Clarification only — no member is added and no existing behaviour changes.
 * **Family namespaces for extended error codes ([§8.5](#85-extension-by-individual-trust-task-specifications)).** The namespace of an extended `code` may now be either the emitting specification's own slug (as before) or a *family namespace* — a proper path prefix of that slug — for a condition whose meaning is defined once across a family in a shared convention, such as `did-management:unknownDomain` on every `did-management/*` specification. Previously the namespace **MUST** have equalled the slug exactly, which gave a family-wide failure mode no way to be named once; specifications expressed it anyway, so the rule was already being broken to say something true. The relaxation is deliberately narrow: because a family namespace is always a prefix of the emitting slug, a *consumer* can still verify a received code's namespacing against the document's `type` alone, and a *sibling's* slug remains forbidden. Additive — every previously conforming code remains conforming. The prefix relationship is now enforced by the registry build, which never checked the original rule either.
 * **Draft editorial changes stay in place ([§5.2](#52-compatibility-rules)).** An editorial or normalization change to a `draft` artifact — casing normalization per [§4.10](#410-naming-conventions), a framework or shared-schema-component `$ref` re-pin with no wire effect, prose rewording — is now made in place and **MUST NOT** mint a new version. A wire-identical version minted before this rule **MAY** declare the new optional `wireCompatibleWith` front-matter field naming its predecessor, so consumers can dual-accept by mechanical normalization.

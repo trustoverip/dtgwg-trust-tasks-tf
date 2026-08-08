@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task/0.3",
+  "title": "Trust Task document — framework envelope (0.3)",
+  "description": "The outer structure of a Trust Task document, per SPEC.md §4.2. This is the schema SPEC §7.2 item 1 requires a conforming consumer to validate the outer document against, selected by the target framework version the Trust Task specification declares (§7.3 item 3) — not by the version in the document's own type member. A complete validation composes this schema with the task-specific payload schema obtained from the document's type (§6.3).\n\nDescriptive, not a tightening: every constraint here restates §4.2 as it stands for framework 0.3. `additionalProperties` is true because §4.2 states a document MAY carry additional top-level members, and §7.2 requires a consumer to preserve — while not acting on — members it does not recognize.",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "payload"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The Document identifier — globally unique to this instance of the task, and never reused across documents (§4.3). UUIDv4 is RECOMMENDED; any string the producer can guarantee unique is permitted, so no form is imposed here."
+    },
+    "threadId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Correlates this document with others in the same logical exchange (§4.9). Carries no normative validation semantics: a consumer MUST NOT reject a document on the basis of threadId alone."
+    },
+    "parentThreadId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The threadId of the exchange that contains this one, where this exchange is conducted inside another (§4.9.2). A navigation aid: it records one level of containment and does not change which exchange attests an event (§4.9.1). Like threadId it carries no normative validation semantics — a consumer MUST NOT reject a document on the basis of parentThreadId alone. A producer MUST NOT set it equal to this document's own threadId; an exchange cannot contain itself."
+    },
+    "type": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "description": "The Type URI identifying the Trust Task specification and version this document conforms to (§4.4), optionally carrying the reserved #request or #response fragment (§4.4.1).\n\nDeliberately not constrained to the trusttasks.org authority: §6.5 permits a private specification to use any HTTPS authority its publisher controls, and such documents conform fully. The Type URI grammar of §6.1 is applied by the consumer, not by this schema."
+    },
+    "issuer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A Verifiable Identifier for the party responsible for the document's content (§4.8). Compared by exact string equality wherever the framework compares VIDs, so producers SHOULD emit canonical form."
+    },
+    "recipient": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A Verifiable Identifier for the party the issuer expects to act upon the document (§4.8)."
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "An RFC 3339 timestamp recording when the document was produced. SHOULD be populated, to support freshness checks downstream (§7.1)."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "An RFC 3339 timestamp after which the document is no longer valid. Where present, a consumer MUST NOT act upon the document once now ≥ expiresAt — an inclusive bound, so the instant itself is expired (§4.2, §7.2 item 4)."
+    },
+    "payload": {
+      "type": "object",
+      "description": "The task-specific body. Its internal structure is governed by the Trust Task specification identified by type, and is validated separately against that specification's payload schema (§4.5, §7.2 item 2). The framework constrains it only to be an object."
+    },
+    "@context": {
+      "type": [
+        "string",
+        "array",
+        "object"
+      ],
+      "description": "If present, enables JSON-LD processing of the document (§4.6). A consumer that does not implement JSON-LD MUST ignore it."
+    },
+    "proof": {
+      "type": "object",
+      "description": "A W3C Data Integrity Proof binding the document's content to its issuer (§4.7). The suite is open, so the internal structure is not constrained here; a consumer verifies it per §4.7 and the rules of the chosen cryptosuite."
+    }
+  }
+}

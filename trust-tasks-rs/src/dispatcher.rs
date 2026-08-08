@@ -157,10 +157,12 @@ impl<R> Dispatcher<R> {
         error_id: impl Into<String>,
     ) -> Result<R, ErrorResponse> {
         // §8.1 needs `id`, `threadId`, `issuer`, `recipient`, `type_uri`
-        // to build the error response. The handler consumes `doc`, so we
-        // capture the small bits up front.
+        // to build the error response, and §4.9.2 needs `parentThreadId` so the
+        // rejection stays inside the same enclosing exchange. The handler
+        // consumes `doc`, so we capture the small bits up front.
         let id = doc.id.clone();
         let thread_id = doc.thread_id.clone();
+        let parent_thread_id = doc.parent_thread_id.clone();
         let issuer = doc.issuer.clone();
         let recipient = doc.recipient.clone();
 
@@ -170,6 +172,7 @@ impl<R> Dispatcher<R> {
                 error_id.into(),
                 id,
                 thread_id,
+                parent_thread_id,
                 issuer,
                 recipient,
                 ErrorPayload::from(reason),
@@ -187,6 +190,7 @@ fn build_error_response(
     error_id: String,
     request_id: String,
     request_thread_id: Option<String>,
+    request_parent_thread_id: Option<String>,
     request_issuer: Option<String>,
     request_recipient: Option<String>,
     payload: ErrorPayload,
@@ -195,6 +199,7 @@ fn build_error_response(
     ErrorResponse {
         id: error_id,
         thread_id,
+        parent_thread_id: request_parent_thread_id,
         type_uri: trust_task_error_type_uri(),
         issuer: request_recipient,
         recipient: request_issuer,
@@ -218,6 +223,7 @@ where
     let TrustTask {
         id,
         thread_id,
+        parent_thread_id,
         type_uri,
         issuer,
         recipient,
@@ -237,6 +243,7 @@ where
     Ok(TrustTask {
         id,
         thread_id,
+        parent_thread_id,
         type_uri,
         issuer,
         recipient,

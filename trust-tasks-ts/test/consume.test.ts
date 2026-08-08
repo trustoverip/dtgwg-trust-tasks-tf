@@ -323,3 +323,44 @@ describe("handler refusals", () => {
     assert.equal(outcome.error.issuer, ME);
   });
 });
+
+describe("§4.9.2 parentThreadId", () => {
+  const PARENT = "urn:uuid:9b1d3f60-52a8-4c17-8e44-1d9c7b05f3ae";
+
+  it("carries the parent onto the success response", () => {
+    // The whole inner exchange shares one parent, so a response stays inside
+    // the same enclosing exchange.
+    const req = doc({ threadId: "inner-1", parentThreadId: PARENT });
+    const res = respondWith<Payload, Response>(req, "resp-1", { ok: true }, CLOCK);
+    assert.equal(res.parentThreadId, PARENT);
+    assert.equal(res.threadId, "inner-1");
+  });
+
+  it("carries the parent onto an error response", () => {
+    const req = doc({ threadId: "inner-1", parentThreadId: PARENT });
+    const err = refuse(req, "err-1", { code: "taskFailed", message: "no", retryable: false }, CLOCK);
+    assert.equal(err.parentThreadId, PARENT);
+  });
+
+  it("carries the parent through the full pipeline", async () => {
+    const outcome = await run({ proof: PROOF, threadId: "inner-1", parentThreadId: PARENT });
+    assert.ok(outcome.kind === "handled");
+    assert.equal(outcome.response.parentThreadId, PARENT);
+  });
+
+  it("omits the member entirely when there is no parent", () => {
+    // Not `undefined` — absent. An explicit undefined would serialise to
+    // `"parentThreadId": null` under some encoders and imply a null parent.
+    const res = respondWith<Payload, Response>(doc({}), "resp-1", { ok: true }, CLOCK);
+    assert.ok(!("parentThreadId" in res));
+    assert.equal(JSON.stringify(res).includes("parentThreadId"), false);
+  });
+
+  it("is not rejected by the pipeline on its own (§4.9.2 has no validation semantics)", async () => {
+    // Even a self-referential parent — which a producer MUST NOT emit — is not
+    // a consumer-side rejection: consumers MUST NOT reject on parentThreadId
+    // alone.
+    const outcome = await run({ proof: PROOF, threadId: "same", parentThreadId: "same" });
+    assert.equal(outcome.kind, "handled");
+  });
+});

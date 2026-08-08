@@ -524,7 +524,7 @@ function checkExampleDocuments() {
   const ajv = new Ajv({ allErrors: true, strict: false });
   addFormats(ajv);
   const validators = new Map();
-  for (const version of ['0.1', '0.2']) {
+  for (const version of ['0.1', '0.2', '0.3']) {
     const p = path.join(SPECS_DIR, '_framework', version, 'trust-task.schema.json');
     if (!fs.existsSync(p)) continue;
     try {
