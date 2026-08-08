@@ -212,8 +212,12 @@ Maintainer's first response:
 
 ```json
 {
+  "id": "urn:uuid:6f2a1b90-4c73-4e01-9a2d-1f5b7c0e83d4",
   "type": "https://trusttasks.org/spec/trust-task-error/0.2",
   "threadId": "sttsk-1234-bad",
+  "issuer": "did:web:vta.example",
+  "recipient": "did:peer:2.Ez6LSc…",
+  "issuedAt": "2026-05-16T14:22:00Z",
   "payload": {
     "code": "vault/sign-trust-task:envelopeIssuerMismatch",
     "message": "envelope.issuer must equal the entry's principalDid",

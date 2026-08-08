@@ -28,6 +28,13 @@ jobs:
       - name: Build registry (validate + generate)
         run: npm run build
 
+      # The CloudFront function that serves schemas at their Type URIs (SPEC
+      # §6.2) runs on CloudFront's own engine, so CI cannot exercise it live.
+      # These cover the routing decision, where a mistake either breaks the
+      # human-facing site or silently stops serving schemas.
+      - name: Test the Type URI negotiation function
+        run: npm run test:infra
+
       - name: Sync SPEC.md into website/
         run: cp SPEC.md website/SPEC.md
 

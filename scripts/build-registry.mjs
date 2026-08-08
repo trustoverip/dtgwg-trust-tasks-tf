@@ -503,6 +503,101 @@ function checkErrorCodeNamespaces(meta, rel) {
   }
 }
 
+/*
+ * Validate every example Trust Task document in the repo against the framework
+ * envelope schema for its declared target framework version.
+ *
+ * Two things make this worth doing. The envelope schemas were authored after
+ * 285 specs had already been published against framework 0.1 and 0.2, so they
+ * describe versions that were previously defined only in §4.2 prose — this is
+ * what demonstrates they are faithful to what shipped rather than a retroactive
+ * tightening. And an example document is the thing implementers copy: a wrong
+ * one is a bug that propagates, and nothing checked them before.
+ *
+ * Only blocks that parse as JSON *and* look like an envelope (a `type` plus a
+ * `payload`) are considered. Specs legitimately include illustrative fragments
+ * that are not valid JSON — `bindings/tsp/0.1` shows envelope shape using a
+ * `/* … *​/` comment — so unparseable blocks are counted and warned about
+ * rather than failed, which would punish a deliberate ellipsis.
+ */
+function checkExampleDocuments() {
+  const ajv = new Ajv({ allErrors: true, strict: false });
+  addFormats(ajv);
+  const validators = new Map();
+  for (const version of ['0.1', '0.2']) {
+    const p = path.join(SPECS_DIR, '_framework', version, 'trust-task.schema.json');
+    if (!fs.existsSync(p)) continue;
+    try {
+      validators.set(version, ajv.compile(readJson(p)));
+    } catch (e) {
+      fail(`_framework/${version}/trust-task.schema.json`, `invalid envelope schema: ${e.message}`);
+    }
+  }
+  if (validators.size === 0) return;
+
+  // A document's envelope version is the *target framework version* of the spec
+  // whose slug the document's `type` names (§7.2 item 1) — not the version in
+  // the type URI, which identifies the task specification.
+  const targetByTypePrefix = new Map();
+  for (const { slug, version, specPath } of discoverSpecs()) {
+    const { data } = splitFrontMatter(fs.readFileSync(specPath, 'utf8'));
+    if (data?.targetFrameworkVersion) {
+      targetByTypePrefix.set(`https://trusttasks.org/spec/${slug}/${version}`, data.targetFrameworkVersion);
+    }
+  }
+
+  const sources = [path.join(ROOT, 'SPEC.md')];
+  for (const base of [SPECS_DIR, path.join(ROOT, 'bindings')]) {
+    if (!fs.existsSync(base)) continue;
+    const walkMd = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walkMd(full);
+        else if (entry.name === 'spec.md') sources.push(full);
+      }
+    };
+    walkMd(base);
+  }
+
+  let checked = 0;
+  let unparseable = 0;
+  for (const file of sources) {
+    const rel = path.relative(ROOT, file);
+    const src = fs.readFileSync(file, 'utf8');
+    for (const match of src.matchAll(/```json\n([\s\S]*?)```/g)) {
+      // Examples inside a blockquote carry a "> " prefix on every line.
+      const raw = match[1].split('\n').map((l) => l.replace(/^>\s?/, '')).join('\n');
+      let doc;
+      try {
+        doc = JSON.parse(raw);
+      } catch {
+        unparseable++;
+        continue;
+      }
+      if (!doc || typeof doc !== 'object' || Array.isArray(doc)) continue;
+      if (typeof doc.type !== 'string' || !doc.type.startsWith('https://trusttasks.org/spec/')) continue;
+      if (!('payload' in doc)) continue;
+
+      const bare = doc.type.split('#')[0];
+      const target = targetByTypePrefix.get(bare) ?? '0.2';
+      const validate = validators.get(target);
+      if (!validate) continue;
+
+      checked++;
+      if (!validate(doc)) {
+        const why = (validate.errors || [])
+          .map((e) => `${e.instancePath || '/'} ${e.message}`)
+          .join('; ');
+        fail(rel, `example document (type ${doc.type}) fails the framework ${target} envelope schema: ${why}`);
+      }
+    }
+  }
+  if (unparseable > 0) {
+    warn(`${unparseable} fenced JSON block(s) did not parse and were skipped — expected for illustrative fragments, but check none is a malformed example`);
+  }
+  console.log(`  validated ${checked} example documents against the framework envelope schema`);
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -744,6 +839,7 @@ function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
   const validate = loadMetaValidator();
   checkCategoryTaxonomy();
+  checkExampleDocuments();
   const entries = discoverSpecs();
   if (entries.length === 0) {
     console.warn('No specs found under specs/<slug>/<version>/.');

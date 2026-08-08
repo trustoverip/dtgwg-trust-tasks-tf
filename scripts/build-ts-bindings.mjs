@@ -448,11 +448,16 @@ async function main() {
   const schemas = await walk(SPECS_DIR, /\.schema\.json$/);
   schemas.sort();
 
-  // Skip top-level spec.meta.schema.json — it's framework metadata, not
-  // a payload type.
-  const filtered = schemas.filter(
-    (p) => path.basename(p) !== "spec.meta.schema.json",
-  );
+  // Skip two schemas that describe something other than a payload shape:
+  //
+  //   spec.meta.schema.json — front-matter metadata for spec authors.
+  //   trust-task.schema.json — the document envelope (SPEC §4.2). Generating
+  //     from it would put a second document type in the package, competing with
+  //     the hand-written `TrustTaskDocument<P>` in src/_runtime. The generated
+  //     one would be strictly worse — not generic over the payload, so unusable
+  //     with consumeInbound — and having both invites picking the wrong one.
+  const NOT_PAYLOAD_SCHEMAS = new Set(["spec.meta.schema.json", "trust-task.schema.json"]);
+  const filtered = schemas.filter((p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)));
 
   console.log(`Generating bindings for ${filtered.length} schemas...`);
   const generated = [];
