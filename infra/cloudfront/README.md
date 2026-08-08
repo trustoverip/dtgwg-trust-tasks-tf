@@ -116,8 +116,41 @@ than remembered.
 ./remove-spa-error-mapping.sh <DISTRIBUTION_ID> --apply
 ```
 
-The `403` mapping is deliberately left in place — this origin returns 404 for a
-missing key, so 403 is not in play, and removing it is a separate decision.
+The `403` mapping is left in place. It is harmless *provided* the bucket policy
+grants `s3:ListBucket` — see below, because without that this whole change is
+undone.
+
+### The bucket policy is part of this
+
+The distribution's origin must be able to return a real **404**, and with
+CloudFront + OAC that depends on the bucket policy:
+
+```json
+{
+  "Sid": "AllowCloudFrontListBucketForRealNotFound",
+  "Effect": "Allow",
+  "Principal": { "Service": "cloudfront.amazonaws.com" },
+  "Action": "s3:ListBucket",
+  "Resource": "arn:aws:s3:::<bucket>",
+  "Condition": { "ArnLike": { "AWS:SourceArn": "<distribution ARN>" } }
+}
+```
+
+Without `s3:ListBucket`, S3 cannot distinguish a missing key from a forbidden
+one and answers **403 AccessDenied**. The remaining `403 -> /index.html as 200`
+mapping then turns that back into the site shell under a success status —
+reinstating precisely the bug the 404 removal was meant to fix.
+
+It sounds broader than it is. CloudFront never issues a list operation on a
+viewer's behalf and the distribution offers no way to trigger one; the grant
+only changes which error S3 returns for a missing key. Scope it to the same
+principal and `SourceArn` condition as the existing `s3:GetObject` statement.
+
+⚠️ **Check this with `aws s3api get-bucket-policy`, not by calling
+`head-object` yourself.** An IAM user with broader permissions gets a clean 404
+and tells you nothing about what the CloudFront principal sees. That false
+signal is why the 403 mapping was originally left in place with a comment
+asserting the opposite.
 
 ### Cache keys need no change
 

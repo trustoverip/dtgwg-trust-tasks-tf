@@ -20,8 +20,14 @@
 #
 #   ./remove-spa-error-mapping.sh <DISTRIBUTION_ID> [--apply]
 #
-# The 403 mapping is left alone: this origin returns 404 for a missing key, so
-# 403 is not in play, and removing it is a separate decision.
+# The 403 mapping is left in place, but only works because the bucket policy
+# grants the CloudFront principal `s3:ListBucket`. Without it S3 cannot tell a
+# missing key from a forbidden one and answers 403, which the 403 mapping then
+# turns back into the shell under a 200 — reinstating the exact bug this
+# removes. See README.md "The bucket policy is part of this". Verified with
+# `aws s3api get-bucket-policy`, not with your own credentials: an IAM user with
+# broader permissions gets a 404 from `head-object` and tells you nothing about
+# what CloudFront sees.
 
 set -euo pipefail
 
