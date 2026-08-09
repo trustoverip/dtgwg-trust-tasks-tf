@@ -1,0 +1,76 @@
+[
+  {
+    "note": "Empty payload omits the required member `expects`.",
+    "payload": {}
+  },
+  {
+    "note": "`expects` must have at least one entry — a next step that names no continuation says nothing an error response would not say better.",
+    "payload": {
+      "expects": []
+    }
+  },
+  {
+    "note": "An `expects` entry omits the required `typeUri`; a reason alone does not name a continuation.",
+    "payload": {
+      "expects": [
+        { "reason": "step up first" }
+      ]
+    }
+  },
+  {
+    "note": "`expects` entry carries an unknown member (additionalProperties: false).",
+    "payload": {
+      "expects": [
+        {
+          "typeUri": "https://trusttasks.org/spec/auth/step-up/0.1",
+          "__notARealMember__": true
+        }
+      ]
+    }
+  },
+  {
+    "note": "`expects` must be an array of objects, not an array of bare Type URI strings.",
+    "payload": {
+      "expects": ["https://trusttasks.org/spec/auth/step-up/0.1"]
+    }
+  },
+  {
+    "note": "`continuation` outside the permitted set. Only resubmit and proceed are defined.",
+    "payload": {
+      "expects": [{ "typeUri": "https://trusttasks.org/spec/auth/step-up/0.1" }],
+      "continuation": "retry"
+    }
+  },
+  {
+    "note": "`inResponseTo` omits the required `typeUri`.",
+    "payload": {
+      "expects": [{ "typeUri": "https://trusttasks.org/spec/auth/step-up/0.1" }],
+      "inResponseTo": { "id": "urn:uuid:0e9d4c2b-5f81-4d3e-9b51-7a3c89e3d1f2" }
+    }
+  },
+  {
+    "note": "`hint` must be an object; its shape is governed by the specification named in typeUri, but it is an object at this level.",
+    "payload": {
+      "expects": [
+        {
+          "typeUri": "https://trusttasks.org/spec/auth/step-up/0.1",
+          "hint": "aal2"
+        }
+      ]
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "expects": [{ "typeUri": "https://trusttasks.org/spec/auth/step-up/0.1" }],
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`ext` immediate keys must be reverse-DNS namespaced per SPEC §4.5.1; a bare key is non-conforming.",
+    "payload": {
+      "expects": [{ "typeUri": "https://trusttasks.org/spec/auth/step-up/0.1" }],
+      "ext": { "bareKey": { "a": 1 } }
+    }
+  }
+]

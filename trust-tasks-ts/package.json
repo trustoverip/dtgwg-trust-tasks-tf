@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Generated TypeScript bindings for the Trust Tasks framework registry.",
   "type": "module",
   "main": "./dist/index.js",
