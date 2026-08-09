@@ -103,6 +103,93 @@ impl ::std::convert::TryFrom<::std::string::String> for Decision {
         value.parse()
     }
 }
+/**A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
+
+Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
+
+This definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.
+
+base58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DigestMultibase",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.",
+///  "examples": [
+///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+///  ],
+///  "type": "string",
+///  "minLength": 16,
+///  "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct DigestMultibase(::std::string::String);
+impl ::std::ops::Deref for DigestMultibase {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<DigestMultibase> for ::std::string::String {
+    fn from(value: DigestMultibase) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for DigestMultibase {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 16usize {
+            return Err("shorter than 16 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[zumbfF][A-Za-z0-9+/=_-]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[zumbfF][A-Za-z0-9+/=_-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -239,8 +326,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "payloadDigest": {
-///      "description": "Echoes the digest of the task being authorized. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.",
-///      "type": "string"
+///      "description": "Echoes the digest of the task being authorized, in the encoding `task-consent/request` carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.",
+///      "$ref": "#/definitions/DigestMultibase"
 ///    },
 ///    "reason": {
 ///      "description": "OPTIONAL human-facing note, most useful on a `deny`.",
@@ -259,9 +346,9 @@ pub struct Payload {
     pub decision: Decision,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    ///Echoes the digest of the task being authorized. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.
+    ///Echoes the digest of the task being authorized, in the encoding `task-consent/request` carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.
     #[serde(rename = "payloadDigest")]
-    pub payload_digest: ::std::string::String,
+    pub payload_digest: DigestMultibase,
     ///OPTIONAL human-facing note, most useful on a `deny`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
@@ -363,8 +450,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 ///      "minimum": 1.0
 ///    },
 ///    "payloadDigest": {
-///      "description": "The digest this decision concerned.",
-///      "type": "string"
+///      "description": "The digest this decision concerned, in the encoding `task-consent/request` carried it.",
+///      "$ref": "#/definitions/DigestMultibase"
 ///    },
 ///    "status": {
 ///      "description": "`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.",
@@ -392,9 +479,9 @@ pub struct Response {
     ///Distinct approvals required. Present when status is `pending`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub needed: ::std::option::Option<::std::num::NonZeroU64>,
-    ///The digest this decision concerned.
+    ///The digest this decision concerned, in the encoding `task-consent/request` carried it.
     #[serde(rename = "payloadDigest")]
-    pub payload_digest: ::std::string::String,
+    pub payload_digest: DigestMultibase,
     ///`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.
     pub status: ResponseStatus,
 }
@@ -488,7 +575,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Decision\": {\n      \"description\": \"The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.\",\n      \"enum\": [\n        \"approve\",\n        \"deny\"\n      ],\n      \"title\": \"Decision\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the recorded decision, and whether the approval threshold is now met.\",\n      \"properties\": {\n        \"approvals\": {\n          \"description\": \"Distinct approvals recorded so far.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needed\": {\n          \"description\": \"Distinct approvals required. Present when status is `pending`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"payloadDigest\": {\n          \"description\": \"The digest this decision concerned.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.\",\n          \"enum\": [\n            \"granted\",\n            \"pending\",\n            \"denied\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"payloadDigest\"\n      ],\n      \"title\": \"Task Consent Decision — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/task-consent/decision/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"Echoes the task-consent/request this decision answers, binding it to that one pending request. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"decision\": {\n      \"$ref\": \"#/$defs/Decision\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"payloadDigest\": {\n      \"description\": \"Echoes the digest of the task being authorized. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"OPTIONAL human-facing note, most useful on a `deny`.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"challenge\",\n    \"payloadDigest\",\n    \"decision\"\n  ],\n  \"title\": \"Task Consent Decision — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Decision\": {\n      \"description\": \"The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.\",\n      \"enum\": [\n        \"approve\",\n        \"deny\"\n      ],\n      \"title\": \"Decision\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^[zumbfF][A-Za-z0-9+/=_-]+$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the recorded decision, and whether the approval threshold is now met.\",\n      \"properties\": {\n        \"approvals\": {\n          \"description\": \"Distinct approvals recorded so far.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needed\": {\n          \"description\": \"Distinct approvals required. Present when status is `pending`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"payloadDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The digest this decision concerned, in the encoding `task-consent/request` carried it.\"\n        },\n        \"status\": {\n          \"description\": \"`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.\",\n          \"enum\": [\n            \"granted\",\n            \"pending\",\n            \"denied\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"payloadDigest\"\n      ],\n      \"title\": \"Task Consent Decision — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/task-consent/decision/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"Echoes the task-consent/request this decision answers, binding it to that one pending request. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"decision\": {\n      \"$ref\": \"#/$defs/Decision\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"payloadDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Echoes the digest of the task being authorized, in the encoding `task-consent/request` carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.\"\n    },\n    \"reason\": {\n      \"description\": \"OPTIONAL human-facing note, most useful on a `deny`.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"challenge\",\n    \"payloadDigest\",\n    \"decision\"\n  ],\n  \"title\": \"Task Consent Decision — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {
@@ -497,7 +584,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:c4a90f18-2de6-4b73-9f05-8a1c6b3e27d9\",\n  \"type\": \"https://trusttasks.org/spec/task-consent/decision/0.1\",\n  \"issuer\": \"did:key:z6MkApproverPhoneExample\",\n  \"recipient\": \"did:key:z6MkExecutorVtaExample\",\n  \"issuedAt\": \"2026-07-13T09:43:18Z\",\n  \"payload\": {\n    \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n    \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\",\n    \"decision\": \"approve\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-07-13T09:43:18Z\",\n    \"verificationMethod\": \"did:key:z6MkApproverPhoneExample#z6MkApproverPhoneExample\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2QpLmExampleProofValueForTaskConsentDecision\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:c4a90f18-2de6-4b73-9f05-8a1c6b3e27d9\",\n  \"type\": \"https://trusttasks.org/spec/task-consent/decision/0.1\",\n  \"issuer\": \"did:key:z6MkApproverPhoneExample\",\n  \"recipient\": \"did:key:z6MkExecutorVtaExample\",\n  \"issuedAt\": \"2026-07-13T09:43:18Z\",\n  \"payload\": {\n    \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n    \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\",\n    \"decision\": \"approve\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-07-13T09:43:18Z\",\n    \"verificationMethod\": \"did:key:z6MkApproverPhoneExample#z6MkApproverPhoneExample\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2QpLmExampleProofValueForTaskConsentDecision\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -506,7 +593,7 @@ mod conformance {
     }
     #[test]
     fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:7b3f8d21-5c04-4e19-a6d8-2f9e1b0c4a63\",\n  \"type\": \"https://trusttasks.org/spec/task-consent/decision/0.1#response\",\n  \"issuer\": \"did:key:z6MkExecutorVtaExample\",\n  \"recipient\": \"did:key:z6MkApproverPhoneExample\",\n  \"issuedAt\": \"2026-07-13T09:43:19Z\",\n  \"payload\": {\n    \"status\": \"granted\",\n    \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\",\n    \"approvals\": 1\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-07-13T09:43:19Z\",\n    \"verificationMethod\": \"did:key:z6MkExecutorVtaExample#z6MkExecutorVtaExample\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z6TvNsExampleProofValueForTaskConsentDecisionResponse\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:7b3f8d21-5c04-4e19-a6d8-2f9e1b0c4a63\",\n  \"type\": \"https://trusttasks.org/spec/task-consent/decision/0.1#response\",\n  \"issuer\": \"did:key:z6MkExecutorVtaExample\",\n  \"recipient\": \"did:key:z6MkApproverPhoneExample\",\n  \"issuedAt\": \"2026-07-13T09:43:19Z\",\n  \"payload\": {\n    \"status\": \"granted\",\n    \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\",\n    \"approvals\": 1\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-07-13T09:43:19Z\",\n    \"verificationMethod\": \"did:key:z6MkExecutorVtaExample#z6MkExecutorVtaExample\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z6TvNsExampleProofValueForTaskConsentDecisionResponse\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Response> =
             serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -529,23 +616,23 @@ mod conformance {
             ),
             (
                 "Missing challenge — the decision would not be bound to a single pending request.",
-                "{\n  \"decision\": \"approve\",\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\"\n}",
+                "{\n  \"decision\": \"approve\",\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\"\n}",
             ),
             (
                 "Decision is not a member of the closed enum — silence, timeouts and dismissals are not assent.",
-                "{\n  \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n  \"decision\": \"timeout\",\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\"\n}",
+                "{\n  \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n  \"decision\": \"timeout\",\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\"\n}",
             ),
             (
                 "Boolean decision — the wire form is an explicit enum, so a missing or falsy value can never read as approval.",
-                "{\n  \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n  \"decision\": true,\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\"\n}",
+                "{\n  \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n  \"decision\": true,\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\"\n}",
             ),
             (
                 "Challenge too short.",
-                "{\n  \"challenge\": \"short\",\n  \"decision\": \"approve\",\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\"\n}",
+                "{\n  \"challenge\": \"short\",\n  \"decision\": \"approve\",\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\"\n}",
             ),
             (
                 "Unknown property.",
-                "{\n  \"approverSet\": \"operators\",\n  \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n  \"decision\": \"approve\",\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\"\n}",
+                "{\n  \"approverSet\": \"operators\",\n  \"challenge\": \"9c1f4b7a2e6d80f35a4c9b1e7d2f6083\",\n  \"decision\": \"approve\",\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\"\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {

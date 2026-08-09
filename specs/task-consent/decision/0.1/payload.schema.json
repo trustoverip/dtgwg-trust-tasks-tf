@@ -13,8 +13,8 @@
       "description": "Echoes the task-consent/request this decision answers, binding it to that one pending request. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it."
     },
     "payloadDigest": {
-      "type": "string",
-      "description": "Echoes the digest of the task being authorized. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention."
+      "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+      "description": "Echoes the digest of the task being authorized, in the encoding `task-consent/request` carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention."
     },
     "decision": {
       "$ref": "../../_shared/0.1/task-consent.schema.json#/$defs/Decision"
@@ -42,8 +42,8 @@
           "description": "`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted."
         },
         "payloadDigest": {
-          "type": "string",
-          "description": "The digest this decision concerned."
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The digest this decision concerned, in the encoding `task-consent/request` carried it."
         },
         "approvals": {
           "type": "integer",

@@ -7,6 +7,7 @@ export * from "./_runtime/index.js";
 
 export * as FrameworkShared_v0_1 from "./_framework/0.1/framework.js";
 export * as FrameworkShared_v0_2 from "./_framework/0.2/framework.js";
+export * as FrameworkShared_v0_3 from "./_framework/0.3/framework.js";
 export * as AclEntryShared_v0_1 from "./acl/_shared/0.1/acl-entry.js";
 export * as AclChangeRole_v0_1 from "./acl/change-role/0.1/payload.js";
 export * as AclGrant_v0_1 from "./acl/grant/0.1/payload.js";

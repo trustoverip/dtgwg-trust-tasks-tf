@@ -29,6 +29,93 @@ pub mod error {
         }
     }
 }
+/**A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
+
+Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
+
+This definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.
+
+base58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DigestMultibase",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.",
+///  "examples": [
+///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+///  ],
+///  "type": "string",
+///  "minLength": 16,
+///  "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct DigestMultibase(::std::string::String);
+impl ::std::ops::Deref for DigestMultibase {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<DigestMultibase> for ::std::string::String {
+    fn from(value: DigestMultibase) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for DigestMultibase {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 16usize {
+            return Err("shorter than 16 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[zumbfF][A-Za-z0-9+/=_-]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[zumbfF][A-Za-z0-9+/=_-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -158,7 +245,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    },
 ///    "payloadDigest": {
 ///      "description": "The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization.",
-///      "type": "string"
+///      "$ref": "#/definitions/DigestMultibase"
 ///    },
 ///    "status": {
 ///      "description": "Always `granted`. A denial sends no notice — the requester's re-submit discovers it, and a notice that could carry a denial would tempt a consumer into treating this advisory channel as the authoritative outcome, which it is not.",
@@ -184,7 +271,7 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization.
     #[serde(rename = "payloadDigest")]
-    pub payload_digest: ::std::string::String,
+    pub payload_digest: DigestMultibase,
     ///Always `granted`. A denial sends no notice — the requester's re-submit discovers it, and a notice that could carry a denial would tempt a consumer into treating this advisory channel as the authoritative outcome, which it is not.
     pub status: PayloadStatus,
     ///Type URI of the approved task, for correlation and display at the requester. Advisory on the same terms as the digest — the executor re-derives everything it enforces from the re-submitted payload itself.
@@ -265,7 +352,7 @@ impl crate::Payload for Payload {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/task-consent/granted/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fire-and-forget notice from the executor to the requester that its pending task has reached the approval threshold and a single-use grant is waiting, so the requester re-submits at once instead of polling. Non-load-bearing by design: the grant check at re-submit is the real gate, so a lost or spurious notice costs at most one poll cycle.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"payloadDigest\": {\n      \"description\": \"The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization.\",\n      \"type\": \"string\"\n    },\n    \"status\": {\n      \"description\": \"Always `granted`. A denial sends no notice — the requester's re-submit discovers it, and a notice that could carry a denial would tempt a consumer into treating this advisory channel as the authoritative outcome, which it is not.\",\n      \"enum\": [\n        \"granted\"\n      ],\n      \"type\": \"string\"\n    },\n    \"taskType\": {\n      \"description\": \"Type URI of the approved task, for correlation and display at the requester. Advisory on the same terms as the digest — the executor re-derives everything it enforces from the re-submitted payload itself.\",\n      \"format\": \"uri\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"status\",\n    \"payloadDigest\",\n    \"taskType\"\n  ],\n  \"title\": \"Task Consent Granted — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^[zumbfF][A-Za-z0-9+/=_-]+$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/task-consent/granted/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fire-and-forget notice from the executor to the requester that its pending task has reached the approval threshold and a single-use grant is waiting, so the requester re-submits at once instead of polling. Non-load-bearing by design: the grant check at re-submit is the real gate, so a lost or spurious notice costs at most one poll cycle.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"payloadDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization.\"\n    },\n    \"status\": {\n      \"description\": \"Always `granted`. A denial sends no notice — the requester's re-submit discovers it, and a notice that could carry a denial would tempt a consumer into treating this advisory channel as the authoritative outcome, which it is not.\",\n      \"enum\": [\n        \"granted\"\n      ],\n      \"type\": \"string\"\n    },\n    \"taskType\": {\n      \"description\": \"Type URI of the approved task, for correlation and display at the requester. Advisory on the same terms as the digest — the executor re-derives everything it enforces from the re-submitted payload itself.\",\n      \"format\": \"uri\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"status\",\n    \"payloadDigest\",\n    \"taskType\"\n  ],\n  \"title\": \"Task Consent Granted — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {
@@ -284,7 +371,7 @@ mod conformance {
         let fixtures: &[(&str, &str)] = &[
             (
                 "Wrong status — only `granted` exists. A denial is never announced, so a notice that could say anything else would tempt consumers into treating this advisory channel as the authoritative outcome.",
-                "{\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\",\n  \"status\": \"denied\",\n  \"taskType\": \"https://trusttasks.org/spec/webvh/dids/update/1.0\"\n}",
+                "{\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\",\n  \"status\": \"denied\",\n  \"taskType\": \"https://trusttasks.org/spec/webvh/dids/update/1.0\"\n}",
             ),
             (
                 "Missing payloadDigest — without it the requester cannot correlate the notice to its pending task, and the notice's only job is correlation.",
@@ -292,11 +379,11 @@ mod conformance {
             ),
             (
                 "Missing taskType — required for correlation and display even though it is advisory.",
-                "{\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\",\n  \"status\": \"granted\"\n}",
+                "{\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\",\n  \"status\": \"granted\"\n}",
             ),
             (
                 "Unknown property — the payload is closed; an advisory notice must not grow unspecified members that consumers might start branching on.",
-                "{\n  \"grantToken\": \"eyJhbGciOi...\",\n  \"payloadDigest\": \"3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62\",\n  \"status\": \"granted\",\n  \"taskType\": \"https://trusttasks.org/spec/webvh/dids/update/1.0\"\n}",
+                "{\n  \"grantToken\": \"eyJhbGciOi...\",\n  \"payloadDigest\": \"zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d\",\n  \"status\": \"granted\",\n  \"taskType\": \"https://trusttasks.org/spec/webvh/dids/update/1.0\"\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {

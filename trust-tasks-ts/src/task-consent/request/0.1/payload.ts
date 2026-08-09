@@ -4,6 +4,11 @@
  */
 
 /**
+ * The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.
+ */
+export type DigestMultibase = string;
+
+/**
  * The executor asks an enrolled approver device to authorize one pending privileged task, presenting the effects it computed by dry-running the real handler against its own prior state. The executor signs this document; the approver renders only what it verifies under that signature.
  */
 export interface TaskConsentRequestPayload {
@@ -15,10 +20,7 @@ export interface TaskConsentRequestPayload {
    * Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one.
    */
   taskType: string;
-  /**
-   * The binding between what the approver sees and what executes. Digest of the canonical (RFC 8785 JCS) payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.
-   */
-  payloadDigest: string;
+  payloadDigest: DigestMultibase;
   /**
    * Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class.
    */
@@ -157,7 +159,7 @@ export interface TaskConsentRequestResponsePayload {
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/request/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = TaskConsentRequestPayload;
+export type Payload = DigestMultibase;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/task-consent/request/0.1#response" as const;

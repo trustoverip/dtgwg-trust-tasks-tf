@@ -50,12 +50,12 @@
           "description": "Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution."
         },
         "prevHash": {
-          "type": "string",
-          "description": "Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks."
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way."
         },
         "entryHash": {
-          "type": "string",
-          "description": "Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here."
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry."
         },
         "detail": {
           "type": "object",

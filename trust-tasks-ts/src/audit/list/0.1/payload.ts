@@ -3,6 +3,15 @@
  * Source: specs/audit/list/0.1/payload.schema.json
  */
 
+/**
+ * Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.
+ */
+export type DigestMultibase = string;
+/**
+ * Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.
+ */
+export type DigestMultibase1 = string;
+
 export interface AuditListPayload {
   /**
    * Return only entries recorded at or after this time.
@@ -95,14 +104,8 @@ export interface AuditEnvelope {
    * Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution.
    */
   schemaVersion?: number;
-  /**
-   * Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks.
-   */
-  prevHash?: string;
-  /**
-   * Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here.
-   */
-  entryHash?: string;
+  prevHash?: DigestMultibase;
+  entryHash?: DigestMultibase1;
   /**
    * Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.
    */
@@ -116,7 +119,7 @@ export interface AuditEnvelope {
 export const TYPE_URI = "https://trusttasks.org/spec/audit/list/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = AuditListPayload;
+export type Payload = DigestMultibase;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/audit/list/0.1#response" as const;

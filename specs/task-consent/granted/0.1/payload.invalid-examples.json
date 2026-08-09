@@ -3,7 +3,7 @@
     "note": "Wrong status — only `granted` exists. A denial is never announced, so a notice that could say anything else would tempt consumers into treating this advisory channel as the authoritative outcome.",
     "payload": {
       "status": "denied",
-      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
       "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0"
     }
   },
@@ -18,14 +18,14 @@
     "note": "Missing taskType — required for correlation and display even though it is advisory.",
     "payload": {
       "status": "granted",
-      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62"
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d"
     }
   },
   {
     "note": "Unknown property — the payload is closed; an advisory notice must not grow unspecified members that consumers might start branching on.",
     "payload": {
       "status": "granted",
-      "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
       "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0",
       "grantToken": "eyJhbGciOi..."
     }

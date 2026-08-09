@@ -4,6 +4,16 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.4.0] - 2026-08-09
+
+### Changed
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.4. That release changes digest
+  payload members from `String` to the validating `DigestMultibase` newtype, and
+  the core types cross this crate's public API, so a dependency graph mixing
+  `trust-tasks-rs` 0.3 with this crate will not type-check. No API of this crate
+  changed on its own account.
+
 ## [0.2.2] — 2026-07-29
 
 ### Added

@@ -83,9 +83,8 @@
           "description": "OPTIONAL. Size in bytes, if known ahead of fetch."
         },
         "digest": {
-          "type": "string",
-          "minLength": 1,
-          "description": "OPTIONAL. Multihash digest of the attachment bytes, so the reference is itself verifiable and tamper-evident."
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper."
         }
       }
     },
@@ -100,9 +99,8 @@
           "description": "The `id` of the previous `chat/message` Trust Task document in this conversation."
         },
         "digest": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Multihash digest (e.g. `sha-256`) over the previous document, so a gap, reorder, or removal in the chain is detectable."
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the previous document, so a gap, reorder, or removal in the chain is detectable. The algorithm travels in the multihash rather than being fixed here."
         }
       }
     },
