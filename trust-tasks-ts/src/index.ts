@@ -70,6 +70,7 @@ export * as CredentialExchangePresent_v0_1 from "./credential-exchange/present/0
 export * as CredentialExchangeQuery_v0_1 from "./credential-exchange/query/0.1/payload.js";
 export * as CredentialExchangeRequest_v0_1 from "./credential-exchange/request/0.1/payload.js";
 export * as CredentialsShared_v0_1 from "./credentials/_shared/0.1/credentials.js";
+export * as CredentialsShared_v0_2 from "./credentials/_shared/0.2/credentials.js";
 export * as DeviceBindingShared_v0_1 from "./device/_shared/0.1/device-binding.js";
 export * as DeviceBindingShared_v0_2 from "./device/_shared/0.2/device-binding.js";
 export * as DeviceDisable_v0_1 from "./device/disable/0.1/payload.js";
@@ -241,6 +242,7 @@ export * as VtaContextsDidTemplatesList_v1_0 from "./vta/contexts/did-templates/
 export * as VtaContextsDidTemplatesRender_v1_0 from "./vta/contexts/did-templates/render/1.0/payload.js";
 export * as VtaContextsDidTemplatesUpdate_v1_0 from "./vta/contexts/did-templates/update/1.0/payload.js";
 export * as VtaCredentialsIssue_v0_1 from "./vta/credentials/issue/0.1/payload.js";
+export * as VtaCredentialsIssue_v0_2 from "./vta/credentials/issue/0.2/payload.js";
 export * as VtaCredentialsRevoke_v0_1 from "./vta/credentials/revoke/0.1/payload.js";
 export * as VtaDidTemplatesCreate_v1_0 from "./vta/did-templates/create/1.0/payload.js";
 export * as VtaDidTemplatesCreate_v2_0 from "./vta/did-templates/create/2.0/payload.js";

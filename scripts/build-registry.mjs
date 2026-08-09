@@ -627,6 +627,11 @@ function checkExampleDocuments() {
   console.log(`  validated ${checked} example documents against the framework envelope schema`);
 }
 
+/** Whether a schema states how unrecognized members are treated (§7.3 item 7.4). */
+function declaresClosure(schema) {
+  return 'additionalProperties' in schema || 'unevaluatedProperties' in schema;
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -647,8 +652,14 @@ function checkPayloadSchema(slug, version, dir) {
   if (schema.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
     fail(`${slug}/${version}/payload.schema.json`, `$schema must be JSON Schema 2020-12`);
   }
-  if (!('additionalProperties' in schema)) {
-    warn(`${slug}/${version}/payload.schema.json: no additionalProperties declared (SPEC §6.3 requires explicit handling)`);
+  // §7.3 item 7.4 asks a schema to say how unrecognized members are treated.
+  // `unevaluatedProperties` satisfies that as squarely as `additionalProperties`
+  // and is the only one that composes: a schema built by `allOf` over a shared
+  // definition cannot use `additionalProperties`, because it is evaluated
+  // per-subschema against the whole instance and rejects the members the outer
+  // schema declares.
+  if (!declaresClosure(schema)) {
+    warn(`${slug}/${version}/payload.schema.json: no additionalProperties or unevaluatedProperties declared (SPEC §7.3 item 7.4 requires explicit handling)`);
   }
   // SPEC §7.3 item 7.6: if a response sub-schema exists, it MUST live in $defs.Response
   // and declare $anchor: "response".
@@ -657,8 +668,8 @@ function checkPayloadSchema(slug, version, dir) {
     if (respDef.$anchor !== 'response') {
       fail(`${slug}/${version}/payload.schema.json`, `$defs.Response must declare $anchor: "response" (got ${JSON.stringify(respDef.$anchor)})`);
     }
-    if (!('additionalProperties' in respDef)) {
-      warn(`${slug}/${version}/payload.schema.json: $defs.Response has no additionalProperties declared`);
+    if (!declaresClosure(respDef)) {
+      warn(`${slug}/${version}/payload.schema.json: $defs.Response declares neither additionalProperties nor unevaluatedProperties`);
     }
   }
   // Belt-and-braces: nothing other than Response/Request/well-known $defs should declare a `response` anchor.

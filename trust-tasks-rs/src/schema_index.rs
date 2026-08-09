@@ -204,6 +204,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0" => Some(<crate::specs::vta::contexts::did_templates::render::v1_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/contexts/did-templates/update/1.0" => Some(<crate::specs::vta::contexts::did_templates::update::v1_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/credentials/issue/0.1" => Some(<crate::specs::vta::credentials::issue::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vta/credentials/issue/0.2" => Some(<crate::specs::vta::credentials::issue::v0_2::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/credentials/revoke/0.1" => Some(<crate::specs::vta::credentials::revoke::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/did-templates/create/1.0" => Some(<crate::specs::vta::did_templates::create::v1_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/did-templates/create/2.0" => Some(<crate::specs::vta::did_templates::create::v2_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

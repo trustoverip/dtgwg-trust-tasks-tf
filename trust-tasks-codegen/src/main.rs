@@ -383,13 +383,27 @@ fn main() -> Result<()> {
         println!("  {}/{}", s.slug, s.version);
     }
 
-    // Wipe any previously generated modules so removals propagate.
-    clean_generated_tree(&out_root)?;
-
+    // Generate everything before deleting anything. `clean_generated_tree` is
+    // destructive and `generate_one` can fail on malformed registry input, so
+    // doing the clean first meant one bad spec wiped the tree and left the
+    // workspace uncompilable — with the error surfacing later, somewhere else,
+    // as an unresolvable module.
+    let mut modules = Vec::with_capacity(specs.len());
     for spec in &specs {
-        generate_one(spec, &out_root).with_context(|| {
+        let generated = generate_one(spec, &out_root).with_context(|| {
             format!("failed to generate code for {}/{}", spec.slug, spec.version)
         })?;
+        modules.push(generated);
+    }
+
+    // Every spec generated. Now it is safe to wipe, so removals propagate.
+    clean_generated_tree(&out_root)?;
+
+    for (path, contents) in &modules {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(path, contents)?;
     }
 
     write_mod_tree(&specs, &out_root)?;
@@ -520,7 +534,17 @@ fn clean_generated_tree(out_root: &Path) -> Result<()> {
     Ok(())
 }
 
-fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
+/// Generate one spec's module, returning the path to write it to and its
+/// contents — **without touching the filesystem**.
+///
+/// Deliberately pure. [`main`] collects every module before
+/// [`clean_generated_tree`] runs, so a spec that fails to generate leaves the
+/// existing tree exactly as it was. It used to write as it went, after the
+/// clean: one malformed `payload.invalid-examples.json` then left 300+ files
+/// deleted and the workspace uncompilable, and the only symptom was a
+/// downstream `cargo fmt` error about an unresolvable module — pointing
+/// nowhere near the file at fault.
+fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     let mut schema: Value = serde_json::from_str(&fs::read_to_string(&spec.schema_path)?)
         .with_context(|| format!("parse {}", spec.schema_path.display()))?;
 
@@ -594,10 +618,10 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<()> {
     for seg in spec.module_segments() {
         path = path.join(seg);
     }
-    fs::create_dir_all(&path)?;
-    let leaf = path.join(format!("{}.rs", spec.version_module()));
-    fs::write(&leaf, formatted)?;
-    Ok(())
+    Ok((
+        path.join(format!("{}.rs", spec.version_module())),
+        formatted,
+    ))
 }
 
 /// Resolve `$ref` strings of the form `<relative-path>#/$defs/<name>` by
