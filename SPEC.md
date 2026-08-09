@@ -96,6 +96,9 @@ The key terms in this document are defined here. Where a term is *italicized* on
 * *Document identifier* — The string carried in the `id` member of a *Trust Task document* that uniquely identifies that instance.
 * *Thread identifier* — An optional string carried in the `threadId` member that correlates a *Trust Task document* with other documents belonging to the same logical exchange. See [§4.9](#49-the-threadid-member).
 * *Parent thread identifier* — An optional string carried in the `parentThreadId` member that names the exchange containing this one, where a *Trust Task* is conducted inside a broader exchange. See [§4.9.2](#492-the-parentthreadid-member).
+* *Trust Ceremony* — A flow composed of several *Trust Tasks*, optionally described by a published *ceremony definition*. Named here because a *Trust Task document* may record its membership of one; see [§4.11](#411-the-ceremony-member).
+* *Ceremony definition* — The published, versioned description of a *Trust Ceremony*, identified by a URI in the `/ceremony/` subtree ([§6.7](#67-ceremony-namespace)). It is **not** a *Trust Task specification* and no document's `type` resolves to one. Its content is out of scope for this version.
+* *Enactment* — One run of a *Trust Ceremony*, identified by a globally unique, non-reusable string carried in `ceremony.enactment`. An *enactment* is to a *ceremony definition* what a *Trust Task document* is to a *Trust Task specification*.
 * *Payload* — The task-specific portion of a *Trust Task document*, carried in the `payload` member. Its internal structure is defined by the *Trust Task specification* identified by the document's `type`.
 * *Type URI* — A URI that identifies a *Trust Task specification* at a specific version and serves as the single resolvable namespace for that version. The canonical form is defined in [§6.1](#61-type-uri).
 * *Proof* — An optional integrity-providing object attached to a *Trust Task document*, in the form of a W3C *Data Integrity Proof* (see [§4.7](#47-proof)).
@@ -131,6 +134,7 @@ A *Trust Task document* has the following top-level members.
 | `id` | **MUST** | string | The *Document identifier* — a globally unique string for this instance of the task. UUIDv4 is **RECOMMENDED**; any uniquely-assignable string is permitted. See [§4.3](#43-the-id-member). |
 | `threadId` | **MAY** | string | The *Thread identifier* — correlates this document with others in the same logical exchange (e.g. a response back to its originating request). See [§4.9](#49-the-threadid-member). |
 | `parentThreadId` | **MAY** | string | The *Parent thread identifier* — the `threadId` of the exchange that contains this one, where this exchange is conducted inside another. See [§4.9.2](#492-the-parentthreadid-member). |
+| `ceremony` | **MAY** | object | Records that this document is a step of a *Trust Ceremony* — a flow composed of several *Trust Tasks*. See [§4.11](#411-the-ceremony-member). |
 | `type` | **MUST** | string (URI) | The *Type URI* identifying the *Trust Task specification* and version this document conforms to. See [§4.4](#44-the-type-member). |
 | `issuer` | **MAY** | string (VID) | A *Verifiable Identifier* identifying the *party* responsible for the document's content. See [§4.8](#48-the-issuer-and-recipient-members). |
 | `recipient` | **MAY** | string (VID) | A *Verifiable Identifier* identifying the *party* the *issuer* expects to act upon the document. See [§4.8](#48-the-issuer-and-recipient-members). |
@@ -444,6 +448,57 @@ JSON member names and enumerated string values in *Trust Task documents* follow 
 
 A change to the casing of an existing member name or specification-defined value is a breaking change and follows the versioning rules of [§5](#5-versioning); the re-casing introduced in framework version 0.2 is recorded in [Appendix B](#appendix-b--changelog).
 
+### 4.11 The `ceremony` member
+
+Some outcomes take more than one *Trust Task*. A governance decision may need several endorsements; an onboarding may span a witness and a registry. The framework's model for these is settled in [§2](#2-terminology) — they are multiple bilateral *Trust Tasks* — but the collection itself has, until this version, had no name, no identifier, and no way to be evidenced.
+
+A *Trust Ceremony* is such a collection: a flow of *Trust Tasks*, optionally described by a published *ceremony definition* ([§6.7](#67-ceremony-namespace)), of which one run is an *enactment*. A *Trust Task document* **MAY** carry a `ceremony` member recording that it is one *step* of an enactment.
+
+The member's value is an object with the following members. Its full schema is published with the framework envelope schema for this version.
+
+| Member | Required | Type | Description |
+|---|---|---|---|
+| `enactment` | **MUST** | string | Identifies one run of a ceremony. Globally unique and never reused, on the same terms as `id` ([§4.3](#43-the-id-member)). |
+| `step` | **MUST** | string | Names this step within the ceremony. |
+| `definition` | **MAY** | string (URI) | The *ceremony definition* this step is enacted under, rooted at [§6.7](#67-ceremony-namespace). |
+| `definitionDigest` | **MUST** where `definition` is present | string | A multibase-encoded multihash over the [[RFC8785]] canonicalization of that definition. |
+| `parentEnactment` | **MAY** | string | The enactment containing this one, where a ceremony is conducted as a step of another. |
+| `round` | **MAY** | integer | Distinguishes repetitions of the same step by the same party. Absent means `1`. |
+| `terminal` | **MAY** | boolean | Marks a step that ends the enactment. |
+| `prev` | **MAY** | array | The steps this one follows, each an object of `id` and `digestMultibase`. |
+
+#### 4.11.1 Optionality
+
+The `ceremony` member is optional in every sense that matters, and this is a normative property rather than a convenience:
+
+1. A *Trust Task specification* **MUST NOT** declare anything about ceremonies, and needs no awareness of them. The member is carried on the document, not in `payload`, so any existing specification may be used as a ceremony step with no change to its schema and no new version.
+2. A *Trust Task document* without the member is fully conforming.
+3. A *consumer* that does not implement ceremonies **MUST** process such a document exactly as it processes any other, under the unrecognized-member rule of [§7.2](#72-consumer-requirements).
+
+#### 4.11.2 The identifiers are orthogonal
+
+`enactment` does not replace `threadId` and is not a form of `parentThreadId`. Within a ceremony, `threadId` scopes one step's request/response exchange exactly as it does elsewhere, and `enactment` scopes the flow across all of its steps; a *producer* sets both. The steps of an enactment are typically *siblings* — several top-level exchanges, none conducted inside another — which is containment's opposite and not what `parentThreadId` records.
+
+The distinction that matters for evidence is that `enactment` **MUST** be globally unique and non-reusable where `threadId` need not be ([§4.9](#49-the-threadid-member)). A reference naming a flow as evidence therefore names the `enactment`, under the rule of [§4.9.1](#491-naming-an-exchange-from-outside-the-framework).
+
+#### 4.11.3 Integrity
+
+Where a `proof` is present it covers the `ceremony` member as it covers any other ([§4.7](#47-proof)). This is the member's placement rationale, not an incidental consequence: a signed `enactment` cannot be lifted into a different flow, and a signed `definitionDigest` cannot be reinterpreted under a definition that gives the step's name another meaning. Carried as transport metadata or as an unsigned sidecar, the member would provide neither guarantee.
+
+A *producer* **MUST NOT** set `parentEnactment` equal to the document's own `enactment`; an enactment cannot contain itself. A *producer* **SHOULD** carry the same `ceremony.enactment` onto every document of the step it names, including any *error response*.
+
+#### 4.11.4 Membership is a claim, not a permission
+
+A `ceremony` member is an assertion by the document's *issuer* that this document belongs to the named enactment. A *consumer* can check what it holds — that a step matches the definition, that a `prev` digest resolves — but cannot verify from one document that the enactment exists as described.
+
+Accordingly:
+
+> A *consumer* **MUST NOT** grant any authority on the basis of ceremony membership alone.
+
+Every authorization decision continues to rest on `issuer`, `proof`, and the *consumer*'s own policy, exactly as for a document carrying no `ceremony` member. Without this rule the member would be a confused-deputy vector: "you are in the onboarding ceremony, so perform this step" is an unauthenticated assertion by whoever composed the document. The rule is also what makes [§4.11.1](#4111-optionality) item 3 safe — because membership authorizes nothing, a *consumer* that ignores the member entirely omits nothing it was entitled to do.
+
+`ceremony` otherwise carries no normative validation semantics: a *consumer* **MUST NOT** reject a document on the basis of the member alone, and **MAY** use it for routing, correlation, aggregation, or audit.
+
 ## 5. Versioning
 
 ### 5.1 Scheme
@@ -550,7 +605,7 @@ A *Type URI* used as the value of a *Trust Task document*'s `type` member **MAY*
 The following slugs are **RESERVED** for framework-defined specifications and **MUST NOT** be used by any individual *Trust Task specification*:
 
 * The exact slug `trust-task`, reserved for this framework specification itself.
-* Any slug whose first segment is `trust-task` or begins with the prefix `trust-task-`, reserved for framework-defined specifications. Equivalently, the slug **MUST NOT** match the pattern `^trust-task($|-|/)`. The slugs currently published by the framework under this reservation are:
+* Any slug whose first segment is `trust-task` or `trust-ceremony`, or begins with the prefix `trust-task-` or `trust-ceremony-`, reserved for framework-defined specifications. Equivalently, the slug **MUST NOT** match the pattern `^trust-(task|ceremony)($|-|/)`. The `trust-ceremony` half of the reservation is unused at this version and exists so that the ceremony layer of [§4.11](#411-the-ceremony-member) has a namespace to publish into that no other party can claim first. The slugs currently published by the framework under this reservation are:
 
   | Slug                     | Purpose                                                                 |
   |--------------------------|-------------------------------------------------------------------------|
@@ -562,6 +617,8 @@ The following slugs are **RESERVED** for framework-defined specifications and **
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
 
 The framework also reserves a parallel `/binding/` subtree under the same authority for *transport binding* identifiers and binding-internal resources (envelope `type` values, binding schema URIs, status mappings). The `/binding/` subtree is **structurally disjoint** from `/spec/`: no URI under `/binding/` is a *Type URI*, and a *Trust Task document* whose `type` is rooted at `/binding/...` is malformed. The grammar and rules for the `/binding/` subtree are defined in [§9.3](#93-binding-namespace).
+
+A third subtree, `/ceremony/`, is reserved for *ceremony definitions* on the same terms. It is likewise **structurally disjoint** from both: no URI under `/ceremony/` is a *Type URI*, and a *Trust Task document* whose `type` is rooted at `/ceremony/...` is malformed. The grammar and rules for the `/ceremony/` subtree are defined in [§6.7](#67-ceremony-namespace).
 
 A *Type URI* with the `<MAJOR.MINOR>` segment omitted (i.e. `https://trusttasks.org/spec/<slug>`) **SHOULD** redirect to the latest `standard` version of the specification, or — if no `standard` version exists — to the latest `candidate`, or — failing that — to the latest `draft`. `retired` versions **MUST NOT** be selected by the bare-URL redirect, since `retired` signals "no longer recommended for new use"; if every version of a slug is `retired`, the bare URL **SHOULD** return `410 Gone` with a body that links to the latest retired version and its declared `supersededBy` successor, if any.
 
@@ -633,6 +690,24 @@ A shared schema component is nonetheless a *versioned artifact* in its own right
 
 4. **Lifecycle and discovery.** A shared schema component **SHOULD** declare its own `status` ([§5.3](#53-maturity-levels)) and **MAY** declare `supersededBy` when retired. The registry **SHOULD** surface shared schema components and their versions alongside specifications, so that implementers can see which specification versions depend on which component versions.
 
+### 6.7 Ceremony namespace
+
+A *ceremony definition* — the published description of a flow composed of several *Trust Tasks*, referenced by the `ceremony.definition` member of [§4.11](#411-the-ceremony-member) — is identified by a URI in the `/ceremony/` subtree of the framework's authority:
+
+```
+https://trusttasks.org/ceremony/<slug>/<MAJOR.MINOR>
+```
+
+`<slug>` follows the same lowercase, hyphenated grammar as a Trust Task slug ([§6.1](#61-type-uri)) and is subject to the same `^trust-(task|ceremony)($|-|/)` reservation; `<MAJOR.MINOR>` follows the version grammar of [§5.1](#51-scheme).
+
+The `/ceremony/` subtree is **structurally disjoint** from `/spec/` and `/binding/`. A *ceremony definition* is not a *Trust Task specification*: no document's `type` resolves to one, and a *consumer* that receives a *Trust Task document* whose `type` is rooted at `/ceremony/...` **MUST** reject it with `malformedRequest` ([§8.3](#83-standard-error-codes)). The Type URI grammar of [§6.1](#61-type-uri) already excludes the path; the rule is stated explicitly so the namespace boundary is visible at a glance and so such documents have a defined disposition rather than relying on grammar mismatch.
+
+A *ceremony definition* is referenced by content as well as by name: a step carrying `ceremony.definition` **MUST** also carry `ceremony.definitionDigest` ([§4.11](#411-the-ceremony-member)). A URI alone would leave the flow's rules mutable by whoever controls the URI, retroactively and for every enactment already performed.
+
+This version of the framework defines the namespace, the reservation, and the reference mechanism. The **content** of a ceremony definition — its role, step, ordering and completion vocabulary — is out of scope for this revision and is expected to be specified in a future one. A *consumer* encountering a `ceremony.definition` it cannot resolve or does not understand **MAY** process the document as though the member were absent; by [§4.11.4](#4114-membership-is-a-claim-not-a-permission) it forgoes no authority in doing so.
+
+The reservation rule of [§6.5](#65-private-and-unpublished-trust-task-specifications) applies equivalently: a private ceremony definition **MUST** use an authority its publisher controls and **MUST NOT** claim to identify a resource at `https://trusttasks.org/ceremony/...`.
+
 ## 7. Minimum requirements
 
 ### 7.1 Producer requirements
@@ -644,7 +719,7 @@ A *conforming producer* **MUST**:
 3. Place all task-specific data in `payload`, and emit a `payload` value that validates against the JSON Schema obtained by content-negotiating the *Type URI* for `application/schema+json` (see [§6.2](#62-content-negotiation)).
 4. Populate `id` with a value satisfying [§4.3](#43-the-id-member).
 
-A *conforming producer* **SHOULD** populate `issuedAt` to support freshness checks downstream, **SHOULD** populate `issuer` and `recipient` when the transport in use does not provide authenticated party identity end-to-end between *producer* and *consumer*, **SHOULD** set `threadId` when emitting a *Trust Task document* in response to another (see [§4.9](#49-the-threadid-member)), **SHOULD** set `parentThreadId` when the exchange is conducted inside another and carry it onto every document of the inner exchange (see [§4.9.2](#492-the-parentthreadid-member)), and **SHOULD** preserve any unrecognized members received from upstream parties when forwarding a *Trust Task document*.
+A *conforming producer* **SHOULD** populate `issuedAt` to support freshness checks downstream, **SHOULD** populate `issuer` and `recipient` when the transport in use does not provide authenticated party identity end-to-end between *producer* and *consumer*, **SHOULD** set `threadId` when emitting a *Trust Task document* in response to another (see [§4.9](#49-the-threadid-member)), **SHOULD** set `parentThreadId` when the exchange is conducted inside another and carry it onto every document of the inner exchange (see [§4.9.2](#492-the-parentthreadid-member)), **SHOULD** set `ceremony` when the document is a step of a *Trust Ceremony* and carry the same `enactment` onto every document of that step including any *error response* (see [§4.11](#411-the-ceremony-member)), and **SHOULD** preserve any unrecognized members received from upstream parties when forwarding a *Trust Task document*.
 
 A *conforming producer* that emits an `ext` member (see [§4.5.1](#451-the-ext-extension-member)) **MUST** namespace every immediate child key of `ext` under a reverse-DNS prefix the producer controls; bare or un-namespaced child keys are non-conforming.
 
@@ -660,6 +735,7 @@ A *conforming consumer* **MUST**:
 6. Reject any document for which an in-band `issuer` or `recipient` member is inconsistent with an authenticated identity derived from the transport for the same party.
 7. If the document carries a `proof` member, verify it per [§4.7](#47-proof) against the in-band `issuer` and reject the document with `proofInvalid` on verification failure. Independently, if the *Trust Task specification* identified by `type` declares `proof` as **REQUIRED** (see [§7.3](#73-specification-requirements) item 8) and no `proof` is present, reject the document with `proofRequired`.
 8. If the document carries a `proof` member and no in-band `recipient`, and the *Trust Task specification* identified by `type` is **not** a *bearer specification* ([§4.8.3](#483-bearer-specifications)), reject the document with `malformedRequest`. This enforces the audience-binding rule of [§4.8.2](#482-audience-binding).
+9. Not grant any authority on the basis of a `ceremony` member. Membership of an *enactment* is an assertion by the document's *issuer*, not a verified fact, and every authorization decision **MUST** rest on `issuer`, `proof`, and the *consumer*'s own policy exactly as for a document carrying no such member. See [§4.11.4](#4114-membership-is-a-claim-not-a-permission). A *consumer* that does not implement ceremonies applies the unrecognized-member rule below and forgoes nothing by doing so.
 
 For each of the rules in this section that references the `issuer` or `recipient` party, the in-band member value is authoritative when present and the transport-derived identity is a cross-check; when the in-band member is absent the *consumer* **MAY** derive the value from the transport. This precedence is defined normatively in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity).
 
@@ -1131,6 +1207,20 @@ If any step fails, the *consumer* returns an *error response* per [§8](#8-error
 ## Appendix B — Changelog
 
 *This appendix is non-normative.*
+
+### 0.4
+
+* **The `ceremony` member ([§4.11](#411-the-ceremony-member)).** A *Trust Task document* **MAY** now record that it is one step of a *Trust Ceremony* — a flow composed of several *Trust Tasks*. The framework has always modelled multi-party work as multiple bilateral tasks ([§2](#2-terminology)); what it lacked was a way for the collection to be named, identified, and evidenced, so every implementation held that knowledge in application code and no two could interoperate above the level of a single task. The member carries the *enactment* (globally unique and non-reusable, unlike `threadId`, because evidence about a flow needs a stable anchor), the step's name, an optional content-pinned reference to a published *ceremony definition*, and an optional set of predecessor digests.
+
+    Three properties are deliberate. It is **carried on the document rather than in `payload`**, so no *Trust Task specification* changes and any existing task may be composed into a flow its author never anticipated. It is **covered by `proof`**, so a step cannot be lifted into a different enactment or reinterpreted under a different definition. And it **confers no authority** ([§4.11.4](#4114-membership-is-a-claim-not-a-permission), [§7.2](#72-consumer-requirements) item 9) — membership is an assertion by the *issuer*, not a verified fact, which is what makes it safe for a *consumer* to ignore the member entirely.
+
+    Additive: the document wire format gains an optional member, and every document conforming to 0.3 still conforms.
+
+* **The `/ceremony/` subtree and the `trust-ceremony` reservation ([§6.7](#67-ceremony-namespace), [§6.1](#61-type-uri)).** *Ceremony definitions* are identified in a third subtree under the framework's authority, structurally disjoint from `/spec/` and `/binding/` on the same terms — no URI under it is a *Type URI*, and a document whose `type` is rooted there is malformed. The slug reservation of §6.1 widens from `^trust-task($|-|/)` to `^trust-(task|ceremony)($|-|/)`; the new half is unused at this version and exists so the namespace cannot be claimed by another party before the layer that needs it is specified.
+
+    The **content** of a ceremony definition is out of scope for this revision. This version defines where definitions live, how a step references one, and that the reference is by content as well as by name — a URI alone would leave a flow's rules mutable by whoever controls the URI, retroactively and for every enactment already performed.
+
+* **`trust-task-next-step` published ([§8.6](#86-reserved-response-type-slugs)).** The continuation response reserved since 0.1 now has a registry entry defining its payload. A *next step* is a **third** disposition alongside the success response and the *error response*: the two of those close the originating task, and a next step leaves it **open**. A *consumer* **MUST NOT** report a blocked task as an error, nor a refusal as a next step. `trust-task-ok` remains reserved.
 
 ### 0.3
 

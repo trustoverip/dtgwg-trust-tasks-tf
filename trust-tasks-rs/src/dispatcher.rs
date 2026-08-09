@@ -166,6 +166,7 @@ impl<R> Dispatcher<R> {
         let type_uri = doc.type_uri.to_string();
         let issuer = doc.issuer.clone();
         let recipient = doc.recipient.clone();
+        let ceremony = doc.ceremony.clone();
 
         match self.dispatch(doc) {
             Ok(value) => Ok(value),
@@ -175,6 +176,7 @@ impl<R> Dispatcher<R> {
                     id,
                     thread_id,
                     parent_thread_id,
+                    ceremony,
                     type_uri,
                     issuer,
                     recipient,
@@ -196,6 +198,9 @@ struct RequestOrigin {
     id: String,
     thread_id: Option<String>,
     parent_thread_id: Option<String>,
+    /// Carried onto the error response so a rejection stays inside the
+    /// enactment it belongs to (SPEC.md §7.1).
+    ceremony: Option<crate::Ceremony>,
     type_uri: String,
     issuer: Option<String>,
     recipient: Option<String>,
@@ -210,6 +215,7 @@ fn build_error_response(
         id: request_id,
         thread_id: request_thread_id,
         parent_thread_id: request_parent_thread_id,
+        ceremony: request_ceremony,
         type_uri: request_type_uri,
         issuer: request_issuer,
         recipient: request_recipient,
@@ -231,6 +237,7 @@ fn build_error_response(
         id: error_id,
         thread_id,
         parent_thread_id: request_parent_thread_id,
+        ceremony: request_ceremony,
         type_uri: trust_task_error_type_uri(),
         issuer: request_recipient,
         recipient: request_issuer,
@@ -255,6 +262,7 @@ where
         id,
         thread_id,
         parent_thread_id,
+        ceremony,
         type_uri,
         issuer,
         recipient,
@@ -275,6 +283,7 @@ where
         id,
         thread_id,
         parent_thread_id,
+        ceremony,
         type_uri,
         issuer,
         recipient,

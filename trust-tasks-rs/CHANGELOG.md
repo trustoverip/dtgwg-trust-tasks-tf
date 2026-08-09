@@ -28,6 +28,24 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.5.0] - 2026-08-09
+
+### Added
+
+- `Ceremony` and `CeremonyPrev`, and an optional `ceremony` field on
+  `TrustTask<P>` — the framework 0.4 envelope member recording that a document
+  is one step of a Trust Ceremony (SPEC.md §4.11). `TrustTask::respond_with` and
+  the error-response builders carry it forward, so the response and any
+  rejection stay inside the enactment the request belonged to (§7.1).
+
+### Changed
+
+- **BREAKING.** `TrustTask<P>` gains a field, so struct-literal construction and
+  exhaustive destructuring of the envelope no longer compile. `TrustTask::new`
+  is unaffected. Documents are unaffected on the wire: the member is optional,
+  a document without it is fully conforming, and one carrying it round-tripped
+  through `extra` before this release.
+
 ## [0.4.1] - 2026-08-09
 
 ### Added

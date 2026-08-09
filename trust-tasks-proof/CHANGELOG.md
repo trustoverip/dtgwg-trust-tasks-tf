@@ -4,6 +4,15 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.5.0] - 2026-08-09
+
+### Changed
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.5. That release adds a field to
+  `TrustTask<P>` for the framework 0.4 `ceremony` member, and the core types
+  cross this crate's public API, so a dependency graph mixing 0.4 with this
+  crate will not type-check. No API of this crate changed on its own account.
+
 ## [0.4.0] - 2026-08-09
 
 ### Changed

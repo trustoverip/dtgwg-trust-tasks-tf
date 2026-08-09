@@ -8,8 +8,11 @@
 | **Related** | `docs/adr/0001-naming-the-multi-task-flow-layer.md`, SPEC §2, §4.9–§4.9.2, §4.10 item 5, §6.1, §7.3 items 13–14, §8.6, §9.3, §11, `specs/vtc/join-requests/*`, `specs/vtc/members/{solicit-vmc,request-vmc,vmc}/0.1`, `specs/vtc/ceremonies/list/0.1`, `specs/audit/verify/0.1`, `specs/vta/credentials/issue/0.2` |
 
 *This note is non-normative rationale, and takes the six decisions ADR 0001
-deferred. Nothing here is published or on the wire: no framework version carries
-the `ceremony` envelope member, and no implementation exchanges a ceremony step.*
+deferred. Much of it is now normative elsewhere: framework 0.4 carries the
+`ceremony` envelope member (SPEC §4.11), reserves the `/ceremony/` subtree
+(§6.7), and is generated into both libraries. What remains prospective is the
+**evidence machinery** — the chain, the receipt, the recorder — none of which is
+specified, and none of which has been exchanged between two parties.*
 
 *Part of it is now built, however, and the note is no longer purely prospective.
 The definition format of §6 exists as `ceremonies/ceremony.meta.schema.json`,
@@ -170,7 +173,7 @@ argument that the sub-decision can be settled late — but not after 0.4 (§13).
 
 ## 5. Threading
 
-Proposed: one new top-level member, added in framework 0.4.
+**Shipped in framework 0.4 as SPEC §4.11.** The design below is the rationale; the normative text is there and the generated types are `Ceremony` / `CeremonyPrev` in both libraries.
 
 ```json
 {
@@ -1278,9 +1281,9 @@ member.
 | Stage | Contents | Framework | Blocked by |
 |---|---|---|---|
 | **0** | ~~Specify `trust-task-next-step` (§8)~~ — **done, PR #196** | none | — |
-| **1** | §6.1 slug reservation; `/ceremony/` subtree | 0.4 | nothing |
+| **1** | ~~§6.1 slug reservation; `/ceremony/` subtree~~ — **done, framework 0.4** | 0.4 | — |
 | **1a** | ~~Converge digest fields on multibase-multihash (§7.8)~~ — **done, PR #195** | — | — |
-| **2** | `ceremony` envelope member (§5) | 0.4 | ADR §5 |
+| **2** | ~~`ceremony` envelope member (§5)~~ — **done, framework 0.4** | 0.4 | — |
 | **3** | Definition format; `trust-ceremony-receipt`; evidence levels | — | Stages 1a, 2 |
 | **4** | Abort (§9); discovery (§12); `countersigned` | — | Stage 3 |
 
@@ -1356,7 +1359,9 @@ the branching assumption (below). What remains:
   published and generated into both libraries (§8), but it is the *coordination*
   concern and carries none of this note's evidence machinery. No digest,
   chaining, projection or composition claim has been exercised between two
-  parties, and none can be until the `ceremony` envelope member exists. The
+  parties. The envelope member now exists (framework 0.4), so the obstacle is no
+  longer the framework — it is that nothing yet computes a salted chain digest,
+  issues a receipt, or verifies one. The
   delegated-execution note's closing lesson applies in advance: for a system
   whose correctness is a property of how components meet over a wire, the only
   tests that count are the ones that use the wire.

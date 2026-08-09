@@ -18,6 +18,61 @@ export interface Proof {
   [k: string]: unknown;
 }
 
+/** A reference to a predecessor step (SPEC.md §4.11). */
+export interface CeremonyPrev {
+  /** The `id` of the predecessor document (§4.3), so a verifier can locate what the digest is over. */
+  id: string;
+  /**
+   * Multibase-encoded multihash over the predecessor document, salted per
+   * enactment — salted because many steps carry near-zero-entropy payloads, and
+   * an unsalted digest over one is a confirmation oracle for any party handed
+   * it, which a chain does by design.
+   */
+  digestMultibase: string;
+}
+
+/**
+ * Records that a document is a step of a Trust Ceremony — a flow composed of
+ * several Trust Tasks (SPEC.md §4.11).
+ *
+ * Optional in every sense: no specification declares anything about ceremonies,
+ * a document without it is fully conforming, and a consumer that does not
+ * implement ceremonies processes the document unchanged. Ignoring it is always
+ * safe, because §4.11.4 forbids deriving authority from it — there is nothing a
+ * ceremony-aware consumer may do that an unaware one omits.
+ */
+export interface Ceremony {
+  /**
+   * Identifies one run of a ceremony. Globally unique and never reused, on the
+   * same terms as the document `id` and unlike `threadId` — evidence about a
+   * flow needs a stable anchor.
+   */
+  enactment: string;
+  /**
+   * Names this step within the ceremony. The step name, not the Type URI, is
+   * the step's identity: one Type URI may serve several steps whose meaning
+   * differs by context.
+   */
+  step: string;
+  /** The ceremony definition this step is enacted under (§6.7). Requires `definitionDigest`. */
+  definition?: string;
+  /**
+   * Multibase-multihash over the JCS canonicalization of the definition. Pins it
+   * by content rather than by name: a URI alone would leave the flow's rules
+   * mutable by whoever controls it, retroactively and for every enactment
+   * already performed.
+   */
+  definitionDigest?: string;
+  /** The enactment containing this one. One level, navigation only — but the pointers chain, so nesting is unbounded. */
+  parentEnactment?: string;
+  /** Distinguishes repetitions of the same step by the same party. Absent means 1. */
+  round?: number;
+  /** Marks a step that ends the enactment; a set with none so marked is a prefix, not a completed flow. */
+  terminal?: boolean;
+  /** The steps this one follows. A set, so concurrent branches are expressible. */
+  prev?: CeremonyPrev[];
+}
+
 /** A single Trust Task document, per SPEC.md §4.2. */
 export interface TrustTaskDocument<P> {
   /** Globally unique to this instance (§4.3). */
@@ -35,6 +90,14 @@ export interface TrustTaskDocument<P> {
    * the basis of `parentThreadId` alone.
    */
   parentThreadId?: string;
+  /**
+   * Records that this document is a step of a Trust Ceremony (§4.11).
+   *
+   * Carries no authority: membership is an assertion by the issuer, not a
+   * verified fact, so every authorization decision still rests on `issuer`,
+   * `proof` and local policy (§4.11.4).
+   */
+  ceremony?: Ceremony;
   /** The Type URI identifying specification and version (§4.4). */
   type: string;
   /** VID of the party responsible for the content (§4.8). */

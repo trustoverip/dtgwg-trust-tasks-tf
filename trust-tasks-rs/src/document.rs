@@ -12,6 +12,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::ceremony::Ceremony;
 use crate::error::{ErrorPayload, RejectReason};
 use crate::payload::Payload;
 use crate::proof::Proof;
@@ -52,6 +53,18 @@ pub struct TrustTask<P> {
         skip_serializing_if = "Option::is_none"
     )]
     pub parent_thread_id: Option<String>,
+
+    /// Records that this document is a step of a Trust Ceremony — a flow
+    /// composed of several Trust Tasks (SPEC.md §4.11).
+    ///
+    /// Optional in every sense: no specification declares anything about
+    /// ceremonies, a document without it is fully conforming, and a consumer
+    /// that does not implement ceremonies processes the document unchanged.
+    /// Ignoring it is always safe, because §4.11.4 forbids deriving authority
+    /// from it — there is nothing a ceremony-aware consumer may do that an
+    /// unaware one omits.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ceremony: Option<Ceremony>,
 
     /// The *Type URI* identifying the specification and version this document
     /// conforms to.
@@ -101,6 +114,7 @@ impl<P> TrustTask<P> {
             id: id.into(),
             thread_id: None,
             parent_thread_id: None,
+            ceremony: None,
             type_uri,
             issuer: None,
             recipient: None,
@@ -334,6 +348,10 @@ impl<P> TrustTask<P> {
         ErrorResponse {
             id: id.into(),
             thread_id,
+            // §7.1 — the same enactment is carried onto every document of a
+            // step, error responses included, so a rejection stays inside the
+            // ceremony it belongs to rather than falling out of it.
+            ceremony: self.ceremony.clone(),
             // §4.9.2 — the whole exchange shares one parent, so the error
             // response stays inside the same enclosing exchange.
             parent_thread_id: self.parent_thread_id.clone(),
@@ -371,6 +389,9 @@ impl<P> TrustTask<P> {
         TrustTask {
             id: id.into(),
             thread_id,
+            // §7.1 — as for an error response, the response half of a step
+            // belongs to the same enactment as the request.
+            ceremony: self.ceremony.clone(),
             // §4.9.2 — the whole exchange shares one parent.
             parent_thread_id: self.parent_thread_id.clone(),
             type_uri: self.type_uri.with_response(),

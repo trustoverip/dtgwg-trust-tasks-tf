@@ -16,6 +16,7 @@
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
 
+mod ceremony;
 mod consume;
 mod dispatcher;
 mod document;
@@ -38,6 +39,7 @@ pub mod schema_index;
 #[cfg_attr(docsrs, doc(cfg(feature = "validate")))]
 pub mod validate;
 
+pub use ceremony::{Ceremony, CeremonyPrev};
 pub use consume::{consume_inbound, ConsumeOutcome, ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY};
 pub use dispatcher::Dispatcher;
 pub use document::{ErrorResponse, JsonLdContext, TrustTask};
