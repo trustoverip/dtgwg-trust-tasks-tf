@@ -126,6 +126,7 @@ Proposed: one new top-level member, added in framework 0.4.
     "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
     "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
     "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+    "parentEnactment": "urn:uuid:3e77a941-05bc-4c62-8d19-fa2b6e0c7d54",
     "step": "witness-publish",
     "round": 1,
     "prev": [
@@ -169,6 +170,12 @@ steps pinning different digests are, correctly, steps of different ceremonies.
 rule (§13.4). Without it, round 2's document and round 3's are the same step name
 between the same parties under the same type, and one replays as the other.
 Absent means round 1. It is signed, like everything else here.
+
+`parentEnactment` names the enactment this one is a step of, and takes exactly
+the posture §4.9.2 gives `parentThreadId`: one level, navigation only, no
+rejection on it alone, and never equal to this document's own `enactment`. One
+level is not a depth limit — it is a linked list, and §6.5 shows why that reaches
+arbitrary depth where `parentThreadId` could not.
 
 ### 5.3 What `threadId` still does
 
@@ -342,6 +349,105 @@ observes is unimplementable, and this is checkable statically, at publication,
 by the registry build. That is a cheap check that catches a class of definition
 bug which would otherwise surface as a hung enactment in production.
 
+### 6.5 Composition: ceremonies of ceremonies
+
+A step may name a **ceremony** instead of a Trust Task. That single rule is what
+lets a large governance flow be assembled from parts that were designed,
+reviewed, versioned and reused independently — and it is the feature that keeps
+§6.2's one-sitting criterion honest as flows grow, because a reader takes one
+level at a time rather than one flat graph of forty steps.
+
+```
+step kind: task      → names a Type URI          (a Trust Task exchange)
+           ceremony  → names a definition URI    (a nested enactment)
+                       + its definitionDigest
+```
+
+Depth is not limited by the design. A federation-admission ceremony is built
+from a member-onboarding ceremony and a registry-publication ceremony; the first
+is built from a join ceremony and a witnessing ceremony; those bottom out in
+Trust Tasks. Nothing in the model cares how deep that goes.
+
+#### The receipt is the composition interface
+
+This is the part that makes it work rather than merely sound plausible.
+
+A **task** step completes when its documents exist. A **ceremony** step completes
+when its sub-enactment satisfies *its own* completion rule — and the artifact
+that says so is the sub-ceremony's receipt (§7.4). Because a receipt is itself a
+Trust Task document, it digests and chains exactly like any other step document:
+the parent's `prev` entry for a ceremony step is the digest of the child's
+receipt.
+
+So the recursion needs no new machinery. One level down, a receipt is evidence
+about a flow; one level up, it is a step. Every rule in §7 applies unchanged at
+every depth.
+
+```mermaid
+flowchart TB
+    subgraph L1["federation-admission · enactment A"]
+        direction LR
+        P1["prepare<br/><small>task</small>"] --> P2["admit-member<br/><small>ceremony ↓</small>"] --> P3["publish<br/><small>ceremony ↓</small>"] --> P4["attest<br/><small>task · terminal</small>"]
+    end
+    subgraph L2["member-onboarding · enactment B"]
+        direction LR
+        Q1["apply<br/><small>task</small>"] --> Q2["witness<br/><small>ceremony ↓</small>"] --> Q3["reciprocate<br/><small>task · terminal</small>"]
+    end
+    subgraph L3["witnessing · enactment C"]
+        direction LR
+        R1["request<br/><small>task</small>"] --> R2["publish<br/><small>task · terminal</small>"]
+    end
+
+    P2 -. "prev = digest of B's receipt" .- L2
+    Q2 -. "prev = digest of C's receipt" .- L3
+```
+
+Navigation runs the other way: every document of enactment C carries
+`parentEnactment: B`, and every document of B carries `parentEnactment: A`. One
+level per document, but the pointers form a chain, so a holder of any leaf
+document walks up as far as it can resolve receipts. This is why one level is
+enough here where §4.9.2 judged it insufficient for `parentThreadId`: threads
+have no addressable artifact to resolve, and enactments have receipts.
+
+#### Rules that composition forces
+
+Four constraints fall out, and all four are checkable at definition-publication
+time rather than at runtime:
+
+1. **Definitions MUST be acyclic.** A includes B includes A would make
+   verification non-terminating. The include graph is walked at publication —
+   the same pass as §6.4's projection check.
+2. **A sub-ceremony's evidence level MUST be ≥ its parent's.** A parent
+   declaring `receipt` cannot have a child declaring `collected`, because the
+   parent's `prev` would name a receipt that does not exist. This is the
+   familiar "MAY strengthen, MUST NOT weaken" shape from §7.6 and §4.7.1,
+   applied down the tree.
+3. **A sub-enactment's deadline MUST fall within its parent's** (§9), or the
+   parent expires with a child still running.
+4. **Role mapping MUST be explicit.** A ceremony step declares how the parent's
+   roles map onto the child's. Without it the same party appears as unrelated
+   roles at each level, and no verifier can tell that the `witness` in C is the
+   `witness` the parent bound.
+
+Aggregate exposure (§11) composes recursively: a ceremony step contributes its
+child's *declared* aggregate, so the floor check walks the tree. It stays linear,
+because the acyclicity rule means each definition is visited once.
+
+#### The cost, stated plainly
+
+Depth multiplies the §6.3 self-containment problem. Verifying a four-deep
+enactment means resolving four definitions and four receipts, and a verifier that
+can reach none of them can check nothing. Content-addressing (§5) means the
+pieces are cacheable and side-loadable rather than requiring live registry
+access, and inlining remains available for closed deployments — but a deep
+ceremony is emphatically not a self-contained document, and no amount of design
+makes it one.
+
+Unbounded depth is also a resource question. A verifier **SHOULD** declare a
+maximum depth it will resolve and reject beyond it, exactly as SPEC §10.2 and
+§10.3 treat parser and schema-validation limits. The model imposes no limit; the
+implementation always does, and saying so is better than pretending otherwise.
+
 ## 7. Evidence
 
 The core of the note. Four levels, and the recommendation is not to pick one
@@ -474,8 +580,18 @@ Two things close it, and both are needed:
 
 What a malicious recorder can still do is refuse to issue a receipt, or claim an
 enactment is incomplete when it is not. Both are availability failures rather
-than integrity failures, and both are visible. §7.5 is the answer where they
-matter.
+than integrity failures, and both are visible.
+
+**A definition MAY name several recorders, any one of which may issue.** An
+earlier draft framed this as a choice between trusting one recorder and paying
+for `countersigned`, which was a false dilemma: plain redundancy costs nothing
+here. Integrity is unaffected — each recorder still attests only ordering, and
+truncation is caught by the terminal marker whoever issued — so a verifier
+accepts any valid receipt and the recorder stops being a single point of
+availability. Receipts from different recorders for one enactment are directly
+comparable, since both are checked against the same pinned definition rather
+than against each other. `countersigned` (§7.5) remains the answer to recorder
+*misbehaviour*, which is a different problem from recorder *absence*.
 
 Because a receipt is by construction retained and relied upon by parties outside
 the exchange, §4.7.1 makes `proof` **REQUIRED** on it, and §4.8.2's audience
@@ -518,9 +634,9 @@ So the two lower levels are definition-free and the two upper ones are not,
 which is the honest line: they are exactly the levels whose claims are *about*
 the flow as a whole rather than about the documents in hand.
 
-The §4.7.1 rule carries over unchanged — a definition **MAY** strengthen the
-default for its steps and **MUST NOT** weaken it. A ceremony cannot declare
-`collected` and thereby relieve a step whose own specification requires a proof.
+Down a composition tree (§6.5) the level **MUST NOT** weaken: a child's declared
+evidence level is at least its parent's. A parent declaring `receipt` whose child
+declares `collected` would chain to a receipt that was never issued.
 
 ### 7.7 Digests: reuse the W3C conventions, do not mint a format
 
@@ -596,6 +712,43 @@ examples contradicting their own schemas while validation stayed green. Any
 conformance fixtures this layer defines (§15) should not assume the existing
 harness would have caught a comparable drift.
 
+### 7.9 Verifying an enactment
+
+An earlier draft called this "a graph-matching problem" and left it unspecified,
+which overstated the difficulty considerably. Checking a completed enactment is
+**linear in the number of documents**, because `step` is a *label*: a verifier
+never searches for a matching subgraph, it looks each document up by name.
+
+Given a set of documents and a definition resolved via `definitionDigest`:
+
+1. Group by `enactment`; reject if any member disagrees on `definitionDigest` —
+   they are steps of different ceremonies (§5).
+2. Resolve each document's `step` in the definition. An unknown step name is a
+   validation failure, not an unrecognized-member case.
+3. Check `round` is within the step's declared repetition bound (§13.4).
+4. For each `prev` entry, resolve the named `id` within the set and check the
+   salted digest matches (§7.3). Unresolvable `prev` → incomplete, not invalid:
+   the verifier may simply not hold that document.
+5. Check each step's `issuer` and `recipient` against the roles the definition
+   names, under the enactment's role bindings.
+6. For a **ceremony** step (§6.5), recurse: the `prev` digest names the child's
+   receipt, and the child is verified by these same rules against its own pinned
+   definition.
+7. Evaluate the completion predicate — including thresholds (§6.1) — over the
+   steps present.
+8. Confirm a step carrying `terminal` is among them (§7.4), or the result is a
+   prefix rather than a completed enactment.
+
+Steps 1–5 are a single pass; step 7 is a predicate over a set; step 6 recurses
+once per nested definition, and §6.5's acyclicity rule bounds that. The label is
+what collapses what sounds like subgraph isomorphism into a dictionary lookup,
+and it is worth stating precisely because the wrong intuition here would justify
+a much more complicated design than the problem needs.
+
+The §4.7.1 rule carries over unchanged — a definition **MAY** strengthen the
+default for its steps and **MUST NOT** weaken it. A ceremony cannot declare
+`collected` and thereby relieve a step whose own specification requires a proof.
+
 ## 8. Coordination, and the smallest useful increment
 
 `trust-task-next-step` is already reserved (§8.6) and unspecified. Specifying it
@@ -632,10 +785,24 @@ enactment should be able to see what took effect and what did not, and decide.
 Automating that decision requires understanding each task's semantics, which is
 exactly what the framework has never claimed to do.
 
-Timeout is the common trigger and needs a home. `expiresAt` (§4.2) governs one
-document; there is no equivalent for an enactment. The minimal answer is that a
-definition declares a maximum enactment duration and any participant may abort
-past it. Whether that is enough is genuinely unclear (§15).
+Timeout is the common trigger and needs a home, because `expiresAt` (§4.2)
+governs one document and nothing governs an enactment. The story:
+
+- A definition declares `maxDuration`.
+- The enactment's clock starts at the `issuedAt` of the step that opened it —
+  the one whose `prev` is empty — so the deadline is derived rather than carried,
+  and no party has to be trusted to assert when the flow began.
+- Any participant **MAY** abort past the deadline.
+- A step **MUST NOT** carry an `expiresAt` later than the enactment deadline.
+  Without this a step outlives the ceremony it belongs to and stays individually
+  valid after the flow is dead, which is how a stale approval gets replayed into
+  a closed enactment.
+- A step arriving after the deadline is rejected as `expired` (§8.3) — the
+  existing code covers it, and no ceremony-specific code is needed.
+- Nested enactments (§6.5) must finish inside their parent's deadline.
+
+That is the whole interaction, and it is checkable at publication for the nesting
+rule and at receipt time for the rest.
 
 ## 10. Security
 
@@ -671,9 +838,20 @@ relocated to a definition where `approve` carries other weight.
 **Enactment identifiers are correlation handles.** An `enactment` value appearing
 across steps with different audiences links those audiences together — by
 construction, since that is the point. Where a ceremony's steps have genuinely
-disjoint audiences, that linkage is a disclosure. There is no proposal here that
-fixes it; per-party pairwise enactment identifiers would break the shared anchor
-the evidence model depends on. Named in §15 rather than solved.
+disjoint audiences, that linkage is a disclosure.
+
+It is fixable, at a cost worth weighing rather than paying by default. Under
+`enactmentPrivacy: blinded`, a step carries a commitment
+`H(enactment ‖ stepSalt)` rather than the identifier itself; the receipt reveals
+the salts, so a party holding the receipt confirms that every commitment opens to
+one enactment, while a party holding a single step learns nothing that links it
+to any other. The evidence model is undisturbed — the receipt still binds the
+flow — and the shared anchor survives where it is actually needed.
+
+The cost is that participants can no longer correlate their own steps without the
+receipt, which is usually the wrong trade: participants are normally *meant* to
+know they are in the same flow. So this is **declared per definition and defaults
+off**, for the ceremonies whose steps genuinely reach disjoint audiences.
 
 **The definition is a fingerprint.** Publishing which ceremonies a deployment
 enacts discloses its configuration, on the same terms §11.5 already describes for
@@ -711,11 +889,30 @@ report `metadata` and be wrong in a way no individual step's declaration is.
 is exercised by several parties in sequence is a different proposition from any
 one of those steps.
 
-**Proposal: framework 0.4 declares this unsolved rather than shipping a
-composition rule.** A definition may declare its own aggregate `exposure`, as a
-statement by its author on the same descriptive-not-prescriptive terms as
-§7.3.14, and the framework defines no derivation from the steps. Shipping a
-`max()` rule would be worse than shipping nothing, because it would be relied on.
+**But "unsolved" was giving up too early.** `max()` is not the *value*, yet it is
+a sound **lower bound** — no ceremony discloses less than its most disclosing
+step. That makes a checkable rule available even though a derivation is not:
+
+> A definition **MUST** declare its aggregate `exposure`, and the declared value
+> **MUST** be at least `max()` over its steps. The registry build enforces the
+> floor; the author supplies the true value.
+
+Author judgment where judgment is needed, machine-checked against
+*understatement*, which is the failure mode that matters — a definition claiming
+`metadata` over steps that include a `secret` is now impossible to publish. This
+is the same division §7.3.13–14 already makes between a descriptive declaration
+and what a consumer may rely on, and it is strictly better than declaring the
+whole question open.
+
+What remains genuinely underivable is the true aggregate, and the reason is worth
+keeping in view: correlation across disjoint audiences is itself a disclosure
+(§10), so three `metadata` steps to three different parties may really be
+`secret`. No `max()` sees that, which is exactly why the author declares and the
+build only checks the floor.
+
+Down a composition tree (§6.5) the floor is recursive: a ceremony step
+contributes its child's *declared* aggregate, and acyclicity keeps the walk
+linear.
 
 ## 12. Discovery
 
@@ -984,37 +1181,44 @@ and the note has not been tested against a working flow — which is the reverse
 how the delegated-execution note in this directory was written, and a weaker
 position. Specifically:
 
-- **No definition format is written.** §6 lists what one contains, not its
-  schema.
-- **The branching assumption was tested once, and partly failed.** §6.2's claim
-  that branching reduces to optionality plus `prev` survived VTC member
-  onboarding for ordering, but its blanket prohibition on loops did not: the
-  `deferred` supplementary-evidence cycle needs bounded repetition (§13.4).
-  §6.2 stands as amended by §13.4 and has not been re-tested against any other
-  flow. One counterexample found one flaw; a second flow may find another, and
-  `vtc/ceremonies`' remaining governance decisions are the obvious next test.
-- **Aggregate exposure is unsolved** (§11), and proposed to ship declared-unsolved.
-- **Enactment identifiers correlate across audiences** (§10) with no proposal.
-- **Timeout has no real home** (§9). "The definition declares a duration" is the
-  minimum, not obviously enough, and interacts with `expiresAt` in ways not
-  worked through.
-- **Partial-order verification is unspecified.** Checking a completed enactment
-  against a definition with optional steps and a DAG `prev` is a graph-matching
-  problem, and no algorithm is given. It is likely simple; it is not written.
-- **The recorder is an availability single point.** §7.4 shows it cannot forge
-  or omit, but it can decline to issue. `countersigned` is the escape hatch, and
-  it is heavy. Flows that need integrity *and* availability have no cheap answer.
-- **Nesting and enactment membership interact untested.** A ceremony conducted
-  as a step of another ceremony has both a `parentThreadId` and two enactment
-  identifiers in scope. §4.9.1's citation rule should extend cleanly — name the
-  innermost — but this has not been worked through against an example.
+Seven items previously listed here have been resolved and moved into the body:
+partial-order verification (§7.9), recorder availability (§7.4), timeout (§9),
+enactment correlation (§10), aggregate exposure (§11), nesting (§5, §6.5), and
+the branching assumption (below). What remains:
+
+- **No definition format is written.** §6 lists what a definition contains, not
+  its schema. This is now *work* rather than an open question — the two things
+  that blocked it, threshold predicates and bounded repetition, are both settled
+  (§6.1, §13.4), as is composition (§6.5). It is the next thing to build.
 - **No conformance fixtures are defined.** Every specification in this registry
   ships `payload.invalid-examples.json`. A ceremony needs the equivalent — a
-  definition, enactments that MUST verify, and enactments that MUST NOT (a
-  truncated receipt, a mismatched `definitionDigest`, a replayed round, a step
-  whose `prev` does not resolve). Until those exist, "strictly verifiable" is an
+  definition, enactments that MUST verify, and enactments that MUST NOT: a
+  truncated receipt, a mismatched `definitionDigest`, a replayed round, an
+  unresolvable `prev`, a child whose evidence level is weaker than its parent's,
+  a cyclic definition. Until those exist, "strictly verifiable" is an
   aspiration. §7.8 notes the existing harness would not have caught a comparable
-  drift on its own.
+  drift on its own, so the fixtures need their own runner rather than an
+  assumption that `npm run validate` covers them.
+- **The branching assumption now holds across five flows, and that is still not
+  proof.** §6.2's claim that branching reduces to step optionality plus `prev`
+  failed once — the `deferred` cycle needed bounded repetition (§13.4) — and has
+  since been re-tested against `task-consent` (request → N×decision → granted),
+  `credential-exchange` issuance (offer → request → issue), presentation
+  (query → present), and `credential-exchange/pending` (approve/deny). The only
+  construct any of them required beyond the amended rule was the threshold, now
+  in §6.1. Notably `task-consent` is *not* a loop: N approvers each perform one
+  `decision`, which is a threshold over a step set. A sixth flow of a shape none
+  of these share may still break it.
+- **Composition is designed but untried.** §6.5 nests ceremonies to arbitrary
+  depth and derives four publication-time rules, none of which has been checked
+  against a real two-level flow. The obvious test is the one §13 already half
+  describes — VTC member onboarding containing a webvh witnessing ceremony —
+  and it should be worked end to end before the definition schema is fixed.
+- **No implementation exists**, so none of the digest, chaining, projection or
+  composition claims have met a wire. The delegated-execution note's closing
+  lesson applies in advance: for a system whose correctness is a property of how
+  components meet over a wire, the only tests that count are the ones that use
+  the wire.
 - **No implementation exists**, so none of the digest, chaining, or projection
   claims have met a wire. The delegated-execution note's closing lesson applies
   in advance: for a system whose correctness is a property of how components meet
