@@ -80,7 +80,7 @@ The framework aims to solve four related problems that arise wherever two or mor
 
 3. **Payload freedom, declared at the boundaries.** The framework defines the outer document shape and deliberately leaves the `payload` unconstrained. Each *Trust Task specification* chooses its own payload structure, JSON Schema, and — where useful — JSON-LD context. The framework only requires that each choice be declared explicitly ([§7.3](#73-specification-requirements)) and be machine-validatable.
 
-4. **A standard family of response types.** Many tasks need a structured way for a *recipient party* to report what happened. The framework reserves a small set of response-type *Trust Task specifications* addressing the common cases — failure ([§8](#8-error-responses)), success with metadata (`trust-task-ok`), and a recipient-suggested continuation (`trust-task-next-step`) — each itself a *Trust Task* so that one validation, signing, and transport pipeline serves both the task and its response. Only the failure case is fleshed out in this revision; the others are reserved (see [§8.6](#86-reserved-response-type-slugs)) and will be specified in a future revision.
+4. **A standard family of response types.** Many tasks need a structured way for a *recipient party* to report what happened. The framework reserves a small set of response-type *Trust Task specifications* addressing the common cases — failure ([§8](#8-error-responses)), success with metadata (`trust-task-ok`), and a recipient-suggested continuation (`trust-task-next-step`) — each itself a *Trust Task* so that one validation, signing, and transport pipeline serves both the task and its response. Failure and continuation are specified in this revision; `trust-task-ok` remains reserved (see [§8.6](#86-reserved-response-type-slugs)) and will be specified in a future revision.
 
 ## 2. Terminology
 
@@ -556,7 +556,7 @@ The following slugs are **RESERVED** for framework-defined specifications and **
   |--------------------------|-------------------------------------------------------------------------|
   | `trust-task-error`       | Error-response payload — see [§8.1](#81-the-trust-task-error-specification). |
   | `trust-task-ok`          | Success-response with metadata — reserved, see [§8.6](#86-reserved-response-type-slugs). |
-  | `trust-task-next-step`   | Recipient-suggested continuation — reserved, see [§8.6](#86-reserved-response-type-slugs). |
+  | `trust-task-next-step`   | Recipient-suggested continuation — see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-discovery`   | Discovery and capability negotiation — see [§11](#11-discovery-and-capability-negotiation). |
 
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
@@ -859,7 +859,9 @@ The framework reserves the following additional response-type *Trust Task specif
 | `trust-task-ok` | Success with metadata — acknowledging that a task was performed and conveying any resulting references, receipts, or transient state. |
 | `trust-task-next-step` | A recipient-suggested continuation — indicating that the original task was understood but cannot complete in isolation, together with the next *Trust Task* the *recipient party* expects in order to proceed. |
 
-The payload structures of these specifications are out of scope for this revision and will be specified in a future revision of this framework. Implementations encountering a *Trust Task document* of either reserved type before the corresponding specification is published **MAY** ignore the document or **MAY** return an `unsupportedVersion` *error response*.
+`trust-task-next-step` is published; its registry entry at `https://trusttasks.org/spec/trust-task-next-step/0.1` defines the normative `payload` shape and conformance requirements, in the same relationship to this section that the `trust-task-discovery` entry has to [§11](#11-discovery-and-capability-negotiation). A *next step* is a **third** disposition alongside the success response and the *error response* of this section: it reports that the originating task was understood and is **blocked**, leaving the exchange open where the other two close it. A *consumer* **MUST NOT** report a blocked task as an *error response*, nor a refusal as a *next step*; the three replies are not interchangeable. A *next step* confers no authorization — the *Type URI* it names is a suggestion the receiving party evaluates under its own policy, on the same advisory footing as a discovery response ([§11.4](#114-status-of-the-response)).
+
+The payload structure of `trust-task-ok` remains out of scope for this revision and will be specified in a future revision of this framework. Implementations encountering a *Trust Task document* of a reserved type whose specification is not yet published **MAY** ignore the document or **MAY** return an `unsupportedVersion` *error response*.
 
 ## 9. Transport bindings
 

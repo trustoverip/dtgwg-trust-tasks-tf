@@ -28,6 +28,15 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.4.1] - 2026-08-09
+
+### Added
+
+- `trust_task_next_step::v0_1` — bindings for the newly published
+  `trust-task-next-step/0.1` specification, the framework response type a
+  consumer returns when a task was understood but is blocked, naming what it
+  expects in order to proceed. Purely additive: no existing type changed.
+
 ## [0.4.0] - 2026-08-09
 
 ### Changed
