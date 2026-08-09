@@ -5,14 +5,14 @@
 | **Status** | Draft — proposed, not implemented |
 | **Date** | 2026-08-09 |
 | **Applies to** | Any interaction composed of more than one *Trust Task* between two or more parties |
-| **Related** | `docs/adr/0001-naming-the-multi-task-flow-layer.md`, SPEC §2, §4.9–§4.9.2, §6.1, §7.3 items 13–14, §8.6, §9.3, §11, `specs/vtc/ceremonies/list/0.1`, `specs/audit/verify/0.1` |
+| **Related** | `docs/adr/0001-naming-the-multi-task-flow-layer.md`, SPEC §2, §4.9–§4.9.2, §4.10 item 5, §6.1, §7.3 items 13–14, §8.6, §9.3, §11, `specs/vtc/join-requests/*`, `specs/vtc/members/{solicit-vmc,request-vmc,vmc}/0.1`, `specs/vtc/ceremonies/list/0.1`, `specs/audit/verify/0.1`, `specs/vta/credentials/issue/0.2` |
 
 *This note is non-normative rationale. Unlike the other notes in this directory,
 **there is no normative surface yet** — nothing here is specified, published, or
 implemented. It proposes one, and takes the six decisions ADR 0001 deferred.*
 
 *It is written before the implementation rather than after it, which is the
-weaker position. §14 is therefore longer than it would be in a retrospective
+weaker position. §15 is therefore longer than it would be in a retrospective
 note, and should be read as part of the proposal rather than as an appendix. A
 design note that only records its wins is marketing; a prospective one that only
 records its confidence is worse.*
@@ -119,7 +119,10 @@ Proposed: one new top-level member, added in framework 0.4.
     "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
     "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
     "step": "witness-publish",
-    "prev": ["sha-256:9a3f…", "sha-256:0b17…"]
+    "prev": [
+      { "id": "urn:uuid:1d0a…", "digestMultibase": "zQmb…" },
+      { "id": "urn:uuid:7c42…", "digestMultibase": "zQmW…" }
+    ]
   },
   "issuer": "did:web:witness.example",
   "recipient": "did:web:host.example",
@@ -227,6 +230,10 @@ binding happens per enactment, so one definition serves every community.
 No loops. No timers as first-class control flow. No data transformation or
 mapping language. No conditional expressions over payload contents. No runtime
 state machine.
+
+> **Amended by [§13.4](#134-the-finding-62s-no-loops-rule-is-too-strong).** The
+> first real flow instrumented needs bounded repetition — read "no loops" as
+> "no *unbounded* loops" throughout this section.
 
 This is the constraint the ADR named the layer to protect, so it is worth
 stating the criterion plainly:
@@ -361,6 +368,73 @@ The §4.7.1 rule carries over unchanged — a definition **MAY** strengthen the
 default for its steps and **MUST NOT** weaken it. A ceremony cannot declare
 `collected` and thereby relieve a step whose own specification requires a proof.
 
+### 7.7 Digests: reuse the W3C conventions, do not mint a format
+
+Every digest in this design — `prev` links, receipt step enumeration — uses:
+
+> **A multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of
+> the referenced document, carried in a member named `digestMultibase`.**
+
+Nothing here is new. Each part is already used either by W3C or by this
+registry, and picking anything else would be minting a private format for a
+solved problem.
+
+- **`digestMultibase`** is the W3C Verifiable Credentials Data Model 2.0
+  property for exactly this job — a digest naming a referenced resource, as used
+  by `relatedResource`. Reusing the property name means a receipt's step
+  enumeration is structurally a `relatedResource` list, which VC tooling already
+  understands.
+- **Multihash** carries the algorithm in-band, so the digest is self-describing
+  and the format survives an algorithm change. A bare `sha-256:` prefix or raw
+  hex hard-codes SHA-256 into the wire format, and the sibling design note in
+  this directory already records that hard-coding as a mistake worth not
+  repeating: *"State the aspiration; do not claim the capability."* Multihash is
+  how the aspiration becomes real rather than stated.
+- **Multibase** makes the encoding self-describing too, so a verifier never has
+  to guess base58 versus base64url from context.
+- **JCS (RFC 8785)** is already the registry's canonicalization: it is what
+  `task-consent`'s `payloadDigest` is defined over, what `vta/credentials/issue`
+  uses for `policyHash`, and what the `eddsa-jcs-2022` cryptosuite requires. A
+  digest with no declared canonicalization is not reproducible, which is the
+  defect in several fields today (§7.8).
+- **`did:webvh`** — a method this registry has specs for — already derives its
+  SCID and entry hashes as multibase-multihash. A ceremony chain over documents
+  that frequently *are* webvh log entries should not use a second convention.
+
+`prev` entries carry `{id, digestMultibase}` rather than a bare digest, because
+the `id` is what §4.9.1 makes globally unique and non-reusable, and a verifier
+that cannot locate the predecessor cannot check the digest against anything.
+
+### 7.8 The registry is not consistent about this today
+
+Surveying every digest-shaped field in `specs/` finds 18, across four
+incompatible conventions:
+
+| Convention | Fields | Example |
+|---|---|---|
+| Multibase-multihash over JCS — **correct** | 2 | `vta/credentials/issue/{0.1,0.2}` `policyHash` |
+| "Multihash", encoding unstated | 4 | `chat/message` `digest`, `consent/request` `firstMessageDigest`, `policy/_shared/0.3` `payloadDigest` |
+| Lowercase hex, SHA-256 hard-coded | 2 | `provision/integration/{0.1,0.2}` `digest` (`^[0-9a-f]{64}$`) |
+| Unspecified — no encoding, no pattern | 6 | `audit/_shared` `prevHash` / `entryHash`, `task-consent/*` `payloadDigest` |
+
+`audit` is the one that matters most here, because §7.3 proposes reusing its
+chain vocabulary: its schema constrains nothing while `audit/verify`'s prose
+says "Hex `entryHash`", so implementations emit hex and the schema does not say
+so.
+
+Converging these is worth doing and is **out of scope for this note**, because
+it is not a docs change. Moving `audit` and `provision/integration` off hex
+changes the wire format, which SPEC §5.2 makes a breaking change requiring a new
+version folder rather than an in-place edit, followed by regenerated bindings and
+library bumps. It also needs per-slug CODEOWNERS review. It should be its own
+change, sequenced before Stage 2 so the ceremony layer is not the last thing
+built on an inconsistent base.
+
+Two fields must be **excluded** from any such sweep: `scid` / `new_scid` /
+`newScid` and `nextKeyHashes` are `did:webvh`-defined values. SPEC §4.10 item 5
+requires externally-owned values to be carried verbatim, so their format belongs
+to the DID method, not to this registry.
+
 ## 8. Coordination, and the smallest useful increment
 
 `trust-task-next-step` is already reserved (§8.6) and unspecified. Specifying it
@@ -400,7 +474,7 @@ exactly what the framework has never claimed to do.
 Timeout is the common trigger and needs a home. `expiresAt` (§4.2) governs one
 document; there is no equivalent for an enactment. The minimal answer is that a
 definition declares a maximum enactment duration and any participant may abort
-past it. Whether that is enough is genuinely unclear (§14).
+past it. Whether that is enough is genuinely unclear (§15).
 
 ## 10. Security
 
@@ -438,7 +512,7 @@ across steps with different audiences links those audiences together — by
 construction, since that is the point. Where a ceremony's steps have genuinely
 disjoint audiences, that linkage is a disclosure. There is no proposal here that
 fixes it; per-party pairwise enactment identifiers would break the shared anchor
-the evidence model depends on. Named in §14 rather than solved.
+the evidence model depends on. Named in §15 rather than solved.
 
 **The definition is a fingerprint.** Publishing which ceremonies a deployment
 enacts discloses its configuration, on the same terms §11.5 already describes for
@@ -490,15 +564,176 @@ The natural extension keeps §11's shape and its advisory status:
 Stage 3. It is useful only once definitions exist and are being enacted across
 organizational boundaries.
 
-## 13. Staging and library impact
+## 13. Worked example: VTC member onboarding
+
+Instrumenting a real flow was meant to illustrate the design. It also falsified
+part of it (§13.4) and found a gap in the registry (§13.5), which is the reason
+this section is placed before §15 rather than in an appendix.
+
+### 13.1 The flow as it exists today
+
+Admitting a member to a Verifiable Trust Community is already a multi-task,
+multi-party flow built entirely from shipped specs:
+
+| # | Task | Issuer → Recipient | Side effects |
+|---|---|---|---|
+| 1 | `vtc/join-requests/manifest/0.1` | applicant → community | `none` |
+| 2 | `vtc/join-requests/submit/0.1` | applicant → community | `mutating` |
+| 3 | `vtc/join-requests/submit-receipt/0.1` | community → applicant | `none` |
+| 4 | `vtc/join-requests/status/0.1` | applicant → community | `none` |
+| 5 | `vtc/join-requests/decide/0.1` | administrator → community | `mutating` |
+| 6 | `vtc/members/solicit-vmc/0.1` | administrator → community | `mutating` |
+| 7 | `vtc/members/request-vmc/0.1` | community → member | `none` |
+| 8 | `vtc/members/vmc/0.1` | member → community | `mutating` |
+
+Steps 6–8 are the reciprocal-membership exchange. `solicit-vmc` states the
+decomposition explicitly:
+
+> Three tasks, three party pairs. This one is administrator → community. It is
+> **not** the request that reaches the member, and it does not carry a
+> credential.
+
+That is SPEC §2's bilateral rule applied by hand, and it is exactly the shape a
+ceremony describes.
+
+### 13.2 The layer is already being hand-rolled
+
+`solicit-vmc` returns a `threadId` in its **payload**, documented as:
+
+> The returned `threadId` is how a caller correlates the eventual
+> `vtc/members/vmc` delivery with this solicitation.
+
+A correlation handle spanning three party pairs, carried in a task payload
+because the framework offers nowhere else to put it. This is §1's claim
+demonstrated rather than asserted, and it inherits precisely the weakness §5.1
+identifies: `threadId` is not required to be unique or non-reusable (§4.9), so
+the anchor the whole correlation rests on is the one identifier the framework
+declines to constrain.
+
+Under this design that value becomes `ceremony.enactment` — unique,
+non-reusable, signed, and carried on the envelope rather than in one task's
+payload, where every other step can see it.
+
+`vtc/members/vmc`'s optional `requestId` is the same pattern: it exists to carry
+"the join-ceremony close" — the registry's own words — because the step needs to
+say which enactment it completes.
+
+### 13.3 What the definition would look like
+
+Roles: `applicant`, `community`, `administrator`, `member` (the applicant, after
+step 5). Sketch, not schema:
+
+```
+ceremony vtc/member-onboarding/0.1
+  evidence: receipt, recorder = community
+
+  discover     manifest        applicant → community    optional
+  apply        submit          applicant → community    prev: []
+  acknowledge  submit-receipt  community → applicant    prev: [apply]
+  decide       decide          administrator → community prev: [apply]
+  solicit      solicit-vmc     administrator → community prev: [decide]
+  ask          request-vmc     community → member       prev: [solicit]
+  reciprocate  vmc             member → community       prev: [ask]
+
+  complete when: decide ∧ (decision = rejected ∨ reciprocate)
+```
+
+Three things this makes visible that prose does not:
+
+- **`discover` is genuinely optional** and has no `prev`. An applicant who
+  already knows the criteria skips it, and the receipt is still complete.
+- **`acknowledge` and `decide` both depend only on `apply`,** so they are
+  concurrent. A linear `prev` would have forced a false ordering — the partial
+  order of §5 is doing real work on the first flow tested.
+- **The same Type URI can appear as two steps.** `vmc` is `reciprocate` here
+  (carrying `requestId`), and is also sent unsolicited at renewal time with no
+  ceremony at all. That is why `step` is a name in the definition rather than the
+  Type URI: the retirement of `join-requests/accept` into `vmc` collapsed two
+  tasks into one whose meaning depends on context, and only a step name can
+  distinguish them.
+
+### 13.4 The finding: §6.2's no-loops rule is too strong
+
+`vtc/join-requests/status` can return `deferred`, with `needs` naming what the
+applicant must supply and a `presentationDefinition` describing it. The applicant
+supplies more evidence; the community may defer again.
+
+That is unbounded repetition, and §6.2 forbids loops outright. The first real
+flow tested breaks the rule as written.
+
+The rule was over-tightened rather than wrong. Three ways out:
+
+1. **Bounded repetition** — the definition declares a maximum round count, so
+   the loop unrolls to a finite graph. "At most three rounds of supplementary
+   evidence" is still readable in one sitting and still statically checkable.
+2. **Nested enactment** — each deferral round is its own small ceremony, named
+   once as an optional step in the outer definition. Nesting already exists via
+   `parentThreadId`.
+3. **Exclude it** — the deferral cycle sits outside the ceremony. Cheapest, and
+   it loses the evidence of what was supplied, which is the part a governance
+   body would most want.
+
+**Recommend (1),** as a narrow amendment to §6.2: bounded repetition with a
+declared constant, never an open `while`. It keeps the auditability criterion —
+a reader can still enumerate every path — while admitting a construct the domain
+plainly needs. §6.2 should be read as amended by this section.
+
+### 13.5 The gap: `deferred` has no exit
+
+Writing the definition surfaced something the prose does not: **no task supplies
+the additional evidence.** `status` reports `needs`, but `submit` takes no
+`requestId` — it opens a *new* request — and the registry defines no
+`join-requests/supplement`. `deferred` is a reachable state with no defined way
+out.
+
+This is a defect in the VTC specs, not in the ceremony design, and it is worth
+reporting on its own. But note *how* it surfaced: a ceremony definition cannot be
+written without naming the step that exits every non-terminal state, so
+authoring one is a **reachability check over the registry**. That is a stronger
+argument for the definition format than anything in §6, and it was not one this
+note anticipated.
+
+Whether it is fixed by adding a supplement task or by having `submit` accept a
+`requestId` is for the `vtc/join-requests` owners. Either resolves §13.4 the same
+way.
+
+### 13.6 A second, smaller example
+
+`vtc/members/personhood/{challenge,assert}` is a two-step challenge/response:
+the community issues a single-use `challengeId`, the member embeds it as
+`proof.challenge` in a Verifiable Presentation. `vtc/members/{rotate-challenge,
+rotate}` has the same shape, as does `auth/passkey/enroll/{start,finish}`.
+
+These need none of this layer. Two steps, one party pair, correlation already
+carried by the challenge, and evidence needs are met by the documents
+themselves. A ceremony definition would add ceremony and subtract nothing.
+
+Worth stating because the registry's own prose already calls all three
+"ceremonies" — the word is in shipped specs describing WebAuthn enrolment,
+personhood assertion, and DID rotation, which is independent support for ADR
+0001's naming. **The framework sense proposed here is narrower than that
+colloquial use.** A challenge/response pair is a ceremony in the WebAuthn sense
+and not one in this note's sense, and §6 of ADR 0001 needs a third row saying so,
+or implementers will reasonably expect `personhood/assert` to grow a `ceremony`
+member.
+
+## 14. Staging and library impact
 
 | Stage | Contents | Framework | Blocked by |
 |---|---|---|---|
 | **0** | Specify `trust-task-next-step` (§8) | none | nothing |
 | **1** | §6.1 slug reservation; `/ceremony/` subtree | 0.4 | nothing |
+| **1a** | Converge digest fields on multibase-multihash (§7.8) | — | nothing |
 | **2** | `ceremony` envelope member (§5) | 0.4 | ADR §5 |
-| **3** | Definition format; `trust-ceremony-receipt`; evidence levels | — | Stage 2 |
+| **3** | Definition format; `trust-ceremony-receipt`; evidence levels | — | Stages 1a, 2 |
 | **4** | Abort (§9); discovery (§12); `countersigned` | — | Stage 3 |
+
+Stage 1a is independent of the ceremony layer and useful without it, but should
+precede Stage 3 so the chain and receipt are not the last thing built on an
+inconsistent digest base. It is the only stage that touches shipped specs: two
+of its fields (`audit`, `provision/integration`) change wire format and so need
+new version folders under §5.2, with regenerated bindings and library bumps
+following.
 
 Stage 1 should land ahead of everything, including the design: `trust-ceremony-*`
 is registrable by any contributor under the current `^trust-task($|-|/)`
@@ -514,7 +749,7 @@ requirement, so the trap is discovering it mid-release rather than planning for
 it. This is also the deadline for ADR §5: the member is spelled `ceremony` or
 `choreography`, and changing it afterwards pays this cost twice.
 
-## 14. What is not true yet
+## 15. What is not true yet
 
 Everything above is a proposal. Nothing is specified, published, or implemented,
 and the note has not been tested against a working flow — which is the reverse of
@@ -522,12 +757,14 @@ how the delegated-execution note in this directory was written, and a weaker
 position. Specifically:
 
 - **No definition format is written.** §6 lists what one contains, not its
-  schema. The claim that branching reduces to optionality plus `prev` (§6.2) is
-  the load-bearing assumption of the whole definition design and **has not been
-  tested against a real flow.** If it is wrong, either definitions grow
-  predicates — and §6.2's criterion fails — or flows fragment into more
-  ceremonies than is usable. This should be checked against `vtc/ceremonies`'
-  actual governance decisions before any schema is written.
+  schema.
+- **The branching assumption was tested once, and partly failed.** §6.2's claim
+  that branching reduces to optionality plus `prev` survived VTC member
+  onboarding for ordering, but its blanket prohibition on loops did not: the
+  `deferred` supplementary-evidence cycle needs bounded repetition (§13.4).
+  §6.2 stands as amended by §13.4 and has not been re-tested against any other
+  flow. One counterexample found one flaw; a second flow may find another, and
+  `vtc/ceremonies`' remaining governance decisions are the obvious next test.
 - **Aggregate exposure is unsolved** (§11), and proposed to ship declared-unsolved.
 - **Enactment identifiers correlate across audiences** (§10) with no proposal.
 - **Timeout has no real home** (§9). "The definition declares a duration" is the
