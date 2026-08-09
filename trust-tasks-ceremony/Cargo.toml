@@ -1,0 +1,43 @@
+[package]
+name = "trust-tasks-ceremony"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Verification for Trust Ceremonies — salted step digests, receipt checking, and completion-rule evaluation over a ceremony definition."
+keywords = ["trust-tasks", "ceremony", "receipt", "verification"]
+categories = ["cryptography", "data-structures"]
+publish = true
+
+[dependencies]
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.5" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+# `affinidi` backend deps.
+#
+# `serde_json_canonicalizer` is the RFC 8785 implementation that
+# `affinidi-data-integrity` itself canonicalizes with for `eddsa-jcs-2022`
+# (see its `use serde_json_canonicalizer::to_string`). Depending on it directly
+# rather than on `affinidi-data-integrity` gives ceremony digests that are
+# byte-identical to what the proof path canonicalizes, without pulling the
+# crypto, encoding and DID-resolver trees a verifier does not need.
+#
+# The coupling is deliberate and worth stating: if the Data Integrity backend
+# ever changes its canonicalizer, this pin has to move with it, or a ceremony
+# digest and a proof over the same document stop agreeing on what the document
+# is.
+serde_json_canonicalizer = { version = "0.3", optional = true }
+sha2 = { version = "0.10", optional = true }
+multibase = { version = "0.9", optional = true }
+
+[features]
+default = ["affinidi"]
+# `affinidi` — the Digester backed by the same JCS canonicalizer the Affinidi
+# Data Integrity suite uses, with SHA-256 multihash and multibase encoding.
+affinidi = ["dep:serde_json_canonicalizer", "dep:sha2", "dep:multibase"]
+
+[dev-dependencies]
+serde_json = "1"

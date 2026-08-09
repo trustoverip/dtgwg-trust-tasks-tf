@@ -5,6 +5,7 @@ members = [
     "trust-tasks-codegen",
     "trust-tasks-https",
     "trust-tasks-proof",
+    "trust-tasks-ceremony",
     "trust-tasks-didcomm",
     "trust-tasks-didcomm-v1",
     "trust-tasks-tsp",

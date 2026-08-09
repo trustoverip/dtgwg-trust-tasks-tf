@@ -6463,6 +6463,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "trust-tasks-ceremony"
+version = "0.1.0"
+dependencies = [
+ "multibase",
+ "serde",
+ "serde_json",
+ "serde_json_canonicalizer",
+ "sha2 0.10.9",
+ "thiserror 2.0.18",
+ "trust-tasks-rs",
+]
+
+[[package]]
 name = "trust-tasks-codegen"
 version = "0.1.0"
 dependencies = [
