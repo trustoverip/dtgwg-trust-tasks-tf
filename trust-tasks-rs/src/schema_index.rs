@@ -286,6 +286,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/relationships/graph/0.1" => Some(<crate::specs::vtc::relationships::graph::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/relationships/list/0.1" => Some(<crate::specs::vtc::relationships::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/relationships/publish/0.1" => Some(<crate::specs::vtc::relationships::publish::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vtc/relationships/request/0.1" => Some(<crate::specs::vtc::relationships::request::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/relationships/revoke/0.1" => Some(<crate::specs::vtc::relationships::revoke::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/website/files/delete/0.1" => Some(<crate::specs::vtc::website::files::delete::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/website/files/list/0.1" => Some(<crate::specs::vtc::website::files::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),

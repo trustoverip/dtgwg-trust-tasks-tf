@@ -3,4 +3,5 @@
 pub mod graph;
 pub mod list;
 pub mod publish;
+pub mod request;
 pub mod revoke;
