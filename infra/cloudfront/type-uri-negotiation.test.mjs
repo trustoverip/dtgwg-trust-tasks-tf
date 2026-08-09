@@ -22,6 +22,7 @@ const source = readFileSync(join(here, "type-uri-negotiation.js"), "utf8");
 const handler = new Function(`${source}; return handler;`)();
 
 const SCHEMA = "application/schema+json";
+const JSON_CT = "application/json";
 const HTML = "text/html";
 
 /** Run a request through the function and return the resulting URI. */
@@ -66,6 +67,51 @@ describe("rewrites a Type URI to its schema", () => {
       route("/spec/vta/did-templates/create/2.0", SCHEMA),
       "/specs/vta/did-templates/create/2.0/payload.schema.json",
     );
+  });
+});
+
+describe("rewrites a ceremony definition URI to its JSON", () => {
+  it("maps /ceremony/<slug>/<M.m> into the ceremonies tree", () => {
+    assert.equal(
+      route("/ceremony/vtc/member-onboarding/0.1", JSON_CT),
+      "/ceremonies/vtc/member-onboarding/0.1/ceremony.json",
+    );
+  });
+
+  it("tolerates a trailing slash", () => {
+    assert.equal(
+      route("/ceremony/vtc/member-onboarding/0.1/", JSON_CT),
+      "/ceremonies/vtc/member-onboarding/0.1/ceremony.json",
+    );
+  });
+
+  it("serves the SPA to a browser", () => {
+    // A person asking for the definition URI wants the page, not the document —
+    // the same split /spec/ makes for Type URIs.
+    assert.equal(route("/ceremony/vtc/member-onboarding/0.1", HTML), "/index.html");
+  });
+
+  it("leaves the raw ceremonies tree alone", () => {
+    // /ceremonies/ is the asset tree. Rewriting it would loop; the singular and
+    // plural forms are distinguishable only from the ninth character on.
+    assert.equal(
+      route("/ceremonies/vtc/member-onboarding/0.1/ceremony.json", JSON_CT),
+      "/ceremonies/vtc/member-onboarding/0.1/ceremony.json",
+    );
+  });
+
+  it("does not treat a Type URI as a definition", () => {
+    // /spec/ and /ceremony/ are structurally disjoint (§6.7); a request for one
+    // must never resolve into the other's tree.
+    assert.equal(route("/spec/acl/grant/0.1", JSON_CT), "/index.html");
+  });
+
+  it("refuses a slug segment that could escape the tree", () => {
+    assert.equal(route("/ceremony/../secrets/0.1", JSON_CT), "/index.html");
+  });
+
+  it("ignores a path with no version segment", () => {
+    assert.equal(route("/ceremony/vtc", JSON_CT), "/index.html");
   });
 });
 

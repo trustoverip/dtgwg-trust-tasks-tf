@@ -23,6 +23,7 @@
   <script src="/assets/tasks.generated.js"></script>
   <script src="/assets/ecosystem.js"></script>
   <script src="/assets/bindings.js"></script>
+  <script src="/assets/ceremonies.js"></script>
 </head>
 <body data-bg="paper" data-density="default" data-type="editorial">
   <div id="root"></div>
@@ -47,6 +48,18 @@
       const path = location.pathname.replace(/^\/+|\/+$/g, "");
       if (!path) return { name: "home" };
       const [name, ...rest] = path.split("/");
+      if (name === "ceremony" || name === "ceremonies") {
+        /* Per SPEC §6.7 the canonical definition URI uses singular /ceremony/,
+           structurally disjoint from /spec/ and /binding/. The index page is
+           /ceremonies (plural), keeping it distinct from a definition URI with
+           no version — the same split the bindings routes make. */
+        if (rest.length === 0) return { name: "ceremonies" };
+        const last = rest[rest.length - 1];
+        const versionLike = /^\d+\.\d+$/.test(last);
+        const version = versionLike ? last : undefined;
+        const slugSegs = versionLike ? rest.slice(0, -1) : rest;
+        return { name: "ceremony", slug: slugSegs.join("/"), version };
+      }
       if (name === "spec" || name === "binding" || name === "bindings") {
         const routeName = name === "spec" ? "spec" : "binding";
         if (rest.length === 0) {
@@ -93,6 +106,12 @@
           path = `/schema/${r.slug}`;
         } else if (r.name === "schemas") {
           path = "/schema";
+        } else if (r.name === "ceremonies") {
+          path = "/ceremonies";
+        } else if (r.name === "ceremony") {
+          // Singular /ceremony/ per SPEC §6.7; matches the definitionURI a step
+          // carries in its ceremony.definition member.
+          path = `/ceremony/${r.slug}${r.version ? "/" + r.version : ""}`;
         } else if (r.name === "binding") {
           const v = r.version || (window.TT_BINDINGS && (window.TT_BINDINGS.find(b => b.slug === r.slug) || {}).version) || "";
           // Singular /binding/ per SPEC §9.3; matches the canonical bindingURI
@@ -147,6 +166,8 @@
         case "specification": view = <FrameworkSpecPage setRoute={setRoute} />; break;
         case "bindings":      view = <BindingsPage setRoute={setRoute} />; break;
         case "binding":       view = <BindingSpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
+        case "ceremonies":    view = <CeremoniesPage setRoute={setRoute} />; break;
+        case "ceremony":      view = <CeremonyPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
         case "implementations": view = <ImplementationsPage setRoute={setRoute} />; break;
         case "categories":    view = <CategoriesPage setRoute={setRoute} />; break;
         case "ecosystem":     view = <EcosystemPage setRoute={setRoute} />; break;

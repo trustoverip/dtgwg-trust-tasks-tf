@@ -25,6 +25,12 @@ function TTNav({ route, setRoute }) {
   const links = [
     { id: "specification",   label: "Specification" },
     { id: "bindings",        label: "Bindings" },
+    // Adjacent to Bindings deliberately: both are artifact types *beside* the
+    // task registry rather than above it. A nav entry is discoverability, not
+    // billing — the home page's framing is unchanged, because the ceremony
+    // layer is optional (SPEC §4.11.1) and its evidence machinery is not yet
+    // specified. Revisit the site's top-level story when that lands.
+    { id: "ceremonies",      label: "Ceremonies" },
     { id: "implementations", label: "Implementations" },
     { id: "registry",        label: "Registry" },
     { id: "schemas",         label: "Schemas", path: "schema" },

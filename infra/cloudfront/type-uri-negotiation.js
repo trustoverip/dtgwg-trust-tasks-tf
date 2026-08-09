@@ -13,6 +13,7 @@
 //
 //   /spec/trust-task/<M.m>  + application/schema+json -> /specs/_framework/<M.m>/trust-task.schema.json
 //   /spec/<slug…>/<M.m>     + application/schema+json -> /specs/<slug…>/<M.m>/payload.schema.json
+//   /ceremony/<slug…>/<M.m> + application/json         -> /ceremonies/<slug…>/<M.m>/ceremony.json
 //
 // Fragments (#request, #response) never reach the server, so they need no
 // handling: §4.4.1 publishes both variants in one schema document at the bare
@@ -48,7 +49,7 @@
 
 // Real files on the origin. A request under one of these is left alone, so a
 // missing object produces a genuine 404 rather than the SPA shell.
-var ASSET_PREFIXES = ['/assets/', '/specs/', '/bindings/'];
+var ASSET_PREFIXES = ['/assets/', '/specs/', '/bindings/', '/ceremonies/'];
 
 // Files served from the root of website/. Must track that directory: a new root
 // file added without updating this list is served the SPA shell instead of
@@ -109,6 +110,61 @@ function negotiateSchema(request) {
   return true;
 }
 
+/**
+ * Rewrite a ceremony definition URI to its JSON when the client asked for it.
+ *
+ * SPEC §6.7 identifies a ceremony definition by `/ceremony/<slug>/<M.m>`, a
+ * subtree structurally disjoint from `/spec/` and `/binding/`. A verifier
+ * resolving `ceremony.definition` wants the document; a person wants the page,
+ * so this negotiates on Accept exactly as `negotiateSchema` does for Type URIs.
+ *
+ * `application/json` rather than `application/schema+json`: a definition is an
+ * instance of the ceremony format, not a JSON Schema.
+ *
+ * Returns true if the request was rewritten.
+ */
+function negotiateCeremony(request) {
+  // Only /ceremony/… names a definition. /ceremonies/… is the raw asset tree;
+  // matching it here would loop. The two are distinguishable because the
+  // singular form ends in `y/` where the plural has `ies/`.
+  if (request.uri.indexOf('/ceremony/') !== 0) {
+    return false;
+  }
+
+  var headers = request.headers;
+  var accept = headers && headers.accept ? headers.accept.value : '';
+  if (accept.indexOf('application/json') === -1) {
+    return false;
+  }
+
+  var path = request.uri;
+  if (path.length > 1 && path.charAt(path.length - 1) === '/') {
+    path = path.substring(0, path.length - 1);
+  }
+
+  var segments = path.substring('/ceremony/'.length).split('/');
+  if (segments.length < 2) {
+    return false;
+  }
+
+  var version = segments[segments.length - 1];
+  if (!/^[0-9]+\.[0-9]+$/.test(version)) {
+    return false;
+  }
+
+  // Refuse anything that is not a plain slug — a stray `.` or `..` would
+  // otherwise build a path escaping the ceremonies tree.
+  for (var i = 0; i < segments.length - 1; i++) {
+    if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(segments[i])) {
+      return false;
+    }
+  }
+
+  var slug = segments.slice(0, segments.length - 1).join('/');
+  request.uri = '/ceremonies/' + slug + '/' + version + '/ceremony.json';
+  return true;
+}
+
 /** Whether the URI addresses a real file on the origin. */
 function isAsset(uri) {
   for (var i = 0; i < ASSET_PREFIXES.length; i++) {
@@ -130,6 +186,11 @@ function handler(event) {
   // A negotiated schema path is an asset path; return before the fallback can
   // rewrite it back to the shell.
   if (negotiateSchema(request)) {
+    return request;
+  }
+
+  // Same reasoning as above: a negotiated definition path is an asset path.
+  if (negotiateCeremony(request)) {
     return request;
   }
 

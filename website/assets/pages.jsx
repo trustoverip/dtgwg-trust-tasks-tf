@@ -2665,6 +2665,188 @@ function BindingSpecPage({ slug, version, setRoute }) {
   );
 }
 
+/* ============================================================
+   Ceremonies — index and detail
+   ------------------------------------------------------------
+   A ceremony definition composes several Trust Tasks into one
+   flow. SPEC §6.7 gives it a URI in the /ceremony/ subtree,
+   structurally disjoint from /spec/ and /binding/.
+
+   These pages are deliberately modest. Framework 0.4 defines
+   where a definition lives, how a step references one, and that
+   the reference is by content as well as by name — the *content*
+   of a definition is out of scope for that version. So this
+   renders the definition's shape rather than claiming to be a
+   normative rendering of a format that is not yet specified.
+   ============================================================ */
+
+function CeremoniesPage({ setRoute }) {
+  const ceremonies = window.TT_CEREMONIES || [];
+
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Trust Ceremonies"
+        title="When one task is not the whole outcome."
+        lede="Some outcomes take several Trust Tasks — a governance decision needing endorsements, an onboarding spanning a witness and a registry. A ceremony names such a flow, so that it can be published, reviewed, and evidenced rather than living in each party's application code. Using one is entirely optional: a document without a ceremony member is fully conforming, and a consumer that ignores the member forgoes nothing."
+      >
+        <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
+          <a className="btn btn--ghost" href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>Read SPEC §4.11 →</a>
+          <a className="btn btn--ghost" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/ceremonies" target="_blank" rel="noreferrer">Source on GitHub →</a>
+        </div>
+      </PageHero>
+
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Published definitions</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>{ceremonies.length} {ceremonies.length === 1 ? "definition" : "definitions"}.</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
+            Each entry describes which Trust Tasks compose a flow, which roles perform them, and what completes it. The evidence a completed run produces — the chain and the receipt — is not yet specified; framework 0.4 defines the namespace and the envelope member, not the definition format.
+          </p>
+
+          {ceremonies.length === 0 ? (
+            <div className="tt-empty" style={{ padding: "var(--tt-space-6)", marginTop: "var(--tt-space-5)" }}>
+              No ceremony definitions are currently registered.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
+              {ceremonies.map(c => (
+                <a
+                  key={c.id}
+                  className="tt-card"
+                  href={`/ceremony/${c.slug}/${c.version}`}
+                  onClick={(e) => { e.preventDefault(); setRoute({ name: "ceremony", slug: c.slug, version: c.version }); }}
+                  style={{ display: "block", padding: "var(--tt-space-5)", textDecoration: "none" }}
+                >
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "var(--tt-space-3)", flexWrap: "wrap" }}>
+                    <h3 style={{ margin: 0 }}>{c.title}</h3>
+                    <code style={{ fontSize: "0.85em", color: "var(--tt-text-muted)" }}>{c.slug}/{c.version}</code>
+                    <span className="tt-pill">{c.status}</span>
+                  </div>
+                  <p style={{ marginBottom: 0, color: "var(--tt-text-muted)" }}>{c.summary}</p>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+function CeremonyPage({ slug, version, setRoute }) {
+  const all = window.TT_CEREMONIES || [];
+  // Strict lookup, for the reason BindingSpecPage gives: falling back to the
+  // first registered entry renders the wrong document when a route arrives with
+  // an unknown slug, and does so silently.
+  const ceremony = all.find(c => c.slug === slug && (!version || c.version === version));
+  const [def, setDef] = React.useState(null);
+  const [err, setErr] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!ceremony) return;
+    let live = true;
+    fetch(ceremony.definitionPath)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then(j => { if (live) setDef(j); })
+      .catch(e => { if (live) setErr(e.message); });
+    return () => { live = false; };
+  }, [ceremony && ceremony.id]);
+
+  if (!ceremony) {
+    return (
+      <section className="container">
+        <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
+          <b>No ceremony registered for <code>{slug || "(missing slug)"}{version ? `/${version}` : ""}</code>.</b><br />
+          <a href="/ceremonies" onClick={(e) => { e.preventDefault(); setRoute({ name: "ceremonies" }); }}>
+            See the ceremony registry →
+          </a>
+        </div>
+      </section>
+    );
+  }
+
+  const steps = def && def.steps ? Object.entries(def.steps) : [];
+  const roles = def && def.roles ? Object.entries(def.roles) : [];
+
+  return (
+    <React.Fragment>
+      <PageHero eyebrow="Ceremony definition" title={ceremony.title} lede={ceremony.summary}>
+        <p style={{ marginTop: "var(--tt-space-4)" }}>
+          <code>{ceremony.definitionURI}</code>
+        </p>
+      </PageHero>
+
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          {err && (
+            <div className="tt-empty" style={{ padding: "var(--tt-space-5)" }}>
+              Could not load the definition ({err}).{" "}
+              <a href={ceremony.definitionPath}>Fetch it directly →</a>
+            </div>
+          )}
+
+          {def && (
+            <React.Fragment>
+              <h2>Roles</h2>
+              <ul>
+                {roles.map(([name, r]) => (
+                  <li key={name}>
+                    <code>{name}</code>
+                    {r.cardinality === "many" ? " (many)" : ""}
+                    {r.evidentiary ? " — evidentiary: party to the meaning, not to any step" : ""}
+                    {r.description ? ` — ${r.description}` : ""}
+                  </li>
+                ))}
+              </ul>
+
+              <h2>Steps</h2>
+              <div style={{ overflowX: "auto" }}>
+                <table className="tt-table">
+                  <thead>
+                    <tr><th>Step</th><th>Enacts</th><th>From → To</th><th>Follows</th></tr>
+                  </thead>
+                  <tbody>
+                    {steps.map(([name, st]) => (
+                      <tr key={name}>
+                        <td>
+                          <code>{name}</code>
+                          {st.optional ? " (optional)" : ""}
+                          {st.terminal ? " · terminal" : ""}
+                        </td>
+                        <td><code style={{ wordBreak: "break-all" }}>{st.kind === "ceremony" ? st.ceremony : st.type}</code></td>
+                        <td>{st.issuer} → {st.recipient}</td>
+                        <td>{(st.prev || []).join(", ") || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <h2>Evidence</h2>
+              <p>
+                Level <code>{def.evidence && def.evidence.level}</code>
+                {def.evidence && def.evidence.recorders ? <> · recorded by {def.evidence.recorders.map(r => <code key={r}>{r}</code>).reduce((a, b) => [a, ", ", b])}</> : null}
+                {def.maxDuration ? <> · within <code>{def.maxDuration}</code></> : null}
+              </p>
+
+              <h2>Definition</h2>
+              <p style={{ color: "var(--tt-text-muted)" }}>
+                Served as <code>application/json</code> at the definition URI above.
+              </p>
+              <pre style={{ overflowX: "auto" }}><code>{JSON.stringify(def, null, 2)}</code></pre>
+            </React.Fragment>
+          )}
+
+          <p style={{ marginTop: "var(--tt-space-6)" }}>
+            <a href="/ceremonies" onClick={(e) => { e.preventDefault(); setRoute({ name: "ceremonies" }); }} className="btn btn--ghost">← Back to ceremonies</a>
+          </p>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
 Object.assign(window, {
-  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage, BindingsPage, BindingSpecPage
+  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage, BindingsPage, BindingSpecPage, CeremoniesPage, CeremonyPage
 });

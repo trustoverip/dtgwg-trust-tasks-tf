@@ -26,6 +26,7 @@ import addFormats from 'ajv-formats';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
 const BINDINGS_DIR = path.join(ROOT, 'bindings');
+const CEREMONIES_DIR = path.join(ROOT, 'ceremonies');
 const WEBSITE_DIR = path.join(ROOT, 'website');
 const META_SCHEMA_PATH = path.join(SPECS_DIR, 'spec.meta.schema.json');
 const DATA_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'data.js');
@@ -867,6 +868,22 @@ function syncWebsiteBindings() {
   console.log(`  synced bindings/ → ${path.relative(ROOT, dst)}/`);
 }
 
+function syncWebsiteCeremonies() {
+  if (!fs.existsSync(CEREMONIES_DIR)) return;
+  const dst = path.join(WEBSITE_DIR, 'ceremonies');
+  if (fs.existsSync(dst)) fs.rmSync(dst, { recursive: true, force: true });
+  copyDirSync(CEREMONIES_DIR, dst);
+  // The definition meta-schema and its fixtures are authoring tools, not
+  // published artifacts — SPEC §6.7 leaves the *content* of a ceremony
+  // definition out of scope for framework 0.4, so publishing the format it must
+  // satisfy would advertise something not yet normative.
+  for (const internal of ['ceremony.meta.schema.json', 'ceremony.invalid-examples.json']) {
+    const p = path.join(dst, internal);
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  }
+  console.log(`  synced ceremonies/ → ${path.relative(ROOT, dst)}/`);
+}
+
 function syncWebsiteFrameworkSpec() {
   const src = path.join(ROOT, 'SPEC.md');
   if (!fs.existsSync(src)) return;
@@ -1028,6 +1045,7 @@ function main() {
   emitRegistryJson(tasks);
   syncWebsiteSpecs();
   syncWebsiteBindings();
+  syncWebsiteCeremonies();
   syncWebsiteFrameworkSpec();
   console.log('Done.');
 }
