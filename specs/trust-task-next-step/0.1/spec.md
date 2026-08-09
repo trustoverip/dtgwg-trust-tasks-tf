@@ -100,7 +100,7 @@ A consumer that declines to continue simply stops. There is no "declined" reply:
 
 `expects` is a list of **alternatives**. Satisfying any single entry unblocks the exchange; satisfying all of them is never required.
 
-A recipient that genuinely needs two things done first names the one it wants next and issues a further next step when that lands. Expressing a conjunction here would make this response a small flow definition — ordering, optionality, completion — which is exactly the material that belongs to a [Trust Ceremony](../../../docs/design-notes/trust-ceremonies.md) rather than to a single reply. Keeping `expects` disjunctive is what stops this specification growing into one by accident.
+A recipient that genuinely needs two things done first names the one it wants next and issues a further next step when that lands. Expressing a conjunction here would make this response a small flow definition — ordering, optionality, completion — which is exactly the material that belongs to a [Trust Ceremony](../../../docs/adr/0001-naming-the-multi-task-flow-layer.md) rather than to a single reply. Keeping `expects` disjunctive is what stops this specification growing into one by accident.
 
 ## Relationship to ceremonies
 
