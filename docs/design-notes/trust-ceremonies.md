@@ -24,12 +24,16 @@ note, and should be read as part of the proposal rather than as an appendix. A
 design note that only records its wins is marketing; a prospective one that only
 records its confidence is worse.*
 
-*Revised after an adversarial re-reading of the first draft, which found four
-security defects severe enough to break end-to-end verification. Those are fixed
-in place in §5–§7; **[§16](#16-what-the-first-draft-of-this-note-got-wrong)
-records what they were and why they were missed**, because two of them were
-warnings already written in the specs this design borrows from. Read §16 before
-relying on any part of §7.*
+*Revised twice since. An adversarial re-read found four security defects severe
+enough to break end-to-end verification; building the definition format found
+four modelling defects. All eight are fixed in place in §5–§7, and
+**[§16](#16-what-this-note-got-wrong-in-two-rounds) records what they were and
+why each round missed what the other found** — including two that were warnings
+already written in the specs this design borrows from. Read §16 before relying on
+any part of §7.*
+
+*One stage is shipped: `trust-task-next-step/0.1` (§8), the coordination concern,
+published independently of everything else here and usable at framework 0.3.*
 
 ## 1. Problem
 
@@ -67,7 +71,7 @@ them separate is the single most important structural decision here.
 | | Concern | Nature | Status today |
 |---|---|---|---|
 | **1** | **Definition** — which tasks, which roles, what order | Static, published, auditable | Nothing (VTC has a local analogue) |
-| **2** | **Coordination** — who drives, how a party learns what is next | Dynamic, per-run | Partial: `threadId`; `trust-task-next-step` reserved but unspecified |
+| **2** | **Coordination** — who drives, how a party learns what is next | Dynamic, per-run | `threadId`, plus `trust-task-next-step/0.1` (§8) |
 | **3** | **Evidence** — what proves the *whole* flow happened | Artifact, retained | Nothing |
 
 They must remain independently adoptable. A ceremony should be usable
@@ -130,7 +134,7 @@ Most of the mechanism is present and was never named as a layer.
 | `threadId` (§4.9) | Normative; no validation semantics | One exchange | Not unique, not enforceable |
 | `parentThreadId` (§4.9.2) | Navigation only | One level of containment | §5.1 |
 | §4.9.1 | Normative | How to cite an exchange as evidence | Only names one exchange |
-| `trust-task-next-step` (§8.6) | **Reserved, unspecified** | Recipient-driven continuation | §8 |
+| `trust-task-next-step` (§8.6) | **Published 0.1** | Recipient-driven continuation | §8 |
 | `trust-task-ok` (§8.6) | **Reserved, unspecified** | Success with receipt | — |
 | `sideEffects` / `exposure` (§7.3.13–14) | Normative, per task | Risk class per step | Does not aggregate — §11 |
 | `audit` hash chain | Shipped | Tamper-evidence pattern | Single-party, single log |
@@ -870,21 +874,34 @@ default for its steps and **MUST NOT** weaken it. A ceremony cannot declare
 
 ## 8. Coordination, and the smallest useful increment
 
-`trust-task-next-step` is already reserved (§8.6) and unspecified. Specifying it
-needs no definition format, no envelope member, and no framework version bump:
-a recipient answers "understood, but I need this next", naming a *Type URI* and
-carrying the `threadId` forward.
+**Done — published as `trust-task-next-step/0.1`.** It was the cheapest useful
+increment of this layer, needing no definition format, no envelope member and no
+framework version bump: a recipient answers "understood, but I need this next",
+naming a *Type URI* and carrying the `threadId` forward. A large share of what is
+being asked for today is exactly that, with no definition and no receipt.
 
-That is sequential, recipient-driven continuation — and a large share of what is
-being asked for today is exactly that, with no definition and no receipt. It
-should be built first, on its own, for two reasons beyond cost: it is the
-cheapest way to find out what the real flows look like before fixing a definition
-format around guesses, and it is the one part of this note that is unblocked
-regardless of how ADR §5 closes.
+Two things it settled that bear on the rest of this note.
+
+**A next step is a *third* disposition, not a variant of the other two.** A
+success response closes the originating task, an *error response* closes it, and
+a next step leaves it **open**. That distinction is now normative in SPEC §8.6
+rather than only in the registry entry, because it is a framework rule about how
+the three replies relate — a *consumer* must not report a blocked task as an
+error, nor a refusal as a next step.
+
+**Its `expects` is a list of alternatives, never a conjunction**, and that
+restraint is where this layer's boundary got drawn in practice. A conjunction
+would have given a single reply ordering, optionality and completion — which is
+a flow definition, and is precisely the material §6 keeps in a ceremony. Had
+`expects` been allowed to express "do all of these first", `trust-task-next-step`
+would have become a ceremony format by accretion, one field at a time, with none
+of §6.2's constraints on it.
 
 Its relationship to the rest is compositional, not preparatory. `next-step`
 drives an enactment where the definition leaves ordering to the recipient;
-`ceremony.step` names where the enactment has got to. Neither requires the other.
+`ceremony.step` names where the enactment has got to. Neither requires the
+other, and next-step works today at framework 0.3 where the `ceremony` member
+does not yet exist.
 
 ## 9. Abort, and the state no step describes
 
@@ -1260,7 +1277,7 @@ member.
 
 | Stage | Contents | Framework | Blocked by |
 |---|---|---|---|
-| **0** | Specify `trust-task-next-step` (§8) | none | nothing |
+| **0** | ~~Specify `trust-task-next-step` (§8)~~ — **done, PR #196** | none | — |
 | **1** | §6.1 slug reservation; `/ceremony/` subtree | 0.4 | nothing |
 | **1a** | ~~Converge digest fields on multibase-multihash (§7.8)~~ — **done, PR #195** | — | — |
 | **2** | `ceremony` envelope member (§5) | 0.4 | ADR §5 |
@@ -1335,15 +1352,14 @@ the branching assumption (below). What remains:
   against a real two-level flow. The obvious test is the one §13 already half
   describes — VTC member onboarding containing a webvh witnessing ceremony —
   and it should be worked end to end before the definition schema is fixed.
-- **No implementation exists**, so none of the digest, chaining, projection or
-  composition claims have met a wire. The delegated-execution note's closing
-  lesson applies in advance: for a system whose correctness is a property of how
-  components meet over a wire, the only tests that count are the ones that use
-  the wire.
-- **No implementation exists**, so none of the digest, chaining, or projection
-  claims have met a wire. The delegated-execution note's closing lesson applies
-  in advance: for a system whose correctness is a property of how components meet
-  over a wire, the only tests that count are the ones that use the wire.
+- **Nothing in this layer has met a wire.** `trust-task-next-step/0.1` is
+  published and generated into both libraries (§8), but it is the *coordination*
+  concern and carries none of this note's evidence machinery. No digest,
+  chaining, projection or composition claim has been exercised between two
+  parties, and none can be until the `ceremony` envelope member exists. The
+  delegated-execution note's closing lesson applies in advance: for a system
+  whose correctness is a property of how components meet over a wire, the only
+  tests that count are the ones that use the wire.
 
 ## 16. What this note got wrong, in two rounds
 
