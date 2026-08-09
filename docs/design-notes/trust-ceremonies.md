@@ -7,9 +7,16 @@
 | **Applies to** | Any interaction composed of more than one *Trust Task* between two or more parties |
 | **Related** | `docs/adr/0001-naming-the-multi-task-flow-layer.md`, SPEC §2, §4.9–§4.9.2, §4.10 item 5, §6.1, §7.3 items 13–14, §8.6, §9.3, §11, `specs/vtc/join-requests/*`, `specs/vtc/members/{solicit-vmc,request-vmc,vmc}/0.1`, `specs/vtc/ceremonies/list/0.1`, `specs/audit/verify/0.1`, `specs/vta/credentials/issue/0.2` |
 
-*This note is non-normative rationale. Unlike the other notes in this directory,
-**there is no normative surface yet** — nothing here is specified, published, or
-implemented. It proposes one, and takes the six decisions ADR 0001 deferred.*
+*This note is non-normative rationale, and takes the six decisions ADR 0001
+deferred. Nothing here is published or on the wire: no framework version carries
+the `ceremony` envelope member, and no implementation exchanges a ceremony step.*
+
+*Part of it is now built, however, and the note is no longer purely prospective.
+The definition format of §6 exists as `ceremonies/ceremony.meta.schema.json`,
+with a first definition at `ceremonies/vtc/member-onboarding/0.1/` composed only
+of Type URIs the registry already serves, publication checks in
+`scripts/validate-ceremonies.mjs`, and 14 conformance fixtures that must be
+rejected. Building it corrected the design in four places — recorded in §16.*
 
 *It is written before the implementation rather than after it, which is the
 weaker position. §15 is therefore longer than it would be in a retrospective
@@ -68,6 +75,51 @@ They must remain independently adoptable. A ceremony should be usable
 implementations follow it, nothing new on the wire — and **evidence-only** — an
 ad-hoc flow that nonetheless yields a receipt. If (1) is a precondition for (3),
 adoption stalls behind a definition format nobody has written yet.
+
+### 2.1 Ceremonies are optional, in both directions
+
+Nothing in this layer is mandatory for a *Trust Task*, and the optionality is
+worth stating precisely because it is load-bearing on adoption. Four separate
+claims:
+
+**1. No Trust Task specification changes, ever.** A specification declares
+nothing about ceremonies and needs no awareness of them. The `ceremony` member
+lives on the envelope, not in `payload` (§5.2), so *any* existing task can be a
+ceremony step with no schema edit, no new version, and no republished library.
+That is not a convenience — it is the reason the member cannot live in `payload`,
+since composing tasks whose authors never anticipated the flow is the entire
+point.
+
+**2. A document without `ceremony` is fully conforming**, exactly as one without
+`threadId` is. The member is optional under §4.2, and a task used outside any
+flow is unaffected by this layer's existence.
+
+**3. A consumer need never implement ceremonies at all.** A ceremony step
+arriving at a ceremony-unaware consumer is simply a Trust Task: §7.2's rule to
+preserve but not act upon unrecognized members applies, the §7.2 pipeline runs
+unchanged, and the task executes correctly.
+
+  **Ignoring the member is always safe**, and that is a consequence of §10 rather
+  than luck: because a consumer **MUST NOT** derive authority from ceremony
+  membership, there is nothing a ceremony-aware consumer is permitted to do that
+  an unaware one omits. Every authorization decision still rests on `issuer`,
+  `proof`, and local policy. A layer whose neglect changed an access decision
+  would be a security defect.
+
+  The asymmetry is therefore: **producers opt in per document; consumers never
+  have to.**
+
+**4. Even within a ceremony, the definition is optional.** `collected` and
+`chained` evidence need no published definition (§7.6) — the steps carry
+`enactment` and `prev`, and a verifier checks what it holds. Only `receipt` and
+`countersigned` require one, because only they make claims about the flow as a
+whole.
+
+One consequence worth noting for sequencing: the framework 0.3 envelope schema
+sets `additionalProperties: true`, and §4.2 permits additional top-level members.
+A document carrying `ceremony` therefore **already validates** against today's
+framework. What 0.4 adds is the *meaning* of the member and the obligations that
+attach to it — not permission to send it.
 
 ## 3. What already exists
 
@@ -249,24 +301,70 @@ scheme, resolvable under content negotiation like a *Type URI*.
 
 ### 6.1 Contents
 
+*Now implemented as `ceremonies/ceremony.meta.schema.json`; this section is the
+rationale for what that schema constrains.*
+
 - **Roles** — named participants (`witness`, `registry`, `applicant`), with the
-  VID schemes each accepts. Roles are bound to actual VIDs at enactment, not in
-  the definition.
-- **Steps** — each with a stable `step` name, the *Type URI* it enacts, the role
-  that issues it, the role that receives it, whether it is required or optional,
-  and its `prev` step names.
-- **Evidence level** — one of §7's four, plus the role acting as recorder where
-  applicable.
+  VID schemes each accepts, bound to actual VIDs at enactment rather than here.
+  Each carries a **cardinality**: `one`, or `many` for a role that binds to a
+  *set* — a witness set, an approver set. Without `many`, M-of-N is
+  inexpressible, because the approvers in a `task-consent` flow are not known
+  when the definition is written.
+
+  A role may also be **evidentiary** — see §6.1.1, which is the least obvious
+  thing in this section.
+- **Steps** — each with a stable `step` name, what it enacts, the role that
+  issues it, the role that receives it, whether it is required or optional, its
+  `prev` step names, and its **multiplicity**: `single`, or `perRole` for one
+  instance per VID bound to the issuing role. `perRole` is fan-out — N approvers
+  each returning one decision, a witness set each signing — and it is distinct
+  from `maxRounds`: **multiplicity varies the party, repetition varies the
+  attempt.** Instances are discriminated on the wire by the document's `issuer`,
+  which is signed, so no additional envelope field is needed and one
+  participant's instance cannot be replayed as another's.
+- **Evidence level** — one of §7's four, plus the roles permitted to record
+  (§7.4).
 - **Completion** — which steps must have occurred for the enactment to be
   complete. Not necessarily "all of them": a definition with optional steps needs
-  to say what suffices. **Completion predicates MUST support thresholds over a
-  step set** — "any 3 of these 5 endorsements", "a quorum of the approver set" —
-  and not merely a boolean over named steps. Governance is the motivating domain
-  and thresholds are its ordinary currency; `consent/approver-set` and
-  `consent/approver-list` already ship this shape. A threshold over a fixed set
-  stays statically checkable and enumerable by a reader, so it costs nothing
-  against §6.2's criterion — an earlier draft omitted it by oversight, not by
-  design.
+  to say what suffices, and thresholds are the ordinary currency of the
+  governance domain this layer exists to serve.
+
+  **There are two threshold shapes, and an earlier draft of this note conflated
+  them.** `of` is a threshold over **distinct named steps** — three of these five
+  endorsements, each its own step. `ofStep` is a threshold over the
+  **instances of one `perRole` step** — two of however many witnesses were bound,
+  or `task-consent`'s `minApprovals` over N approvers.
+
+  §15 previously cited `task-consent` as evidence for the first shape. It is the
+  second: N approvers each perform **one** `decision`, and which approvers they
+  are is not known when the definition is written. The second shape is the more
+  common of the two, and the draft that introduced thresholds could not express
+  it. Both are statically enumerable, so neither costs anything against §6.2.
+
+#### 6.1.1 Evidentiary roles: a party to the meaning, not to any step
+
+A party can be essential to what a ceremony *means* while being party to none of
+its steps. The motivating case is `did:webvh`'s witness oracle: it signs over the
+log-entry hash, its signature travels inside `payload.witness`, and the hosting
+service verifies it — but it exchanges no *Trust Task document* with anyone. It
+is never an `issuer` and never a `recipient`.
+
+Such a role is declared `evidentiary: true`, and the consequence has to be stated
+plainly rather than buried:
+
+> A ceremony attests **who exchanged documents**. It does not attest who signed
+> material *inside* a payload, which is task-specific and outside the framework's
+> reach.
+
+So a receipt cannot carry "witness W attested this". A verifier needing that must
+inspect the payload under the relevant *Trust Task specification*. Declaring the
+role documents the party's involvement for a human reader and grants the receipt
+no additional force — and the publication checker rejects an evidentiary role
+used as a step's `issuer` or `recipient`, so the distinction cannot be blurred by
+accident.
+
+This is a real limit on what a ceremony proves, and it was not visible until a
+nested definition was worked against a real flow.
 - **Compensation** — per step, whether it is compensatable and by which task
   (§9). Descriptive, on the §7.3.13 pattern.
 
@@ -447,6 +545,27 @@ Unbounded depth is also a resource question. A verifier **SHOULD** declare a
 maximum depth it will resolve and reject beyond it, exactly as SPEC §10.2 and
 §10.3 treat parser and schema-validation limits. The model imposes no limit; the
 implementation always does, and saying so is better than pretending otherwise.
+
+### 6.5.1 The nesting example does not nest
+
+Honesty about the worked case: **`webvh` witnessing turned out to be a poor
+inner ceremony**, and it was this note's own proposed test.
+
+`webvh/witness/publish` is one Trust Task, followed by the hosting service's
+internal `webvh/sync/update` fan-out to registered mirrors — replication, at-
+least-once and idempotent by its own spec, not a flow a governance body reasons
+about. §13.6's rule applies to it unchanged: a small exchange needs none of this
+layer, and wrapping it in a ceremony adds ceremony and subtracts nothing.
+
+So `ceremonies/vtc/member-onboarding/0.1` contains **no `kind: ceremony` step**.
+Composition is specified here, expressible in the schema, and enforced by the
+publication checks — and it is **unexercised**. The first genuine nested
+definition needs a real multi-party inner ceremony, of which a
+gather-M-of-N-witness-signatures flow is the obvious candidate and does not yet
+exist in the registry as Trust Tasks.
+
+A design that is checkable but untried should say so where the reader meets it,
+not only in §15.
 
 ## 7. Evidence
 
@@ -1207,8 +1326,10 @@ the branching assumption (below). What remains:
   (query → present), and `credential-exchange/pending` (approve/deny). The only
   construct any of them required beyond the amended rule was the threshold, now
   in §6.1. Notably `task-consent` is *not* a loop: N approvers each perform one
-  `decision`, which is a threshold over a step set. A sixth flow of a shape none
-  of these share may still break it.
+  `decision` — which is a threshold over the **instances of one step**, not over
+  distinct named steps. An earlier version of this bullet said the latter, and
+  the definition schema was nearly built around the wrong shape as a result
+  (§6.1, §16). A sixth flow of a shape none of these share may still break it.
 - **Composition is designed but untried.** §6.5 nests ceremonies to arbitrary
   depth and derives four publication-time rules, none of which has been checked
   against a real two-level flow. The obvious test is the one §13 already half
@@ -1224,7 +1345,7 @@ the branching assumption (below). What remains:
   in advance: for a system whose correctness is a property of how components meet
   over a wire, the only tests that count are the ones that use the wire.
 
-## 16. What the first draft of this note got wrong
+## 16. What this note got wrong, in two rounds
 
 *This section records defects found by re-reading the first draft adversarially,
 after it was written. They are listed because the pattern matters more than the
@@ -1246,6 +1367,34 @@ while §2 promised evidence-only adoption (resolved in §7.6), and the layer
 quietly weakened SPEC §1's self-containment property (§6.3). A third was a plain
 omission — completion rules could not express thresholds, which is the ordinary
 currency of the governance domain this layer exists to serve (§6.1).
+
+### Round two: found by building it
+
+The four above were found by re-reading. Four more were found by writing the
+definition schema and working a nested definition against real specs — which is
+a different instrument, and it found different things:
+
+| # | Defect | Now in |
+|---|---|---|
+| 5 | **The threshold construct was modelled wrongly**, against evidence this note already cited. §15 called `task-consent`'s `minApprovals` a threshold over distinct named steps; it is a threshold over the *instances* of one step, and the approvers are not known at definition time | §6.1, both shapes |
+| 6 | **Fan-out to a runtime-determined party set was inexpressible.** Steps assumed a single issuer | §6.1, `multiplicity: perRole` |
+| 7 | **Roles had no cardinality**, so nothing could bind to a witness or approver *set* — which 5 and 6 both require | §6.1, `cardinality: many` |
+| 8 | **A party essential to a ceremony's meaning may be party to none of its steps** — the `did:webvh` witness oracle signs inside a payload and exchanges no document | §6.1.1, `evidentiary` |
+
+Finding 5 is the one worth dwelling on. The evidence was in hand — §15 had
+already established that `task-consent` runs N approvers through one step — and
+the wrong conclusion was drawn from it *in the same paragraph that recorded it*.
+Citing a flow correctly is not the same as modelling it correctly, and the error
+survived a round of adversarial re-reading because that round was looking for
+security defects, not modelling ones.
+
+Finding 8 is the one that changes what the layer can claim: a ceremony attests
+who exchanged documents, never who signed material inside a payload.
+
+**Two rounds, two instruments.** Re-reading found security defects; building
+found modelling defects, and would not have found the first four. Neither
+substitutes for the third instrument, which is running it on a wire — §15 still
+records that as absent.
 
 **The pattern worth keeping.** Findings 2 and 3 were already written down in this
 repository. `audit/verify` says in its Security section that *"a truncation to a
