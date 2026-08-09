@@ -17,6 +17,13 @@ note, and should be read as part of the proposal rather than as an appendix. A
 design note that only records its wins is marketing; a prospective one that only
 records its confidence is worse.*
 
+*Revised after an adversarial re-reading of the first draft, which found four
+security defects severe enough to break end-to-end verification. Those are fixed
+in place in §5–§7; **[§16](#16-what-the-first-draft-of-this-note-got-wrong)
+records what they were and why they were missed**, because two of them were
+warnings already written in the specs this design borrows from. Read §16 before
+relying on any part of §7.*
+
 ## 1. Problem
 
 Trust Tasks works where an interaction is one task and one response. Interactions
@@ -117,8 +124,10 @@ Proposed: one new top-level member, added in framework 0.4.
   "parentThreadId": "9b1d3f60-52a8-4c17-8e44-1d9c7b05f3ae",
   "ceremony": {
     "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+    "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
     "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
     "step": "witness-publish",
+    "round": 1,
     "prev": [
       { "id": "urn:uuid:1d0a…", "digestMultibase": "zQmb…" },
       { "id": "urn:uuid:7c42…", "digestMultibase": "zQmW…" }
@@ -144,6 +153,32 @@ serialized-for-the-format is the kind of lie that makes evidence wrong later.
 `enactment` MUST be globally unique and non-reusable, on the same terms as `id`
 (§4.3) and unlike `threadId`. It is what §4.9.1 citations name when the claim is
 about the flow rather than about one exchange.
+
+`definitionDigest` pins the definition **by content, not by name**. Without it
+the whole evidence model is rooted in a mutable URI: whoever controls
+`trusttasks.org/ceremony/…` controls the completion rule, the role list, and the
+declared evidence level — retroactively, for every enactment ever run — and a
+verifier checking a two-year-old receipt resolves whatever is served today. The
+digest is a multibase-multihash over the JCS canonicalization of the definition
+(§7.7) and is signed with the rest of the envelope, so a step commits to the
+exact rules it was enacted under. It also disposes of the
+definition-revised-mid-enactment problem, which is this defect in another guise:
+steps pinning different digests are, correctly, steps of different ceremonies.
+
+`round` distinguishes repetitions of the same step under the bounded-repetition
+rule (§13.4). Without it, round 2's document and round 3's are the same step name
+between the same parties under the same type, and one replays as the other.
+Absent means round 1. It is signed, like everything else here.
+
+### 5.3 What `threadId` still does
+
+Four identifiers on one envelope needs a rule, or producers will guess. Within a
+ceremony: `threadId` scopes **one step's** request/response exchange, exactly as
+it does outside a ceremony; `enactment` scopes the flow across all steps. They
+are not alternatives and a producer sets both. A step that is a request/response
+pair has one `threadId` for that pair and shares `enactment` with every sibling
+step, which is why §5.1's "membership is not containment" matters — the steps are
+siblings, not nested exchanges.
 
 ### 5.1 Why not `parentThreadId`
 
@@ -217,7 +252,14 @@ scheme, resolvable under content negotiation like a *Type URI*.
   applicable.
 - **Completion** — which steps must have occurred for the enactment to be
   complete. Not necessarily "all of them": a definition with optional steps needs
-  to say what suffices.
+  to say what suffices. **Completion predicates MUST support thresholds over a
+  step set** — "any 3 of these 5 endorsements", "a quorum of the approver set" —
+  and not merely a boolean over named steps. Governance is the motivating domain
+  and thresholds are its ordinary currency; `consent/approver-set` and
+  `consent/approver-list` already ship this shape. A threshold over a fixed set
+  stays statically checkable and enumerable by a reader, so it costs nothing
+  against §6.2's criterion — an earlier draft omitted it by oversight, not by
+  design.
 - **Compensation** — per step, whether it is compensatable and by which task
   (§9). Descriptive, on the §7.3.13 pattern.
 
@@ -256,7 +298,37 @@ task's payload semantics. That property is worth more than the expressiveness it
 costs, and it degrades gracefully: a flow needing real predicates decomposes into
 two ceremonies, and the outer one records which was enacted.
 
-### 6.3 Borrow the projection, not the name
+### 6.3 A definition is hidden context, and the framework forbids that
+
+SPEC §1 states as the first property of a *Trust Task document*: *"Self-contained
+— the document carries everything needed to act on it: parties, criteria,
+schema, identifiers. **No hidden context.**"*
+
+A ceremony step carrying `ceremony.definition` violates that. Validating it means
+resolving a `/ceremony/` resource, which introduces a runtime registry dependency
+for every participant and breaks air-gapped and offline verification outright.
+The layer would weaken the framework's most-stated property, and an earlier draft
+of this note did not notice.
+
+Three things contain it, and the design should carry all three:
+
+1. **`definitionDigest` (§5)** makes the reference content-addressed, so a cached
+   or side-loaded copy is provably the right one. Hidden context becomes
+   *pinned* context, which is the difference between a dangling pointer and a
+   citation.
+2. **The lower evidence levels need no definition at all** (§7.6). `collected`
+   and `chained` are fully self-contained.
+3. **A definition MAY be inlined.** For closed deployments and offline
+   verification, `ceremony.definition` may carry the definition object itself
+   rather than a URI, at the cost of size on every step. The digest is computed
+   the same way either form is used, so a verifier's code path does not fork.
+
+This does not fully restore self-containment for `receipt` and `countersigned`,
+and the note should not pretend otherwise: those levels make claims *about the
+flow*, and a claim about a flow is not checkable from one document. That is a
+real, permanent cost of the layer rather than a defect to be engineered away.
+
+### 6.4 Borrow the projection, not the name
 
 ADR §4 rejected *choreography* as a name while recommending its machinery. The
 specific thing worth taking is from multiparty session types (Honda, Yoshida):
@@ -305,12 +377,34 @@ vocabulary rather than minting a second one.
 
 Two properties worth being explicit about:
 
-**Privacy is preserved.** Step 3's issuer needs its predecessor's *digest*, not
-its content. The prior party (or the recorder) hands the digest forward. Since a
-step document contains a globally unique, non-reusable `id` (§4.3), the digest is
-not guessable from the document's structure, so it discloses nothing about the
-payload — which matters when the steps of one ceremony have genuinely different
-audiences.
+**The digest MUST be salted.** An earlier draft of this note argued that a
+unique `id` inside the document made the digest unguessable, and that was wrong.
+Many steps are near-zero-entropy — a `decide` payload is approximately one bit —
+and a party holding the digest can enumerate the candidates and confirm which
+one it is. That matters precisely because a chain hands predecessor digests to
+parties who are not entitled to the predecessor's content.
+
+`task-consent` already solved this and states it in its schema: `payloadDigest`
+is salted *"because an unsalted digest over a low-entropy payload is a
+confirmation oracle for anyone who observes it in transit"*, with the
+per-request `challenge` as the salt. The chain takes the same medicine — the
+salt is per-enactment, distributed to participants with the enactment
+identifier, and never published in the receipt.
+
+**The digest's scope must be stated exactly.** Over the predecessor document
+*including* its `proof`, or excluding it? §4.7 excludes `proof` from what a
+Data Integrity proof signs, so the instinct is to exclude — but a `prev` digest
+is naming *received bytes*, not re-deriving a signature, and a verifier holding
+the document has the proof in hand. **Proposal: include `proof`.** It is what
+the receiving party actually saw, and excluding it would let a step be re-signed
+by the same issuer into a different-but-equally-valid document sharing one
+digest. Either choice is defensible; leaving it unstated is not, and this is the
+canonicalization ambiguity that reliably yields two conforming implementations
+that cannot verify each other.
+
+**Privacy is otherwise preserved.** Step 3's issuer needs its predecessor's
+salted digest, not its content, and the prior party (or the recorder) hands it
+forward.
 
 **It is what makes a receipt trustworthy.** See below.
 
@@ -336,9 +430,52 @@ This makes the receipt useful without making the recorder trusted:
   verify. This is why `receipt` **implies** `chained`; without it, the recorder's
   ordering claim rests on nothing.
 
-What a malicious recorder *can* still do is refuse to issue a receipt, or claim
-an enactment is incomplete when it is not. Both are availability failures, not
-integrity failures, and both are visible. §7.5 is the answer where they matter.
+#### Truncation, which the chain does *not* catch
+
+A chain stops a recorder dropping a step that has a successor. It does nothing
+about dropping the **trailing** steps, because nothing commits to a step that
+never got one. A recorder can therefore present any valid prefix as a complete
+enactment — stopping the record just before the step that would have changed the
+outcome.
+
+```mermaid
+flowchart LR
+    subgraph P["what a truncating recorder presents — every link verifies"]
+        direction LR
+        S1["step 1"] --> S2["step 2"] --> S3["step 3"]
+    end
+    S3 -. dropped, and nothing commits to it .-> S4["step 4<br/><small>terminal: true</small>"]
+
+    classDef gone stroke-dasharray:5 5
+    class S4 gone
+```
+
+Steps 1–3 chain perfectly. The omission is invisible from the inside, because
+detection of a missing step relies on its *successor* — and the dropped step is
+the one that has none.
+
+`audit/verify` documents exactly this about the pattern this design borrowed
+from: *"a truncation to a valid prefix is indistinguishable from a quiet
+period."* An earlier draft of this note reused that chain and inherited the
+weakness without carrying the warning across.
+
+Two things close it, and both are needed:
+
+1. **A terminal commitment.** The enactment's final step carries
+   `ceremony.terminal: true` in its signed content. A receipt whose last
+   enumerated step does not carry it is, on its face, a prefix. This converts
+   truncation from undetectable to detectable, because the recorder cannot mint
+   the terminal marker without the final step issuer's key.
+2. **The verifier evaluates completion itself.** The receipt is a convenience,
+   not an authority: a verifier holding the pinned definition (§5) checks the
+   enumerated steps against the completion rule directly rather than trusting a
+   `complete: true`. This only works because `definitionDigest` makes the rule
+   immutable — the two fixes are load-bearing on each other.
+
+What a malicious recorder can still do is refuse to issue a receipt, or claim an
+enactment is incomplete when it is not. Both are availability failures rather
+than integrity failures, and both are visible. §7.5 is the answer where they
+matter.
 
 Because a receipt is by construction retained and relied upon by parties outside
 the exchange, §4.7.1 makes `proof` **REQUIRED** on it, and §4.8.2's audience
@@ -363,6 +500,23 @@ The evidence level is declared by the ceremony definition, not fixed by the
 framework. This is the same shape the framework already committed to for
 `proofRequirement` (§7.3.8), `sideEffects` (item 13) and `exposure` (item 14):
 declare at the boundary, let the specification state its own threat model.
+
+**With one correction, because as first written this contradicted §2.** §2
+promises that a ceremony is adoptable *evidence-only* — an ad-hoc flow that
+still yields evidence — while putting the evidence level in the definition makes
+that impossible, since with no definition nothing declares the level. The
+resolution is to split at the right place:
+
+| Level | Needs a definition? |
+|---|---|
+| `collected` | No — the steps carry `enactment`, and a verifier checks what it holds |
+| `chained` | No — `prev` is self-describing |
+| `receipt` | **Yes** — a recorder role must be named, and completion evaluated |
+| `countersigned` | **Yes** — the participant set must be known to be complete |
+
+So the two lower levels are definition-free and the two upper ones are not,
+which is the honest line: they are exactly the levels whose claims are *about*
+the flow as a whole rather than about the documents in hand.
 
 The §4.7.1 rule carries over unchanged — a definition **MAY** strengthen the
 default for its steps and **MUST NOT** weaken it. A ceremony cannot declare
@@ -405,7 +559,7 @@ solved problem.
 the `id` is what §4.9.1 makes globally unique and non-reusable, and a verifier
 that cannot locate the predecessor cannot check the digest against anything.
 
-### 7.8 The registry is not consistent about this today
+### 7.8 The registry was not consistent about this, and now is
 
 Surveying every digest-shaped field in `specs/` finds 18, across four
 incompatible conventions:
@@ -422,18 +576,25 @@ chain vocabulary: its schema constrains nothing while `audit/verify`'s prose
 says "Hex `entryHash`", so implementations emit hex and the schema does not say
 so.
 
-Converging these is worth doing and is **out of scope for this note**, because
-it is not a docs change. Moving `audit` and `provision/integration` off hex
-changes the wire format, which SPEC §5.2 makes a breaking change requiring a new
-version folder rather than an in-place edit, followed by regenerated bindings and
-library bumps. It also needs per-slug CODEOWNERS review. It should be its own
-change, sequenced before Stage 2 so the ceremony layer is not the last thing
-built on an inconsistent base.
+**This has since been done** (PR #195). `$defs/DigestMultibase` now lives in
+`specs/_framework/0.3/framework.schema.json` and the affected fields re-pin to
+it; because every affected artifact was `draft`, §5.2's in-place rule applied and
+no version was minted. Codegen emits a validating newtype, which was a breaking
+library change and released the workspace at 0.4.0.
 
-Two fields must be **excluded** from any such sweep: `scid` / `new_scid` /
-`newScid` and `nextKeyHashes` are `did:webvh`-defined values. SPEC §4.10 item 5
-requires externally-owned values to be carried verbatim, so their format belongs
-to the DID method, not to this registry.
+Two exclusions were made and stand: `provision/integration`'s `summary.digest`
+belongs to the sealed-bundle armor format, which carries its own
+`Digest-Algo: sha-256` header beside a hex `Bundle-Id` — converting one field of
+it in isolation makes that format less internally consistent, not more. And
+`scid` / `new_scid` / `newScid` / `nextKeyHashes` are `did:webvh`-defined values
+that §4.10 item 5 requires be carried verbatim.
+
+One finding from doing it is worth recording here, because it bears on this
+design: **the build validates fenced examples against the framework envelope
+schema but not against payload schemas**, so hex digests sat in published
+examples contradicting their own schemas while validation stayed green. Any
+conformance fixtures this layer defines (§15) should not assume the existing
+harness would have caught a comparable drift.
 
 ## 8. Coordination, and the smallest useful increment
 
@@ -519,6 +680,21 @@ enacts discloses its configuration, on the same terms §11.5 already describes f
 discovery, and the same mitigation applies: authenticate before answering, or
 answer partially.
 
+**Keys rotate mid-enactment, and late verification must survive it.** A VTC join
+takes days; a governance ceremony can take weeks. A participant's key may rotate
+between step 2 and step 7, and a verifier checking step 2 afterwards needs the
+verification method **as of that step's `issuedAt`**, not as of now. Verifying
+against current material fails valid ceremonies and — worse, if a compromised key
+is rotated out — can pass ones it should fail.
+
+The rule to write down: a verifier resolves each step's `verificationMethod` at
+the version current at that step's `issuedAt`, which is exactly what a
+versioned-log DID method such as `did:webvh` exists to make possible. Ceremonies
+whose participants use non-historical DID methods cannot offer late verification,
+and a definition demanding `receipt` or `countersigned` evidence should say so in
+its accepted VID schemes (§6.1) rather than leaving it to be discovered when an
+old receipt stops verifying.
+
 ## 11. Aggregate side effects and exposure do not compose
 
 A ceremony's aggregate risk class is **not** the maximum of its steps', and this
@@ -586,6 +762,30 @@ multi-party flow built entirely from shipped specs:
 | 7 | `vtc/members/request-vmc/0.1` | community → member | `none` |
 | 8 | `vtc/members/vmc/0.1` | member → community | `mutating` |
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Ap as applicant / member
+    participant C as community
+    actor Ad as administrator
+
+    Ap->>C: manifest (optional — skipped if criteria known)
+    Ap->>C: submit (VP satisfying join policy)
+    C->>Ap: submit-receipt (requestId)
+    loop bounded — see §13.4
+        Ap->>C: status
+        C-->>Ap: deferred + needs (no task supplies this — §13.5)
+    end
+    Ad->>C: decide (approved / rejected)
+    Ad->>C: solicit-vmc (operator-facing)
+    C->>Ap: request-vmc (wire message to the member)
+    Ap->>C: vmc (reciprocal credential — terminal)
+```
+
+Three party pairs, not one conversation: the administrator never speaks to the
+applicant, and the community relays. That is what makes this a ceremony rather
+than a long request/response.
+
 Steps 6–8 are the reciprocal-membership exchange. `solicit-vmc` states the
 decomposition explicitly:
 
@@ -638,7 +838,30 @@ ceremony vtc/member-onboarding/0.1
   complete when: decide ∧ (decision = rejected ∨ reciprocate)
 ```
 
-Three things this makes visible that prose does not:
+As a graph — which is what `prev`-as-a-set actually describes:
+
+```mermaid
+flowchart LR
+    D["discover<br/><small>manifest · optional</small>"]
+    A["apply<br/><small>submit</small>"]
+    K["acknowledge<br/><small>submit-receipt</small>"]
+    E["decide<br/><small>decide</small>"]
+    S["solicit<br/><small>solicit-vmc</small>"]
+    Q["ask<br/><small>request-vmc</small>"]
+    R["reciprocate<br/><small>vmc · terminal</small>"]
+
+    D -.->|no prev| A
+    A --> K
+    A --> E
+    E --> S --> Q --> R
+
+    classDef term stroke-width:3px
+    class R term
+```
+
+`acknowledge` and `decide` fan out from `apply` and never rejoin: they are
+concurrent, and a linear `prev` would have imposed an ordering the flow does not
+have. Three things the graph makes visible that prose does not:
 
 - **`discover` is genuinely optional** and has no `prev`. An applicant who
   already knows the criteria skips it, and the receipt is still complete.
@@ -723,17 +946,22 @@ member.
 |---|---|---|---|
 | **0** | Specify `trust-task-next-step` (§8) | none | nothing |
 | **1** | §6.1 slug reservation; `/ceremony/` subtree | 0.4 | nothing |
-| **1a** | Converge digest fields on multibase-multihash (§7.8) | — | nothing |
+| **1a** | ~~Converge digest fields on multibase-multihash (§7.8)~~ — **done, PR #195** | — | — |
 | **2** | `ceremony` envelope member (§5) | 0.4 | ADR §5 |
 | **3** | Definition format; `trust-ceremony-receipt`; evidence levels | — | Stages 1a, 2 |
 | **4** | Abort (§9); discovery (§12); `countersigned` | — | Stage 3 |
 
-Stage 1a is independent of the ceremony layer and useful without it, but should
-precede Stage 3 so the chain and receipt are not the last thing built on an
-inconsistent digest base. It is the only stage that touches shipped specs: two
-of its fields (`audit`, `provision/integration`) change wire format and so need
-new version folders under §5.2, with regenerated bindings and library bumps
-following.
+Stage 1a is complete: the registry now has one digest convention, so the chain
+and receipt are not being built on an inconsistent base. It also demonstrated the
+cost model for Stage 2 concretely — a single schema-level type change cascaded to
+a leading-component bump across seven crates and the npm package, because
+`trust-tasks-rs` types cross every binding's public API. Stage 2 adds an envelope
+member, which is at least that expensive.
+
+**Stages 3 and 4 should not start until the §16 findings are closed.** Three of
+them each independently break end-to-end verification, and building the
+definition format on top of an evidence model that does not verify would mean
+rewriting both.
 
 Stage 1 should land ahead of everything, including the design: `trust-ceremony-*`
 is registrable by any contributor under the current `^trust-task($|-|/)`
@@ -780,7 +1008,53 @@ position. Specifically:
   as a step of another ceremony has both a `parentThreadId` and two enactment
   identifiers in scope. §4.9.1's citation rule should extend cleanly — name the
   innermost — but this has not been worked through against an example.
+- **No conformance fixtures are defined.** Every specification in this registry
+  ships `payload.invalid-examples.json`. A ceremony needs the equivalent — a
+  definition, enactments that MUST verify, and enactments that MUST NOT (a
+  truncated receipt, a mismatched `definitionDigest`, a replayed round, a step
+  whose `prev` does not resolve). Until those exist, "strictly verifiable" is an
+  aspiration. §7.8 notes the existing harness would not have caught a comparable
+  drift on its own.
 - **No implementation exists**, so none of the digest, chaining, or projection
   claims have met a wire. The delegated-execution note's closing lesson applies
   in advance: for a system whose correctness is a property of how components meet
   over a wire, the only tests that count are the ones that use the wire.
+
+## 16. What the first draft of this note got wrong
+
+*This section records defects found by re-reading the first draft adversarially,
+after it was written. They are listed because the pattern matters more than the
+individual fixes.*
+
+Four of the findings were **security defects severe enough to break end-to-end
+verification**, and they are now folded into the sections above rather than left
+as caveats:
+
+| # | Defect | Now in |
+|---|---|---|
+| 1 | The definition was referenced by **mutable URI** — whoever controlled it controlled the completion rule retroactively, for every past enactment | §5, `definitionDigest` |
+| 2 | The receipt was **truncatable**: a chain cannot detect dropping the trailing steps, since detection depends on a successor | §7.4, terminal commitment + verifier-side completion |
+| 3 | `prev` digests were **unsalted**, making a low-entropy step a confirmation oracle for anyone handed the digest | §7.3 |
+| 4 | Bounded repetition (§13.4) admitted **replay between rounds** of the same step | §5, signed `round` |
+
+Two more were internal inconsistencies: the evidence level sat in the definition
+while §2 promised evidence-only adoption (resolved in §7.6), and the layer
+quietly weakened SPEC §1's self-containment property (§6.3). A third was a plain
+omission — completion rules could not express thresholds, which is the ordinary
+currency of the governance domain this layer exists to serve (§6.1).
+
+**The pattern worth keeping.** Findings 2 and 3 were already written down in this
+repository. `audit/verify` says in its Security section that *"a truncation to a
+valid prefix is indistinguishable from a quiet period"*, and `task-consent`'s
+schema says an unsalted digest over a low-entropy payload *"is a confirmation
+oracle for anyone who observes it in transit"*. The first draft cited both
+specifications as precedent for its mechanisms and carried across the mechanism
+while leaving the warning behind. Finding 1 has the same shape: PR #195 had just
+established content-addressing as the registry's convention for referring to
+things, and the draft went on referring to the definition by name.
+
+The lesson is not "review more carefully". It is that **borrowing a mechanism
+means inheriting its documented weaknesses**, and the security sections of the
+specs a design cites are part of what it is citing. The next revision of this
+note should begin by re-reading `audit`, `task-consent` and `consent`
+adversarially, not by adding capability.
