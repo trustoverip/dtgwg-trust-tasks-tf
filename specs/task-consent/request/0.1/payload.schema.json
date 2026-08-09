@@ -30,8 +30,8 @@
       "description": "Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one."
     },
     "payloadDigest": {
-      "type": "string",
-      "description": "The binding between what the approver sees and what executes. Digest of the canonical (RFC 8785 JCS) payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit."
+      "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+      "description": "The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit."
     },
     "sideEffects": {
       "type": "string",

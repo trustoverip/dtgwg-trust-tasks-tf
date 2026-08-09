@@ -4,9 +4,17 @@
  */
 
 /**
+ * Echoes the digest of the task being authorized, in the encoding `task-consent/request` carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.
+ */
+export type DigestMultibase = string;
+/**
  * The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.
  */
 export type Decision = "approve" | "deny";
+/**
+ * The digest this decision concerned, in the encoding `task-consent/request` carried it.
+ */
+export type DigestMultibase1 = string;
 
 /**
  * An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization.
@@ -16,10 +24,7 @@ export interface TaskConsentDecisionPayload {
    * Echoes the task-consent/request this decision answers, binding it to that one pending request. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.
    */
   challenge: string;
-  /**
-   * Echoes the digest of the task being authorized. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.
-   */
-  payloadDigest: string;
+  payloadDigest: DigestMultibase;
   decision: Decision;
   /**
    * OPTIONAL human-facing note, most useful on a `deny`.
@@ -41,10 +46,7 @@ export interface TaskConsentDecisionResponsePayload {
    * `granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.
    */
   status: "granted" | "pending" | "denied";
-  /**
-   * The digest this decision concerned.
-   */
-  payloadDigest: string;
+  payloadDigest: DigestMultibase1;
   /**
    * Distinct approvals recorded so far.
    */
@@ -60,7 +62,7 @@ export interface TaskConsentDecisionResponsePayload {
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/decision/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = Decision;
+export type Payload = DigestMultibase;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/task-consent/decision/0.1#response" as const;

@@ -13,7 +13,7 @@
       "description": "Always `granted`. A denial sends no notice — the requester's re-submit discovers it, and a notice that could carry a denial would tempt a consumer into treating this advisory channel as the authoritative outcome, which it is not."
     },
     "payloadDigest": {
-      "type": "string",
+      "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
       "description": "The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization."
     },
     "taskType": {

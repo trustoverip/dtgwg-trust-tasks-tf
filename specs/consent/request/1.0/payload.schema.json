@@ -24,8 +24,8 @@
       "description": "Optional operator-facing label (e.g. \"Signal group 'Family'\"). MUST NOT contain a raw platform address."
     },
     "firstMessageDigest": {
-      "type": "string",
-      "description": "Optional multihash digest of the held first message, binding the request to concrete content."
+      "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+      "description": "Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content."
     },
     "contextHint": {
       "type": "string",

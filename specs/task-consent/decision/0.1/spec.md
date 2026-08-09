@@ -151,7 +151,7 @@ persistence.
   "issuedAt": "2026-07-13T09:43:18Z",
   "payload": {
     "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
-    "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+    "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
     "decision": "approve"
   },
   "proof": {
@@ -176,7 +176,7 @@ persistence.
   "issuedAt": "2026-07-13T09:43:19Z",
   "payload": {
     "status": "granted",
-    "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+    "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
     "approvals": 1
   },
   "proof": {

@@ -154,6 +154,93 @@ impl ::std::convert::TryFrom<::std::string::String> for ChainBreakKind {
         value.parse()
     }
 }
+/**A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
+
+Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
+
+This definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.
+
+base58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DigestMultibase",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.",
+///  "examples": [
+///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+///  ],
+///  "type": "string",
+///  "minLength": 16,
+///  "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct DigestMultibase(::std::string::String);
+impl ::std::ops::Deref for DigestMultibase {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<DigestMultibase> for ::std::string::String {
+    fn from(value: DigestMultibase) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for DigestMultibase {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 16usize {
+            return Err("shorter than 16 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[zumbfF][A-Za-z0-9+/=_-]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[zumbfF][A-Za-z0-9+/=_-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -329,8 +416,8 @@ impl ::std::default::Default for Payload {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "head": {
-///      "description": "Hex `entryHash` of the newest envelope reached. Absent when the log is empty.",
-///      "type": "string"
+///      "description": "The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.",
+///      "$ref": "#/definitions/DigestMultibase"
 ///    },
 ///    "legacySkipped": {
 ///      "description": "Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix.",
@@ -370,9 +457,9 @@ pub struct Response {
     pub entries_verified: u64,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    ///Hex `entryHash` of the newest envelope reached. Absent when the log is empty.
+    ///The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub head: ::std::option::Option<::std::string::String>,
+    pub head: ::std::option::Option<DigestMultibase>,
     ///Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix.
     #[serde(rename = "legacySkipped")]
     pub legacy_skipped: u64,
@@ -392,7 +479,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"ChainBreak\": {\n      \"$anchor\": \"chainBreak\",\n      \"additionalProperties\": false,\n      \"description\": \"Locates the first envelope at which chain verification failed.\",\n      \"properties\": {\n        \"eventId\": {\n          \"description\": \"Identifier of the offending envelope, when it has one (an unparseable envelope may not).\",\n          \"type\": \"string\"\n        },\n        \"index\": {\n          \"description\": \"Zero-based position in chronological order of the offending envelope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"kind\": {\n          \"description\": \"`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication.\",\n          \"enum\": [\n            \"tamperedEntry\",\n            \"brokenLink\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"index\"\n      ],\n      \"title\": \"ChainBreak\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.\",\n      \"properties\": {\n        \"chainBreak\": {\n          \"$ref\": \"#/$defs/ChainBreak\",\n          \"description\": \"Present iff `verified` is false — the first inconsistency found. Absent when verified.\"\n        },\n        \"entriesExamined\": {\n          \"description\": \"Total envelopes walked, including those skipped.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"entriesVerified\": {\n          \"description\": \"Envelopes whose links were actually checked (examined minus skipped).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"head\": {\n          \"description\": \"Hex `entryHash` of the newest envelope reached. Absent when the log is empty.\",\n          \"type\": \"string\"\n        },\n        \"legacySkipped\": {\n          \"description\": \"Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"unparseableSkipped\": {\n          \"description\": \"Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"verified\": {\n          \"description\": \"True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"verified\",\n        \"entriesExamined\",\n        \"entriesVerified\",\n        \"legacySkipped\",\n        \"unparseableSkipped\"\n      ],\n      \"title\": \"Audit Verify — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/audit/verify/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request to verify the integrity of a maintainer's append-only audit hash chain. The request carries no parameters — verification is store-wide.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"Audit Verify — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"ChainBreak\": {\n      \"$anchor\": \"chainBreak\",\n      \"additionalProperties\": false,\n      \"description\": \"Locates the first envelope at which chain verification failed.\",\n      \"properties\": {\n        \"eventId\": {\n          \"description\": \"Identifier of the offending envelope, when it has one (an unparseable envelope may not).\",\n          \"type\": \"string\"\n        },\n        \"index\": {\n          \"description\": \"Zero-based position in chronological order of the offending envelope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"kind\": {\n          \"description\": \"`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication.\",\n          \"enum\": [\n            \"tamperedEntry\",\n            \"brokenLink\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"index\"\n      ],\n      \"title\": \"ChainBreak\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^[zumbfF][A-Za-z0-9+/=_-]+$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.\",\n      \"properties\": {\n        \"chainBreak\": {\n          \"$ref\": \"#/$defs/ChainBreak\",\n          \"description\": \"Present iff `verified` is false — the first inconsistency found. Absent when verified.\"\n        },\n        \"entriesExamined\": {\n          \"description\": \"Total envelopes walked, including those skipped.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"entriesVerified\": {\n          \"description\": \"Envelopes whose links were actually checked (examined minus skipped).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.\"\n        },\n        \"legacySkipped\": {\n          \"description\": \"Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"unparseableSkipped\": {\n          \"description\": \"Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"verified\": {\n          \"description\": \"True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"verified\",\n        \"entriesExamined\",\n        \"entriesVerified\",\n        \"legacySkipped\",\n        \"unparseableSkipped\"\n      ],\n      \"title\": \"Audit Verify — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/audit/verify/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request to verify the integrity of a maintainer's append-only audit hash chain. The request carries no parameters — verification is store-wide.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"Audit Verify — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

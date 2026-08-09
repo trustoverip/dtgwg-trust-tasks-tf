@@ -4,6 +4,11 @@
  */
 
 /**
+ * Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content.
+ */
+export type DigestMultibase = string;
+
+/**
  * A bridge asks the VTA whether an inbound conversation may reach an AI agent, prompting operator consent on first contact.
  */
 export interface ConsentRequestPayload {
@@ -20,10 +25,7 @@ export interface ConsentRequestPayload {
    * Optional operator-facing label (e.g. "Signal group 'Family'"). MUST NOT contain a raw platform address.
    */
   displayHint?: string;
-  /**
-   * Optional multihash digest of the held first message, binding the request to concrete content.
-   */
-  firstMessageDigest?: string;
+  firstMessageDigest?: DigestMultibase;
   /**
    * Optional VTA context path the bridge runs under, to scope approver resolution.
    */
@@ -80,7 +82,7 @@ export interface ConsentRequestResponsePayload {
 export const TYPE_URI = "https://trusttasks.org/spec/consent/request/1.0" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = ConsentRequestPayload;
+export type Payload = DigestMultibase;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/request/1.0#response" as const;

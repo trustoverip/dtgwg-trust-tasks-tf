@@ -28,6 +28,23 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.4.0] - 2026-08-09
+
+### Changed
+
+- **BREAKING.** Digest-carrying payload members are now the generated
+  `DigestMultibase` newtype rather than `String`. Affects `audit/list`,
+  `audit/verify`, `chat/message`, `consent/request`, `policy/evaluate` and
+  `task-consent/{request,decision,granted}`. Construct via `TryFrom<&str>` /
+  `FromStr`, which validate the multibase-multihash form at the boundary; a
+  previously-accepted raw hex digest now fails to parse.
+
+  The registry converged these fields on a multibase-encoded multihash over the
+  RFC 8785 (JCS) canonicalization — the W3C VCDM 2.0 `digestMultibase` encoding,
+  matching what `vta/credentials/issue` already used and what `did:webvh` uses
+  for its SCIDs. The algorithm now travels in the multihash instead of being
+  fixed by the schema.
+
 ## [0.3.0] — 2026-08-08
 
 The framework 0.3 release. Four spec changes land together, and the leading

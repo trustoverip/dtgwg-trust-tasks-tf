@@ -4,6 +4,11 @@
  */
 
 /**
+ * The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization.
+ */
+export type DigestMultibase = string;
+
+/**
  * Fire-and-forget notice from the executor to the requester that its pending task has reached the approval threshold and a single-use grant is waiting, so the requester re-submits at once instead of polling. Non-load-bearing by design: the grant check at re-submit is the real gate, so a lost or spurious notice costs at most one poll cycle.
  */
 export interface TaskConsentGrantedPayload {
@@ -11,10 +16,7 @@ export interface TaskConsentGrantedPayload {
    * Always `granted`. A denial sends no notice — the requester's re-submit discovers it, and a notice that could carry a denial would tempt a consumer into treating this advisory channel as the authoritative outcome, which it is not.
    */
   status: "granted";
-  /**
-   * The salted wire digest of the approved task — the same value the matching task-consent/request carried and the decision echoed. The requester already holds it; it is repeated here only so the requester can correlate the notice to the pending task it should now re-submit. It confers nothing: the executor's single-use grant lookup at re-submit is the authorization.
-   */
-  payloadDigest: string;
+  payloadDigest: DigestMultibase;
   /**
    * Type URI of the approved task, for correlation and display at the requester. Advisory on the same terms as the digest — the executor re-derives everything it enforces from the re-submitted payload itself.
    */
@@ -32,7 +34,7 @@ export interface Ext {
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/granted/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = TaskConsentGrantedPayload;
+export type Payload = DigestMultibase;
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -67,8 +67,8 @@ pub mod error {
 ///      "additionalProperties": true
 ///    },
 ///    "entryHash": {
-///      "description": "Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here.",
-///      "type": "string"
+///      "description": "Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.",
+///      "$ref": "#/definitions/DigestMultibase"
 ///    },
 ///    "eventId": {
 ///      "description": "Stable identifier for this event. Also the tie-breaker component of a cursor's position key.",
@@ -83,8 +83,8 @@ pub mod error {
 ///      "type": "string"
 ///    },
 ///    "prevHash": {
-///      "description": "Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks.",
-///      "type": "string"
+///      "description": "Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.",
+///      "$ref": "#/definitions/DigestMultibase"
 ///    },
 ///    "recordedAt": {
 ///      "description": "Wall-clock time the entry was written. The primary ordering key.",
@@ -127,13 +127,13 @@ pub struct AuditEnvelope {
     ///Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub detail: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here.
+    ///Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.
     #[serde(
         rename = "entryHash",
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub entry_hash: ::std::option::Option<::std::string::String>,
+    pub entry_hash: ::std::option::Option<DigestMultibase>,
     ///Stable identifier for this event. Also the tie-breaker component of a cursor's position key.
     #[serde(rename = "eventId")]
     pub event_id: AuditEnvelopeEventId,
@@ -142,13 +142,13 @@ pub struct AuditEnvelope {
     ///How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub outcome: ::std::option::Option<::std::string::String>,
-    ///Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks.
+    ///Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.
     #[serde(
         rename = "prevHash",
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub prev_hash: ::std::option::Option<::std::string::String>,
+    pub prev_hash: ::std::option::Option<DigestMultibase>,
     ///Wall-clock time the entry was written. The primary ordering key.
     #[serde(rename = "recordedAt")]
     pub recorded_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -359,6 +359,93 @@ impl ::std::convert::TryFrom<::std::string::String> for AuditEnvelopeEventId {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for AuditEnvelopeEventId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+/**A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
+
+Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
+
+This definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.
+
+base58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DigestMultibase",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.",
+///  "examples": [
+///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+///  ],
+///  "type": "string",
+///  "minLength": 16,
+///  "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct DigestMultibase(::std::string::String);
+impl ::std::ops::Deref for DigestMultibase {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<DigestMultibase> for ::std::string::String {
+    fn from(value: DigestMultibase) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for DigestMultibase {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 16usize {
+            return Err("shorter than 16 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[zumbfF][A-Za-z0-9+/=_-]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[zumbfF][A-Za-z0-9+/=_-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -927,7 +1014,7 @@ impl crate::Payload for Response {
 }
 #[cfg(feature = "validate")]
 impl crate::validate::ValidatedPayload for Payload {
-    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"AuditEnvelope\": {\n      \"$anchor\": \"auditEnvelope\",\n      \"additionalProperties\": false,\n      \"description\": \"One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.\",\n      \"properties\": {\n        \"action\": {\n          \"description\": \"The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"actor\": {\n          \"description\": \"DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"contextId\": {\n          \"description\": \"Trust context the event occurred in, for a maintainer that partitions its log per context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"detail\": {\n          \"additionalProperties\": true,\n          \"description\": \"Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.\",\n          \"type\": \"object\"\n        },\n        \"entryHash\": {\n          \"description\": \"Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here.\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"description\": \"Stable identifier for this event. Also the tie-breaker component of a cursor's position key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"outcome\": {\n          \"description\": \"How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.\",\n          \"type\": \"string\"\n        },\n        \"prevHash\": {\n          \"description\": \"Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks.\",\n          \"type\": \"string\"\n        },\n        \"recordedAt\": {\n          \"description\": \"Wall-clock time the entry was written. The primary ordering key.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"target\": {\n          \"description\": \"DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"recordedAt\",\n        \"action\"\n      ],\n      \"title\": \"AuditEnvelope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"description\": \"Opaque continuation token for the next page. Present iff `truncated` is true.\",\n          \"type\": \"string\"\n        },\n        \"entries\": {\n          \"description\": \"The matching audit entries, newest first.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AuditEnvelope\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"truncated\": {\n          \"description\": \"True when more entries match beyond this page — `cursor` is then present to fetch them.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"entries\",\n        \"truncated\"\n      ],\n      \"title\": \"Audit List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/audit/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"action\": {\n      \"description\": \"Return only entries whose `action` equals this value.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"actor\": {\n      \"description\": \"Return only entries whose `actor` DID equals this value. Matches on the plaintext; redacted entries are not returned by an actor filter.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"Return only entries in this trust context.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous response's `cursor`. Encodes the position to resume from; a maintainer SHOULD sign it so it cannot be forged to skip entries. Treated as invalid (see errorCodes) if it fails to verify — e.g. minted before an audit-key rotation. A consumer that supplies a `cursor` MUST NOT also change the filters, which are bound into the cursor's position.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"from\": {\n      \"description\": \"Return only entries recorded at or after this time.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"outcome\": {\n      \"description\": \"Return only entries whose `outcome` equals this value.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"pageSize\": {\n      \"description\": \"Maximum entries to return in this page.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"to\": {\n      \"description\": \"Return only entries recorded strictly before this time.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Audit List — payload\",\n  \"type\": \"object\"\n}\n";
+    const SCHEMA_JSON: &'static str = "{\n  \"$defs\": {\n    \"AuditEnvelope\": {\n      \"$anchor\": \"auditEnvelope\",\n      \"additionalProperties\": false,\n      \"description\": \"One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.\",\n      \"properties\": {\n        \"action\": {\n          \"description\": \"The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"actor\": {\n          \"description\": \"DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"contextId\": {\n          \"description\": \"Trust context the event occurred in, for a maintainer that partitions its log per context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"detail\": {\n          \"additionalProperties\": true,\n          \"description\": \"Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.\",\n          \"type\": \"object\"\n        },\n        \"entryHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.\"\n        },\n        \"eventId\": {\n          \"description\": \"Stable identifier for this event. Also the tie-breaker component of a cursor's position key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"outcome\": {\n          \"description\": \"How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.\",\n          \"type\": \"string\"\n        },\n        \"prevHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.\"\n        },\n        \"recordedAt\": {\n          \"description\": \"Wall-clock time the entry was written. The primary ordering key.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"target\": {\n          \"description\": \"DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"recordedAt\",\n        \"action\"\n      ],\n      \"title\": \"AuditEnvelope\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nbase58btc (the `z` prefix) is RECOMMENDED for consistency with `did:key` and `did:webvh`; base64url (`u`), base64pad (`m`), base32 (`b`) and base16 (`f`/`F`) are permitted.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^[zumbfF][A-Za-z0-9+/=_-]+$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"description\": \"Opaque continuation token for the next page. Present iff `truncated` is true.\",\n          \"type\": \"string\"\n        },\n        \"entries\": {\n          \"description\": \"The matching audit entries, newest first.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AuditEnvelope\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"truncated\": {\n          \"description\": \"True when more entries match beyond this page — `cursor` is then present to fetch them.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"entries\",\n        \"truncated\"\n      ],\n      \"title\": \"Audit List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/audit/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"action\": {\n      \"description\": \"Return only entries whose `action` equals this value.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"actor\": {\n      \"description\": \"Return only entries whose `actor` DID equals this value. Matches on the plaintext; redacted entries are not returned by an actor filter.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"Return only entries in this trust context.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous response's `cursor`. Encodes the position to resume from; a maintainer SHOULD sign it so it cannot be forged to skip entries. Treated as invalid (see errorCodes) if it fails to verify — e.g. minted before an audit-key rotation. A consumer that supplies a `cursor` MUST NOT also change the filters, which are bound into the cursor's position.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"from\": {\n      \"description\": \"Return only entries recorded at or after this time.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"outcome\": {\n      \"description\": \"Return only entries whose `outcome` equals this value.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"pageSize\": {\n      \"description\": \"Maximum entries to return in this page.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"to\": {\n      \"description\": \"Return only entries recorded strictly before this time.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Audit List — payload\",\n  \"type\": \"object\"\n}\n";
 }
 #[cfg(test)]
 mod conformance {

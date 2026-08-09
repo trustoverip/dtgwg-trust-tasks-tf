@@ -4,6 +4,10 @@
  */
 
 /**
+ * Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.
+ */
+export type DigestMultibase = string;
+/**
  * A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
  */
 export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
@@ -42,10 +46,7 @@ export interface PolicyInput {
      * The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).
      */
     subject?: string;
-    /**
-     * Multihash of the canonicalized payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.
-     */
-    payloadDigest?: string;
+    payloadDigest?: DigestMultibase;
     /**
      * Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.
      */
@@ -176,7 +177,7 @@ export interface PolicyDecision {
 export const TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.3" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = SiteTarget;
+export type Payload = DigestMultibase;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.3#response" as const;

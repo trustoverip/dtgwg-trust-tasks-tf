@@ -112,13 +112,13 @@ A conforming **consumer** (the requester) **MUST**:
 {
   "id": "urn:uuid:5e8b2a19-7c43-4f06-9d12-3b0a6e4c8f75",
   "type": "https://trusttasks.org/spec/task-consent/granted/0.1",
-  "threadId": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+  "threadId": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
   "issuer": "did:key:z6MkExecutorVtaExample",
   "recipient": "did:key:z6MkRequesterBrowserExample",
   "issuedAt": "2026-07-13T09:43:20Z",
   "payload": {
     "status": "granted",
-    "payloadDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+    "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
     "taskType": "https://trusttasks.org/spec/webvh/dids/update/1.0"
   }
 }

@@ -4,6 +4,11 @@
  */
 
 /**
+ * The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.
+ */
+export type DigestMultibase = string;
+
+/**
  * Request to verify the integrity of a maintainer's append-only audit hash chain. The request carries no parameters — verification is store-wide.
  */
 export interface AuditVerifyPayload {
@@ -39,10 +44,7 @@ export interface AuditVerifyResponsePayload {
    * Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed.
    */
   unparseableSkipped: number;
-  /**
-   * Hex `entryHash` of the newest envelope reached. Absent when the log is empty.
-   */
-  head?: string;
+  head?: DigestMultibase;
   chainBreak?: ChainBreak;
   ext?: Ext;
 }
@@ -68,7 +70,7 @@ export interface ChainBreak {
 export const TYPE_URI = "https://trusttasks.org/spec/audit/verify/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = AuditVerifyPayload;
+export type Payload = DigestMultibase;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/audit/verify/0.1#response" as const;

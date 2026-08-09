@@ -42,8 +42,8 @@
           "description": "Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed."
         },
         "head": {
-          "type": "string",
-          "description": "Hex `entryHash` of the newest envelope reached. Absent when the log is empty."
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty."
         },
         "chainBreak": {
           "$ref": "#/$defs/ChainBreak",

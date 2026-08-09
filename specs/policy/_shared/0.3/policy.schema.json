@@ -67,8 +67,8 @@
               "description": "The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list)."
             },
             "payloadDigest": {
-              "type": "string",
-              "description": "Multihash of the canonicalized payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play."
+              "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+              "description": "Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play."
             },
             "sideEffects": {
               "type": "string",
