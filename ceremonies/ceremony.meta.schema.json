@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/internal/ceremony-meta/0.1",
+  "title": "Trust Ceremony definition — meta-schema",
+  "description": "Shape of a ceremony definition, published at https://trusttasks.org/ceremony/<slug>/<MAJOR.MINOR> and stored at ceremonies/<slug>/<version>/ceremony.json. Mirrors specs/spec.meta.schema.json for Trust Task specifications.\n\nA ceremony definition describes which Trust Tasks (or nested ceremonies) compose a flow, which roles perform them, in what partial order, what constitutes completion, and what evidence the enactment yields. It is NOT a Trust Task specification: no document's `type` resolves to a ceremony definition, and the /ceremony/ subtree is structurally disjoint from /spec/ and /binding/.\n\nDesign rationale, and the reasoning behind every constraint here, is in docs/design-notes/trust-ceremonies.md. This schema is the machine-checkable half of §6.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "version",
+    "title",
+    "summary",
+    "status",
+    "targetFrameworkVersion",
+    "authors",
+    "roles",
+    "steps",
+    "completion",
+    "evidence",
+    "exposure"
+  ],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$",
+      "not": { "pattern": "^trust-(task|ceremony)($|-|/)" },
+      "description": "Lowercase, hyphenated, optionally hierarchical. The framework namespace `trust-task*` / `trust-ceremony*` is reserved (SPEC §6.1 as extended by ADR 0001)."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "MAJOR.MINOR, per SPEC §5.1. A breaking change to the completion rule, the role set, or any step's identity is a MAJOR increment — enactments pin definitions by digest, so a revision never changes an in-flight enactment underneath itself."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["draft", "candidate", "standard", "retired"],
+      "description": "SPEC §5.3 lifecycle, applied unchanged to ceremonies."
+    },
+    "targetFrameworkVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "The framework version whose `ceremony` envelope member this definition's steps use. 0.4 or later."
+    },
+    "authors": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "keywords": { "type": "array", "items": { "type": "string" } },
+
+    "roles": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Named participants, bound to actual VIDs at enactment rather than here — which is what makes a definition publishable and reusable across communities.",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description"],
+        "properties": {
+          "description": { "type": "string", "minLength": 1 },
+          "cardinality": {
+            "enum": ["one", "many"],
+            "default": "one",
+            "description": "`many` binds the role to a SET of VIDs at enactment — a witness set, an approver set. Required for any step with `multiplicity: perRole`, and for a threshold over that step's instances. Without this, M-of-N is inexpressible: the approvers in a task-consent flow are not known when the definition is written."
+          },
+          "vidSchemes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "VID schemes accepted for this role. A definition whose evidence level is `receipt` or `countersigned` SHOULD restrict this to methods supporting historical resolution (e.g. did:webvh), because late verification must resolve each step's verification method as of its issuedAt — see the design note §10."
+          },
+          "evidentiary": {
+            "type": "boolean",
+            "default": false,
+            "description": "TRUE for a party that is essential to the ceremony's meaning but is never an `issuer` or `recipient` of any step — the did:webvh witness oracle is the motivating case: it signs inside payload.witness and the hosting service verifies it, but it exchanges no Trust Task document.\n\nA ceremony CANNOT attest an evidentiary role. The receipt proves who exchanged documents, not who signed material inside a payload, which is task-specific and outside the framework's reach. Declaring the role documents the party's involvement for a human reader; it grants the receipt no additional force, and a verifier needing that attestation must inspect the payload under the relevant Trust Task specification."
+          }
+        }
+      }
+    },
+
+    "steps": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Keyed by step name. The name — not the Type URI — is the step's identity: one Type URI may appear as several steps whose meaning differs by context (vtc/members/vmc is the join-closing step and also an unsolicited renewal delivery), and a Type URI may repeat across a flow.",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "issuer", "recipient"],
+        "properties": {
+          "kind": {
+            "enum": ["task", "ceremony"],
+            "description": "`task` names a Type URI; `ceremony` nests another definition. Nesting is unlimited in depth — see `ceremony`/`ceremonyDigest` below."
+          },
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "description": "REQUIRED when kind is `task`. The Trust Task Type URI this step enacts, including any #request / #response fragment."
+          },
+          "ceremony": {
+            "type": "string",
+            "format": "uri",
+            "description": "REQUIRED when kind is `ceremony`. The nested definition's URI."
+          },
+          "ceremonyDigest": {
+            "$comment": "See design note §5 and §6.5.",
+            "type": "string",
+            "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$",
+            "description": "REQUIRED when kind is `ceremony`. Multibase-multihash over the JCS canonicalization of the nested definition. Pinning by content rather than by name is what stops a nested definition being swapped underneath an enactment, and it is what makes the include graph checkable for cycles at publication."
+          },
+          "roleMap": {
+            "type": "object",
+            "description": "REQUIRED when kind is `ceremony`. Maps this definition's role names onto the nested definition's. Without it the same party appears as unrelated roles at each level and no verifier can tell that the child's `witness` is the parent's.",
+            "additionalProperties": { "type": "string" }
+          },
+          "issuer": { "type": "string", "description": "Role name that issues this step." },
+          "recipient": { "type": "string", "description": "Role name that receives it." },
+          "description": { "type": "string" },
+          "optional": {
+            "type": "boolean",
+            "default": false,
+            "description": "An optional step may be absent from a complete enactment. Optionality plus `prev` is the ONLY way this format expresses branching: a completed enactment is checkable from document metadata alone, with no interpretation of any task's payload semantics."
+          },
+          "multiplicity": {
+            "enum": ["single", "perRole"],
+            "default": "single",
+            "description": "`perRole` emits one instance per VID bound to the `issuer` role (which MUST then have cardinality `many`) — N approvers each returning one decision, a witness set each signing. Instances are discriminated on the wire by the document's `issuer`, which is signed, so no additional envelope field is needed and one participant's instance cannot be replayed as another's.\n\nThis is distinct from `maxRounds`: multiplicity varies the PARTY, repetition varies the ATTEMPT."
+          },
+          "maxRounds": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "description": "Bounded repetition of the same step by the same party — a deferred join request resubmitting supplementary evidence. Instances are discriminated by the signed `ceremony.round`. Unbounded repetition is deliberately not expressible: a definition whose paths cannot be enumerated cannot be read in one sitting by the body that must approve it."
+          },
+          "prev": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Step names this step depends on. A SET, not a single predecessor, so concurrent branches are expressible — VTC onboarding's acknowledge and decide both depend only on apply and never rejoin. An empty prev opens the enactment and its issuedAt starts the maxDuration clock."
+          },
+          "terminal": {
+            "type": "boolean",
+            "default": false,
+            "description": "Marks a step that can end the enactment. At least one step MUST be terminal. A receipt whose enumerated steps include no terminal step is a prefix, not a completed enactment — this is what makes truncation detectable, since a recorder cannot mint the marker without the terminal step issuer's key."
+          },
+          "compensatable": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this step's effect can be undone if the enactment aborts, and by implication whether an abort leaves recoverable state. Descriptive, on the SPEC §7.3.13 pattern: it informs and renders, it does not authorize. No compensation engine is implied."
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "kind": { "const": "task" } }, "required": ["kind"] },
+            "then": { "required": ["type"] }
+          },
+          {
+            "if": { "properties": { "kind": { "const": "ceremony" } }, "required": ["kind"] },
+            "then": { "required": ["ceremony", "ceremonyDigest", "roleMap"] }
+          }
+        ]
+      }
+    },
+
+    "completion": {
+      "$ref": "#/$defs/Predicate",
+      "description": "What must have happened for the enactment to be complete. A closed set of combinators over step names, deliberately not a general policy language: the registry evaluates Rego for RUNTIME policy (may this happen?), but completion is an EVIDENCE question settled at verification time (did this happen?), possibly years later, offline, by a third party who must not have to execute anyone's code. Keeping it enumerable is also what lets a governance body read every path as a checklist."
+    },
+
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level"],
+      "properties": {
+        "level": {
+          "enum": ["collected", "chained", "receipt", "countersigned"],
+          "description": "`collected` and `chained` need no definition to verify and are fully self-contained. `receipt` and `countersigned` make claims about the flow as a whole and therefore require this definition — a real and permanent cost, not a defect to be engineered away. A nested ceremony's level MUST be at least its parent's."
+        },
+        "recorders": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Role names permitted to issue the receipt. REQUIRED when level is `receipt`. More than one is RECOMMENDED: integrity rests on the terminal marker and the pinned definition rather than on who issued, so redundancy costs nothing and stops the recorder being a single point of availability. A recorder attests completeness and ordering only, never the content of any step."
+        },
+        "receiptsAreBearer": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether receipts opt out of SPEC §4.8.2 audience binding. Default false: a receipt naming the participants of a private governance ceremony should not be relied upon by any holder."
+        }
+      }
+    },
+
+    "maxDuration": {
+      "type": "string",
+      "pattern": "^P(?!$)(\\d+Y)?(\\d+M)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?(\\d+S)?)?$",
+      "description": "ISO 8601 duration. The deadline is derived from the issuedAt of the step whose prev is empty, so no party has to be trusted to assert when the flow began. No step may carry an expiresAt beyond it, or a stale approval outlives the flow and replays into a closed enactment. A nested enactment must finish inside its parent's deadline."
+    },
+
+    "enactmentPrivacy": {
+      "enum": ["shared", "blinded"],
+      "default": "shared",
+      "description": "`blinded` carries H(enactment || stepSalt) per step instead of the identifier, with the receipt revealing the salts — so a party holding one step cannot link it to any other, while a receipt holder still verifies the whole flow. Defaults to `shared` because participants are normally MEANT to know they share a flow; `blinded` is for ceremonies whose steps reach genuinely disjoint audiences."
+    },
+
+    "exposure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discloses", "actsAsSubject"],
+      "description": "The aggregate exposure of the whole flow. NOT derivable from the steps — correlation across disjoint audiences is itself a disclosure, so three metadata steps to three different parties may aggregate to secret. The author declares the true value; the build enforces only that it is at least max() over the steps, which catches understatement. Composes recursively: a ceremony step contributes its child's declared aggregate.",
+      "properties": {
+        "discloses": { "enum": ["none", "metadata", "secret"] },
+        "actsAsSubject": { "type": "boolean" },
+        "rationale": { "type": "string" }
+      }
+    },
+
+    "sideEffects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level"],
+      "properties": {
+        "level": { "enum": ["none", "mutating", "destructive"] },
+        "rationale": { "type": "string" }
+      },
+      "description": "Aggregate integrity effect. Unlike exposure, max() over the steps IS the value here: a flow containing a destructive step is destructive."
+    },
+
+    "related": { "type": "array", "items": { "type": "string" } },
+    "supersededBy": { "type": "string" }
+  },
+
+  "$defs": {
+    "Predicate": {
+      "$anchor": "predicate",
+      "title": "Completion predicate",
+      "description": "Closed set of combinators. Every form is statically enumerable, so a verifier evaluates it without an engine and a reader can enumerate every path that satisfies it.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "A step name: satisfied when that step is present in the enactment."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["allOf"],
+          "properties": {
+            "allOf": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Predicate" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["anyOf"],
+          "properties": {
+            "anyOf": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Predicate" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["threshold"],
+          "description": "Two shapes, because governance needs both. `of` is a threshold over DISTINCT named steps — 3 of these 5 endorsements, each a different step. `ofStep` is a threshold over the INSTANCES of one perRole step — 2 of however many witnesses were bound at enactment, or task-consent's minApprovals over N approvers who are not known when the definition is written. The second is the more common shape and an earlier draft of the design note modelled it wrongly as the first.",
+          "properties": {
+            "threshold": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["n"],
+              "properties": {
+                "n": { "type": "integer", "minimum": 1 },
+                "of": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Predicate" } },
+                "ofStep": { "type": "string" }
+              },
+              "oneOf": [{ "required": ["of"] }, { "required": ["ofStep"] }]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

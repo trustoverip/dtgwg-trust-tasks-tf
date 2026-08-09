@@ -1,0 +1,79 @@
+{
+  "$comment": "Conformance fixtures for the ceremony publication checks. Each case mutates the named base definition and MUST be rejected. Run with `npm run validate-ceremonies -- --test`.\n\nThese exist because docs/design-notes/trust-ceremonies.md §7.8 found that the registry's own example validation would not have caught a comparable drift: hex digests sat in published examples contradicting their own schemas while the build stayed green. A checker that has never been shown to fail is not evidence of anything, so the fixtures assert the failures, not just the successes.\n\n`set` writes a JSON Pointer; `delete` removes one. A case passes when validation rejects the mutated definition.",
+  "base": "ceremonies/vtc/member-onboarding/0.1/ceremony.json",
+  "cases": [
+    {
+      "name": "exposure understated against the step floor",
+      "why": "§11 — max() is a lower bound the build enforces; understatement is the failure mode that matters.",
+      "set": { "/exposure/discloses": "none" }
+    },
+    {
+      "name": "sideEffects understated against the step floor",
+      "why": "§11 — unlike exposure, max() IS the value for side effects.",
+      "set": { "/sideEffects/level": "none" }
+    },
+    {
+      "name": "prev names a step that does not exist",
+      "why": "§7.9 step 4 — an unresolvable prev in the definition is a publication error, distinct from an unresolvable prev at verification time, which merely means the verifier lacks a document.",
+      "set": { "/steps/apply/prev": ["nope"] }
+    },
+    {
+      "name": "prev graph contains a cycle",
+      "why": "§6.5 — a cyclic graph makes verification non-terminating.",
+      "set": { "/steps/apply/prev": ["reciprocate"] }
+    },
+    {
+      "name": "no step is marked terminal",
+      "why": "§7.4 — without a terminal marker every enactment is a prefix and truncation is undetectable.",
+      "delete": ["/steps/decide/terminal", "/steps/reciprocate/terminal"]
+    },
+    {
+      "name": "step names a Type URI with no spec in the registry",
+      "why": "§6.1 — a definition that cannot be resolved to real tasks cannot be enacted.",
+      "set": { "/steps/apply/type": "https://trusttasks.org/spec/vtc/does-not-exist/9.9" }
+    },
+    {
+      "name": "step names a role that does not exist",
+      "why": "§6.1 — roles are bound at enactment, but the names must resolve at publication.",
+      "set": { "/steps/apply/issuer": "ghost" }
+    },
+    {
+      "name": "perRole multiplicity on a role with cardinality one",
+      "why": "§6.1 — fan-out requires the role to bind to a set; this is the check that makes M-of-N well-formed.",
+      "set": { "/steps/decide/multiplicity": "perRole" }
+    },
+    {
+      "name": "completion predicate references an unknown step",
+      "why": "§6.1 — the predicate must be evaluable against the step set alone, with no engine.",
+      "set": { "/completion": { "allOf": ["apply", "phantom"] } }
+    },
+    {
+      "name": "recorder names a role that does not exist",
+      "why": "§7.4 — a receipt-level ceremony with an unresolvable recorder can never yield a receipt.",
+      "set": { "/evidence/recorders": ["nobody"] }
+    },
+    {
+      "name": "evidentiary role used as a step issuer",
+      "why": "§6.1 — an evidentiary role (the did:webvh witness oracle) signs inside a payload and exchanges no Trust Task document, so it can be neither end of a step.",
+      "set": {
+        "/roles/oracle": { "description": "witness oracle", "evidentiary": true },
+        "/steps/apply/issuer": "oracle"
+      }
+    },
+    {
+      "name": "ambiguous deadline origin",
+      "why": "§9 — maxDuration is measured from the issuedAt of the step that opens the enactment; two required openers leave the deadline undefined.",
+      "set": { "/steps/decide/prev": [] }
+    },
+    {
+      "name": "required field missing",
+      "why": "Meta-schema — completion is not optional.",
+      "delete": ["/completion"]
+    },
+    {
+      "name": "threshold declares both of and ofStep",
+      "why": "§6.1 — the two threshold shapes are distinct (distinct named steps vs instances of one perRole step) and a predicate must pick one.",
+      "set": { "/completion": { "threshold": { "n": 2, "of": ["apply"], "ofStep": "decide" } } }
+    }
+  ]
+}

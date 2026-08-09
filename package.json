@@ -9,7 +9,9 @@
     "validate": "node scripts/build-registry.mjs --validate-only",
     "serve": "node scripts/serve-website.mjs",
     "build-ts-bindings": "node scripts/build-ts-bindings.mjs",
-    "test:infra": "node --test infra/cloudfront/*.test.mjs"
+    "test:infra": "node --test infra/cloudfront/*.test.mjs",
+    "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
+    "test-ceremonies": "node scripts/validate-ceremonies.mjs --test"
   },
   "engines": {
     "node": ">=24"
