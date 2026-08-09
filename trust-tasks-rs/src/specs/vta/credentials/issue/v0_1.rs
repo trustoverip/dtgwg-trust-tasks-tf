@@ -627,7 +627,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHolder {
             })
     }
 }
-/**The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
+/**
+The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
 
 This is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.*/
 ///
@@ -636,7 +637,7 @@ This is the credentials/_shared IssuedCredential shape — same members, same re
 /// ```json
 ///{
 ///  "title": "Response",
-///  "description": "The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nThis is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.",
+///  "description": "\nThe success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nThis is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.",
 ///  "type": "object",
 ///  "required": [
 ///    "credential",

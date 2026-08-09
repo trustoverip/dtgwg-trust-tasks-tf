@@ -70,6 +70,7 @@ pub mod push;
 pub mod registry;
 pub mod sync;
 pub mod task_consent;
+pub mod trust_ceremony_receipt;
 pub mod trust_task_discovery;
 pub mod trust_task_next_step;
 pub mod vault;

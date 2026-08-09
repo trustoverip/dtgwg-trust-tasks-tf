@@ -542,6 +542,45 @@ fn clean_generated_tree(out_root: &Path) -> Result<()> {
 /// existing tree exactly as it was. It used to write as it went, after the
 /// clean: one malformed `payload.invalid-examples.json` then left 300+ files
 /// deleted and the workspace uncompilable, and the only symptom was a
+/// Make multi-paragraph `description`s safe for rustdoc.
+///
+/// typify emits a description as `/**{text}` — the first line flush against the
+/// opening delimiter, every continuation line carrying the indentation of
+/// whatever item it documents. rustdoc strips only the whitespace *common* to
+/// all lines of a doc comment, and the un-indented first line makes that common
+/// prefix empty. A field four spaces deep therefore has its second and later
+/// paragraphs read as **indented code blocks**, which rustdoc then compiles as
+/// Rust doctests and fails on.
+///
+/// It bit `trust-task-next-step/0.1` and again `trust-ceremony-receipt/0.1`,
+/// each time as a `cargo test` failure pointing at generated code rather than at
+/// the schema that caused it.
+///
+/// The fix is to start such a description on its own line. Every line then
+/// carries the item's indentation, the common prefix is non-empty, rustdoc
+/// strips it, and the paragraphs render as prose. Applied only where a blank
+/// line exists, so single-paragraph descriptions are untouched.
+fn indent_safe_descriptions(value: &mut Value) {
+    match value {
+        Value::Object(map) => {
+            if let Some(Value::String(desc)) = map.get_mut("description") {
+                if desc.contains("\n\n") && !desc.starts_with('\n') {
+                    desc.insert(0, '\n');
+                }
+            }
+            for (_, v) in map.iter_mut() {
+                indent_safe_descriptions(v);
+            }
+        }
+        Value::Array(items) => {
+            for v in items.iter_mut() {
+                indent_safe_descriptions(v);
+            }
+        }
+        _ => {}
+    }
+}
+
 /// downstream `cargo fmt` error about an unresolvable module — pointing
 /// nowhere near the file at fault.
 fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
@@ -567,6 +606,10 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
 
     // The inlined, self-contained schema is now the on-the-wire SCHEMA_JSON.
     let raw = serde_json::to_string_pretty(&schema)? + "\n";
+
+    // After `raw` is captured: this rewrites descriptions for rustdoc's benefit
+    // only, and SCHEMA_JSON must keep the descriptions the registry publishes.
+    indent_safe_descriptions(&mut schema);
 
     let has_response = normalize_titles(&mut schema)?;
     // typify (0.5) expects Draft-07 `definitions` rather than 2020-12 `$defs`.

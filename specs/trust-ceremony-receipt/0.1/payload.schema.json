@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-ceremony-receipt/0.1",
+  "title": "Trust Ceremony Receipt — payload",
+  "description": "Evidence that one enactment of a Trust Ceremony completed (SPEC §4.11, §6.7).\n\nThe recorder attests COMPLETENESS AND ORDERING ONLY — never the content of any step. Each enumerated step carries its own issuer's proof and is verifiable independently, so a receipt does not make its recorder a trusted third party: it makes the recorder's claim checkable.\n\nA verifier evaluates the definition's completion rule itself over the enumerated steps. `complete` records what the recorder believed, not what the verifier may assume.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "enactment",
+    "definition",
+    "definitionDigest",
+    "complete",
+    "steps"
+  ],
+  "properties": {
+    "enactment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The enactment this receipt reports on — the value every enumerated step carries in its `ceremony.enactment` member. Globally unique and never reused (SPEC §4.11)."
+    },
+    "parentEnactment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The enactment containing this one, where the ceremony was conducted as a step of another. Present so a receipt used as a parent's step evidence names its own place in the tree; one level, as on the envelope member."
+    },
+    "definition": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "description": "The ceremony definition the enactment ran under (SPEC §6.7). REQUIRED here, unlike on the envelope: a receipt asserts that a flow COMPLETED, and completeness is meaningless without the rule that defines it."
+    },
+    "definitionDigest": {
+      "$ref": "../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+      "description": "Multibase-multihash over the RFC 8785 (JCS) canonicalization of that definition. MUST equal the `ceremony.definitionDigest` every enumerated step carried. It is what stops the completion rule being changed after the fact by whoever controls the definition URI."
+    },
+    "complete": {
+      "type": "boolean",
+      "description": "Whether the recorder considers the enactment complete.\n\nNOT authoritative. A verifier holding the pinned definition evaluates its completion rule over `steps` directly, and a receipt whose enumerated steps do not satisfy that rule is incomplete however this member is set. It is carried because it distinguishes a recorder that is mistaken from one that is lying — both are visible, and only the second is an attack."
+    },
+    "salt": {
+      "type": "string",
+      "minLength": 22,
+      "description": "The per-enactment salt used to compute every step digest, multibase-encoded, with at least 128 bits of entropy.\n\nREQUIRED whenever any step of the enactment carried `ceremony.prev`, because without it the chain cannot be recomputed and the recorder's ordering claim rests on nothing — which is the whole reason `receipt` implies `chained`.\n\nRevealing it here is deliberate. The salt defends against a party who observes a document or a bare digest in transit, which is the threat `task-consent` names for its own salted digest; it is not intended to defend against a party holding this receipt, who is by construction entitled to know the enactment happened and in what order. A ceremony whose step CONTENT must stay hidden from receipt holders wants `enactmentPrivacy: blinded`, not a withheld salt."
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every step of the enactment, in the order the recorder observed them. A set containing no step marked `terminal` is a PREFIX, not a completed enactment — which is what makes truncation detectable, since the marker cannot be minted without the terminal step issuer's key.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step",
+          "typeUri",
+          "issuer",
+          "id",
+          "digestMultibase"
+        ],
+        "properties": {
+          "step": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The step name from the definition, as carried in the document's `ceremony.step`."
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The document's `ceremony.round`, where the definition permits bounded repetition. Absent means 1. Enumerating rounds separately is what lets a verifier check the repetition bound."
+          },
+          "typeUri": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "description": "The Type URI the step enacted, including any fragment. Checked against the definition's declared type for that step."
+          },
+          "issuer": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The VID that issued the step document. For a step whose multiplicity is `perRole`, this is what distinguishes one instance from another — N approvers each performing one step are N entries differing only here."
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The step document's `id` (SPEC §4.3) — globally unique and never reused, so it names one instance where the step name names a position in the flow, and so a verifier can locate the document the digest is over."
+          },
+          "digestMultibase": {
+            "$ref": "../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+            "description": "Salted digest of the step document, computed as the specification's Conformance section defines. A verifier holding the document recomputes it; a verifier that does not hold the document still learns that the recorder committed to a specific one."
+          },
+          "terminal": {
+            "type": "boolean",
+            "description": "Whether the step document carried `ceremony.terminal`. At least one enumerated step MUST carry it for the enactment to be complete."
+          }
+        }
+      }
+    },
+    "ext": {
+      "$ref": "../../_framework/0.3/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

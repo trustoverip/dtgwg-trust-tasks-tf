@@ -29,7 +29,8 @@ pub mod error {
         }
     }
 }
-/**One presentation request awaiting the holder's decision, as the approver sees it.
+/**
+One presentation request awaiting the holder's decision, as the approver sees it.
 
 This is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer "should I disclose this": who is asking, why, and precisely which claims of which held credentials would leave the wallet.*/
 ///
@@ -38,7 +39,7 @@ This is deliberately **not** the stored record. A consumer also retains the orig
 /// ```json
 ///{
 ///  "title": "DeferredPresentation",
-///  "description": "One presentation request awaiting the holder's decision, as the approver sees it.\n\nThis is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer \"should I disclose this\": who is asking, why, and precisely which claims of which held credentials would leave the wallet.",
+///  "description": "\nOne presentation request awaiting the holder's decision, as the approver sees it.\n\nThis is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer \"should I disclose this\": who is asking, why, and precisely which claims of which held credentials would leave the wallet.",
 ///  "type": "object",
 ///  "required": [
 ///    "createdAt",

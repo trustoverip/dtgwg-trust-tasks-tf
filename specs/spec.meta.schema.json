@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/internal/spec-meta/2.0",
-  "title": "Trust Task specification — front matter meta-schema",
-  "description": "Shape of the YAML front matter that every specs/<slug>/<version>/spec.md must declare. Mirrors the declarations required by SPEC.md §7.3.",
+  "title": "Trust Task specification \u2014 front matter meta-schema",
+  "description": "Shape of the YAML front matter that every specs/<slug>/<version>/spec.md must declare. Mirrors the declarations required by SPEC.md \u00a77.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -27,7 +27,7 @@
       "anyOf": [
         {
           "not": {
-            "pattern": "^trust-task($|-|/)"
+            "pattern": "^trust-(task|ceremony)($|-|/)"
           }
         },
         {
@@ -36,16 +36,17 @@
             "trust-task-error",
             "trust-task-ok",
             "trust-task-next-step",
-            "trust-task-discovery"
+            "trust-task-discovery",
+            "trust-ceremony-receipt"
           ]
         }
       ],
-      "description": "Lowercase, hyphen-separated short name; may be organized into one or more `/`-delimited path segments (e.g. `acl/grant`). Each segment satisfies the single-segment grammar. The slug `trust-task` and any slug whose first segment is `trust-task` or begins with `trust-task-` are reserved per SPEC §6.1; only the framework-defined slugs `trust-task`, `trust-task-error`, `trust-task-ok`, `trust-task-next-step`, and `trust-task-discovery` may use the reserved namespace (the registry hosts those itself). The slug MUST match the relative folder path from `specs/` to the version directory's parent."
+      "description": "Lowercase, hyphen-separated short name; may be organized into one or more `/`-delimited path segments (e.g. `acl/grant`). Each segment satisfies the single-segment grammar. The slug `trust-task` and any slug whose first segment is `trust-task` or `trust-ceremony`, or begins with `trust-task-` or `trust-ceremony-`, are reserved per SPEC \u00a76.1; only the framework-defined slugs listed in the enum below may use the reserved namespace (the registry hosts those itself). The `trust-ceremony` half of the reservation was widened in framework 0.4 and is enforced here so the namespace cannot be claimed before the layer that needs it is specified. The slug MUST match the relative folder path from `specs/` to the version directory's parent."
     },
     "version": {
       "type": "string",
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-      "description": "MAJOR.MINOR per SPEC §5.1; matches the version-segment folder name."
+      "description": "MAJOR.MINOR per SPEC \u00a75.1; matches the version-segment folder name."
     },
     "title": {
       "type": "string",
@@ -66,12 +67,12 @@
         "standard",
         "retired"
       ],
-      "description": "Lifecycle status per SPEC §5.3. `retired` is terminal; a retired spec SHOULD declare `supersededBy`."
+      "description": "Lifecycle status per SPEC \u00a75.3. `retired` is terminal; a retired spec SHOULD declare `supersededBy`."
     },
     "targetFrameworkVersion": {
       "type": "string",
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-      "description": "Framework MAJOR.MINOR this spec targets, per SPEC §7.3 item 3."
+      "description": "Framework MAJOR.MINOR this spec targets, per SPEC \u00a77.3 item 3."
     },
     "category": {
       "type": "string",
@@ -93,7 +94,7 @@
         "payments",
         "reputation"
       ],
-      "description": "TT_CATEGORIES id. Pick the one that most cleanly describes the task's domain. Roughly:\n- access-control: ACL / role / permission / capability tasks (acl/*).\n- ai-agents: tasks specific to AI-agent interaction patterns.\n- authentication: login, session, challenge/response, passkey, step-up (auth/*, confirm/*).\n- chat: conversational messaging between agents and messaging-platform bridges, signed and chained for non-repudiation (chat/*).\n- consent: authorization-to-proceed tasks that gate whether an interaction (a connection / channel / group / conversation) may reach a protected party such as an AI agent, with operator/approver consent on first contact (consent/*).\n- credentials: vault / credential management (vault/*).\n- data-exchange: data-transport / sync / event-stream tasks (sync/*).\n- did-management: DID lifecycle, hosting, domain, server registry (did-management/*).\n- framework: framework-defined meta-tasks (trust-task-error, trust-task-discovery, etc.).\n- governance: policy / rule-engine / decision tasks (policy/*).\n- identity: identity-anchor / device-binding / persona tasks (device/*).\n- key-management: custody and lifecycle of cryptographic key material held on a producer's behalf — creation, import, listing, rename, revocation, and the signing-oracle surface that exercises a key without ever exporting it (keys/*). Distinct from credentials, which is about stored secrets and credentials rather than the keys that sign.\n- messaging: messaging-infrastructure operation of a mediator / relay — account and ACL administration, liveness/health ping, and other operator-facing control of the message-transport substrate itself, as distinct from the application-level access-control of acl/* (messaging/*).\n- notifications: push wake-up control plane — register a push channel, provision the trigger allowlist, request a contentless wake (push/*).\n- payments: payment-flow tasks.\n- reputation: reputation / attestation tasks.\n\nEnforced as a closed enum to prevent the silent category drift that produced `permission` (now access-control) and `did-management` (recognised) — adding a new category is now a deliberate spec-meta-schema PR rather than a typo in a single spec.md."
+      "description": "TT_CATEGORIES id. Pick the one that most cleanly describes the task's domain. Roughly:\n- access-control: ACL / role / permission / capability tasks (acl/*).\n- ai-agents: tasks specific to AI-agent interaction patterns.\n- authentication: login, session, challenge/response, passkey, step-up (auth/*, confirm/*).\n- chat: conversational messaging between agents and messaging-platform bridges, signed and chained for non-repudiation (chat/*).\n- consent: authorization-to-proceed tasks that gate whether an interaction (a connection / channel / group / conversation) may reach a protected party such as an AI agent, with operator/approver consent on first contact (consent/*).\n- credentials: vault / credential management (vault/*).\n- data-exchange: data-transport / sync / event-stream tasks (sync/*).\n- did-management: DID lifecycle, hosting, domain, server registry (did-management/*).\n- framework: framework-defined meta-tasks (trust-task-error, trust-task-discovery, etc.).\n- governance: policy / rule-engine / decision tasks (policy/*).\n- identity: identity-anchor / device-binding / persona tasks (device/*).\n- key-management: custody and lifecycle of cryptographic key material held on a producer's behalf \u2014 creation, import, listing, rename, revocation, and the signing-oracle surface that exercises a key without ever exporting it (keys/*). Distinct from credentials, which is about stored secrets and credentials rather than the keys that sign.\n- messaging: messaging-infrastructure operation of a mediator / relay \u2014 account and ACL administration, liveness/health ping, and other operator-facing control of the message-transport substrate itself, as distinct from the application-level access-control of acl/* (messaging/*).\n- notifications: push wake-up control plane \u2014 register a push channel, provision the trigger allowlist, request a contentless wake (push/*).\n- payments: payment-flow tasks.\n- reputation: reputation / attestation tasks.\n\nEnforced as a closed enum to prevent the silent category drift that produced `permission` (now access-control) and `did-management` (recognised) \u2014 adding a new category is now a deliberate spec-meta-schema PR rather than a typo in a single spec.md."
     },
     "keywords": {
       "type": "array",
@@ -142,14 +143,14 @@
               "issuer",
               "recipient"
             ],
-            "description": "Which framework document member (SPEC §4.8) this party fills, when it maps to one. Omit for a party that is named in the payload but is neither the document's `issuer` nor its `recipient`. At most one party may declare `member: issuer` and at most one `member: recipient`. A party declared `member: recipient` with `requirement: REQUIRED` obliges consumers to reject a document lacking an in-band `recipient` (SPEC §7.2 item 5)."
+            "description": "Which framework document member (SPEC \u00a74.8) this party fills, when it maps to one. Omit for a party that is named in the payload but is neither the document's `issuer` nor its `recipient`. At most one party may declare `member: issuer` and at most one `member: recipient`. A party declared `member: recipient` with `requirement: REQUIRED` obliges consumers to reject a document lacking an in-band `recipient` (SPEC \u00a77.2 item 5)."
           }
         }
       },
-      "description": "Roles expected in a conforming document, per SPEC §7.3 item 5. VID scheme acceptance is a per-consumer trust-framework concern and is deliberately not constrained here."
+      "description": "Roles expected in a conforming document, per SPEC \u00a77.3 item 5. VID scheme acceptance is a per-consumer trust-framework concern and is deliberately not constrained here."
     },
     "proofRequirement": {
-      "description": "Proof declaration per SPEC §7.3 item 8. Either a single `requirement` applying to every variant of the specification, or a per-variant pair of `request` and `response`. The per-variant form exists because the request and the response are relied on differently: a response retained as evidence may need a proof where the request that triggered it does not, and forcing one value on both overstates the requirement on whichever variant needs it less. Only declare `response` where the specification defines one. The error variant is not declarable here: an error response's `type` resolves to `trust-task-error`, a different specification, so a task specification's declaration cannot reach it (SPEC §7.2 item 7).",
+      "description": "Proof declaration per SPEC \u00a77.3 item 8. Either a single `requirement` applying to every variant of the specification, or a per-variant pair of `request` and `response`. The per-variant form exists because the request and the response are relied on differently: a response retained as evidence may need a proof where the request that triggered it does not, and forcing one value on both overstates the requirement on whichever variant needs it less. Only declare `response` where the specification defines one. The error variant is not declarable here: an error response's `type` resolves to `trust-task-error`, a different specification, so a task specification's declaration cannot reach it (SPEC \u00a77.2 item 7).",
       "oneOf": [
         {
           "type": "object",
@@ -228,7 +229,7 @@
           "description": "Why this level. For `destructive`, name the irreversible effect a human is consenting to."
         }
       },
-      "description": "Descriptive classification of the recipient-side effect of successful execution, per SPEC.md §7.3 item 13. DESCRIPTIVE, NOT PRESCRIPTIVE: it states what the task does, never whether approval is required — a specification MUST NOT declare a consent/approval/step-up requirement, as that policy belongs to the consumer and MUST NOT be delegable to the registry. A consumer enforcing an approval policy MUST derive the authoritative level from the handler it is about to invoke, and MUST treat an absent/unrecognized declaration as no weaker than `mutating`. Required of every conforming spec; `none` is the correct value for read-only and framework-plumbing tasks."
+      "description": "Descriptive classification of the recipient-side effect of successful execution, per SPEC.md \u00a77.3 item 13. DESCRIPTIVE, NOT PRESCRIPTIVE: it states what the task does, never whether approval is required \u2014 a specification MUST NOT declare a consent/approval/step-up requirement, as that policy belongs to the consumer and MUST NOT be delegable to the registry. A consumer enforcing an approval policy MUST derive the authoritative level from the handler it is about to invoke, and MUST treat an absent/unrecognized declaration as no weaker than `mutating`. Required of every conforming spec; `none` is the correct value for read-only and framework-plumbing tasks."
     },
     "consequences": {
       "type": "array",
@@ -236,12 +237,12 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Human-facing second-order effects a consent surface SHOULD surface alongside the primary action — the effects a naive payload diff would miss because they live in the handler's semantics, not the payload's shape (e.g. 'Any document change also rotates this DID's update keys'). Static fallback text; a live executor MAY instead compute a per-request effects list by dry-running the real handler."
+      "description": "Human-facing second-order effects a consent surface SHOULD surface alongside the primary action \u2014 the effects a naive payload diff would miss because they live in the handler's semantics, not the payload's shape (e.g. 'Any document change also rotates this DID's update keys'). Static fallback text; a live executor MAY instead compute a per-request effects list by dry-running the real handler."
     },
     "subjectPath": {
       "type": "string",
       "pattern": "^(/([^/~]|~0|~1)*)+$",
-      "description": "RFC 6901 JSON Pointer locating the subject identifier (usually a DID) inside the payload — e.g. `/did`. Lets a delegated-execution PEP answer 'does the executing agent speak for this subject?' declaratively rather than with per-task code. Omit for tasks with no single subject (discovery, list, whoami)."
+      "description": "RFC 6901 JSON Pointer locating the subject identifier (usually a DID) inside the payload \u2014 e.g. `/did`. Lets a delegated-execution PEP answer 'does the executing agent speak for this subject?' declaratively rather than with per-task code. Omit for tasks with no single subject (discovery, list, whoami)."
     },
     "exposure": {
       "type": "object",
@@ -262,7 +263,7 @@
         },
         "actsAsSubject": {
           "type": "boolean",
-          "description": "True when execution exercises the subject's own authority to produce an attributable effect in their name — a login on their behalf, a signature bearing their identity, a credential issued under their authority — even when nothing is disclosed and no recipient state changes."
+          "description": "True when execution exercises the subject's own authority to produce an attributable effect in their name \u2014 a login on their behalf, a signature bearing their identity, a credential issued under their authority \u2014 even when nothing is disclosed and no recipient state changes."
         },
         "rationale": {
           "type": "string",
@@ -293,7 +294,7 @@
           "rationale"
         ]
       },
-      "description": "Exposure class per SPEC.md §7.3 item 14 — the confidentiality-and-agency dimension, orthogonal to the integrity-focused `sideEffects` of item 13. States what leaves the recipient (`discloses`) and whether the subject's authority is exercised (`actsAsSubject`), independent of any state change. DESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as `sideEffects`: a consumer MUST derive authoritative values from the handler it invokes and MUST treat an absent declaration as no less exposed than `discloses: secret` with `actsAsSubject: true`."
+      "description": "Exposure class per SPEC.md \u00a77.3 item 14 \u2014 the confidentiality-and-agency dimension, orthogonal to the integrity-focused `sideEffects` of item 13. States what leaves the recipient (`discloses`) and whether the subject's authority is exercised (`actsAsSubject`), independent of any state change. DESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as `sideEffects`: a consumer MUST derive authoritative values from the handler it invokes and MUST treat an absent declaration as no less exposed than `discloses: secret` with `actsAsSubject: true`."
     },
     "errorCodes": {
       "type": "array",
@@ -309,7 +310,7 @@
           "code": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-zA-Z0-9_]*$",
-            "description": "Namespaced code per SPEC §8.5, e.g. 'kyc-handoff:documentRevoked' (framework 0.2 lowerCamelCase, SPEC §4.10) or 'acl/grant:permission_denied' (frozen 0.1 snake_case). The local part accepts both casings so 0.1 and 0.2 specs validate against the same schema. The namespace before the colon MUST be either the spec's own slug, or a family namespace — a proper path prefix of that slug, for a code whose meaning is defined once for the whole family in a shared convention (e.g. 'did-management:unknownDomain' on 'did-management/did/delete'). This pattern checks the grammar only; the prefix relationship is enforced by checkErrorCodeNamespaces() in scripts/build-registry.mjs, because JSON Schema cannot compare one property against another."
+            "description": "Namespaced code per SPEC \u00a78.5, e.g. 'kyc-handoff:documentRevoked' (framework 0.2 lowerCamelCase, SPEC \u00a74.10) or 'acl/grant:permission_denied' (frozen 0.1 snake_case). The local part accepts both casings so 0.1 and 0.2 specs validate against the same schema. The namespace before the colon MUST be either the spec's own slug, or a family namespace \u2014 a proper path prefix of that slug, for a code whose meaning is defined once for the whole family in a shared convention (e.g. 'did-management:unknownDomain' on 'did-management/did/delete'). This pattern checks the grammar only; the prefix relationship is enforced by checkErrorCodeNamespaces() in scripts/build-registry.mjs, because JSON Schema cannot compare one property against another."
           },
           "meaning": {
             "type": "string",
@@ -324,12 +325,12 @@
           }
         }
       },
-      "description": "Task-specific error codes per SPEC §7.3 item 9. Omit or leave empty if none."
+      "description": "Task-specific error codes per SPEC \u00a77.3 item 9. Omit or leave empty if none."
     },
     "jsonLdContext": {
       "type": "boolean",
       "default": false,
-      "description": "Set to true if a context.jsonld file sits alongside spec.md. Per SPEC §7.3 item 10."
+      "description": "Set to true if a context.jsonld file sits alongside spec.md. Per SPEC \u00a77.3 item 10."
     },
     "related": {
       "type": "array",
@@ -367,11 +368,11 @@
               "REQUIRED"
             ],
             "default": "OPTIONAL",
-            "description": "How strongly producers should populate this extension when their `method` matches. Default OPTIONAL — extension is purely advisory metadata."
+            "description": "How strongly producers should populate this extension when their `method` matches. Default OPTIONAL \u2014 extension is purely advisory metadata."
           }
         }
       },
-      "description": "Method-discriminated extensions a producer MAY (or SHOULD/MUST per `requirement`) include in `ext` when their payload selects the named `method`. Each entry pins a shared schema by slug; the registry build surfaces it in the spec's Uses panel and links the schema page. Unlike $ref-resolved dependencies, method extensions aren't structurally required by the payload schema — they're an out-of-band convention for vendor-namespaced ext data."
+      "description": "Method-discriminated extensions a producer MAY (or SHOULD/MUST per `requirement`) include in `ext` when their payload selects the named `method`. Each entry pins a shared schema by slug; the registry build surfaces it in the spec's Uses panel and links the schema page. Unlike $ref-resolved dependencies, method extensions aren't structurally required by the payload schema \u2014 they're an out-of-band convention for vendor-namespaced ext data."
     },
     "knownImplementations": {
       "type": "array",
@@ -380,22 +381,22 @@
         "format": "uri",
         "pattern": "^https?://"
       },
-      "description": "URLs (repositories, products, deployment documentation) of implementations known to produce or consume this task. Informative, not exhaustive: it lets registry readers distinguish adopted specifications from proposals, and doubles as evidence toward the draft → candidate transition (SPEC §5.3). Omit when no implementation is known."
+      "description": "URLs (repositories, products, deployment documentation) of implementations known to produce or consume this task. Informative, not exhaustive: it lets registry readers distinguish adopted specifications from proposals, and doubles as evidence toward the draft \u2192 candidate transition (SPEC \u00a75.3). Omit when no implementation is known."
     },
     "wireCompatibleWith": {
       "type": "string",
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-      "description": "Declares that this version is wire-identical to the named earlier version of the same slug, modulo the mechanical normalizations of SPEC §4.10 — casing of member names and enumerated values — and framework/shared-schema `$ref` re-pins. Advisory: consumers MAY dual-accept documents of the named version by normalizing casing and retyping the URI, without a hand-written adapter. New versions should not need this field — editorial changes to a `draft` spec are made in place per SPEC §5.2; it exists for wire-identical versions minted before that rule."
+      "description": "Declares that this version is wire-identical to the named earlier version of the same slug, modulo the mechanical normalizations of SPEC \u00a74.10 \u2014 casing of member names and enumerated values \u2014 and framework/shared-schema `$ref` re-pins. Advisory: consumers MAY dual-accept documents of the named version by normalizing casing and retyping the URI, without a hand-written adapter. New versions should not need this field \u2014 editorial changes to a `draft` spec are made in place per SPEC \u00a75.2; it exists for wire-identical versions minted before that rule."
     },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",
-      "description": "Successor reference for a `retired` specification, per SPEC §7.3 item 11. `<slug>` form points at the latest non-retired version of that slug; `<slug>/<MAJOR.MINOR>` pins to a specific version. The build script enforces that this field is only set when `status: retired`."
+      "description": "Successor reference for a `retired` specification, per SPEC \u00a77.3 item 11. `<slug>` form points at the latest non-retired version of that slug; `<slug>/<MAJOR.MINOR>` pins to a specific version. The build script enforces that this field is only set when `status: retired`."
     },
     "bearer": {
       "type": "boolean",
       "default": false,
-      "description": "Opt-out from the audience-binding rule of SPEC §4.8.2. When true, documents conforming to this specification MAY omit `recipient` even when `proof` is present, because the payload's assertion is meaningful to any consumer that can verify the producer's identity (a public attestation, heartbeat, etc.). A bearer specification MUST also declare its `recipient` party as OPTIONAL. The default is false (non-bearer). See SPEC §4.8.3 and §7.3 item 12."
+      "description": "Opt-out from the audience-binding rule of SPEC \u00a74.8.2. When true, documents conforming to this specification MAY omit `recipient` even when `proof` is present, because the payload's assertion is meaningful to any consumer that can verify the producer's identity (a public attestation, heartbeat, etc.). A bearer specification MUST also declare its `recipient` party as OPTIONAL. The default is false (non-bearer). See SPEC \u00a74.8.3 and \u00a77.3 item 12."
     }
   }
 }

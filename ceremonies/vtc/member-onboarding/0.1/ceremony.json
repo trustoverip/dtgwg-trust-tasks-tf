@@ -5,9 +5,15 @@
   "summary": "Admit a member to a Verifiable Trust Community: application, decision, and the reciprocal membership credential that closes the bidirectional edge.",
   "status": "draft",
   "targetFrameworkVersion": "0.4",
-  "authors": ["Glenn Gore (https://github.com/stormer78)"],
-  "keywords": ["vtc", "onboarding", "membership", "governance"],
-
+  "authors": [
+    "Glenn Gore (https://github.com/stormer78)"
+  ],
+  "keywords": [
+    "vtc",
+    "onboarding",
+    "membership",
+    "governance"
+  ],
   "roles": {
     "applicant": {
       "description": "The prospective member. Becomes `member` on approval; the same VID throughout, which is why there is no separate member role.",
@@ -16,14 +22,16 @@
     "community": {
       "description": "The community maintainer. Receives the application, relays the reciprocal-credential request, and records the outcome.",
       "cardinality": "one",
-      "vidSchemes": ["did:webvh", "did:web"]
+      "vidSchemes": [
+        "did:webvh",
+        "did:web"
+      ]
     },
     "administrator": {
-      "description": "An operator of the community, acting on its behalf. A distinct role from `community` because the operator surface and the wire message are different interfaces between different party pairs — see vtc/members/solicit-vmc.",
+      "description": "An operator of the community, acting on its behalf. A distinct role from `community` because the operator surface and the wire message are different interfaces between different party pairs \u2014 see vtc/members/solicit-vmc.",
       "cardinality": "one"
     }
   },
-
   "steps": {
     "discover": {
       "kind": "task",
@@ -47,26 +55,32 @@
       "type": "https://trusttasks.org/spec/vtc/join-requests/submit-receipt/0.1",
       "issuer": "community",
       "recipient": "applicant",
-      "description": "Acknowledge receipt and hand back the requestId. Depends only on `apply`, and never rejoins `decide` — the two are concurrent.",
-      "prev": ["apply"]
+      "description": "Acknowledge receipt and hand back the requestId. Depends only on `apply`, and never rejoins `decide` \u2014 the two are concurrent.",
+      "prev": [
+        "apply"
+      ]
     },
     "supplement": {
       "kind": "task",
       "type": "https://trusttasks.org/spec/vtc/join-requests/status/0.1",
       "issuer": "applicant",
       "recipient": "community",
-      "description": "Poll the request. Where the community defers, the applicant supplies further evidence and polls again — bounded repetition, discriminated by ceremony.round.\n\nNOTE: the registry currently defines no task by which the applicant SUPPLIES that evidence (submit takes no requestId, and there is no join-requests/supplement), so `deferred` is a reachable state with no defined exit. This step models the poll only. See docs/design-notes/trust-ceremonies.md §13.5.",
+      "description": "Poll the request. Where the community defers, the applicant supplies further evidence and polls again \u2014 bounded repetition, discriminated by ceremony.round.\n\nNOTE: the registry currently defines no task by which the applicant SUPPLIES that evidence (submit takes no requestId, and there is no join-requests/supplement), so `deferred` is a reachable state with no defined exit. This step models the poll only. See docs/design-notes/trust-ceremonies.md \u00a713.5.",
       "optional": true,
       "maxRounds": 3,
-      "prev": ["apply"]
+      "prev": [
+        "apply"
+      ]
     },
     "decide": {
       "kind": "task",
       "type": "https://trusttasks.org/spec/vtc/join-requests/decide/0.1",
       "issuer": "administrator",
       "recipient": "community",
-      "description": "Approve or reject. Terminal on rejection — a refused applicant produces a complete, verifiable enactment that ends here.",
-      "prev": ["apply"],
+      "description": "Approve or reject. Terminal on rejection \u2014 a refused applicant produces a complete, verifiable enactment that ends here.",
+      "prev": [
+        "apply"
+      ],
       "terminal": true,
       "compensatable": false
     },
@@ -77,7 +91,9 @@
       "recipient": "community",
       "description": "Operator-facing half of the reciprocal exchange: ask the community to request a membership credential from the new member.",
       "optional": true,
-      "prev": ["decide"]
+      "prev": [
+        "decide"
+      ]
     },
     "ask": {
       "kind": "task",
@@ -86,49 +102,54 @@
       "recipient": "applicant",
       "description": "The wire message that actually reaches the member. A different party pair from `solicit`, which is why they are separate tasks and separate steps.",
       "optional": true,
-      "prev": ["solicit"]
+      "prev": [
+        "solicit"
+      ]
     },
     "reciprocate": {
       "kind": "task",
       "type": "https://trusttasks.org/spec/vtc/members/vmc/0.1",
       "issuer": "applicant",
       "recipient": "community",
-      "description": "The member delivers the reciprocal credential, closing the bidirectional membership edge. Carries requestId, which is what makes this the join-closing instance rather than an unsolicited renewal delivery — the same Type URI serves both, and only the step name distinguishes them.",
+      "description": "The member delivers the reciprocal credential, closing the bidirectional membership edge. Carries requestId, which is what makes this the join-closing instance rather than an unsolicited renewal delivery \u2014 the same Type URI serves both, and only the step name distinguishes them.",
       "optional": true,
-      "prev": ["ask"],
+      "prev": [
+        "ask"
+      ],
       "terminal": true,
       "compensatable": true
     }
   },
-
   "completion": {
     "allOf": [
       "apply",
       "decide",
-      { "anyOf": ["decide", "reciprocate"] }
+      {
+        "anyOf": [
+          "decide",
+          "reciprocate"
+        ]
+      }
     ]
   },
-
   "evidence": {
     "level": "receipt",
-    "recorders": ["community", "administrator"],
-    "receiptsAreBearer": false
+    "recorders": [
+      "community",
+      "administrator"
+    ]
   },
-
   "maxDuration": "P30D",
   "enactmentPrivacy": "shared",
-
   "sideEffects": {
     "level": "mutating",
     "rationale": "Creates a pending request, admits or refuses a member, and stores a reciprocal credential. Reversible via vtc/members/admin-remove; no step is destructive."
   },
-
   "exposure": {
     "discloses": "metadata",
     "actsAsSubject": true,
     "rationale": "max() over the steps is metadata (submit-receipt, status and request-vmc each disclose metadata) and actsAsSubject is true (the applicant submits and later issues a credential on their own behalf). The declared aggregate is not raised above the floor: every step addresses the applicant or the community, so there is no third audience for correlation across steps to disclose anything to."
   },
-
   "related": [
     "vtc/join-requests/manifest",
     "vtc/join-requests/submit",

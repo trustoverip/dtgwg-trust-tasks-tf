@@ -613,6 +613,7 @@ The following slugs are **RESERVED** for framework-defined specifications and **
   | `trust-task-ok`          | Success-response with metadata — reserved, see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-next-step`   | Recipient-suggested continuation — see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-discovery`   | Discovery and capability negotiation — see [§11](#11-discovery-and-capability-negotiation). |
+  | `trust-ceremony-receipt` | Evidence that one *enactment* of a *Trust Ceremony* completed — see [§4.11](#411-the-ceremony-member). |
 
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
 

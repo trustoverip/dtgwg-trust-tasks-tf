@@ -137,7 +137,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
-/**The recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.
+/**
+The recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.
 
 A next step is neither a success response nor a failure. The originating task is left open — a consumer that means 'no' returns a trust-task-error instead, and one that means 'done' returns the originating specification's #response variant.
 
@@ -149,7 +150,7 @@ This specification declares no response anchor: a producer answers a next step b
 ///{
 ///  "$id": "https://trusttasks.org/spec/trust-task-next-step/0.1",
 ///  "title": "Payload",
-///  "description": "The recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.\n\nA next step is neither a success response nor a failure. The originating task is left open — a consumer that means 'no' returns a trust-task-error instead, and one that means 'done' returns the originating specification's #response variant.\n\nThis specification declares no response anchor: a producer answers a next step by issuing a document of the expected type, not by responding to this one.",
+///  "description": "\nThe recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.\n\nA next step is neither a success response nor a failure. The originating task is left open — a consumer that means 'no' returns a trust-task-error instead, and one that means 'done' returns the originating specification's #response variant.\n\nThis specification declares no response anchor: a producer answers a next step by issuing a document of the expected type, not by responding to this one.",
 ///  "type": "object",
 ///  "required": [
 ///    "expects"

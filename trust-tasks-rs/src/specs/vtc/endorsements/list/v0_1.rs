@@ -508,7 +508,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
-/**The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.
+/**
+The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.
 
 SCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.
 
@@ -519,7 +520,7 @@ SCOPE — this is an *issuance* receipt, returned by the party that minted the c
 /// ```json
 ///{
 ///  "title": "IssuedCredential",
-///  "description": "The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\n\nSCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.\n\n`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.",
+///  "description": "\nThe receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\n\nSCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.\n\n`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.",
 ///  "type": "object",
 ///  "required": [
 ///    "credential",

@@ -620,8 +620,20 @@ parties who are not entitled to the predecessor's content.
 is salted *"because an unsalted digest over a low-entropy payload is a
 confirmation oracle for anyone who observes it in transit"*, with the
 per-request `challenge` as the salt. The chain takes the same medicine — the
-salt is per-enactment, distributed to participants with the enactment
-identifier, and never published in the receipt.
+salt is per-enactment and distributed to participants with the enactment
+identifier.
+
+**Corrected (§16, round three): an earlier draft said the salt is "never
+published in the receipt". That is wrong, and it would have made the receipt
+useless.** A verifier that cannot recompute the chain cannot check the ordering,
+and the recorder becomes trusted again — which is exactly what §7.4 exists to
+avoid. `trust-ceremony-receipt/0.1` therefore carries the salt. The protection
+that survives is the one `task-consent` actually claims: the salt defends
+against a party who observes a document or a bare digest *in transit*, not
+against a party holding the receipt, who is by construction entitled to know the
+enactment happened and in what order. A ceremony whose step content must stay
+hidden from receipt holders wants `enactmentPrivacy: blinded`, not a withheld
+salt.
 
 **The digest's scope must be stated exactly.** Over the predecessor document
 *including* its `proof`, or excluding it? §4.7 excludes `proof` from what a
@@ -726,8 +738,17 @@ bearer specification under §4.8.3, which is the more likely reading given a
 receipt's whole purpose is to be shown to unspecified verifiers. That is a real
 decision, not a formality: bearer means any holder is a legitimate audience, and
 a receipt naming the participants of a private governance ceremony may not want
-that. **Proposal: the receipt is non-bearer by default, and a definition may
-declare its receipts bearer.**
+that.
+
+**Corrected (§16, round three): the receipt is a bearer specification, and there
+is no per-definition choice about it.** Writing
+`trust-ceremony-receipt/0.1` made the alternative untenable: a non-bearer receipt
+carries an in-band `recipient`, and §7.2 item 5 then requires *every other*
+verifier to reject it. Evidence only its first recipient may act on is not
+evidence. The privacy worry is real but belongs elsewhere — bearer governs
+**audience**, not **distribution**. Any holder may rely on a receipt; nobody is
+obliged to hand one out, the recorder decides who receives one, and a ceremony
+whose participation must not be linkable declares `enactmentPrivacy: blinded`.
 
 ### 7.5 `countersigned`
 
@@ -1366,7 +1387,7 @@ the branching assumption (below). What remains:
   whose correctness is a property of how components meet over a wire, the only
   tests that count are the ones that use the wire.
 
-## 16. What this note got wrong, in two rounds
+## 16. What this note got wrong, in three rounds
 
 *This section records defects found by re-reading the first draft adversarially,
 after it was written. They are listed because the pattern matters more than the
@@ -1416,6 +1437,31 @@ who exchanged documents, never who signed material inside a payload.
 found modelling defects, and would not have found the first four. Neither
 substitutes for the third instrument, which is running it on a wire — §15 still
 records that as absent.
+
+### Round three: found by specifying the receipt
+
+Writing `trust-ceremony-receipt/0.1` falsified two more, both of them design-note
+proposals that did not survive contact with the framework's own rules:
+
+| # | Defect | Now in |
+|---|---|---|
+| 9 | The receipt was proposed as **non-bearer by default**. A non-bearer receipt carries an in-band `recipient`, and §7.2 item 5 then obliges every *other* verifier to reject it — evidence only its first recipient may act on | §7.4, bearer with no per-definition flag |
+| 10 | The salt was to be **"never published in the receipt"**, which leaves a verifier unable to recompute the chain and hands the recorder back the trust the chain existed to remove | §7.3, salt carried in the receipt |
+
+Both were proposals stated with more confidence than the reasoning behind them
+supported, and both collapsed the moment a schema had to be written. Finding 10
+is the sharper lesson: the salt's protection was inherited from `task-consent`
+along with its *words*, and the threat those words actually name — "anyone who
+observes it in transit" — never extended to a receipt holder. Copying a
+mitigation without re-deriving its threat model produced a rule that defended
+nothing and broke something.
+
+A third defect was found in the enforcement rather than the design: framework
+0.4 widened the §6.1 slug reservation to `^trust-(task|ceremony)($|-|/)` in
+prose, but `spec.meta.schema.json` still enforced only `^trust-task…`. The
+namespace ADR 0001 §8 called squattable stayed squattable for three merges,
+because the reservation was written in the document that describes the rule and
+not in the one that applies it.
 
 **The pattern worth keeping.** Findings 2 and 3 were already written down in this
 repository. `audit/verify` says in its Security section that *"a truncation to a

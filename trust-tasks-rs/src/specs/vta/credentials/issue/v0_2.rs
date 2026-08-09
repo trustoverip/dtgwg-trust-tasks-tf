@@ -485,7 +485,8 @@ impl<'de> ::serde::Deserialize<'de> for GovernancePolicyClaimsPolicyHash {
             })
     }
 }
-/**The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.
+/**
+The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.
 
 A closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.*/
 ///
@@ -494,7 +495,7 @@ A closure inside this definition would defeat that. Both `additionalProperties` 
 /// ```json
 ///{
 ///  "title": "IssuedCredentialBase",
-///  "description": "The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.\n\nA closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.",
+///  "description": "\nThe members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.\n\nA closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.",
 ///  "type": "object",
 ///  "required": [
 ///    "credential",
@@ -683,7 +684,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHolder {
             })
     }
 }
-/**The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
+/**
+The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
 
 Composed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.*/
 ///
@@ -692,7 +694,7 @@ Composed from the shared IssuedCredential rather than restating it: that definit
 /// ```json
 ///{
 ///  "title": "Response",
-///  "description": "The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.",
+///  "description": "\nThe success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.",
 ///  "allOf": [
 ///    {
 ///      "$ref": "#/definitions/IssuedCredentialBase"

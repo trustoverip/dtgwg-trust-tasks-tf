@@ -503,7 +503,8 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEndorsementId {
             })
     }
 }
-/**The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish "I revoked it now" from "it was already gone".
+/**
+The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish "I revoked it now" from "it was already gone".
 
 The counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.*/
 ///
@@ -512,7 +513,7 @@ The counterpart to IssuedCredential: both concern a credential's lifecycle at it
 /// ```json
 ///{
 ///  "title": "RevocationReceipt",
-///  "description": "The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \"I revoked it now\" from \"it was already gone\".\n\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.",
+///  "description": "\nThe receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \"I revoked it now\" from \"it was already gone\".\n\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.",
 ///  "type": "object",
 ///  "required": [
 ///    "credentialId",

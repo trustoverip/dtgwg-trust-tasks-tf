@@ -28,6 +28,14 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.5.1] - 2026-08-09
+
+### Added
+
+- `trust_ceremony_receipt::v0_1` — bindings for the newly published
+  `trust-ceremony-receipt/0.1` specification, the evidence artifact for a
+  completed ceremony enactment. Purely additive: no existing type changed.
+
 ## [0.5.0] - 2026-08-09
 
 ### Added

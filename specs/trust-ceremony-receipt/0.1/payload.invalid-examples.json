@@ -1,0 +1,198 @@
+[
+  {
+    "note": "Empty payload omits required members: enactment, definition, definitionDigest, complete, steps.",
+    "payload": {}
+  },
+  {
+    "note": "`steps` must have at least one entry. A receipt enumerating nothing attests nothing.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": []
+    }
+  },
+  {
+    "note": "`definition` is omitted. A receipt asserts completeness, which is meaningless without the rule that defines it — unlike the envelope member, where a definition is optional.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ]
+    }
+  },
+  {
+    "note": "`definitionDigest` is raw hex rather than a multibase-encoded multihash. A digest that hard-codes one algorithm in the wire format is non-conforming.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "3b0c7f1d9e2a5648c1f30b7ae4d2986153ca0f7b8d41e6295af03c8bd71e4a62",
+      "complete": true,
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A step omits `digestMultibase`. An enumerated step the recorder has not committed to is not evidence of anything.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A step omits `id`, so a verifier cannot locate the document the digest is over.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ]
+    }
+  },
+  {
+    "note": "`round` must be at least 1; round 0 is not a repetition.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": [
+        {
+          "step": "supplement",
+          "round": 0,
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/status/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A step carries an unknown member (additionalProperties: false). A recorder cannot smuggle an unattested claim into the enumeration.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF",
+          "__notARealMember__": true
+        }
+      ]
+    }
+  },
+  {
+    "note": "`salt` is too short to carry 128 bits of entropy in any multibase encoding.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "salt": "z6MkShort",
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ]
+    }
+  },
+  {
+    "note": "`complete` must be a boolean, not a string. A recorder's determination is a claim, not free text.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": "yes",
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ]
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ],
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`ext` immediate keys must be reverse-DNS namespaced per SPEC §4.5.1.",
+    "payload": {
+      "enactment": "urn:uuid:8f21b0c4-7d3e-4a91-b5c2-1e6f0a9d4b83",
+      "definition": "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1",
+      "definitionDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "complete": true,
+      "steps": [
+        {
+          "step": "apply",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "issuer": "did:web:applicant.example",
+          "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
+          "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
+        }
+      ],
+      "ext": { "bareKey": { "a": 1 } }
+    }
+  }
+]
