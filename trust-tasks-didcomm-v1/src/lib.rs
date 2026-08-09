@@ -44,10 +44,11 @@
 //!
 //! # Status
 //!
-//! The carriage decision above is not yet ratified by a published binding
-//! specification — `bindings/didcomm-v1/0.1` is being authored, and the
-//! discussion is on issue #173. Nothing depends on this crate yet, so the
-//! choice can still move.
+//! Implements [`bindings/didcomm-v1/0.1`](https://trusttasks.org/bindings/didcomm-v1/0.1),
+//! itself a draft written from this crate and offered to the DTG Core
+//! Credentials task force to take over. The carriage in [`pack`] is flagged
+//! open in §2 of that binding: nothing depends on it yet, so it can still move.
+//! Discussion on issue #173.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

@@ -39,8 +39,9 @@
 //! free for a human-readable summary — so a wallet that surfaces the message
 //! shows something meaningful rather than a blob.
 //!
-//! This choice is not settled by consensus yet; see the discussion on issue
-//! #173. Nothing depends on it, so it can still move.
+//! Normatively: `bindings/didcomm-v1/0.1` §2. That binding is a draft and flags
+//! this section open — nothing depends on it, so it can still move. Discussion
+//! on issue #173.
 
 use affinidi_messaging_didcomm_v1::protocols::basic_message::{self, BasicMessage};
 use affinidi_messaging_didcomm_v1::{MessageV1, UnpackResult};
