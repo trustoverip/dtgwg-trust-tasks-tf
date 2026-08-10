@@ -161,6 +161,31 @@
           "first-person"
         ]
       }
+    },
+    {
+      "name": "countersigned with a many-cardinality role still naming recorders",
+      "why": "\u00a77.6 \u2014 guards the tightened bilateral test from the other side. Two roles is not two parties: a `many` role binds to a set, so the participant set is not evident from the documents and the bilateral exemption must not apply. A group-attestation definition was reported as bilateral before this was fixed.",
+      "base": "ceremonies/mutual-attestation/0.1/ceremony.json",
+      "set": {
+        "/roles/second-person/cardinality": "many",
+        "/evidence/recorders": [
+          "first-person"
+        ]
+      }
+    },
+    {
+      "name": "ext key without a reverse-DNS namespace",
+      "why": "\u00a74.5.1 \u2014 a bare key claims a name nobody owns. The rule is what lets two ecosystems extend the same definition format without colliding, and it is the reason ext can be open at all.",
+      "base": "ceremonies/mutual-attestation/0.1/ceremony.json",
+      "set": {
+        "/ext": {
+          "proximity": {
+            "mechanisms": [
+              "nfc"
+            ]
+          }
+        }
+      }
     }
   ]
 }

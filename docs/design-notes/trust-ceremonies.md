@@ -389,6 +389,18 @@ rationale for what that schema constrains.*
   participant's instance cannot be replayed as another's.
 - **Evidence level** — one of §7's four, plus the roles permitted to record
   (§7.4).
+- **`ext`** — vendor-namespaced extension data at definition, step and role
+  level, under SPEC §4.5.1's rules unchanged: reverse-DNS keys, opaque here,
+  unrecognised namespaces ignored.
+
+  This is where context the framework has no opinion about goes, and the
+  motivating case is instructive. A protocol whose whole value is that two people
+  *were physically together* needs to record the mechanism — NFC, a scanned code,
+  a compared short authentication string. The framework should not model that: no
+  signature attests proximity, and a `liveness` field would imply the framework
+  can check something it cannot. `ext` lets the protocol carry it, in a namespace
+  it controls, without the framework pretending to understand it. §2.3's layering
+  rule and this are the same principle applied to different levels.
 - **Completion** — which steps must have occurred for the enactment to be
   complete. Not necessarily "all of them": a definition with optional steps needs
   to say what suffices, and thresholds are the ordinary currency of the
@@ -1547,6 +1559,14 @@ the branching assumption (below). What remains:
   derived — the latter may not be checkable from the documents at all, which
   would make it a property a verifier trusts the parties for rather than one it
   establishes. That needs deciding before the shape is called done.
+- **The group shape works but has not been published.** A 1:N in-person ceremony
+  needs no new machinery — `perRole` multiplicity for the fan-out, an `ofStep`
+  threshold for completion, and a `coDerived` anchor bound by the roles present.
+  A test definition validated on the first attempt. What does **not** carry over
+  is the bilateral exemption (§7.6): two *roles* is not two *parties*, since a
+  `many`-cardinality role binds to a set, so a group enactment needs its
+  definition at verification time and must inline it to verify offline. No group
+  definition is published, so the shape is argued rather than demonstrated.
 - **Only two shapes have been tested** (§2.2), and there is no reason to believe
   there are only two. The fourth round of §16 arrived from a use case nobody in
   the corpus resembled; a fifth shape would arrive the same way. The obvious test is the one §13 already half

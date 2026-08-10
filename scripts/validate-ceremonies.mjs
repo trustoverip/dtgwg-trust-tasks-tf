@@ -197,7 +197,16 @@ function checkDefinition(file, def, validate) {
   // between them, so the participant set is evident from the documents without
   // consulting the definition. Worth surfacing, because it is the shape that
   // verifies offline.
-  const bilateral = roleNames.size === 2 && steps.every(([, s]) => s.issuer !== s.recipient);
+  //
+  // Two ROLES is not two PARTIES: a role with cardinality `many` binds to a set,
+  // so a two-role definition can still involve twenty people and its participant
+  // set is not evident from the documents. A group-attestation definition
+  // tripped exactly this, which is why both roles must be `one`.
+  const bilateral =
+    roleNames.size === 2 &&
+    [...roleNames].every((r) => (def.roles[r].cardinality ?? 'one') === 'one') &&
+    steps.every(([, s]) => s.issuer !== s.recipient) &&
+    steps.every(([, s]) => (s.multiplicity ?? 'single') === 'single');
   if (bilateral && def.evidence.level === 'countersigned')
     console.log(`  note  ${f}: bilateral + countersigned — verifiable from the step documents alone, no definition needed at verification time`);
 

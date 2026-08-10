@@ -106,6 +106,15 @@
             "type": "boolean",
             "default": false,
             "description": "TRUE for a party that is essential to the ceremony's meaning but is never an `issuer` or `recipient` of any step \u2014 the did:webvh witness oracle is the motivating case: it signs inside payload.witness and the hosting service verifies it, but it exchanges no Trust Task document.\n\nA ceremony CANNOT attest an evidentiary role. The receipt proves who exchanged documents, not who signed material inside a payload, which is task-specific and outside the framework's reach. Declaring the role documents the party's involvement for a human reader; it grants the receipt no additional force, and a verifier needing that attestation must inspect the payload under the relevant Trust Task specification."
+          },
+          "ext": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": true,
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+            },
+            "description": "Vendor-namespaced extension data, following SPEC \u00a74.5.1's rules exactly: every immediate key is a reverse-DNS namespace, the structure beneath is opaque here, and a consumer MUST ignore namespaces it does not recognise.\n\nThis is where context the framework has no opinion about goes. A protocol that establishes proximity \u2014 NFC, a scanned code, a compared short authentication string \u2014 records that here rather than asking the framework to model liveness, which no signature can attest anyway. The framework reserves no namespace and defines no cross-ceremony meaning for any key.\n\nAt this level the data describes ONE ROLE."
           }
         }
       }
@@ -203,6 +212,15 @@
             "type": "boolean",
             "default": false,
             "description": "Whether this step's effect can be undone if the enactment aborts, and by implication whether an abort leaves recoverable state. Descriptive, on the SPEC \u00a77.3.13 pattern: it informs and renders, it does not authorize. No compensation engine is implied."
+          },
+          "ext": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": true,
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+            },
+            "description": "Vendor-namespaced extension data, following SPEC \u00a74.5.1's rules exactly: every immediate key is a reverse-DNS namespace, the structure beneath is opaque here, and a consumer MUST ignore namespaces it does not recognise.\n\nThis is where context the framework has no opinion about goes. A protocol that establishes proximity \u2014 NFC, a scanned code, a compared short authentication string \u2014 records that here rather than asking the framework to model liveness, which no signature can attest anyway. The framework reserves no namespace and defines no cross-ceremony meaning for any key.\n\nAt this level the data describes ONE STEP of the definition."
           }
         },
         "allOf": [
@@ -388,6 +406,15 @@
     },
     "supersededBy": {
       "type": "string"
+    },
+    "ext": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      },
+      "description": "Vendor-namespaced extension data, following SPEC \u00a74.5.1's rules exactly: every immediate key is a reverse-DNS namespace, the structure beneath is opaque here, and a consumer MUST ignore namespaces it does not recognise.\n\nThis is where context the framework has no opinion about goes. A protocol that establishes proximity \u2014 NFC, a scanned code, a compared short authentication string \u2014 records that here rather than asking the framework to model liveness, which no signature can attest anyway. The framework reserves no namespace and defines no cross-ceremony meaning for any key.\n\nAt this level the data describes the CEREMONY TYPE \u2014 a static property of every enactment of it, such as which proximity mechanisms the definition's authors consider acceptable."
     }
   },
   "$defs": {

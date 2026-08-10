@@ -2,12 +2,18 @@
   "slug": "mutual-attestation",
   "version": "0.1",
   "title": "In-person mutual attestation",
-  "summary": "Two people meet, confirm each other, and each issues the other a credential. No third party, no ordering, no network — and the credentials may move long afterwards.",
+  "summary": "Two people meet, confirm each other, and each issues the other a credential. No third party, no ordering, no network \u2014 and the credentials may move long afterwards.",
   "status": "draft",
   "targetFrameworkVersion": "0.4",
-  "authors": ["Glenn Gore (https://github.com/stormer78)"],
-  "keywords": ["offline", "bilateral", "local-first", "web-of-trust"],
-
+  "authors": [
+    "Glenn Gore (https://github.com/stormer78)"
+  ],
+  "keywords": [
+    "offline",
+    "bilateral",
+    "local-first",
+    "web-of-trust"
+  ],
   "roles": {
     "first-person": {
       "description": "One of the two people present. The name distinguishes the two roles; it does not order them.",
@@ -18,7 +24,6 @@
       "cardinality": "one"
     }
   },
-
   "steps": {
     "attest-first": {
       "kind": "task",
@@ -39,30 +44,46 @@
       "terminal": true
     }
   },
-
   "anchor": {
     "kind": "coDerived",
-    "boundBy": ["first-person", "second-person"],
-    "derivation": "A value the two parties establish while together and which neither could have produced alone — a scanned code, a key agreement, a compared short authentication string. The enactment identifier is derived from it, so both steps signing `ceremony.enactment` commit to the same anchor without either step committing to the other."
+    "boundBy": [
+      "first-person",
+      "second-person"
+    ],
+    "derivation": "A value the two parties establish while together and which neither could have produced alone \u2014 a scanned code, a key agreement, a compared short authentication string. The enactment identifier is derived from it, so both steps signing `ceremony.enactment` commit to the same anchor without either step committing to the other."
   },
-
-  "completion": { "allOf": ["attest-first", "attest-second"] },
-
-  "evidence": { "level": "countersigned" },
-
+  "completion": {
+    "allOf": [
+      "attest-first",
+      "attest-second"
+    ]
+  },
+  "evidence": {
+    "level": "countersigned"
+  },
   "maxDuration": "PT1H",
   "enactmentPrivacy": "blinded",
-
   "sideEffects": {
     "level": "mutating",
     "rationale": "Each party mints a credential about the other. Neither is compensatable by this ceremony; revocation is the issuer's own business."
   },
-
   "exposure": {
     "discloses": "secret",
     "actsAsSubject": true,
     "rationale": "Each step delivers credential material the other party retains, and each party issues on their own authority about a person present. `enactmentPrivacy` is blinded because the anchor would otherwise be a durable correlation handle across two credentials meant to stand alone."
   },
-
-  "related": ["credential-exchange/issue"]
+  "related": [
+    "credential-exchange/issue"
+  ],
+  "ext": {
+    "org.example.proximity": {
+      "note": "Illustrative only \u2014 the framework reserves no namespace and gives this none. A real deployment would use a namespace it controls.",
+      "mechanisms": [
+        "nfc",
+        "qr",
+        "bluetooth-le"
+      ],
+      "confirmation": "short-authentication-string"
+    }
+  }
 }
