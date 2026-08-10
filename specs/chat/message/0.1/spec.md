@@ -176,7 +176,7 @@ message above via `prev`:
     "replyToId": "urn:uuid:6f1c8b2a-0001-4a10-8a00-000000000001",
     "prev": {
       "id": "urn:uuid:6f1c8b2a-0001-4a10-8a00-000000000001",
-      "digest": "zQmExampleSha256MultihashOfThePreviousDocument000000000000"
+      "digest": "zQmaiQiEmnfNmSYMicJwuJcgiwRkRkALUPvVHyLWvtAbGyA"
     },
     "sentAt": "2026-06-16T12:00:09Z"
   },
@@ -221,7 +221,7 @@ binds to it positionally:
     "isMention": true,
     "prev": {
       "id": "urn:uuid:6f1c8b2a-0002-4a10-8a00-000000000002",
-      "digest": "zQmExampleSha256MultihashOfThePreviousDocument000000000000"
+      "digest": "zQmaiQiEmnfNmSYMicJwuJcgiwRkRkALUPvVHyLWvtAbGyA"
     },
     "sentAt": "2026-06-16T12:01:00Z"
   },

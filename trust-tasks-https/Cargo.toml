@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-https"
-version = "0.5.0"
+version = "0.6.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -21,7 +21,7 @@ server = ["dep:axum", "dep:tokio", "dep:tower"]
 jwt = ["dep:jsonwebtoken"]
 
 [dependencies]
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.5" }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.6" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

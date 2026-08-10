@@ -4,6 +4,15 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.6.0] - 2026-08-10
+
+### Changed
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.6, which narrows `DigestMultibase`
+  to the multibase headers CID 1.0 requires. The core types cross this crate's
+  public API, so a graph mixing 0.5 with this crate will not type-check. No API
+  of this crate changed on its own account.
+
 ## [0.5.0] - 2026-08-09
 
 ### Changed

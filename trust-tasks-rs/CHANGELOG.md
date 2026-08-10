@@ -28,6 +28,23 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.6.0] - 2026-08-10
+
+### Changed
+
+- **BREAKING (behavioural).** `DigestMultibase` now accepts only the two
+  multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires —
+  `z` (base58btc) and `u` (base64url-no-pad) — and enforces each alphabet rather
+  than assuming it. Values a consumer previously accepted (base32, base16,
+  base64pad, and strings that were not valid base58 at all) now fail to parse.
+  The wire format is unchanged for conforming values; this is the
+  behaviour-against-unchanged-format case the versioning note at the top of this
+  file describes.
+
+  CID permits other headers but states interoperability "is not guaranteed"
+  with them, and a registry whose purpose is interoperability should not mint
+  digests a conforming verifier may be unable to read.
+
 ## [0.5.1] - 2026-08-09
 
 ### Added

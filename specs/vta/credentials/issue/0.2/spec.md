@@ -221,7 +221,7 @@ When `payload.credentialType` is `GovernancePolicyCredential`:
         "upstream": "https://llm.upstream.example",
         "privacyTier": "restricted"
       },
-      "policyHash": "zQmYtUcp8bLrRk4nD2eW7vX5oS1qA9fJ3hT6gN0mC8xKvPe"
+      "policyHash": "zQmYfCMcQXWBj7Fe6kyhu5B37SPnz4kzPp7Kk2YgcqFT6AG"
     },
     "validitySeconds": 86400,
     "purpose": "Rotate acme's LLM gateway governance policy (budget raise approved in change CR-1182)."

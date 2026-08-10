@@ -53,7 +53,7 @@
         },
         "definitionDigest": {
           "type": "string",
-          "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$",
+          "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
           "description": "Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the definition named by `definition`. Pins the definition by CONTENT rather than by name: without it the completion rule, role list and evidence level are whatever the URI serves at verification time, which may be years later and under different control. Being covered by `proof`, it also means a step commits to the exact rules it was enacted under, so a revised definition never changes an enactment underneath itself."
         },
         "step": {
@@ -88,7 +88,7 @@
               },
               "digestMultibase": {
                 "type": "string",
-                "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$",
+                "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
                 "description": "Multibase-encoded multihash over the predecessor document, salted per enactment. Salted because many steps carry near-zero-entropy payloads, and an unsalted digest over one is a confirmation oracle for any party handed it — which a chain does by design, since it passes predecessor digests to parties not entitled to predecessor content."
               }
             }

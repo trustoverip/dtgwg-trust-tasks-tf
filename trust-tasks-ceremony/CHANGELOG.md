@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 **Versioning follows [Semantic Versioning](https://semver.org/) over this
 library's own API — not the framework's.**
 
+## [0.1.1] - 2026-08-10
+
+### Changed
+
+- Dropped the `trust-tasks-rs` dependency, which was never used. `verify()`
+  takes envelope facts (the recorder) as parameters rather than a `TrustTask`,
+  deliberately — the party that signed a receipt is an envelope fact and a
+  payload could claim anything — so the crate never needed the envelope type.
+  It is therefore unaffected by envelope version changes.
+
 ## [0.1.0] - 2026-08-10
 
 ### Added

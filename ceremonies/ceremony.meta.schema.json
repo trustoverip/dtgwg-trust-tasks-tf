@@ -155,7 +155,7 @@
           "ceremonyDigest": {
             "$comment": "See design note \u00a75 and \u00a76.5.",
             "type": "string",
-            "pattern": "^[zumbfF][A-Za-z0-9+/=_-]+$",
+            "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
             "description": "REQUIRED when kind is `ceremony`. Multibase-multihash over the JCS canonicalization of the nested definition. Pinning by content rather than by name is what stops a nested definition being swapped underneath an enactment, and it is what makes the include graph checkable for cycles at publication."
           },
           "roleMap": {
