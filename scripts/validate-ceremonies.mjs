@@ -141,23 +141,65 @@ function checkDefinition(file, def, validate) {
   };
   for (const n of stepNames) visit(n, []);
 
-  // Exactly the steps with empty prev can open the enactment; maxDuration is
-  // measured from one of them, so ambiguity there makes the deadline undefined.
+  // How the enactment is anchored decides what the prev graph must look like.
+  //
+  // `openingStep` (the default) needs exactly one required step with an empty
+  // prev — the deadline is measured from it, so two would leave the origin
+  // undefined. `coDerived` needs none: a simultaneous exchange has no first
+  // step, and the anchor is the jointly-derived enactment identifier every step
+  // signs. Applying the openingStep rule to a co-derived flow is what made a
+  // two-person in-person ceremony inexpressible.
+  const anchorKind = def.anchor?.kind ?? 'openingStep';
   const openers = steps.filter(([, s]) => (s.prev ?? []).length === 0 && !s.optional);
-  if (openers.length === 0) err(f, 'no required step has an empty prev; nothing can open the enactment');
-  else if (openers.length > 1 && def.maxDuration)
-    err(f, `maxDuration is declared but ${openers.length} required steps have empty prev (${openers.map(([n]) => n).join(', ')}); the deadline origin is ambiguous`);
+  if (anchorKind === 'openingStep') {
+    if (openers.length === 0)
+      err(f, 'no required step has an empty prev; nothing can open the enactment (declare anchor.kind "coDerived" if the exchange is simultaneous)');
+    else if (openers.length > 1 && def.maxDuration)
+      err(f, `maxDuration is declared but ${openers.length} required steps have empty prev (${openers.map(([n]) => n).join(', ')}); the deadline origin is ambiguous under an openingStep anchor`);
+  } else {
+    // coDerived: the roles named as producing the anchor must exist, and must
+    // not be the same role twice — an anchor one party derives alone is an
+    // opening step by another name.
+    const bound = def.anchor?.boundBy ?? [];
+    for (const r of bound)
+      if (!roleNames.has(r)) err(f, `anchor.boundBy names unknown role "${r}"`);
+    if (new Set(bound).size < 2)
+      err(f, 'a coDerived anchor must be bound by at least two distinct roles');
+    // No "at least one step must be anchor-rooted" check: a graph where every
+    // step follows another is either a cycle or names a step that does not
+    // exist, and both are already caught above. A co-derived anchor does not
+    // forbid ordering BETWEEN steps — it removes the requirement that one step
+    // start the flow, which is a different thing. A fixture asserting otherwise
+    // was testing a legitimate configuration.
+
+  }
 
   // Completion must reference real steps.
   for (const n of new Set(predicateSteps(def.completion)))
     if (!stepNames.has(n)) err(f, `completion references unknown step "${n}"`);
 
   // Recorders must be real roles, and are required at level receipt.
+  //
+  // `countersigned` needs none. Every participant signs the transcript, so there
+  // is nobody to appoint — and for a bilateral ceremony that is the CHEAPEST
+  // level rather than the heaviest, because both parties are present and signing
+  // anyway. Two people offline have no third party to record for them, and
+  // should not have to invent one.
   if (def.evidence.level === 'receipt') {
     if (!def.evidence.recorders?.length) err(f, 'evidence.level is receipt but no recorders are named');
     for (const r of def.evidence.recorders ?? [])
       if (!roleNames.has(r)) err(f, `evidence.recorders names unknown role "${r}"`);
   }
+  if (def.evidence.level === 'countersigned' && def.evidence.recorders?.length)
+    err(f, 'evidence.level is countersigned; every participant signs, so naming recorders is meaningless');
+
+  // A bilateral ceremony is self-describing: two roles, each step running
+  // between them, so the participant set is evident from the documents without
+  // consulting the definition. Worth surfacing, because it is the shape that
+  // verifies offline.
+  const bilateral = roleNames.size === 2 && steps.every(([, s]) => s.issuer !== s.recipient);
+  if (bilateral && def.evidence.level === 'countersigned')
+    console.log(`  note  ${f}: bilateral + countersigned — verifiable from the step documents alone, no definition needed at verification time`);
 
   // Aggregate floors (§11). max() is a lower bound for exposure and the value for
   // side effects; understatement is the failure mode worth catching.
@@ -198,8 +240,13 @@ function ptrDelete(obj, ptr) {
 if (process.argv.includes('--test')) {
   // Fixture mode: every case MUST be rejected, and the unmutated base MUST pass.
   const fx = JSON.parse(readFileSync(join(CEREMONIES, 'ceremony.invalid-examples.json'), 'utf8'));
-  const basePath = join(ROOT, fx.base);
-  const base = JSON.parse(readFileSync(basePath, 'utf8'));
+  const loadBase = (rel) => {
+    const p = join(ROOT, rel);
+    return { path: p, doc: JSON.parse(readFileSync(p, 'utf8')) };
+  };
+  const defaultBase = loadBase(fx.base);
+  const basePath = defaultBase.path;
+  const base = defaultBase.doc;
 
   const runsClean = (def) => {
     const before = errors; const quiet = console.error; const quietWarn = console.warn; const quietLog = console.log;
@@ -215,7 +262,13 @@ if (process.argv.includes('--test')) {
   else { console.error('  ERROR (control) unmutated base does NOT pass — fixtures are meaningless'); fail++; }
 
   for (const c of fx.cases) {
-    const def = JSON.parse(JSON.stringify(base));
+    const from = c.base ? loadBase(c.base) : defaultBase;
+    if (!runsClean(JSON.parse(JSON.stringify(from.doc)))) {
+      console.error(`  ERROR base does not pass, so "${c.name}" proves nothing: ${c.base ?? fx.base}`);
+      fail++;
+      continue;
+    }
+    const def = JSON.parse(JSON.stringify(from.doc));
     for (const [ptr, val] of Object.entries(c.set ?? {})) ptrSet(def, ptr, val);
     for (const ptr of c.delete ?? []) ptrDelete(def, ptr);
     if (runsClean(def)) { console.error(`  ERROR not rejected: ${c.name}`); fail++; }

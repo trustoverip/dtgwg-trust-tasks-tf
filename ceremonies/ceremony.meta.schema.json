@@ -245,6 +245,54 @@
         ]
       }
     },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "description": "How the enactment is anchored \u2014 what every step commits to, and where the maxDuration clock starts.\n\nDefaults to `openingStep`, which suits any flow with a party who goes first. It does NOT suit a simultaneous exchange: two people meeting in person and confirming each other have no first step, and forcing one imposes an ordering the interaction does not have. Expressing that as mutual `prev` is a cycle; expressing it as two prev-less steps leaves the deadline origin ambiguous. Both are rejected, which is why this declaration exists.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "openingStep",
+            "coDerived"
+          ],
+          "description": "`openingStep` \u2014 exactly one required step has an empty `prev`, it opens the enactment, and its issuedAt starts the clock.\n\n`coDerived` \u2014 there is no opening step. Every step MAY have an empty `prev`, and the shared anchor is the enactment identifier itself, which the participants derive jointly out of band (a scanned code, a key exchange, a compared short authentication string). Signing `ceremony.enactment` is therefore committing to the anchor, and the chain's work is done by a value no single party could have produced alone. The clock starts at the earliest issuedAt among the steps."
+        },
+        "boundBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "description": "REQUIRED when kind is `coDerived`. The roles whose joint act produces the anchor. Two or more \u2014 a co-derived anchor with one contributor is just an opening step wearing a disguise."
+        },
+        "derivation": {
+          "type": "string",
+          "description": "Human-readable statement of how the anchor is derived, for a reader deciding whether it is unguessable to a non-participant. Deliberately prose: the derivation happens out of band, in whatever medium the parties share, and the framework has no way to constrain it."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "coDerived"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "boundBy"
+            ]
+          }
+        }
+      ]
+    },
     "completion": {
       "$ref": "#/$defs/Predicate",
       "description": "What must have happened for the enactment to be complete. A closed set of combinators over step names, deliberately not a general policy language: the registry evaluates Rego for RUNTIME policy (may this happen?), but completion is an EVIDENCE question settled at verification time (did this happen?), possibly years later, offline, by a third party who must not have to execute anyone's code. Keeping it enumerable is also what lets a governance body read every path as a checklist."
@@ -278,7 +326,7 @@
     "maxDuration": {
       "type": "string",
       "pattern": "^P(?!$)(\\d+Y)?(\\d+M)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?(\\d+S)?)?$",
-      "description": "ISO 8601 duration. The deadline is derived from the issuedAt of the step whose prev is empty, so no party has to be trusted to assert when the flow began. No step may carry an expiresAt beyond it, or a stale approval outlives the flow and replays into a closed enactment. A nested enactment must finish inside its parent's deadline."
+      "description": "ISO 8601 duration bounding the enactment's ISSUANCE window: the spread between the earliest and latest `issuedAt` among its steps, measured from the opening step or \u2014 under a `coDerived` anchor \u2014 from the earliest step.\n\nEvaluated at verification against those timestamps, NEVER against the verifier's clock. A ceremony that completed inside its window stays complete however long its documents took to travel, which matters wherever evidence moves later than the act: an offline exchange whose credentials sync days afterwards must not expire in transit. An earlier draft rejected a step 'arriving after the deadline', which conflated a stale command with a settled record.\n\nA nested enactment's window must fall within its parent's."
     },
     "enactmentPrivacy": {
       "enum": [

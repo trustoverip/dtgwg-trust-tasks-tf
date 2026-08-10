@@ -128,6 +128,64 @@ A document carrying `ceremony` therefore **already validates** against today's
 framework. What 0.4 adds is the *meaning* of the member and the obligations that
 attach to it — not permission to send it.
 
+### 2.2 Two shapes, and this note was written against one
+
+A ceremony has at least two shapes, and an early draft of this note tested only
+the first:
+
+|  | **Mediated** | **Bilateral, offline** |
+|---|---|---|
+| Example | VTC member onboarding | Two people meeting to confirm each other |
+| Parties | Several, plus a maintainer | Two, both present |
+| Ordering | Real — one party goes first | **None** — the exchange is simultaneous |
+| Network | Assumed throughout | **None**, at the meeting or afterwards |
+| Evidence moves | Immediately | **Possibly much later** |
+| Third party to record | Present by construction | **None exists** |
+
+Every flow the note was tested against — VTC onboarding, `task-consent`,
+`credential-exchange` — is *mediated*. All of them have a maintainer or
+community that is always present and always online, and three rules were written
+as though that were a property of ceremonies rather than of the sample:
+chaining assumed an ordering, `receipt` assumed a recorder, and the enactment
+deadline was evaluated at *arrival*. Each is fine for the mediated shape and
+each makes the bilateral offline shape inexpressible (§16, round four).
+
+That the second shape was missed is the more embarrassing half, because ADR 0001
+chose the word *ceremony* precisely for its security-literature meaning — a
+protocol extended to include **human participants**, as in a key-signing
+ceremony. Two people meeting in person is the most ceremony-shaped interaction
+there is. The design drifted from its own name.
+
+Both shapes are first-class from here. Where a rule serves only one, this note
+says which.
+
+### 2.3 A ceremony does not know what its steps carry
+
+A definition names *Type URIs*. What the tasks at those URIs carry — credentials,
+acknowledgements, policy decisions, nothing at all — is the business of those
+specifications, and a ceremony has no opinion about it.
+
+This is a layering rule, and it is easy to violate by accident because the
+motivating examples are credential-shaped. Stating it plainly:
+
+> A ceremony **MUST NOT** mandate what is verified or created by its steps. Any
+> artifact a ceremony produces — a Decentralized Trust Graph credential, a
+> membership credential, a witness attestation — is produced by a *step*,
+> under that step's own specification, because that ceremony's author chose that
+> step.
+
+Two ceremonies that produce entirely different artifacts, or none, are the same
+kind of object. `ceremonies/mutual-attestation/0.1` uses
+`credential-exchange/issue` because *that definition* chose to; nothing in the
+format, the checker, or the envelope member knows or cares.
+
+The corollary matters more than the rule: **a ceremony's evidence and an
+artifact's validity are separate questions** (§10.1). A receipt says a flow
+completed. A credential is valid on its own issuer's proof and its own terms.
+Neither establishes the other, and a design that let a ceremony vouch for the
+credentials minted inside it would have made every ceremony a certificate
+authority.
+
 ## 3. What already exists
 
 Most of the mechanism is present and was never named as a layer.
@@ -650,6 +708,38 @@ that cannot verify each other.
 salted digest, not its content, and the prior party (or the recorder) hands it
 forward.
 
+#### A chain needs an anchor, and it need not be a step
+
+`prev` does two jobs at once: it records **causal dependency**, and it supplies
+the **origin** the enactment is measured from. A simultaneous exchange has the
+second without the first, and an early draft could express neither.
+
+Two people meeting and confirming each other have no first step. Writing that as
+mutual `prev` is a cycle; writing it as two `prev`-less steps leaves the deadline
+origin ambiguous. The publication checker rejected both, so the shape was not
+merely awkward — it was **inexpressible**.
+
+The concurrency §13.3 celebrates is a different thing: two steps fanning out from
+a common ancestor *step*. A mutual attestation's common ancestor is not a step at
+all. It is the meeting — the scanned code, the key agreement, the compared short
+authentication string.
+
+So a definition declares its **anchor**:
+
+* `openingStep` (default) — exactly one required step has an empty `prev`, and
+  its `issuedAt` starts the clock. Every mediated flow works this way.
+* `coDerived` — there is no opening step. The anchor is the enactment identifier
+  itself, derived jointly by the roles named in `boundBy` from something neither
+  could have produced alone. Because `ceremony.enactment` is signed (§4.11.3),
+  every step signing it **is** every step committing to the shared anchor — which
+  is the work `prev` would otherwise do, without imposing an order that does not
+  exist.
+
+An anchor bound by one role is rejected: it is an opening step wearing a
+disguise, and supplies none of the joint-derivation property the shape depends
+on. A co-derived anchor does not forbid ordering *between* steps where a flow
+genuinely has some; it removes the requirement that one step start the flow.
+
 **It is what makes a receipt trustworthy.** See below.
 
 ### 7.4 `receipt`, and the recorder's deliberately weak claim
@@ -754,8 +844,17 @@ whose participation must not be linkable declares `enactmentPrivacy: blinded`.
 
 Every participant signs the transcript. This closes recorder misbehaviour
 entirely and is the right level for irreversible or authority-shifting flows —
-key ceremonies, governance decisions that transfer control. It is far too heavy
-as a default, needing a coordination round after the work is done.
+key ceremonies, governance decisions that transfer control.
+
+"Far too heavy as a default", as an earlier draft put it, is true of a
+twelve-step mediated flow and **exactly backwards for two people** (§2.2). Both
+parties are present and signing anyway; there is no coordination round to add,
+and no third party to appoint. For the bilateral offline shape `countersigned`
+is the *cheapest* level as well as the strongest, and a definition that reaches
+for `receipt` there is inventing a recorder it does not have.
+
+Naming recorders at this level is therefore rejected outright: if someone records
+on the others' behalf, that is `receipt`.
 
 ### 7.6 Declared per definition, on the framework's existing pattern
 
@@ -780,6 +879,16 @@ resolution is to split at the right place:
 So the two lower levels are definition-free and the two upper ones are not,
 which is the honest line: they are exactly the levels whose claims are *about*
 the flow as a whole rather than about the documents in hand.
+
+**With a bilateral exemption.** `countersigned` was placed in the
+definition-needed column because "the participant set must be known to be
+complete". In a bilateral ceremony it already is: two roles, every step running
+between them, each document naming the other party as `recipient`. The set is
+evident from the documents, so a two-party countersigned enactment verifies with
+**no definition at all** — which is what makes it work with no network at
+verification time, not merely none at enactment time. The framework is already
+bilateral (§2); the two-party case should collapse that requirement rather than
+inherit it.
 
 Down a composition tree (§6.5) the level **MUST NOT** weaken: a child's declared
 evidence level is at least its parent's. A parent declaring `receipt` whose child
@@ -952,14 +1061,30 @@ governs one document and nothing governs an enactment. The story:
 - The enactment's clock starts at the `issuedAt` of the step that opened it —
   the one whose `prev` is empty — so the deadline is derived rather than carried,
   and no party has to be trusted to assert when the flow began.
+- Under a `coDerived` anchor (§7.3) there is no opening step, so the clock starts
+  at the earliest `issuedAt` among the steps.
 - Any participant **MAY** abort past the deadline.
-- A step **MUST NOT** carry an `expiresAt` later than the enactment deadline.
-  Without this a step outlives the ceremony it belongs to and stays individually
-  valid after the flow is dead, which is how a stale approval gets replayed into
-  a closed enactment.
-- A step arriving after the deadline is rejected as `expired` (§8.3) — the
-  existing code covers it, and no ceremony-specific code is needed.
-- Nested enactments (§6.5) must finish inside their parent's deadline.
+- Nested enactments (§6.5) must finish inside their parent's window.
+
+**`maxDuration` bounds issuance, and is never evaluated against the verifier's
+clock.** An earlier draft said a step "arriving after the deadline is rejected as
+`expired`", which conflates two different things: a **stale command**, which
+should not be acted on, and a **settled record**, which does not go off. A
+ceremony that completed inside its window stays complete however long its
+documents took to travel — and offline, they travel late by design. Credentials
+minted at a meeting may sync days afterwards; a rule that expires them in transit
+destroys evidence of something that demonstrably happened on time.
+
+So the window is checked at verification over the `issuedAt` values, and `now`
+never enters the comparison.
+
+The same draft required a step's `expiresAt` to fall inside the deadline, to stop
+"a stale approval being replayed into a closed enactment". That rule was
+defending against something already prevented: `ceremony.enactment` is signed
+(§4.11.3), so a step cannot be replayed into a *different* enactment at all, and
+`round` plus the uniqueness of `id` cover replay within one. It is dropped rather
+than repaired — a rule that duplicates a stronger guarantee only creates ways to
+be wrong.
 
 That is the whole interaction, and it is checkable at publication for the nesting
 rule and at receipt time for the rest.
@@ -1032,6 +1157,47 @@ whose participants use non-historical DID methods cannot offer late verification
 and a definition demanding `receipt` or `countersigned` evidence should say so in
 its accepted VID schemes (§6.1) rather than leaving it to be discovered when an
 old receipt stops verifying.
+
+### 10.1 Referencing a ceremony from outside it
+
+Something outside the framework — a credential, an audit record, a governance
+decision — frequently needs to say *this happened during that*. Two rules already
+govern it, and they are easy to conflate:
+
+* §4.9.1 — a reference to an **exchange** names the innermost exchange whose
+  documents attest the event, by the `id` of the document that initiated it.
+* §4.11.2 — a reference to a **flow** names the `enactment`.
+
+These are different scopes, and picking the wrong one collects evidence of the
+wrong event. A `threadId` names one step's request/response; an `enactment` names
+the whole ceremony. An external specification that binds its context field to
+`threadId` can express *"this credential came out of that task"* and **cannot**
+express *"this credential came out of that ceremony"*. The two are not
+interchangeable, and a field offering only the first will be used for the second.
+
+Three consequences worth stating plainly. Each is a rule the *external*
+specification must make for itself, and none of them follows from citing an
+enactment. They are phrased below for a credential because that is the common
+case, but nothing here is credential-specific — a ceremony does not know what its
+steps carry (§2.3), and the same reasoning applies to an audit record, a
+governance decision, or any other durable artifact that cites a flow:
+
+1. **Completion evidence is not credential validity.** A receipt attests that a
+   flow completed; a credential is its issuer's own claim, valid on its own proof
+   and its own terms. Neither implies the other, and a credential meaningful only
+   alongside a receipt is not self-contained.
+2. **Participation is not authority.** Holding a ceremony role, or appearing in
+   an enactment, confers nothing — §4.11.4 and §7.2 item 9 make this normative
+   for the envelope member, and the same reasoning applies to anything citing
+   one. A credential is issuable because its issuer had the authority, never
+   because a ceremony was under way.
+3. **An enactment identifier in a durable artifact is a correlation handle, and a
+   worse one than in a step.** A step document is seen by its two parties; a
+   credential may be shown for years to anyone. Embedding a raw `enactment` links
+   every credential minted in that ceremony, permanently, to every verifier who
+   sees either. Where the citation must survive, cite a **commitment** the holder
+   can open selectively — §10's `blinded` treatment applied at the credential
+   layer rather than the step layer.
 
 ## 11. Aggregate side effects and exposure do not compose
 
@@ -1373,7 +1539,17 @@ the branching assumption (below). What remains:
   (§6.1, §16). A sixth flow of a shape none of these share may still break it.
 - **Composition is designed but untried.** §6.5 nests ceremonies to arbitrary
   depth and derives four publication-time rules, none of which has been checked
-  against a real two-level flow. The obvious test is the one §13 already half
+  against a real two-level flow.
+- **The co-derived anchor is specified but not verified in code.** §7.3 and the
+  definition format express it, and the publication checker enforces its
+  well-formedness, but `trust-tasks-ceremony` does not yet evaluate an issuance
+  window or check that a co-derived enactment identifier was in fact jointly
+  derived — the latter may not be checkable from the documents at all, which
+  would make it a property a verifier trusts the parties for rather than one it
+  establishes. That needs deciding before the shape is called done.
+- **Only two shapes have been tested** (§2.2), and there is no reason to believe
+  there are only two. The fourth round of §16 arrived from a use case nobody in
+  the corpus resembled; a fifth shape would arrive the same way. The obvious test is the one §13 already half
   describes — VTC member onboarding containing a webvh witnessing ceremony —
   and it should be worked end to end before the definition schema is fixed.
 - **Nothing in this layer has met a wire.** `trust-task-next-step/0.1` is
@@ -1387,7 +1563,7 @@ the branching assumption (below). What remains:
   whose correctness is a property of how components meet over a wire, the only
   tests that count are the ones that use the wire.
 
-## 16. What this note got wrong, in three rounds
+## 16. What this note got wrong, in four rounds
 
 *This section records defects found by re-reading the first draft adversarially,
 after it was written. They are listed because the pattern matters more than the
@@ -1462,6 +1638,43 @@ prose, but `spec.meta.schema.json` still enforced only `^trust-task…`. The
 namespace ADR 0001 §8 called squattable stayed squattable for three merges,
 because the reservation was written in the document that describes the rule and
 not in the one that applies it.
+
+### Round four: found by a use case from outside the corpus
+
+The first three rounds were self-inflicted — re-reading, building, specifying.
+The fourth came from a committee reviewing the draft against a protocol this note
+had never seen: an offline, two-person, in-person attestation whose credentials
+move days later.
+
+| # | Defect | Now in |
+|---|---|---|
+| 11 | **Chaining assumed an ordering** a simultaneous exchange does not have. Mutual `prev` is a cycle, two `prev`-less steps an ambiguous origin — the checker rejected both, so the shape was *inexpressible*, not merely awkward | §7.3, `coDerived` anchor |
+| 12 | **`receipt` requires a recorder** two people offline do not have — and `countersigned`, the level that needs none, was described as "far too heavy as a default" when for two parties it is the cheapest | §7.5–7.6, bilateral exemption |
+| 13 | **The enactment deadline was evaluated at arrival**, so a ceremony that completed in a minute expires because its credentials synced on Thursday | §9, issuance window |
+
+Each is fine for the shape the note was tested against. That is the finding.
+
+**Every flow in the corpus was mediated.** VTC onboarding, `task-consent`,
+`credential-exchange` — all have a maintainer or community always present and
+always online. Three properties of *that sample* were written down as properties
+of *ceremonies*, and no amount of re-reading would have caught it, because
+re-reading checks a design against its author's assumptions and these were the
+assumptions.
+
+The sharpest part is that ADR 0001 chose the word *ceremony* for its
+security-literature sense — a protocol extended to include **human
+participants**, as in a key-signing ceremony. Two people meeting in person is the
+most ceremony-shaped interaction there is, and it was the one shape the design
+could not express. The name was right and the design drifted from it.
+
+§2.2 now states both shapes at the top, and §13A works the bilateral one end to
+end, so the corpus is no longer one-sided.
+
+**A fourth instrument, and the only one not available to the author.** Rounds one
+to three were re-reading, building, and specifying — each found what the others
+could not. Round four needed someone who wanted to do something the design had
+never been pointed at. That is an argument for putting drafts in front of
+unfamiliar use cases early, and not a substitute for the other three.
 
 **The pattern worth keeping.** Findings 2 and 3 were already written down in this
 repository. `audit/verify` says in its Security section that *"a truncation to a
