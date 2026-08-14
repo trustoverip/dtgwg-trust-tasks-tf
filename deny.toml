@@ -37,6 +37,26 @@ ignore = [
     # links it. No active CVE, maintenance status only. It goes when
     # json-syntax drops it or the SSI stack moves off json-ld 0.21.
     "RUSTSEC-2026-0215",
+    # im 15.1.0, and the two crates it exists to use — bitmaps 2.1.0 and
+    # sized-chunks 0.6.5 — are unmaintained. All three were flagged on the same
+    # day and are one finding: `im` is the immutable-collections crate,
+    # `sized-chunks` and `bitmaps` are its own storage primitives, and nothing
+    # else in the graph pulls them.
+    #
+    # Same upstream as the smallstr entry above, one layer out: json-ld 0.21's
+    # `linked-data` uses `im`, `ssi-json-ld` uses json-ld, and the SSI stack
+    # reaches this workspace through the Affinidi crates behind
+    # `trust-tasks-proof` and `trust-tasks-tsp`. Unlike smallstr this is in the
+    # NORMAL graph, not a dev-dependency — crates we publish link it.
+    #
+    # There is no upgrade to take: 15.1.0 / 2.1.0 / 0.6.5 are the newest
+    # releases of each, and the advisories are maintenance status with no
+    # reported vulnerability. It clears when the SSI stack moves off json-ld
+    # 0.21, or when linked-data drops `im` — the same condition that clears
+    # RUSTSEC-2026-0215, so the three should be reviewed together.
+    "RUSTSEC-2026-0247", # bitmaps
+    "RUSTSEC-2026-0248", # im
+    "RUSTSEC-2026-0251", # sized-chunks
 ]
 
 # ─── Licenses ──────────────────────────────────────────────────────────────
