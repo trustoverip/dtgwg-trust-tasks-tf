@@ -28,6 +28,15 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.6.1] - 2026-08-14
+
+### Added
+
+- **`vta/webvh/servers/reconcile/0.1`** — bindings for the new spec. A producer
+  asks an agent to compare the DIDs a hosting server holds for it against the
+  DIDs it has records for, and to report the divergences in both directions.
+  Additive: new payload module and schema-index entry, nothing existing moves.
+
 ## [0.6.0] - 2026-08-10
 
 ### Changed

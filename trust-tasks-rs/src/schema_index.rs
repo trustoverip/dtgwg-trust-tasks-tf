@@ -229,6 +229,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1" => Some(<crate::specs::vta::passkey_vms::revoke::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" => Some(<crate::specs::vta::webvh::dids::update::v1_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/webvh/servers/domains/0.1" => Some(<crate::specs::vta::webvh::servers::domains::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1" => Some(<crate::specs::vta::webvh::servers::reconcile::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1" => Some(<crate::specs::vtc::admin::bootstrap::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" => Some(<crate::specs::vtc::admin::invites::create::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vtc/admin/invites/list/0.1" => Some(<crate::specs::vtc::admin::invites::list::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
