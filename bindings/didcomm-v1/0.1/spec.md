@@ -9,6 +9,7 @@ bindingURI: https://trusttasks.org/binding/didcomm-v1/0.1
 envelopeType: "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/basicmessage/1.0/message"
 authors:
   - Glenn Gore (https://github.com/stormer78)
+  - Alberto L (https://github.com/albertoleon7794)
 ---
 
 ## Abstract
@@ -67,7 +68,9 @@ A *producer* **SHOULD** set `content` to a short human-readable summary naming t
 
 A message **MAY** carry other `~attach` entries. A *consumer* **MUST** select by `@id` rather than position, and **MUST** reject a message with no `trust-task` attachment.
 
-Implementations differ on which decorators they add to a `basic-message` — return-route, timing, localization, acknowledgement requests — and none of them carry binding semantics. A *consumer* **MUST** ignore decorators it does not recognize. A *producer* **SHOULD** set `sent_time` (RFC 0095 defines it, and some stacks always populate it); a *consumer* **MUST NOT** require it.
+Implementations differ on which decorators they add to a `basic-message` — return-route, timing, localization, acknowledgement requests — and none of them carry binding semantics. A *consumer* **MUST** ignore decorators it does not recognize.
+
+`sent_time` is **not** a decorator: RFC 0095 defines it as a top-level member of the message, alongside `content`. Stacks differ on whether they populate it — Credo always does, the reference implementation does not. A *producer* **SHOULD** set it; a *consumer* **MUST NOT** require it.
 
 ### 2.1 Why an attachment
 
@@ -124,15 +127,18 @@ Per [SPEC §9.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/S
 
 **Producers.** A *producer* **SHOULD** set `thid` from the document's `threadId`, and `pthid` from its `parentThreadId`. Where the document carries no `threadId`, the *producer* **SHOULD** set `thid` to the document's `id` — §4.9's own fallback, so the v1 thread and the Trust Task exchange are named by one value. Where there is no `parentThreadId`, `pthid` is omitted.
 
-**Representability.** RFC 0008 shapes thread ids as `[-_./a-zA-Z0-9]{8,64}`, and major Aries stacks enforce it: Credo validates every `~thread` field against exactly that pattern (or a bare DID) and refuses to pack a message that fails. A framework id in URI form — `urn:uuid:…`, with its colons — therefore cannot ride the decorator at all: the send is rejected client-side before the envelope is built, on the very stacks this binding exists to reach.
+Populating the decorator *from* the members, rather than the reverse, is what makes the layers agree. A producer that lets v1 default its own threading produces a message whose `thid` is the DIDComm `@id`, which is a different identifier space entirely — the v1 `@id` is the transport's, unrelated to the document's `id`.
+
+**Representability.** RFC 0008 shapes thread ids as `[-_./a-zA-Z0-9]{8,64}`, and major Aries stacks enforce it: Credo validates every `~thread` field against exactly that pattern (or a bare DID) and refuses to pack a message that fails. A framework id in URI form — `urn:uuid:…`, with its colons — therefore cannot ride the decorator at all: the send is rejected client-side before the envelope is built, on the very stacks this binding exists to reach. The colon is the common case rather than the only one: the shape also excludes any value shorter than eight characters, and the `+` and `=` of base64, so a producer that tests only the URN form will meet this again.
 
 Accordingly:
 
 - A *producer* **MUST NOT** emit a `~thread` field that does not satisfy RFC 0008's shape.
-- Where a document's `threadId` or `parentThreadId` is not representable, the *producer* **MUST omit** that field — never truncate or rewrite it. A rewritten value would disagree with the in-band member, and this section's own comparison rule makes that `malformedRequest`. Nothing is lost that the framework relies on: the in-band members are authoritative and `threadId` carries no normative validation semantics (§4.9); the decorator is derived convenience for transport-level tooling.
-- A *Trust Task* intended to ride this binding **SHOULD** use ids that are themselves RFC 0008-conformant — a bare UUID satisfies both the framework's §4.3 uniqueness obligation and this transport's shape. The framework's examples write ids as `urn:uuid:` URIs, but nothing in the framework requires that form.
+- Where a document's `threadId` or `parentThreadId` is not representable, the *producer* **MUST omit** that field — never truncate or rewrite it. A rewritten value would disagree with the in-band member, and this section's own comparison rule makes that `malformedRequest`.
+- A *producer* **initiating** an exchange intended for this binding **SHOULD** mint a `threadId` that is itself RFC 0008-conformant. §4.9 lets an initiator omit `threadId`, mint a fresh value, or reuse the document's own `id`, so the choice is free — and initiation is the only point in an exchange where it is. A *responder* inherits `threadId` from the originating document under §4.9's convention and cannot repair a value another party minted, possibly on another transport.
+- The same applies to the document's `id`, which §4.9 makes the fallback `thid`, and to `parentThreadId`, which a producer inherits from the containing exchange on the same terms. A bare UUID satisfies both the framework's §4.3 uniqueness obligation and this transport's shape; §4.3 places no constraint on the form of an `id` beyond uniqueness, so the `urn:uuid:` URIs the framework's examples use are a convention rather than a requirement.
 
-Populating the decorator *from* the members, rather than the reverse, is what makes the layers agree. A producer that lets v1 default its own threading produces a message whose `thid` is the DIDComm `@id`, which is a different identifier space entirely — the v1 `@id` is the transport's, unrelated to the document's `id`.
+**What an omission costs.** Omitting the field does not leave the message unthreaded. RFC 0008 **defaults** an absent `thid` to the message `@id`, so each message of the exchange falls into a v1 thread of its own, named by a value the transport minted. Nothing the *framework* relies on is lost — the in-band members are authoritative, and `threadId` carries no normative validation semantics (§4.9) — but transport-level correlation is unavailable for that exchange, and tooling that groups by `~thread` will not group it. A *consumer* **MUST NOT** infer thread continuation from a defaulted `thid`, for the reason the comparison rule below gives.
 
 **Consumers.** Where **both** a `~thread` field and its framework member are explicitly present, they **MUST** be equal, and a *consumer* **MUST** reject a mismatch with `malformedRequest` — **not** `identityMismatch`, which is reserved for a contested party identity and carries §8.1's suppression rules. A thread disagreement contests nobody's identity.
 
@@ -152,7 +158,7 @@ A *consumer* **MUST NOT** populate an absent `threadId` or `parentThreadId` from
 | The attachment does not deserialise as a *Trust Task document* | `malformedRequest`. |
 | `thid`/`threadId` or `pthid`/`parentThreadId` both present and disagreeing | `malformedRequest` (see [§3.1](#31-thread-correlation)). Not `identityMismatch`. |
 
-Error responses generated by the framework pipeline **SHOULD** be returned as a `trust-task-error` document carried the same way, over the same connection, with `~thread.thid` continuing the exchange.
+Error responses generated by the framework pipeline **SHOULD** be returned as a `trust-task-error` document carried the same way, over the same connection, with `~thread.thid` continuing the exchange where [§3.1](#31-thread-correlation)'s representability rule permits it. Where it does not, the field is omitted and the reply is correlated by its in-band `threadId` — and by `inResponseTo` ([SPEC §8.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#82-error-payload)), which names the reported-on document directly and does not depend on the transport carrying a thread at all.
 
 ## 5. Proof interaction
 
