@@ -1,0 +1,21 @@
+[
+  {
+    "note": "relationshipDid is required — a proposal that names no pairwise DID gives the counterparty nothing to accept.",
+    "payload": {
+      "witnessed": true
+    }
+  },
+  {
+    "note": "relationshipDid must be a DID; an arbitrary identifier defeats the pairwise-DID design.",
+    "payload": {
+      "relationshipDid": "alice-relationship-1"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected; ecosystem data belongs under `ext` (SPEC.md §4.5.1).",
+    "payload": {
+      "relationshipDid": "did:peer:2.Ez6LSbyuE",
+      "nickname": "Alice from the workshop"
+    }
+  }
+]

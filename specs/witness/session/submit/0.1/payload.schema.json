@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/witness/session/submit/0.1",
+  "title": "Witness Session Submit — payload",
+  "description": "A participating party submits its presentation bound to its session challenge; the witness's mandatory response delivers the Verifiable Witness Credential and its digest. The response is the outcome evidence a VWC presentation must ship.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vp"
+  ],
+  "properties": {
+    "vp": {
+      "type": "object",
+      "description": "A W3C Verifiable Presentation of the submitting party's own relationship credential material (opaque here), bound to the session's challenge and domain. A presentation not bound to this session is rejected with witness/session/submit:challengeMismatch."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Witness Session Submit — response payload",
+      "description": "The Verifiable Witness Credential and its digest, delivered under the REQUIRED proof. This document is the session's terminal success form and the outcome evidence a VWC presentation must ship.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vwc",
+        "vwcDigestMultibase"
+      ],
+      "properties": {
+        "vwc": {
+          "type": "object",
+          "description": "A signed Verifiable Witness Credential (opaque here; its schema belongs to DTG Core Credentials). Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1)."
+        },
+        "vwcDigestMultibase": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 canonicalization of the delivered credential, computed by the witness. It binds this evidence to one specific credential rather than to the session alone, so a verifier pairing a presented VWC with this response can check it is the credential this session issued and not another the same witness signed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -236,6 +236,8 @@ export * as VaultUpsert_v0_1 from "./vault/upsert/0.1/payload.js";
 export * as VaultUpsert_v0_2 from "./vault/upsert/0.2/payload.js";
 export * as VaultUsage_v0_1 from "./vault/usage/0.1/payload.js";
 export * as VaultUsage_v0_2 from "./vault/usage/0.2/payload.js";
+export * as VrcRelationshipsIssue_v0_1 from "./vrc/relationships/issue/0.1/payload.js";
+export * as VrcRelationshipsPropose_v0_1 from "./vrc/relationships/propose/0.1/payload.js";
 export * as DidTemplateShared_v0_1 from "./vta/_shared/0.1/did-template.js";
 export * as PasskeyVmShared_v0_1 from "./vta/_shared/0.1/passkey-vm.js";
 export * as VtaContextsDidTemplatesCreate_v1_0 from "./vta/contexts/did-templates/create/1.0/payload.js";
@@ -347,3 +349,5 @@ export * as VtcWebsiteRollback_v0_1 from "./vtc/website/rollback/0.1/payload.js"
 export * as WebvhSyncDelete_v0_1 from "./webvh/sync/delete/0.1/payload.js";
 export * as WebvhSyncUpdate_v0_1 from "./webvh/sync/update/0.1/payload.js";
 export * as WebvhWitnessPublish_v0_1 from "./webvh/witness/publish/0.1/payload.js";
+export * as WitnessSession_v0_1 from "./witness/session/0.1/payload.js";
+export * as WitnessSessionSubmit_v0_1 from "./witness/session/submit/0.1/payload.js";

@@ -74,7 +74,9 @@ pub mod trust_ceremony_receipt;
 pub mod trust_task_discovery;
 pub mod trust_task_next_step;
 pub mod vault;
+pub mod vrc;
 pub mod vta;
 pub mod vtc;
 pub mod webvh;
+pub mod witness;
 // trust-tasks-codegen:end

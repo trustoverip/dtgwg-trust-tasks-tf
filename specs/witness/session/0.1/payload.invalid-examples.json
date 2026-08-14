@@ -1,0 +1,25 @@
+[
+  {
+    "note": "parties is required and names exactly the two relationship DIDs — a session with no parties witnesses nothing.",
+    "payload": {}
+  },
+  {
+    "note": "Exactly two parties: a witness ceremony observes one bilateral exchange.",
+    "payload": {
+      "parties": ["did:peer:2.Ez6LSbyuE"]
+    }
+  },
+  {
+    "note": "Parties are DIDs, not labels.",
+    "payload": {
+      "parties": ["alice", "bob"]
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected; ecosystem data belongs under `ext` (SPEC.md §4.5.1).",
+    "payload": {
+      "parties": ["did:peer:2.Ez6LSbyuE", "did:peer:2.Vz6MkqDVb"],
+      "location": "Cambridge, MA"
+    }
+  }
+]

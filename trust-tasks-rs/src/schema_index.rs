@@ -199,6 +199,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vault/upsert/0.2" => Some(<crate::specs::vault::upsert::v0_2::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vault/usage/0.1" => Some(<crate::specs::vault::usage::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vault/usage/0.2" => Some(<crate::specs::vault::usage::v0_2::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vrc/relationships/issue/0.1" => Some(<crate::specs::vrc::relationships::issue::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/vrc/relationships/propose/0.1" => Some(<crate::specs::vrc::relationships::propose::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/contexts/did-templates/create/1.0" => Some(<crate::specs::vta::contexts::did_templates::create::v1_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0" => Some(<crate::specs::vta::contexts::did_templates::delete::v1_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/vta/contexts/did-templates/get/1.0" => Some(<crate::specs::vta::contexts::did_templates::get::v1_0::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
@@ -299,6 +301,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/webvh/sync/delete/0.1" => Some(<crate::specs::webvh::sync::delete::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/webvh/sync/update/0.1" => Some(<crate::specs::webvh::sync::update::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         "https://trusttasks.org/spec/webvh/witness/publish/0.1" => Some(<crate::specs::webvh::witness::publish::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/witness/session/0.1" => Some(<crate::specs::witness::session::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
+        "https://trusttasks.org/spec/witness/session/submit/0.1" => Some(<crate::specs::witness::session::submit::v0_1::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),
         _ => None,
     }
 }

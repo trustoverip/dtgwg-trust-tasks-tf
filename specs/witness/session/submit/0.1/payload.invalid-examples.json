@@ -1,0 +1,13 @@
+[
+  {
+    "note": "vp is required — a submission with no presentation gives the witness nothing to verify.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected; ecosystem data belongs under `ext` (SPEC.md §4.5.1). Attestation evidence rides inside the presentation or under a namespaced ext, never as an ad-hoc member.",
+    "payload": {
+      "vp": {},
+      "attestation": "secure-enclave"
+    }
+  }
+]

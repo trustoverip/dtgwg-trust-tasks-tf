@@ -28,6 +28,23 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.6.2] - 2026-08-15
+
+### Added
+
+- **The witnessed relationship exchange** — bindings for four new specs:
+  `vrc/relationships/propose`, `vrc/relationships/issue`, `witness/session` and
+  `witness/session/submit`. Two people establish a peer-to-peer relationship
+  under pairwise DIDs and issue each other a Verifiable Relationship Credential;
+  where they agree to it, each opens its own session with a witness, which
+  attests the exchange in a Verifiable Witness Credential. Additive: four new
+  payload modules and schema-index entries, nothing existing moves.
+
+  `witness/session/submit` is the first specification whose `#response` is
+  designed as retained third-party evidence — it declares `proof` REQUIRED on
+  both variants, so `IS_PROOF_REQUIRED` is `true` on the response impl as well
+  as the request.
+
 ## [0.6.1] - 2026-08-14
 
 ### Added

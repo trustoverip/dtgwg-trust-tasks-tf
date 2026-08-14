@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/witness/session/0.1",
+  "title": "Witness Session — payload",
+  "description": "Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. A session is bilateral \u2014 a witnessed exchange between two parties runs two sessions with the same witness, each naming the same parties pair. The response issues the session challenge; the request document's id is the value that party's VWC later carries as taskContext.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["parties"],
+  "properties": {
+    "parties": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "string",
+        "pattern": "^did:"
+      },
+      "description": "The relationship DIDs of the exchange to be witnessed — the pairwise values the relationship proposal exchanged, in either order."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Witness Session — response payload",
+      "description": "The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session \u2014 which is why each party opens its own.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["challenge", "domain"],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "minLength": 16,
+          "description": "A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions \u2014 including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session."
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The domain the presentations bind alongside the challenge, identifying this witness's verification context."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

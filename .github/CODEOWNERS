@@ -42,6 +42,11 @@
 # (acl/grant, acl/revoke, acl/change-role, acl/list, acl/show).
 /specs/acl/                        @stormer78
 
+# Peer-to-peer relationship credentials and the witnessing that can accompany
+# them — authored jointly with the DTG Core Credentials task force (see #173).
+/specs/vrc/                        @stormer78
+/specs/witness/                    @stormer78
+
 # Framework-reserved response types: registry-published implementations
 # of the slugs reserved by SPEC §6.1. Framework editors only.
 /specs/trust-task-error/           @stormer78

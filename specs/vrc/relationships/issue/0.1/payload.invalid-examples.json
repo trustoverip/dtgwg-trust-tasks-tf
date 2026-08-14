@@ -1,0 +1,29 @@
+[
+  {
+    "note": "vrc is required — a delivery with no credential delivers nothing.",
+    "payload": {
+      "vrcDigestMultibase": "zQmYtUc4iTCbbNVk9zzEfGRnzks5o1LU7XBcqEXBhZjUC4x"
+    }
+  },
+  {
+    "note": "vrcDigestMultibase is the framework's DigestMultibase — multibase-multihash, not a bare hex digest that hard-codes one algorithm into the wire contract.",
+    "payload": {
+      "vrc": {},
+      "vrcDigestMultibase": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+    }
+  },
+  {
+    "note": "The base58btc alphabet is enforced, not assumed: 0, O, I and l are excluded, so a z-prefixed value is not automatically conforming.",
+    "payload": {
+      "vrc": {},
+      "vrcDigestMultibase": "zQmYtUc4iTCbbNVk9zzEfGR0OIl5o1LU7XBcqEXBhZjUC4x"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected; ecosystem data belongs under `ext` (SPEC.md §4.5.1).",
+    "payload": {
+      "vrc": {},
+      "deliveredBy": "keyring"
+    }
+  }
+]
