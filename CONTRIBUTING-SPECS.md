@@ -14,7 +14,7 @@ specs/<slug>/<version>/
 
 1. Fork the repo and create a branch.
 2. Create the folder `specs/<your-slug>/<your-version>/`. The slug may be hierarchical — `specs/acl/grant/0.1/` is a valid layout whose slug is `acl/grant`.
-3. Add `spec.md` with the YAML front matter shape described below, prose for your specification, and at least one example Trust Task document under an `## Examples` section.
+3. Add `spec.md` with the YAML front matter shape described below, prose for your specification, and at least one example Trust Task document under an `## Examples` section. If your task is consequential — most non-read tasks are — it also needs an [`## Authorization`](#the--authorization-section) section; nothing in CI checks for it.
 4. Add `payload.schema.json` describing your `payload` member. Its `$id` **MUST** equal `https://trusttasks.org/spec/<your-slug>/<your-version>` — note that the slug's `/` separators appear literally in the URL.
 5. Run `npm install` then `npm run build` from the repo root to validate.
 6. Open a PR. CODEOWNERS will route review to the right people.
@@ -90,7 +90,7 @@ Notes:
 
 - **`proofRequirement.requirement` is runtime-enforceable, not advisory.** The three values map to consumer behaviour through `Payload::IS_PROOF_REQUIRED` (codegen-emitted): `REQUIRED` sets the const to `true` and causes every conforming consumer pipeline to reject a proofless document with `proofRequired` ([SPEC §7.2 item 7](SPEC.md#72-consumer-requirements)); `RECOMMENDED` and `OPTIONAL` leave the const at its trait default (`false`) and the pipeline accepts proofless documents (subject to the consumer's chosen `ProofPolicy`). Picking `REQUIRED` therefore commits every conforming consumer — including bindings without an in-band verifier — to reject proofless requests, which is the right outcome for evidentiary specs like `acl/grant` but makes the spec unreachable on bindings whose integrity guarantees are out-of-band until those bindings grow a verifier. **Pick `REQUIRED` only when the threat model genuinely needs transport-independent integrity** (audit replay, downstream corroboration, dispute resolution after the original transport has closed). For everyday request/response interactions whose integrity is already guaranteed by the transport, `RECOMMENDED` is the right default.
 
-After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
+After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
 - **Tag the party that fills each framework member** with `member: issuer` or `member: recipient`. A party named only in the `payload` (neither the document issuer nor recipient) omits `member`. This is what makes `requirement: REQUIRED` enforceable: the codegen emits `Payload::IS_RECIPIENT_REQUIRED` from the `member: recipient` party, and every conforming consumer then rejects a document with no in-band `recipient` ([SPEC §7.2 item 5](SPEC.md#72-consumer-requirements)). For a request the `recipient` is the `member: recipient` party; a response swaps parties, so its `recipient` requirement follows the `member: issuer` party.
 
@@ -108,6 +108,37 @@ A specification that defines a fire-and-forget task (no success response documen
 Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
 
 See `specs/acl/grant/0.1/spec.md` for a worked example.
+
+## The `## Authorization` section
+
+[SPEC §7.3 item 15](SPEC.md#73-specification-requirements) requires a **consequential** *Trust Task specification* to describe the class of authorization evidence a consumer needs in order to interpret the task correctly. Write it as an H2 named `## Authorization`, placed immediately after `## Conformance`.
+
+**Does this apply to my spec?** A Trust Task is *consequential* ([SPEC §2](SPEC.md#2-terminology)) when any of these holds of your front matter: `sideEffects.level` is `mutating` or `destructive`, `exposure.discloses` is `secret`, or `exposure.actsAsSubject` is `true`. An absent or unresolvable declaration counts as consequential too, so the only way out is to be an explicit, genuine read. Roughly three specs in five qualify.
+
+Item 15 binds specifications whose `targetFrameworkVersion` is `0.4` or later. A spec targeting an earlier framework version is not obliged to carry the section and **MAY** carry it anyway — say so in one line, as [`auth/refresh/0.1`](specs/auth/refresh/0.1/spec.md) does, so a reader does not mistake it for a conformance claim.
+
+**Nothing checks this.** Unlike `parties`, `proofRequirement`, `bearer` and the side-effect and exposure classes, item 15 is satisfied in prose and has **no front-matter field**. The build will not fail, the codegen emits no constant, and no CI job will notice a missing or empty section. It is caught in review or not at all.
+
+### What to write
+
+- **Name the authority, not the pipeline step.** This is the defect the section exists to prevent, and the one every spec audited had in some form. "The consumer verifies the proof, then executes" describes a *check*; it never says what entitles the producer to the outcome. Write the entitlement in one sentence — *ownership of the slot*, *the audit-read capability*, *membership of the exchange named in `parties`*, *the accepted proposal*, *possession of the token* — and then say which conformance rule enforces it.
+
+- **Distinguish it from identity and proof validation.** Per [SPEC §7.2 item 10](SPEC.md#72-consumer-requirements), verifying a VID, `issuer`, `recipient`, transport identity or `proof` establishes *who* and *unaltered*, never *authorized*. If your task requires a `proof`, say explicitly what the proof does and does not buy: usually it makes some later comparison possible (against an owner, an enrolled subject, an expected author) rather than being the authorization itself. Where two proofs are in play — an envelope proof plus a credential's own proof — say which, if either, carries authority. Neither usually does.
+
+- **Say so when there is none.** A task open to any caller is a legitimate design, and item 15 asks that it be stated rather than inferred from silence. [`push/register/0.2`](specs/push/register/0.2/spec.md) is the worked example: registration presupposes nothing beyond gateway policy, and that is safe only because a fresh handle starts inert. If your task is open *because* something downstream is the real gate, name the downstream gate and the task that enforces it.
+
+- **Keep it descriptive.** The section states what authority the task *assumes*; it never obliges a consumer to authorize anything, and the final decision always rests with the consumer under its own policy and governance framework. The bar from [item 13](SPEC.md#73-specification-requirements) applies here unchanged: a specification **MUST NOT** declare, in any form, that a task does or does not require consent, human approval, or an authentication step-up. That policy is not delegable to a spec or to the registry that serves it.
+
+- **A verified assertion may itself be the authorization** — the `task-consent` design, where the proof on a signed decision *is* the authority. That is legitimate, but only where you declare the role explicitly and the consumer's policy accepts it for that purpose. Name the purpose and do not let it extend past it.
+
+### Worked examples
+
+| Spec | Why it is worth reading |
+|---|---|
+| [`witness/session/submit/0.1`](specs/witness/session/submit/0.1/spec.md) | Two pieces of evidence, and why a foreign submission is `challengeMismatch` and not `presentationInvalid` — the presentation is well-formed, and the defect is entitlement |
+| [`vrc/relationships/issue/0.1`](specs/vrc/relationships/issue/0.1/spec.md) | Authority comes from a prior accepted proposal; two proofs are on the exchange and neither is the authorization |
+| [`auth/refresh/0.1`](specs/auth/refresh/0.1/spec.md) | Bearer possession as the entire authority — and how saying so explains why `proof` is optional and why rotation is the only theft signal available |
+| [`push/register/0.2`](specs/push/register/0.2/spec.md) | The no-evidence case, and how to write it without leaving a reader guessing |
 
 ## Naming conventions (per SPEC §4.10)
 
@@ -287,6 +318,7 @@ CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindin
 - Touch only your own spec folder (or namespace). CODEOWNERS routes review to that slug's editors; touching multiple folders requires multiple approvals and slows everyone down.
 - Sign-off your commits (`git commit -s`) — this repository requires the DCO trailer.
 - Run `npm run build` once before submitting. CI runs it on every PR; failing the build blocks the merge.
+- If the spec is consequential, check the [`## Authorization`](#the--authorization-section) section is present and names an authority rather than a validation step. No build check covers this one, so it is a review obligation on both the author and the reviewer.
 
 ## Declaring known implementations
 
