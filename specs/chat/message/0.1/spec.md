@@ -96,6 +96,33 @@ A conforming **consumer** (the counterparty) **MUST**:
    message for the conversation; a mismatch → `chat/message:brokenChain`.
 4. Reject content it cannot represent with `chat/message:unsupportedContent`.
 
+## Authorization
+
+*Stated in anticipation of [SPEC.md §7.3](../../../../SPEC.md#73-specification-requirements)
+item 15, which binds specifications targeting framework 0.4; this specification
+targets 0.2, where the declaration is not yet required.*
+
+The authorization evidence is **being the expected author for the
+`conversationId` and `direction`**. The consumer resolves the conversation
+(unknown → `chat/message:unknownConversation`) and checks the document proof's
+`verificationMethod` DID against the party it expects on that side: the agent
+for `outbound`, the bridge for `inbound`. A party that is not the expected
+author for that direction on that conversation is not authorized to append to
+it, however well its document verifies.
+
+`proof` is REQUIRED here, and verifying it is what makes that comparison
+possible — but per
+[SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 it is not
+itself the authorization. A validly signed message from a DID that is not this
+conversation's expected author for its direction has established its author and
+earned no entitlement.
+
+The `prev` chain check is not an authorization input either. It establishes
+that the conversation's history is unbroken, which is an integrity property; a
+correctly chained message from an unexpected author is still unauthorized, and
+a chain mismatch from the right author is reported separately as
+`chat/message:brokenChain`.
+
 ## Payload
 
 `conversationId` (REQUIRED) — opaque conversation handle. `direction` (REQUIRED)

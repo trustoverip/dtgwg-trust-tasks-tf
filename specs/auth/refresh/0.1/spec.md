@@ -84,6 +84,32 @@ A conforming **consumer** (the auth service) **MUST**:
 4. Preserve `session.amr` and `session.acr` across the refresh — refresh does not elevate or downgrade AAL.
 5. Refuse with `auth/refresh:scope_widening_refused` when `payload.scope` ⊄ session scope.
 
+## Authorization
+
+*Stated in anticipation of [SPEC.md §7.3](../../../../SPEC.md#73-specification-requirements)
+item 15, which binds specifications targeting framework 0.4; this specification
+targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence for this task is **possession of the `refreshToken`**
+and nothing else. The token is bearer material: the consumer looks up the
+session it names, and any party presenting a live, unrevoked token is
+authorized to obtain a fresh access token for that session's subject and
+scope. There is no separate check of who is asking.
+
+This is the reason `proof` is not required here and its absence is not an
+error. Where a `proof` is present it attributes the request to a signer, but
+per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 that
+attribution is neither necessary nor sufficient for the refresh — the token is
+what carries the authority, and a valid proof over a stolen token authorizes
+nothing extra, just as a missing proof over a legitimate token withholds
+nothing.
+
+Two consequences follow, both already carried in Security & Privacy below:
+bearer authority is why transport confidentiality is mandatory for this
+exchange, and why refresh-token rotation is the recommended detection
+mechanism — with no second factor in the authorization, replay of the consumed
+token is the only signal of theft available.
+
 ## Definitions
 
 * **Refresh token.** A long-lived opaque string issued in a prior `TokenBundle`. Consumer-internal correlation to a session.

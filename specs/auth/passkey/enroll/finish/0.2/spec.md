@@ -89,6 +89,34 @@ A conforming **consumer** **MUST**:
 4. On any verification step failure, respond with `attestation_invalid` and `details.reason` set to the specific gate that failed.
 5. Persist the credential (id, public key, counter, subject VID, deviceLabel) and consume the enrollment record so the same `enrollmentId` cannot be replayed.
 
+## Authorization
+
+*Stated in anticipation of [SPEC.md §7.3](../../../../../../SPEC.md#73-specification-requirements)
+item 15, which binds specifications targeting framework 0.4; this specification
+targets 0.2, where the declaration is not yet required.*
+
+The authorization evidence for this task is **the enrollment record named by
+`enrollmentId`, together with the subject it was bound to at ceremony start**.
+The consumer looks the record up server-side; an unknown or expired record
+authorizes nothing (`enrollment_not_found`, `enrollment_expired`), and a record
+whose bound subject is not the one presenting is refused with
+`subject_mismatch`. The record is consumed on success, so it authorizes exactly
+one enrollment.
+
+The document `proof` is a distinct check and is not the authorization. It
+attributes the finish request to a signer, and the producer is required to
+carry one whose `verificationMethod` resolves to the same VID the start
+ceremony was bound to — but per
+[SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements) item 10, establishing
+that the signer is that VID is what makes the `subject_mismatch` comparison
+possible, not a substitute for it. Neither is the WebAuthn attestation
+verification: it establishes that the credential is genuine and well-formed,
+which is a property of the authenticator, not an entitlement to enroll it
+against this subject.
+
+Whether to accept an enrollment that satisfies all three checks remains the
+auth service's own decision under its policy.
+
 ## Definitions
 
 * **AuthenticatorAttestationResponse.** WebAuthn dictionary; see [`_shared/0.1/webauthn.schema.json#AttestationResponse`](../../../../_shared/0.1/webauthn.schema.json).
