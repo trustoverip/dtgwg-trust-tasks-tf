@@ -103,11 +103,54 @@ A *Trust Task document* delivered over an authcrypt'd DIDComm envelope between t
 
 A *Trust Task specification* that declares `proof` as **REQUIRED** ([SPEC §7.3 item 8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#73-specification-requirements)) overrides this binding-level allowance: the in-band `proof` is mandatory regardless of transport, because such specifications produce documents intended to be replayable past the original transport hop.
 
-## 6. Versioning
+## 6. Transport security profile
+
+*Stated in anticipation of [SPEC §9.1.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#911-permitting-proof-to-be-omitted),
+which binds transport bindings targeting framework 0.4; this binding targets
+0.3, where the profile is not yet required. It is stated because §5 permits
+`proof` to be omitted, and §9.1.1's point is that such an allowance should never
+rest on a transport's name.*
+
+| Property | What DIDComm v2.1 authcrypt provides |
+|---|---|
+| **Authenticated producer** | The verified `sender_kid` of the authcrypt envelope, authenticated by the AEAD in the same step that protects the bytes. Anoncrypt and plaintext yield no authenticated sender and are rejected at the transport layer ([§4](#4-error-mapping)). |
+| **Mapping to a VID** | `sender_kid` normalises to its bare DID **directly**. No external state is consulted — the substantive difference from the DIDComm v1 binding, where the key-to-DID binding is connection state the agent holds rather than something the wire carries. |
+| **Audience binding** | Cryptographic, not asserted: authcrypt seals the envelope to the recipient's keys, so a party that cannot decrypt is not an audience. This is *transport* audience binding and does **not** satisfy [§4.8.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#482-audience-binding), which governs what a `proof` commits to and is unaffected by how the bytes travelled. |
+| **Integrity across intermediaries** | The authcrypt AEAD covers the message end-to-end between the sender and recipient DIDs. A mediator handles the outer `forward`; the inner message is opaque to it. This is a tested path, not a theoretical one — see the Status section. |
+| **Re-origination** | A mediator **cannot** modify the inner message undetected, nor originate one as the sender without the sender's secret key. It **can** drop, delay, reorder, and re-deliver. |
+| **Freshness / replay** | **None guaranteed.** DIDComm's `expires_time` is optional and is a staleness hint, not an anti-replay construct, and a mediator may re-deliver. See the note below. |
+| **Key and credential status** | Resolution of the sender DID to verification keys is the *consumer*'s own resolver and cache. A rotation the *consumer* has not yet observed leaves a superseded key verifying successfully. No revocation or status check is mandated at this layer. |
+| **Where the guarantee stops** | At the message. The envelope is discarded on unwrap, and the guarantee does not travel with the document. |
+
+**"Between two end-to-end parties" is doing real work in §5.** The allowance
+holds for the message the *consumer* actually unwrapped, authenticated to the
+DID that sealed it. It does not extend to a document that reached that sender by
+some other path, nor to one the *consumer* forwards onward: in both cases the
+party the authcrypt authenticated is not the party that composed the document.
+
+**The transport provides no replay protection, and that is load-bearing.**
+Because nothing here guarantees freshness and a mediator may re-deliver, a
+*consumer* over this binding carries the whole burden of
+[§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11 — duplicate-execution protection
+keyed on the document `id` — for any *consequential Trust Task*. A *consumer*
+that treats mediated delivery as at-most-once is wrong on both a hostile replay
+and an ordinary mediator retry.
+
+**What omitting `proof` costs.** A document delivered without an in-band `proof`
+carries no evidence of its producer once the envelope is gone: the
+authentication was a property of the envelope, and the envelope is discarded on
+unwrap. A *consumer* that retains such a document, forwards it, or offers it to
+a third party is offering bytes nobody signed. Where a document is intended to
+be retained or relied upon beyond the receiving agent,
+[§4.7.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#471-when-to-include-a-proof) requires a `proof` regardless of this
+binding's allowance, and a *Trust Task specification* declaring `proof`
+**REQUIRED** settles it (§5).
+
+## 7. Versioning
 
 This binding follows the framework's `MAJOR.MINOR` versioning ([SPEC §5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#5-versioning)). A `MINOR` revision **MUST** remain backwards-compatible with consumers implementing this version: the envelope type is preserved, the carriage rules are preserved, and only additive header conventions, additional identity-mapping refinements, or stricter error mappings may be introduced. Breaking changes — a new envelope type, a different carriage, an incompatible identity-mapping rule — require a `MAJOR` bump and a new binding URI.
 
-### 6.1 Changes from 0.1
+### 7.1 Changes from 0.1
 
 Additive, and a `MINOR` increment accordingly: the envelope type is unchanged, so a `0.1` consumer recognises a `0.2` producer's messages and vice versa.
 
@@ -117,7 +160,7 @@ Additive, and a `MINOR` increment accordingly: the envelope type is unchanged, s
 
 A `0.1` producer that never set `thid` remains conforming under `0.2`: the mapping is a `SHOULD` on the producer and the consumer comparison only engages when both values are present.
 
-## 7. References
+## 8. References
 
 - [DIDComm Messaging v2.1](https://identity.foundation/didcomm-messaging/spec/) — Decentralized Identity Foundation.
 - [Trust Tasks framework specification](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md), §4.8.1, §7.2, §8, §9.
