@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task-error/0.4",
+  "title": "Trust Task Error \u2014 payload",
+  "description": "The canonical error-response payload per SPEC.md \u00a78.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "code",
+    "retryable"
+  ],
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Short identifier for the failure category. MUST be either a framework standard code (SPEC.md \u00a78.3) or an extended code namespaced by the originating spec's slug (SPEC.md \u00a78.5, e.g. 'acl/grant:role_not_recognized').",
+      "anyOf": [
+        {
+          "enum": [
+            "malformedRequest",
+            "unsupportedType",
+            "unsupportedVersion",
+            "expired",
+            "proofRequired",
+            "proofInvalid",
+            "permissionDenied",
+            "wrongRecipient",
+            "identityMismatch",
+            "idConflict",
+            "taskFailed",
+            "unavailable",
+            "internalError"
+          ]
+        },
+        {
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-zA-Z0-9_]*$"
+        }
+      ]
+    },
+    "inResponseTo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typeUri"
+      ],
+      "description": "Identifies the Trust Task document this error reports on. RECOMMENDED on every error response, and REQUIRED in practice for any error a third party may later be asked to rely on: threadId correlates the exchange only for a party that saw the request, so without this an error retained as evidence names neither the task it terminated nor the instance.",
+      "properties": {
+        "typeUri": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "The Type URI of the document being reported on, including any #request or #response fragment it carried. This is what tells a consumer which specification's semantics apply to an extended code, and which specification declared the requirement that was breached."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The id of the specific document being reported on (SPEC \u00a74.3). Globally unique and never reused, so it names one instance where threadId names an exchange. Omit only where echoing it would disclose more than the error already does."
+        }
+      }
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of the error. Non-normative; intended for logs and operator UI."
+    },
+    "retryable": {
+      "type": "boolean",
+      "description": "true if the producer of the original document MAY retry; false if retrying with the same document is not expected to succeed."
+    },
+    "retryAfter": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp before which the producer SHOULD NOT retry. Meaningful only when retryable is true."
+    },
+    "details": {
+      "type": "object",
+      "description": "Optional task-specific extension data. Per-spec error code declarations may pin the shape via a JSON Schema fragment."
+    }
+  }
+}

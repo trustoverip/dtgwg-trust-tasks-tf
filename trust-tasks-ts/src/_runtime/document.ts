@@ -191,7 +191,7 @@ export interface RejectReason {
  * it would not validate as `0.2`. Per §5.2 forward-minor compatibility a `0.2`
  * consumer SHOULD accept it.
  */
-export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.3";
+export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.4";
 
 /**
  * SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.

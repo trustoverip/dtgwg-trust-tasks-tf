@@ -4,7 +4,7 @@
 //!
 //!   1. Resolve party identity through the [`TransportHandler`].
 //!   2. Run framework-level checks (§7.2 items 4 and 5).
-//!   3. On failure, mint a `trust-task-error/0.3` response that satisfies the
+//!   3. On failure, mint a `trust-task-error/0.4` response that satisfies the
 //!      spec's "Reporting consumer" conformance rules.
 //!
 //! Each step uses the public surface only.
@@ -52,7 +52,7 @@ fn reject_with_wires_framework_members() {
     assert_eq!(err.id, "err-1");
     assert_eq!(
         err.type_uri,
-        "https://trusttasks.org/spec/trust-task-error/0.3"
+        "https://trusttasks.org/spec/trust-task-error/0.4"
             .parse()
             .unwrap()
     );
@@ -140,7 +140,7 @@ fn full_consumer_flow_emits_well_formed_error_response() {
     let json = serde_json::to_value(&err).unwrap();
     assert_eq!(
         json["type"],
-        serde_json::json!("https://trusttasks.org/spec/trust-task-error/0.3")
+        serde_json::json!("https://trusttasks.org/spec/trust-task-error/0.4")
     );
     assert_eq!(
         json["payload"]["code"],

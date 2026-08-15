@@ -409,13 +409,13 @@ impl<P> TrustTask<P> {
 
 pub(crate) fn trust_task_error_type_uri() -> TypeUri {
     // The `trust-task-error` slug is a framework-defined reserved name, so
-    // `TypeUri::canonical` accepts it. The SDK emits `0.3`: it populates the
-    // `inResponseTo` member of §8.2, and `0.2`'s payload schema is
-    // `additionalProperties: false`, so a document carrying it would not
-    // validate as `0.2`. Per §5.2 forward-minor compatibility a `0.2` consumer
-    // SHOULD accept it.
-    TypeUri::canonical("trust-task-error", 0, 3)
-        .expect("trust-task-error/0.3 is a valid framework Type URI")
+    // `TypeUri::canonical` accepts it. The SDK emits `0.4`: it populates the
+    // `inResponseTo` member of §8.2, and it can emit `idConflict` (§8.3), which
+    // is absent from `0.3`'s code enum and does not match its extended-code
+    // pattern — so a document carrying it would not validate as `0.3`. Per §5.2
+    // forward-minor compatibility a `0.3` consumer SHOULD accept it.
+    TypeUri::canonical("trust-task-error", 0, 4)
+        .expect("trust-task-error/0.4 is a valid framework Type URI")
 }
 
 impl fmt::Display for ErrorResponse {

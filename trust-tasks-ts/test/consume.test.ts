@@ -403,11 +403,11 @@ describe("§8.2 inResponseTo", () => {
     assert.equal(err.payload.inResponseTo?.id, undefined);
   });
 
-  it("emits trust-task-error/0.3, the version whose schema has the member", () => {
+  it("emits trust-task-error/0.4, the version whose schema has the member", () => {
     // 0.2's payload schema is additionalProperties:false, so a document
     // carrying inResponseTo would not validate as 0.2.
     const err = refuse(doc({}), "err-1", { code: "taskFailed", message: "failed", retryable: false }, CLOCK);
-    assert.equal(err.type, "https://trusttasks.org/spec/trust-task-error/0.3");
+    assert.equal(err.type, "https://trusttasks.org/spec/trust-task-error/0.4");
   });
 
   it("carries through the full pipeline on a framework rejection", async () => {

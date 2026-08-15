@@ -18,6 +18,7 @@ export const STANDARD_CODES = [
   "permissionDenied",
   "wrongRecipient",
   "identityMismatch",
+  "idConflict",
   "taskFailed",
   "unavailable",
   "internalError",
@@ -38,6 +39,7 @@ const LEGACY_STANDARD: Readonly<Record<string, StandardCode>> = {
   permission_denied: "permissionDenied",
   wrong_recipient: "wrongRecipient",
   identity_mismatch: "identityMismatch",
+  id_conflict: "idConflict",
   task_failed: "taskFailed",
   internal_error: "internalError",
 };

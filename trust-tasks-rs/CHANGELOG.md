@@ -22,11 +22,40 @@ questions. A document's framework version is carried by each specification's
 consumer should read it.
 
 > **Bumping the leading component is a workspace event.** `trust-tasks-https`,
-> `-didcomm`, `-proof`, `-tsp` and `-capability-client` each depend on
-> `trust-tasks-rs` with a `version = "0.2"` requirement. Moving to `0.3.0` means
-> updating all five requirements and releasing those crates too, in the
-> dependency order `publish.yml` uses. Plan it as one change rather than
-> discovering it mid-bump.
+> `-didcomm`, `-proof`, `-tsp`, `-capability-client` and `-didcomm-v1` each
+> depend on `trust-tasks-rs` with a pinned `version` requirement. Moving the
+> leading component means updating all six requirements and releasing those
+> crates too, in the dependency order `publish.yml` uses. Plan it as one change
+> rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
+> on this crate and is not part of the set.)
+
+## [0.7.0] - 2026-08-15
+
+### Added
+
+- **`StandardCode::IdConflict`** — the `idConflict` error code introduced by
+  framework 0.4 (SPEC §8.3). A consumer emits it for a document whose `id`
+  matches one it has already accepted but whose content differs: the case SPEC
+  §7.2 item 11 requires be distinguished from a retry, which is absorbed
+  silently.
+
+### Changed
+
+- **BREAKING. `StandardCode` is now `#[non_exhaustive]`.** Downstream `match`
+  expressions over it must add a wildcard arm. This is the last time adding a
+  standard error code will be a breaking change: the framework introduces one
+  from time to time, and without the attribute every such addition forces a
+  major bump on every consumer. Taking the break once buys minor bumps
+  thereafter.
+
+- **BREAKING. The SDK now emits `trust-task-error/0.4`** (was `0.3`). It has to:
+  `idConflict` is absent from `0.3`'s code enum and does not match its
+  extended-code pattern, so a document carrying it would not validate as `0.3`.
+  Per SPEC §5.2 forward-minor compatibility a `0.3` consumer SHOULD accept it.
+
+- **`trust-tasks-https` maps `idConflict` to HTTP 409**, and its status table
+  now carries a wildcard arm mapping any future unmapped code to 500 — a
+  server-side failure to keep up with the framework is not a client error.
 
 ## [0.6.5] - 2026-08-15
 

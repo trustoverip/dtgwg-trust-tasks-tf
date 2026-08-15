@@ -4,6 +4,15 @@ All notable changes to `trust-tasks-tsp` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.7.0] - 2026-08-15
+
+### Changed
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.7, whose `StandardCode` is now
+  `#[non_exhaustive]` and carries the new `idConflict` code (framework 0.4,
+  SPEC §8.3). Any `match` over `StandardCode` that this crate's types reach
+  needs a wildcard arm.
+
 ## [0.6.0] - 2026-08-10
 
 ### Changed

@@ -1,7 +1,8 @@
 //! Error-response payload for the `trust-task-error` framework spec. The SDK
-//! emits the `0.3` form — lowerCamelCase codes, and the `inResponseTo` member
-//! that names the document being reported on. The parser also accepts the `0.1`
-//! snake_case codes, so a current consumer can read a `0.1` peer.
+//! emits the `0.4` form — lowerCamelCase codes including `idConflict`, and the
+//! `inResponseTo` member that names the document being reported on. The parser
+//! also accepts the `0.1` snake_case codes, so a current consumer can read a
+//! `0.1` peer.
 //!
 //! Models the structure defined in SPEC.md §8.2 and §8.3. The set of standard
 //! codes is encoded as the [`StandardCode`] enum; task-specific extensions
@@ -41,7 +42,7 @@ pub struct InResponseTo {
     pub id: Option<String>,
 }
 
-/// The `payload` of a `trust-task-error/0.3` document, per SPEC.md §8.2.
+/// The `payload` of a `trust-task-error/0.4` document, per SPEC.md §8.2.
 ///
 /// Exchange-level correlation is carried by the surrounding
 /// [`TrustTask`](crate::TrustTask)'s `threadId`; *which document* this error
@@ -231,7 +232,14 @@ pub enum TrustTaskCode {
 }
 
 /// The framework-defined standard error codes (SPEC.md §8.3).
+///
+/// Marked `#[non_exhaustive]` as of 0.7.0: the framework adds a standard code
+/// from time to time (`idConflict` in 0.4), and without this every such
+/// addition would be a breaking change for any downstream `match`. Downstream
+/// code must carry a wildcard arm; in exchange, future codes arrive as a minor
+/// bump rather than a major one.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum StandardCode {
     /// The document did not validate against the framework schema or the
     /// task-specific payload schema.
@@ -253,6 +261,9 @@ pub enum StandardCode {
     /// An in-band `issuer` or `recipient` is inconsistent with the transport-
     /// authenticated identity for the same party.
     IdentityMismatch,
+    /// The document's `id` matches one the consumer has already accepted, but
+    /// its content differs (SPEC.md §7.2 item 11).
+    IdConflict,
     /// The recipient party attempted the task and could not complete it.
     TaskFailed,
     /// The recipient party is temporarily unable to process the task.
@@ -289,6 +300,7 @@ impl StandardCode {
             StandardCode::PermissionDenied => "permissionDenied",
             StandardCode::WrongRecipient => "wrongRecipient",
             StandardCode::IdentityMismatch => "identityMismatch",
+            StandardCode::IdConflict => "idConflict",
             StandardCode::TaskFailed => "taskFailed",
             StandardCode::Unavailable => "unavailable",
             StandardCode::InternalError => "internalError",
@@ -558,6 +570,7 @@ fn parse_standard(s: &str) -> Result<StandardCode, ParseCodeError> {
         "proofInvalid" | "proof_invalid" => StandardCode::ProofInvalid,
         "permissionDenied" | "permission_denied" => StandardCode::PermissionDenied,
         "wrongRecipient" | "wrong_recipient" => StandardCode::WrongRecipient,
+        "idConflict" | "id_conflict" => StandardCode::IdConflict,
         "identityMismatch" | "identity_mismatch" => StandardCode::IdentityMismatch,
         "taskFailed" | "task_failed" => StandardCode::TaskFailed,
         "unavailable" => StandardCode::Unavailable,

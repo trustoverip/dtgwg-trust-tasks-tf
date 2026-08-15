@@ -47,9 +47,15 @@ fn standard_status(code: StandardCode) -> u16 {
         StandardCode::PermissionDenied
         | StandardCode::WrongRecipient
         | StandardCode::IdentityMismatch => 403,
+        StandardCode::IdConflict => 409,
         StandardCode::TaskFailed => 422,
         StandardCode::Unavailable => 503,
         StandardCode::InternalError => 500,
+        // `StandardCode` is `#[non_exhaustive]` (trust-tasks-rs 0.7.0): a
+        // framework revision can add a code without breaking this crate. An
+        // unmapped code is a server-side failure to keep up, not a client
+        // error, so it maps to 500 rather than being silently bucketed as 400.
+        _ => 500,
     }
 }
 
