@@ -131,11 +131,31 @@ even though no schema moved. Judge the bump by what a consumer observes, not by
 whether a `.json` file changed.
 
 **Bumping the leading component is a workspace event, not a one-line edit.**
-`trust-tasks-https`, `-didcomm`, `-proof`, `-tsp` and `-capability-client` each
-declare `trust-tasks-rs = { path = "…", version = "0.2" }`. Going to `0.3.0`
-means updating all five requirements and releasing those crates too, in the
-dependency order `publish.yml` uses. `cargo check` fails immediately if you
-miss one, so the trap is discovering it mid-release rather than planning for it.
+`trust-tasks-https`, `-didcomm`, `-proof`, `-tsp`, `-capability-client` and
+`-didcomm-v1` — **six** crates — each declare
+`trust-tasks-rs = { path = "…", version = "<leading>" }`. Moving the leading
+component means updating all six requirements and releasing those crates too,
+in the dependency order `publish.yml` uses. `cargo check` fails immediately if
+you miss one, so the trap is discovering it mid-release rather than planning
+for it. (`trust-tasks-ceremony` does not depend on `trust-tasks-rs` and is not
+part of the set.) Don't hard-code the current numbers here — read them from the
+manifests; this note has already been stale once, claiming five crates at
+`"0.2"` when the workspace was at `0.6`.
+
+The last such bump was `0.6.5` → `0.7.0` (#223), which is worth reading as a
+worked example: it also carried `@openvtc/trust-tasks` to `0.7.0`, because the
+same change widened a TypeScript union and broke exhaustive switches on that
+side too. A break in `trust-tasks-rs` is usually a break in both libraries.
+
+**`StandardCode` is `#[non_exhaustive]` as of 0.7.0.** Adding a framework
+standard error code (SPEC §8.3) is therefore no longer breaking for downstream
+`match` expressions. It still requires a new `trust-task-error` spec version —
+the code enum lives in that payload schema, so a document carrying a code the
+declared version doesn't list will not validate — and both SDKs must be pointed
+at the new version (`trust_task_error_type_uri()` in `trust-tasks-rs`,
+`TRUST_TASK_ERROR_TYPE_URI` in `trust-tasks-ts`). Note that `trust-task-error`
+is in the codegen's `SKIP_SLUGS`: the Rust side is hand-modelled in `error.rs`,
+so regenerating will not pick a new code up for you.
 
 ## Build / validate / publish
 
