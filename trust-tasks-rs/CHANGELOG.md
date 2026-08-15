@@ -28,6 +28,24 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.6.3] - 2026-08-15
+
+### Added
+
+- **`vtc/relationships/request/0.2`, `publish/0.2` and `list/0.2`** — the VRC
+  digest converged onto the framework's `DigestMultibase`. `0.1` carried
+  `vrcSha256`, a bare lowercase-hex SHA-256, which hard-codes one algorithm into
+  the wire contract, names no base encoding, and — for a JSON credential — named
+  no canonicalization, so two conforming implementations could compute different
+  values for the same VRC. `0.2` carries `vrcDigestMultibase` over the RFC 8785
+  canonicalization. Breaking on the wire, released as a `MINOR` increment under
+  SPEC §5.2's `draft` allowance; `0.1` remains published and generated, so this
+  is additive to the library. All three also move to `targetFrameworkVersion`
+  0.4.
+
+  The three move together because their digests are meant to be the same value:
+  `request` reports it on issuance, `publish` on lodging, `list` per entry.
+
 ## [0.6.2] - 2026-08-15
 
 ### Added

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/relationships/request/0.2",
+  "title": "VTC Relationships Request — payload",
+  "description": "A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships Request — response payload",
+      "description": "The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vrc"],
+      "properties": {
+        "vrc": {
+          "type": "object",
+          "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged."
+        },
+        "vrcDigestMultibase": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 canonicalization of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing — which requires both ends to canonicalize the same way, and is why the canonicalization is named here rather than assumed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

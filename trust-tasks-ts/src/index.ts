@@ -339,8 +339,11 @@ export * as VtcRecognitionCheck_v0_1 from "./vtc/recognition/check/0.1/payload.j
 export * as VtcRegistryDiagnostics_v0_1 from "./vtc/registry/diagnostics/0.1/payload.js";
 export * as VtcRelationshipsGraph_v0_1 from "./vtc/relationships/graph/0.1/payload.js";
 export * as VtcRelationshipsList_v0_1 from "./vtc/relationships/list/0.1/payload.js";
+export * as VtcRelationshipsList_v0_2 from "./vtc/relationships/list/0.2/payload.js";
 export * as VtcRelationshipsPublish_v0_1 from "./vtc/relationships/publish/0.1/payload.js";
+export * as VtcRelationshipsPublish_v0_2 from "./vtc/relationships/publish/0.2/payload.js";
 export * as VtcRelationshipsRequest_v0_1 from "./vtc/relationships/request/0.1/payload.js";
+export * as VtcRelationshipsRequest_v0_2 from "./vtc/relationships/request/0.2/payload.js";
 export * as VtcRelationshipsRevoke_v0_1 from "./vtc/relationships/revoke/0.1/payload.js";
 export * as VtcWebsiteFilesDelete_v0_1 from "./vtc/website/files/delete/0.1/payload.js";
 export * as VtcWebsiteFilesList_v0_1 from "./vtc/website/files/list/0.1/payload.js";

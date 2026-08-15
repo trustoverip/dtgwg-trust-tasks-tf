@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/relationships/list/0.2",
+  "title": "VTC Relationships List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1, "description": "The member whose relationships to list." },
+    "cursor": { "type": "string" },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 200 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "issuerDid", "subjectDid", "vrcJsonld", "vrcDigestMultibase", "createdAt"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "issuerDid": { "type": "string", "minLength": 1 },
+              "subjectDid": { "type": "string", "minLength": 1 },
+              "vrcJsonld": { "type": "object", "description": "The relationship credential as JSON-LD (opaque here)." },
+              "vrcDigestMultibase": { "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase", "description": "Digest over the RFC 8785 canonicalization of the stored VRC — the value vtc/relationships/publish returned when this entry was lodged." },
+              "createdAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "nextCursor": { "type": ["string", "null"] },
+        "totalEstimate": { "type": ["integer", "null"] },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

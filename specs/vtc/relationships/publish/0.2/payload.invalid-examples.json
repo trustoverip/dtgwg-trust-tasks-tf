@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "vrc": {}, "__x__": true } },
+  { "note": "`vrc` is required.", "payload": {} }
+]

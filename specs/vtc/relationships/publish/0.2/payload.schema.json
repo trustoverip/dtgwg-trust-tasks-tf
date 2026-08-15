@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/relationships/publish/0.2",
+  "title": "VTC Relationships Publish — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["vrc"],
+  "properties": {
+    "vrc": { "type": "object", "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST equal the document proof signer; credentialSubject.id names the subject member; it carries its own DataIntegrityProof." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships Publish — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "issuerDid", "subjectDid", "vrcDigestMultibase"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "Id assigned to the stored relationship (a UUID)." },
+        "issuerDid": { "type": "string", "minLength": 1 },
+        "subjectDid": { "type": "string", "minLength": 1 },
+        "vrcDigestMultibase": { "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase", "description": "Digest over the RFC 8785 canonicalization of the stored VRC, for out-of-band integrity checks. The same value vtc/relationships/request reports on issuance and vtc/relationships/list reports per entry, so a member can tie the three together without re-hashing." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

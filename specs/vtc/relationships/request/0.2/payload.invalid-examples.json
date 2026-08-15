@@ -1,0 +1,10 @@
+[
+  {
+    "note": "`reason` must be a non-empty string when present — an empty one asserts nothing and is a producer bug rather than an absent hint.",
+    "payload": { "reason": "" }
+  },
+  {
+    "note": "Unknown top-level member is rejected; ecosystem data belongs under `ext` (SPEC.md §4.5.1).",
+    "payload": { "urgency": "high" }
+  }
+]
