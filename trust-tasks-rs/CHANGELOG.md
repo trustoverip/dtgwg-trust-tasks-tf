@@ -29,6 +29,17 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.7.1] - 2026-08-15
+
+### Changed
+
+- **`witness/session/submit` — the taskContext pairing is descriptive-text
+  tightened**: the delivered VWC's `taskContext` id *locates* the session
+  document and its `taskDigestMultibase` *binds* it (digest over the JCS form
+  excluding `proof`, `DigestMultibase` encoding). No wire-shape change — the
+  `vwc` member is opaque here; the credential schema is amended in DTG Core
+  Credentials.
+
 ## [0.7.0] - 2026-08-15
 
 ### Added

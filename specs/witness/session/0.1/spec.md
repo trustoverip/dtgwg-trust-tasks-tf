@@ -101,6 +101,13 @@ exact shape:
    therefore carries **this document's `id`**, never the outer exchange's
    thread. Since each party opens its own session, each party's VWC anchors to
    its own — which is correct, because each attests that party's participation.
+   The `id` is the *locator* half of that anchor; the credential also carries
+   `taskDigestMultibase`, a digest over this document's JCS canonical form
+   (excluding `proof`), because an `id` is a value anyone can reuse on a
+   counterfeit document — the digest is what binds the credential to *this*
+   document rather than to anything that borrowed its name. See
+   [`witness/session/submit`](../submit/0.1/spec.md) for the verifier's
+   pairing rule.
 2. **Every document of the session carries `parentThreadId`.** A *producer*
    **MUST** set `parentThreadId`
    ([§4.9.2](../../../../SPEC.md#492-the-parentthreadid-member)) to the

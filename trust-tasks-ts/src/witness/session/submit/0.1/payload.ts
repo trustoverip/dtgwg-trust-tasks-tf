@@ -29,7 +29,7 @@ export interface Ext {
  */
 export interface WitnessSessionSubmitResponsePayload {
   /**
-   * A signed Verifiable Witness Credential (opaque here; its schema belongs to DTG Core Credentials). Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1).
+   * A signed Verifiable Witness Credential (opaque here; its schema belongs to DTG Core Credentials). Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1) — and its taskDigestMultibase MUST reproduce over that document (JCS canonical form excluding proof, DigestMultibase encoding): the id locates the session document, the digest binds it.
    */
   vwc: {};
   vwcDigestMultibase: DigestMultibase;

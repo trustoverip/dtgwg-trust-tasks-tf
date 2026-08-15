@@ -72,10 +72,19 @@ obligation refers to:
 1. The delivered VWC's `taskContext` **MUST** equal the `id` of the
    `witness/session` document that opened **this** session — the innermost
    exchange that attests the witnessing, per
-   [SPEC.md §4.9.1](../../../../../SPEC.md#491-naming-an-exchange-from-outside-the-framework).
+   [SPEC.md §4.9.1](../../../../../SPEC.md#491-naming-an-exchange-from-outside-the-framework) —
+   **and** the VWC's `taskDigestMultibase` **MUST** reproduce over that
+   document: a digest of its JCS (RFC 8785) canonical form excluding its
+   `proof` member, in the registry's `DigestMultibase` encoding. The `id`
+   locates the session document; only the digest binds it — an `id` is a
+   value anyone can reuse on a counterfeit document, so `id` equality alone
+   proves nothing about *which* document opened the session.
 2. A holder later presenting that VWC as proof the witnessing occurred
-   **MUST** retain this `#response` and ship it with the presentation. A
-   verifier pairing the two checks: the evidence's `threadId` equals the
+   **MUST** retain this `#response` **and the `witness/session` document that
+   opened the session**, and ship both with the presentation. A
+   verifier pairing them checks: the session document's `id` equals the
+   VWC's `taskContext` **and the VWC's `taskDigestMultibase` reproduces over
+   it**; the evidence's `threadId` equals the
    VWC's `taskContext`; the evidence's `type` is this specification's
    `#response`; the evidence's own REQUIRED proof verifies; the evidence's
    `issuer` is the witness that issued the VWC; and the presented credential's
