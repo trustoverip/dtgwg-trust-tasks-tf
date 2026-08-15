@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/list/0.3",
+  "title": "Vault List — payload",
+  "description": "Query a vault maintainer for the metadata view of stored entries. All filters are AND-combined. Pagination is opaque-cursor based; the maintainer chooses page size within the caller's bound and its own ceiling. Secret material is NEVER returned by this task — even when the requesting consumer has VaultRead capability for the entry, the secret is only released via vault/release/0.1.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — only entries belonging to this trust context (persona) are returned. Omit to query across all contexts the requesting consumer has VaultRead on."
+    },
+    "targetOriginPrefix": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri",
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `webOrigin` whose origin starts with this prefix. Useful for \"all my github.* logins\". Maintainers MUST canonicalise (lowercase host) before comparison."
+    },
+    "targetDid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `did` exactly equal to this value."
+    },
+    "targetIosBundleId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9.-]+$",
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `iosApp` whose `bundleId` exactly equals this value. The typical iOS Companion lookup."
+    },
+    "targetAndroidPackage": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `androidApp` whose `packageName` exactly equals this value. The typical Android Companion lookup."
+    },
+    "secretKind": {
+      "$ref": "../../_shared/0.3/vault-entry.schema.json#/$defs/SecretKind",
+      "description": "Optional filter — only entries of this secret kind are returned."
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Optional filter — only entries whose `tags` array contains this tag."
+    },
+    "usedSince": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional filter — only entries whose `lastUsedAt` is greater than or equal to this timestamp are returned. Entries that have never been used are excluded when this filter is present."
+    },
+    "neverUsed": {
+      "type": "boolean",
+      "description": "Optional filter — when true, only entries with no `lastUsedAt` are returned. Mutually exclusive with `usedSince`; maintainers MUST reject documents that supply both."
+    },
+    "expiresBefore": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional filter — only entries whose `expiresAt` is less than this timestamp are returned. Useful for \"what's about to expire\" panels."
+    },
+    "breached": {
+      "type": "boolean",
+      "description": "Optional filter — when true, only entries with `breachedAt` set are returned; when false, only entries with `breachedAt` absent are returned."
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Maximum number of entries to return. Maintainer-defined default and ceiling; the maintainer MAY return fewer."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token returned by the maintainer in a previous response. Consumers MUST treat the cursor as opaque and re-send it verbatim."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "deleted",
+        "all"
+      ],
+      "default": "active",
+      "description": "Archival-lifecycle view selector. Omitted or `active` lists only live entries; `archived` and `deleted` list those respectively (a `deleted` entry is a tombstone still inside its grace window); `all` lists every entry regardless of lifecycle state."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault List — response payload",
+      "description": "The success response to a vault/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vault/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries",
+        "truncated"
+      ],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.3/vault-entry.schema.json#/$defs/VaultEntry"
+          },
+          "description": "Matching VaultEntry items in metadata-only view, in maintainer-defined order (RECOMMENDED: most-recently-used first when no other order is implied by the filters). May be empty."
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point."
+        },
+        "redactedFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of VaultEntry fields the maintainer redacted from every returned entry (for example, ['lastUsedAt'] when releasing to a consumer whose policy does not permit timing-data exposure)."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

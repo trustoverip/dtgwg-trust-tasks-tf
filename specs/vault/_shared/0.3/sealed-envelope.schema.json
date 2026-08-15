@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/_shared/0.3/sealed-envelope",
+  "title": "SealedEnvelope — pluggable cipher-bearing envelope for vault payloads",
+  "description": "Discriminated union over `envelope` kind, used by every vault task that ships secret material across the wire (vault/upsert/0.1 → SealedSecret, vault/release/0.1 → SealedSecret in the response, vault/proxy-login/0.1 → SealedSessionBlob in the response). The cleartext shape sitting INSIDE the envelope is task-specific — VaultSecret for the secret variants, SessionBlob for the proxy-login variant — and is referenced from each task's spec.\n\nConsumers dispatch on `envelope`. An unknown envelope kind MUST be rejected (`<task>:envelope_unsupported` error code) rather than silently accepted — there is no fallback to \"try parsing as DIDComm\". Producers SHOULD advertise the envelope kinds they emit via `trust-task-discovery/0.1`.\n\nForward compatibility: this union starts with three variants for the OpenVTC stack today. New variants (KERI/ACDC envelopes, a future TSP successor, hardware-attested envelopes for TEE-to-TEE transfer, etc.) land as additional `oneOf` entries — never as silent schema relaxations on an existing variant.",
+  "$defs": {
+    "EnvelopeMismatch": {
+      "title": "EnvelopeMismatch",
+      "description": "The `details` a maintainer returns with an `envelopeUnsupported` error: what the consumer asked for, and what this maintainer can actually emit. The consumer's recovery is to pick from `supportedEnvelopes`, so a maintainer that omits it leaves the caller guessing. Referenced by the `detailsSchema` of `vault/release` and `vault/proxy-login`, which previously each restated it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requestedEnvelope": {
+          "type": "string",
+          "description": "The envelope kind the consumer asked for and this maintainer does not implement."
+        },
+        "supportedEnvelopes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "The envelope kinds this maintainer does emit — the same set it advertises via `trust-task-discovery/0.1`."
+        }
+      }
+    },
+    "SealedEnvelope": {
+      "title": "SealedEnvelope",
+      "description": "Discriminated by `envelope`. Exactly one variant matches per document.",
+      "oneOf": [
+        { "$ref": "#/$defs/DidcommAuthcryptEnvelope" },
+        { "$ref": "#/$defs/HpkeArmoredEnvelope" },
+        { "$ref": "#/$defs/TspMessageEnvelope" }
+      ]
+    },
+    "DidcommAuthcryptEnvelope": {
+      "title": "DidcommAuthcryptEnvelope",
+      "description": "DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["envelope", "jwe"],
+      "properties": {
+        "envelope": { "const": "didcommAuthcrypt" },
+        "jwe": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON."
+        }
+      }
+    },
+    "HpkeArmoredEnvelope": {
+      "title": "HpkeArmoredEnvelope",
+      "description": "OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["envelope", "armored", "recipientKeyId"],
+      "properties": {
+        "envelope": { "const": "hpkeArmored" },
+        "armored": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24."
+        },
+        "recipientKeyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key."
+        },
+        "producerAssertion": {
+          "type": "string",
+          "enum": ["didSigned", "attested", "pinnedOnly"],
+          "default": "didSigned",
+          "description": "Producer-assertion mode per the sealed-transfer framework. `didSigned` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinnedOnly` = OOB SHA-256 digest only (dev/test, NOT for production)."
+        }
+      }
+    },
+    "TspMessageEnvelope": {
+      "title": "TspMessageEnvelope",
+      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["envelope", "message"],
+      "properties": {
+        "envelope": { "const": "tspMessage" },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/get/0.3",
+  "title": "Vault Get — payload",
+  "description": "Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.1 to obtain secret bytes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Vault entry id (as returned in a prior vault/list or vault/sync response)."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Get — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": { "$ref": "../../_shared/0.3/vault-entry.schema.json#/$defs/VaultEntry" },
+        "redactedFields": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

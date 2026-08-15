@@ -28,6 +28,30 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.6.5] - 2026-08-15
+
+### Added
+
+- **`vault/_shared/0.3`, `vault/{get,list,upsert}/0.3` and
+  `provision/integration/0.3`** — the remaining bare-hex digests converged onto
+  the framework's `DigestMultibase`, finishing the sweep #214 began.
+
+  `VaultEntry.attachments[].sha256` becomes `digestMultibase`, and
+  `provision/integration`'s `summary.digest` likewise. Both were lowercase-hex
+  SHA-256, which hard-codes one algorithm into the wire contract and names no
+  base encoding. Unlike the credential digests in #214 these are taken over
+  opaque **bytes**, so no canonicalization defect was being fixed — the encoding
+  argument alone.
+
+  The vault change arrives through the shared component, so the three specs
+  exposing `VaultEntry` re-pin to `vault/_shared/0.3` and bump with it (SPEC
+  §5.4's coupling rule). `vault/proxy-login` and `vault/release` stay on `0.2`:
+  they reference only `SiteTarget` and `SecretKind` and never expose an
+  attachment digest, which §5.4 explicitly permits.
+
+  Additive to the library — `0.1` and `0.2` of each remain published and
+  generated.
+
 ## [0.6.4] - 2026-08-15
 
 ### Fixed
