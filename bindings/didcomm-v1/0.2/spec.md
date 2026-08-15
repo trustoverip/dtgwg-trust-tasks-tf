@@ -22,7 +22,7 @@ A producer places the document in an `~attach` decorator on a message of this bi
 
 `0.2` **draft**. It settles the carriage question `0.1` left open: the document now rides a **dedicated message type** rather than an Aries `basic-message`. That change was not made on taste — it was made because the DTG Core Credentials task force built the identical exchange both ways against Credo 0.6.3 and measured it, and the measurement retired the argument `0.1` chose `basic-message` for. See [§2.1](#21-why-a-dedicated-message-type). Discussion on [issue #173](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues/173).
 
-`0.1` remains published. A `0.2` *consumer* accepts both carriages; a `0.2` *producer* emits only this one. See [§6.1](#61-changes-from-01).
+`0.1` remains published. A `0.2` *consumer* accepts both carriages; a `0.2` *producer* emits only this one. See [§7.1](#71-changes-from-01).
 
 Targets **framework `0.4`**.
 
@@ -192,11 +192,49 @@ A document delivered over a v1 **authcrypt** envelope between two connected part
 
 A *Trust Task specification* declaring `proof` **REQUIRED** ([§7.3 item 8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#73-specification-requirements)) overrides this allowance, per variant where it declares per variant. Such specifications produce documents intended to be replayed past the original transport hop, and a v1 connection's authentication does not travel with the document.
 
-## 6. Versioning
+## 6. Transport security profile
+
+Required by [§9.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#91-what-a-transport-binding-specifies), and by
+[§9.1.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#911-permitting-proof-to-be-omitted) because §5 permits `proof` to be
+omitted. Each item §9.1.1 enumerates is addressed below; where v1 provides
+nothing, that is stated rather than left out.
+
+| Property | What DIDComm v1 provides |
+|---|---|
+| **Authenticated producer** | The authcrypt sender **verkey** — a bare base58 Ed25519 key, authenticated by the v1 unpack. Not a DID: see §3. |
+| **Mapping to a VID** | Verkey → the connection's `theirDid`, resolved from **connection state this agent holds**, not from anything the wire carries. §3's three outcomes are normative, and only outcome 1 yields a transport-authenticated sender. |
+| **Audience binding** | Cryptographic, not asserted: authcrypt seals the envelope to the recipient's key, so a party that cannot decrypt is not an audience. This is *transport* audience binding and does **not** satisfy [§4.8.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#482-audience-binding), which governs what a `proof` commits to and is unaffected by how the bytes travelled. |
+| **Integrity across intermediaries** | The authcrypt AEAD covers the envelope end-to-end between the two connected agents. A mediator handles the outer `forward`; the inner envelope is opaque to it. |
+| **Re-origination** | A mediator **cannot** modify the inner envelope undetected, nor originate one as the sender without the sender's secret key. It **can** drop, delay, reorder, and re-deliver. |
+| **Freshness / replay** | **None.** v1 offers no anti-replay construct, and store-and-forward mediation admits arbitrary delay. See the note below — this is the item most likely to be assumed and is not provided. |
+| **Key and credential status** | No status check exists at this layer. The verkey→DID binding is local connection state; a rotation the agent has not yet processed leaves a superseded verkey still authenticating. There is no revocation signal to consult. |
+| **Where the guarantee stops** | At the connection. Outcomes 2 and 3 of §3 (verkey bound to no known DID; anoncrypt or plaintext) yield no authenticated sender at all, and the guarantee does not travel with the document once it leaves the connection. |
+
+**The transport provides no replay protection, and that is load-bearing.**
+Because v1 gives no freshness guarantee and a mediator may re-deliver, a
+*consumer* over this binding carries the whole burden of
+[§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11 — duplicate-execution protection
+keyed on the document `id` — for any *consequential Trust Task*. Nothing in this
+transport will stop the same document arriving twice, and a *consumer* that
+treats mediated delivery as at-most-once is wrong on both a hostile replay and
+an ordinary mediator retry.
+
+**What omitting `proof` costs.** The §5 allowance holds only inside the
+connection and only for outcome 1. A document delivered without an in-band
+`proof` carries no evidence of its producer once it leaves that connection: the
+authentication was a property of the envelope, and the envelope is discarded on
+unwrap. A *consumer* that retains such a document, forwards it, or offers it to
+a third party is offering bytes nobody signed. Where a document is intended to
+be retained or relied upon beyond the receiving agent,
+[§4.7.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#471-when-to-include-a-proof) requires a `proof` regardless of this
+binding's allowance, and a *Trust Task specification* declaring `proof`
+**REQUIRED** settles it (§5).
+
+## 7. Versioning
 
 This binding follows the framework's `MAJOR.MINOR` versioning ([§5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#5-versioning)). A `MINOR` revision **MUST** remain backwards-compatible with *documents produced under* an earlier `MINOR` of this binding: the attachment id and the extraction rules are preserved, earlier carriages remain acceptable to a consumer, and only additive conventions, identity-mapping refinements, or stricter error mappings may be introduced. Dropping acceptance of an earlier carriage requires a `MAJOR` bump and a new binding URI.
 
-### 6.1 Changes from `0.1`
+### 7.1 Changes from `0.1`
 
 **The carriage moved from `basic-message` to a dedicated message type** ([§2](#2-document-carriage)), on the measurement recorded in [§2.1](#21-why-a-dedicated-message-type). The attachment is unchanged: same `~attach` decorator, same reserved `@id` `trust-task`, same `data.json`. `content` is gone with `basic-message`; an optional advisory `comment` replaces it.
 
@@ -210,7 +248,7 @@ Also: the binding targets framework `0.4` rather than `0.3`, and `0.1`'s `@type`
 
 What is **not** preserved, and should be stated plainly rather than implied: **forward compatibility**. A `0.1` consumer does not recognise a `0.2` producer's message and will drop it — silently, since an unknown `@type` is not an error condition it can report. Forward-minor compatibility is a `SHOULD` in §5.2, not a `MUST`, and it cannot be met across a carriage change by any versioning scheme. Deployments migrate receivers before senders ([§5.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#54-migrating-between-versions)), and negotiate capability before sending ([§2.2](#22-implementation-notes-aries-frameworks)).
 
-## 7. References
+## 8. References
 
 - [Aries RFC 0020: Message Types](https://github.com/hyperledger/aries-rfcs/tree/main/concepts/0020-message-types) — the message type URI grammar this binding's `@type` follows
 - [Aries RFC 0017: Attachments](https://github.com/hyperledger/aries-rfcs/tree/main/concepts/0017-attachments)
