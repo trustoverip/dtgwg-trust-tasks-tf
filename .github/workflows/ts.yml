@@ -3,12 +3,15 @@ name: TypeScript
 on:
   push:
     branches: [main]
+  # No `branches:` filter. A PR based on another branch (a stacked PR) used to
+  # run none of these jobs and report a green board made entirely of DCO and
+  # licence checks, which is worse than reporting nothing.
   pull_request:
-    branches: [main]
     paths:
       - "specs/**"
       - "trust-tasks-ts/**"
       - "scripts/build-ts-bindings.mjs"
+      - "scripts/check-bindings-conformance.mjs"
       - ".github/workflows/ts.yml"
 
 jobs:
@@ -87,3 +90,24 @@ jobs:
       - name: Smoke-test the built package
         working-directory: trust-tasks-ts
         run: npm run smoke
+
+  # The drift job above proves the generators were re-run. It compares each
+  # generator's output to itself, so an output that is consistently wrong is
+  # consistently clean — which is how the response-type drop (#174) and the
+  # `Payload` alias (#215) both shipped green. This job asks the different
+  # question: does the generated binding agree with the specification it came
+  # from, and do the two languages agree with each other.
+  conformance:
+    name: bindings match specs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check bindings against specs
+        run: npm run check-bindings

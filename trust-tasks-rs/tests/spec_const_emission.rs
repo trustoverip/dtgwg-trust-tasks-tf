@@ -1,10 +1,21 @@
-//! Compile-time assertions that codegen emits `IS_BEARER` and
-//! `IS_PROOF_REQUIRED` correctly for every spec in `specs/`.
+//! Compile-time spot-checks that codegen emits `IS_BEARER` and
+//! `IS_PROOF_REQUIRED` correctly, for a handful of representative specs.
 //!
-//! These pin the front-matter → trait-const wiring so a regression in
-//! `trust-tasks-codegen` (or a typo in a spec's front matter) fails
-//! the workspace build instead of silently shipping a spec whose
-//! runtime contract no longer matches its prose.
+//! **Not exhaustive, despite what this comment used to claim.** It said these
+//! covered "every spec in `specs/`"; they cover six, by hand, out of three
+//! hundred. A test that misstates its own coverage is worse than a missing one,
+//! because it is exactly what stops someone writing the real check — which is
+//! the same hand-maintained-list failure that hid a stale category enum and two
+//! unregistered transport bindings.
+//!
+//! The real check is `scripts/check-bindings-conformance.mjs`, run by the
+//! `bindings match specs` CI job. It compares front matter, Rust and TypeScript
+//! for every published spec version, and it is what would have caught the
+//! response-type drop (#174) and the `Payload` alias (#215).
+//!
+//! These assertions are kept because they are free and they fail during
+//! `cargo test`, without Node, so a Rust-side regression surfaces where a Rust
+//! developer is already looking. Treat them as a fast canary, not as coverage.
 //!
 //! The assertions live in a `const _: () = …` so they fire at
 //! compile time. No runtime harness needed.

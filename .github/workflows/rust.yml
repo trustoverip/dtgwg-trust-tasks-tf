@@ -3,8 +3,8 @@ name: Rust
 on:
   push:
     branches: [main]
+  # No `branches:` filter — see the note in ts.yml.
   pull_request:
-    branches: [main]
     paths:
       - "trust-tasks-rs/**"
       - "trust-tasks-codegen/**"

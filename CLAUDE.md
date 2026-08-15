@@ -61,6 +61,25 @@ When you add `bindings/<slug>/<version>/spec.md`, add the matching entry:
 entry, and on a `prosePath` that does not match its `id`; a listed binding with
 no directory warns.
 
+## What the CI checks actually assert
+
+Worth knowing before trusting a green board, because the gaps have shipped real
+defects three times.
+
+| Check | Asserts | Cannot see |
+|---|---|---|
+| `codegen-drift`, `bindings-drift` | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
+| `bindings match specs` (`npm run check-bindings`) | generated Rust and TS agree with each spec's front matter, its `$defs.Response`, and each other | anything not expressible from front matter + schema |
+| `node --test (runtime)`, `cargo test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
+| `npm run smoke` | the built npm package imports as a consumer imports it | |
+| `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
+| `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
+
+`scripts/check-bindings-conformance.mjs` deliberately **re-implements** the
+front-matter → policy derivation rather than importing the generator's. Do not
+DRY it up: sharing the helper would make it assert that the generator agrees
+with itself, which is the property that already held while both defects shipped.
+
 ## ⚠️ Changing a spec or payload schema — bump and republish the libraries
 
 The Rust and TS client libraries are generated from the specs. When you add or
