@@ -30,6 +30,7 @@ const CEREMONIES_DIR = path.join(ROOT, 'ceremonies');
 const WEBSITE_DIR = path.join(ROOT, 'website');
 const META_SCHEMA_PATH = path.join(SPECS_DIR, 'spec.meta.schema.json');
 const DATA_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'data.js');
+const BINDINGS_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'bindings.js');
 
 const validateOnly = process.argv.includes('--validate-only');
 
@@ -892,10 +893,86 @@ function syncWebsiteFrameworkSpec() {
   console.log(`  synced SPEC.md → ${path.relative(ROOT, dst)}`);
 }
 
+/**
+ * Cross-check `bindings/<slug>/<version>/spec.md` against `window.TT_BINDINGS`.
+ *
+ * `bindings.js` is hand-edited — the build only *copies* the bindings tree to
+ * the website, it never enumerates it — so a binding can ship complete and
+ * still be invisible on the registry site. Both `didcomm/0.2` and
+ * `didcomm-v1/0.1` did exactly that: merged, published, and absent from the
+ * list for as long as nobody looked.
+ *
+ * This is the same hand-maintained-list failure the category taxonomy has, and
+ * it gets the same treatment: an on-disk binding with no entry fails the build,
+ * an entry with no binding on disk warns (a stale row renders a dead page, but
+ * does not hide anything).
+ */
+function checkBindingRegistry() {
+  if (!fs.existsSync(BINDINGS_DIR)) return;
+  if (!fs.existsSync(BINDINGS_JS_PATH)) {
+    warn(`${path.relative(ROOT, BINDINGS_JS_PATH)} not found — skipping binding registry cross-check`);
+    return;
+  }
+
+  const onDisk = new Set();
+  for (const slug of fs.readdirSync(BINDINGS_DIR, { withFileTypes: true })) {
+    if (!slug.isDirectory() || slug.name.startsWith('_') || slug.name.startsWith('.')) continue;
+    const slugDir = path.join(BINDINGS_DIR, slug.name);
+    for (const version of fs.readdirSync(slugDir, { withFileTypes: true })) {
+      if (!version.isDirectory()) continue;
+      if (fs.existsSync(path.join(slugDir, version.name, 'spec.md'))) {
+        onDisk.add(`${slug.name}/${version.name}`);
+      }
+    }
+  }
+
+  let bindings;
+  try {
+    const sandbox = { window: {} };
+    vm.createContext(sandbox);
+    vm.runInContext(fs.readFileSync(BINDINGS_JS_PATH, 'utf8'), sandbox, { filename: 'bindings.js' });
+    bindings = sandbox.window.TT_BINDINGS;
+  } catch (e) {
+    fail(path.relative(ROOT, BINDINGS_JS_PATH), `failed to evaluate window.TT_BINDINGS: ${e.message}`);
+    return;
+  }
+  if (!Array.isArray(bindings)) {
+    fail(path.relative(ROOT, BINDINGS_JS_PATH), 'window.TT_BINDINGS is not an array');
+    return;
+  }
+
+  const listed = new Map(bindings.filter(Boolean).map((b) => [b.id, b]));
+  for (const id of onDisk) {
+    if (!listed.has(id)) {
+      fail(
+        path.relative(ROOT, BINDINGS_JS_PATH),
+        `binding '${id}' exists at bindings/${id}/spec.md but has no window.TT_BINDINGS entry — ` +
+        `it would be published and unreachable from the registry site. ` +
+        `Add an { id: "${id}", slug, version, title, summary, bindingURI, envelopeType, status, accent, prosePath, implementations } entry.`
+      );
+      continue;
+    }
+    // A wrong prosePath renders an empty page rather than an error, so check it.
+    const expected = `/bindings/${id}/spec.md`;
+    if (listed.get(id).prosePath !== expected) {
+      fail(
+        path.relative(ROOT, BINDINGS_JS_PATH),
+        `binding '${id}' declares prosePath '${listed.get(id).prosePath}', expected '${expected}'`
+      );
+    }
+  }
+  for (const id of listed.keys()) {
+    if (!onDisk.has(id)) {
+      warn(`${path.relative(ROOT, BINDINGS_JS_PATH)}: binding '${id}' is listed but has no bindings/${id}/spec.md — its detail page will render empty`);
+    }
+  }
+}
+
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
   const validate = loadMetaValidator();
   checkCategoryTaxonomy();
+  checkBindingRegistry();
   checkExampleDocuments();
   const entries = discoverSpecs();
   if (entries.length === 0) {

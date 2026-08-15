@@ -70,6 +70,67 @@ window.TT_BINDINGS = [
     ],
   },
   {
+    id: "didcomm/0.2",
+    slug: "didcomm",
+    version: "0.2",
+    title: "DIDComm v2.1",
+    summary:
+      "Carries Trust Task documents inside DIDComm v2.1 authcrypt envelopes; the verified sender_kid maps to the framework's transport-authenticated party identity, and the DIDComm thread headers map to the framework's threadId and parentThreadId.",
+    bindingURI: "https://trusttasks.org/binding/didcomm/0.2",
+    envelopeType: "https://trusttasks.org/binding/didcomm/0.1/envelope",
+    status: "draft",
+    accent: "coral",
+    prosePath: "/bindings/didcomm/0.2/spec.md",
+    implementations: [
+      {
+        name: "trust-tasks-didcomm",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm",
+        language: "Rust",
+      },
+    ],
+  },
+  {
+    id: "didcomm-v1/0.1",
+    slug: "didcomm-v1",
+    version: "0.1",
+    title: "DIDComm v1",
+    summary:
+      "Carries Trust Task documents to Aries-lineage agents inside DIDComm v1 authcrypt envelopes, as an attachment on a basic-message; the connection's theirDid maps to the framework's transport-authenticated party identity. Superseded by 0.2, which moves the carriage to a dedicated message type.",
+    bindingURI: "https://trusttasks.org/binding/didcomm-v1/0.1",
+    envelopeType: "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/basicmessage/1.0/message",
+    status: "draft",
+    accent: "violet",
+    prosePath: "/bindings/didcomm-v1/0.1/spec.md",
+    implementations: [
+      {
+        name: "trust-tasks-didcomm-v1",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm-v1",
+        language: "Rust",
+      },
+    ],
+  },
+  {
+    id: "didcomm-v1/0.2",
+    slug: "didcomm-v1",
+    version: "0.2",
+    title: "DIDComm v1",
+    summary:
+      "Carries Trust Task documents to Aries-lineage agents inside DIDComm v1 authcrypt envelopes, as an attachment on a dedicated message type; the connection's theirDid maps to the framework's transport-authenticated party identity. Consumers also accept the 0.1 basic-message carriage.",
+    bindingURI: "https://trusttasks.org/binding/didcomm-v1/0.2",
+    envelopeType:
+      "https://trusttasks.org/binding/didcomm-v1/0.2/trust-task/1.0/task",
+    status: "draft",
+    accent: "violet",
+    prosePath: "/bindings/didcomm-v1/0.2/spec.md",
+    implementations: [
+      {
+        name: "trust-tasks-didcomm-v1",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm-v1",
+        language: "Rust",
+      },
+    ],
+  },
+  {
     id: "push/0.1",
     slug: "push",
     version: "0.1",

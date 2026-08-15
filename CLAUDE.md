@@ -39,6 +39,28 @@ two lists in lockstep. `checkCategoryTaxonomy()` in `scripts/build-registry.mjs`
 now **fails the build** on an enum entry missing from `data.js` (and warns on the
 reverse), so CI catches this — but the two files are still edited by hand.
 
+## ⚠️ Adding a transport binding — register it in `bindings.js` too
+
+Same failure mode, different list. `npm run build` **copies** `bindings/` to
+`website/bindings/` but never enumerates it; the registry site's list of bindings
+is `website/assets/bindings.js` → `window.TT_BINDINGS`, hand-edited. A binding
+can therefore be merged, published and implemented while remaining invisible on
+the site — which is what happened to both `didcomm/0.2` and `didcomm-v1/0.1`.
+
+When you add `bindings/<slug>/<version>/spec.md`, add the matching entry:
+
+```js
+{ id: "<slug>/<version>", slug, version, title, summary, bindingURI,
+  envelopeType, status, accent, prosePath: "/bindings/<slug>/<version>/spec.md",
+  implementations: [] }
+```
+
+`accent` must be one of the `--tt-*` tokens in `website/assets/tokens.css`
+(`teal`, `violet`, `amber`, `coral`, `sky`). `checkBindingRegistry()` in
+`scripts/build-registry.mjs` **fails the build** on an on-disk binding with no
+entry, and on a `prosePath` that does not match its `id`; a listed binding with
+no directory warns.
+
 ## ⚠️ Changing a spec or payload schema — bump and republish the libraries
 
 The Rust and TS client libraries are generated from the specs. When you add or
