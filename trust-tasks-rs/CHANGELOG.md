@@ -28,6 +28,30 @@ consumer should read it.
 > dependency order `publish.yml` uses. Plan it as one change rather than
 > discovering it mid-bump.
 
+## [0.6.4] - 2026-08-15
+
+### Fixed
+
+- **`Payload` aliased the wrong type in the TypeScript bindings** for 14
+  published specifications. `scripts/build-ts-bindings.mjs` identified a
+  schema's root type by taking the *first* `export interface|type` in the
+  compiled output; where a `$ref`'d shared definition hoisted ahead of the root,
+  it won — so `chat/message/0.1`, `trust-ceremony-receipt/0.1`, `audit/*`,
+  `task-consent/*`, `consent/request/1.0`, `vrc/relationships/issue/0.1` and
+  `witness/session/submit/0.1` each exported `type Payload = DigestMultibase`,
+  a `string`, in place of their request payload interface.
+
+  The root is now identified by the name the compiler derives from the schema's
+  own `title`, used only when that name is actually present in the output. A new
+  build-time invariant rejects an object-rooted schema whose root resolved to a
+  bare alias, which is the shape this failure always takes.
+
+  Not treated as a breaking change: the old alias was unusable. Assigning a real
+  payload to a `string` does not compile, so no correct consumer could have
+  depended on it. Nothing in the Rust bindings was affected — `trust-tasks-rs`
+  0.6.4 is unchanged in content and moves only to keep the two libraries in
+  step, per the versioning convention in CLAUDE.md.
+
 ## [0.6.3] - 2026-08-15
 
 ### Added

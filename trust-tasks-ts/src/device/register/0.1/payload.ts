@@ -179,7 +179,7 @@ export interface KeyCustody1 {
 export const TYPE_URI = "https://trusttasks.org/spec/device/register/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = ConsumerKind;
+export type Payload = DeviceRegisterPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/register/0.1#response" as const;

@@ -43,7 +43,7 @@ export interface VRCRelationshipsIssueResponsePayload {
 export const TYPE_URI = "https://trusttasks.org/spec/vrc/relationships/issue/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = DigestMultibase;
+export type Payload = VRCRelationshipsIssuePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vrc/relationships/issue/0.1#response" as const;

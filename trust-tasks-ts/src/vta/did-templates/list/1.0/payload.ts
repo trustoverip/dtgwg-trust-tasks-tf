@@ -82,7 +82,7 @@ export interface Ext1 {
 export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/list/1.0" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = Scope;
+export type Payload = VTADIDTemplateListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/list/1.0#response" as const;

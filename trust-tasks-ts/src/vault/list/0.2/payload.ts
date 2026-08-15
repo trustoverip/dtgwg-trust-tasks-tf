@@ -276,7 +276,7 @@ export interface Ext2 {
 export const TYPE_URI = "https://trusttasks.org/spec/vault/list/0.2" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = SecretKind;
+export type Payload = VaultListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/list/0.2#response" as const;

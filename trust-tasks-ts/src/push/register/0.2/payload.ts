@@ -89,7 +89,7 @@ export interface WakeHandle {
 export const TYPE_URI = "https://trusttasks.org/spec/push/register/0.2" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = PushRegistration;
+export type Payload = PushRegisterPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/push/register/0.2#response" as const;

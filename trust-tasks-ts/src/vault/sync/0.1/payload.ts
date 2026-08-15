@@ -242,7 +242,7 @@ export interface PolicyChangedEvent {
 export const TYPE_URI = "https://trusttasks.org/spec/vault/sync/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = SyncEvent;
+export type Payload = VaultSyncPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/sync/0.1#response" as const;

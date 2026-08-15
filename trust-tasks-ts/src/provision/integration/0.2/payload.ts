@@ -252,7 +252,7 @@ export interface Ext1 {
 export const TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.2" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = BootstrapAsk;
+export type Payload = ProvisionIntegrationPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.2#response" as const;

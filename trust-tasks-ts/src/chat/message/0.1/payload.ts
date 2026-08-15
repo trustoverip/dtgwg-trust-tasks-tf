@@ -117,7 +117,7 @@ export interface Ext {
 export const TYPE_URI = "https://trusttasks.org/spec/chat/message/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = DigestMultibase;
+export type Payload = ChatMessagePayload;
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -162,7 +162,7 @@ export interface Ext1 {
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/account/list/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = AccountType;
+export type Payload = MessagingListAccountsPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/account/list/0.1#response" as const;

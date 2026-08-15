@@ -34,7 +34,7 @@ export interface Ext {
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/granted/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = DigestMultibase;
+export type Payload = TaskConsentGrantedPayload;
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

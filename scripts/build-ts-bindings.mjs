@@ -181,13 +181,66 @@ function responseProbeRef(response) {
   return isPureAlias ? { $ref: response.$ref } : { $ref: "#/$defs/Response" };
 }
 
-/** Name of the first interface/type the compiler emitted — always the root. */
-function rootTypeName(ts, schemaPath) {
-  const m = /^export (?:interface|type) ([A-Za-z0-9_$]+)/m.exec(ts);
-  if (!m) {
+/**
+ * The type name json-schema-to-typescript mints from a schema `title`:
+ * split on anything that is not alphanumeric, upper-case each token's first
+ * letter, and join. "Audit List — payload" becomes `AuditListPayload`;
+ * "VTC Relationships Publish — payload" becomes `VTCRelationshipsPublishPayload`,
+ * an already-upper token surviving intact.
+ */
+function titleTypeName(title) {
+  if (typeof title !== "string") return null;
+  const parts = title
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1));
+  return parts.length ? parts.join("") : null;
+}
+
+/**
+ * Name of the root interface/type the compiler emitted.
+ *
+ * This used to take the first `export interface|type` in the output, on the
+ * assumption that the root always comes first. It does not. Where a schema
+ * `$ref`s a shared definition — `DigestMultibase`, say — the compiler hoists
+ * that definition to its own exported type, sometimes *ahead of* the root, and
+ * the first-match rule then aliased `Payload` to the shared definition.
+ * Fourteen published specifications shipped `export type Payload =
+ * DigestMultibase`, a `string`, in place of their request payload interface.
+ *
+ * Nothing catches that downstream: the drift check compares the generator's
+ * output to itself, `tsc` is satisfied because the alias is well-formed, and
+ * no test asserts what `Payload` resolves to. So the rule has to be right here,
+ * and it has to fail loudly when it is not — hence the invariant below rather
+ * than a quieter heuristic.
+ *
+ * The root is identified by the name the compiler derives from the schema's own
+ * `title`, and is used only when that name is actually present in the output.
+ * Positional order is the fallback, for schemas carrying no usable title.
+ */
+function rootTypeName(ts, schemaPath, raw) {
+  const names = [...ts.matchAll(/^export (?:interface|type) ([A-Za-z0-9_$]+)/gm)].map(
+    (m) => m[1],
+  );
+  if (names.length === 0) {
     throw new Error(`${schemaPath}: compiled output declares no root type`);
   }
-  return m[1];
+  const fromTitle = titleTypeName(raw?.title);
+  const root = fromTitle && names.includes(fromTitle) ? fromTitle : names[0];
+
+  // An object-rooted schema whose root compiled to a *bare* alias — `= string`,
+  // `= DigestMultibase` — means we picked up a hoisted `$ref` instead of the
+  // root, the exact failure this function exists to prevent. An object type
+  // literal or a union is a legitimate root form and is left alone.
+  const bareAlias = new RegExp(`^export type ${root} = ([A-Za-z0-9_$]+);\\s*$`, "m");
+  if (raw?.type === "object" && bareAlias.test(ts)) {
+    throw new Error(
+      `${schemaPath}: root type '${root}' compiled to a bare alias, but the schema's ` +
+        `root is an object — the alias would be emitted as this specification's ` +
+        `\`Payload\`. Check that the schema's title matches the emitted interface.`,
+    );
+  }
+  return root;
 }
 
 /**
@@ -347,7 +400,7 @@ async function generateOne(schemaPath) {
   const tail = emitTail(
     slugInfo,
     ts,
-    rootTypeName(ts, schemaPath),
+    rootTypeName(ts, schemaPath, raw),
     responseType,
     schemaPath,
     policy,

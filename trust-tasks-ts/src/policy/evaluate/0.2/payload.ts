@@ -133,7 +133,7 @@ export interface PolicyDecision {
 export const TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.2" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = SiteTarget;
+export type Payload = PolicyEvaluatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.2#response" as const;

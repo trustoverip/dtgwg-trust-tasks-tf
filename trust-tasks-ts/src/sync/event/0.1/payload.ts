@@ -216,7 +216,7 @@ export interface Ext1 {
 export const TYPE_URI = "https://trusttasks.org/spec/sync/event/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = SyncEvent;
+export type Payload = SyncEventPayload;
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

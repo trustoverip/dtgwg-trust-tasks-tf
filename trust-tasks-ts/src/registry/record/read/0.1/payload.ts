@@ -41,7 +41,7 @@ export interface RegistryRecordReadResponsePayloadATrustRecord {
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/read/0.1" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = RecordType;
+export type Payload = RegistryRecordReadPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/read/0.1#response" as const;

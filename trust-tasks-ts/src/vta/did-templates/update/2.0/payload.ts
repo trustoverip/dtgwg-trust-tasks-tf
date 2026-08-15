@@ -120,7 +120,7 @@ export interface Context {
 export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/update/2.0" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = Scope;
+export type Payload = VTADIDTemplateUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/update/2.0#response" as const;

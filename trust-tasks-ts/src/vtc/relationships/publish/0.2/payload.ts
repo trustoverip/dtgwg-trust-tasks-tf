@@ -36,7 +36,7 @@ export interface VTCRelationshipsPublishResponsePayload {
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/publish/0.2" as const;
 
 /** Stable alias for this specification's request payload shape. */
-export type Payload = DigestMultibase;
+export type Payload = VTCRelationshipsPublishPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/publish/0.2#response" as const;
