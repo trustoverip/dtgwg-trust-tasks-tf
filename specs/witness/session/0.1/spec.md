@@ -124,6 +124,28 @@ A conforming **witness** (`recipient`):
 3. On accepting, returns the `#response` carrying a fresh, unpredictable `challenge` and its `domain`, under the REQUIRED proof.
 4. On declining, returns a `trust-task-error` with `witness/session:refused`.
 
+## Authorization
+
+*Declared under [SPEC.md §7.3](../../../../SPEC.md#73-specification-requirements) item 15.*
+
+The authorization evidence this task presupposes is **membership of the exchange
+the session claims to witness**: the session's `issuer` is one of the
+relationship DIDs named in `parties`, which the witness verifies under
+Conformance item 2 above. A session opened by a party that is not in the
+exchange it names is refused with `witness/session:refused`.
+
+Nothing else in the document carries authority. The request's `proof` is
+OPTIONAL here, and where present it attributes the request to its sender; per
+[SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 that
+attribution establishes *who asked*, never that they may have a session opened
+for them.
+
+Whether to open a session for a party that does satisfy the membership check
+remains the **witness's own decision**, under its policy, its capacity, and
+what it is willing to witness. This declaration describes the evidence the task
+assumes; it does not oblige a witness to accept any session, and
+`witness/session:refused` is the disposition for declining.
+
 ## Security & Privacy
 
 **The challenge is the session's binding value.** Presentations under `submit`
