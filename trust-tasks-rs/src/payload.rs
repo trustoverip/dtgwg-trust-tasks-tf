@@ -91,6 +91,30 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// Consumers consult this via [`crate::consume_inbound`].
     const IS_RECIPIENT_REQUIRED: bool = false;
 
+    /// Raw text of the `payload.schema.json` describing values of this type,
+    /// or `None` where this build has no schema for it.
+    ///
+    /// This is the artifact SPEC.md §7.2 item 2 is performed against. It is
+    /// emitted unconditionally — it is a `&'static str` and pulls in no
+    /// dependency; only *evaluating* it needs a JSON Schema implementation,
+    /// which the caller supplies (see [`crate::PayloadPolicy`]).
+    ///
+    /// **Most of item 2 has already happened by the time you hold a
+    /// `Payload`.** Deserializing into these generated types enforces
+    /// required members, member types, `additionalProperties: false`, and the
+    /// string constraints typify expresses as validating newtypes (`pattern`,
+    /// `minLength`). What survives deserialization is what typify cannot
+    /// express — `minProperties`, `minItems` on an optional array,
+    /// conditional subschemas — and that residue is what a schema check
+    /// against this constant still catches.
+    ///
+    /// `None` for hand-modelled payloads outside the codegen's reach
+    /// (`trust-task-error`, whose shape is carried by the Rust type system
+    /// instead). A policy that validates treats `None` as nothing to check;
+    /// it is not a silent failure, because the type it deserialized into is
+    /// itself the constraint.
+    const PAYLOAD_SCHEMA: Option<&'static str> = None;
+
     /// Parsed form of [`TYPE_URI`](Self::TYPE_URI).
     ///
     /// The default implementation calls [`str::parse`] and panics on a

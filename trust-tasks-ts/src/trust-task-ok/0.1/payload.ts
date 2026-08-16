@@ -45,13 +45,66 @@ export const TYPE_URI = "https://trusttasks.org/spec/trust-task-ok/0.1" as const
 export type Payload = TrustTaskOKPayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task-ok/0.1",
+  "title": "Trust Task OK — payload",
+  "description": "The courtesy acknowledgement reserved at SPEC.md §8.6: a consumer confirming that it received and performed a task which defines no success-response document of its own.\n\nIt is deliberately weak. A producer MUST NOT rely on receiving one, and the absence of one carries no information — a consumer may not implement this specification, and the document may be lost. Anything a task's contract depends on belongs in that task's own #response, not here.\n\nEvery member is optional: an empty payload is the ordinary case, and means exactly 'received and performed'.\n\nThis specification declares no response anchor. An acknowledgement is not answered.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content."
+    },
+    "refs": {
+      "type": "array",
+      "description": "Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.\n\nA consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What this reference is, in the consumer's own vocabulary. Not drawn from any registry, and not interoperable — a producer that does not recognize a name ignores it."
+          },
+          "value": {
+            "type": "string",
+            "description": "The reference itself, opaque to this framework."
+          }
+        }
+      }
+    },
+    "ext": {
+      "type": "object",
+      "description": "Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer of this document controls."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;

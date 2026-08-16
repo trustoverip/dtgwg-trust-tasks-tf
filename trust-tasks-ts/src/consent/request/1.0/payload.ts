@@ -91,15 +91,277 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/request/1.
 export type Response = ConsentRequestResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/request/1.0",
+  "title": "Consent Request — payload",
+  "description": "A bridge asks the VTA whether an inbound conversation may reach an AI agent, prompting operator consent on first contact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "scope",
+    "challenge"
+  ],
+  "properties": {
+    "subject": {
+      "$ref": "#/$defs/ConsentSubject"
+    },
+    "scope": {
+      "$ref": "#/$defs/Scope",
+      "description": "The access the bridge seeks for the agent on this conversation."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "base64url-encoded nonce (≥128 bits entropy) echoed by the matching consent/decision, so the bridge can correlate the decision to this request."
+    },
+    "displayHint": {
+      "type": "string",
+      "description": "Optional operator-facing label (e.g. \"Signal group 'Family'\"). MUST NOT contain a raw platform address."
+    },
+    "firstMessageDigest": {
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content."
+    },
+    "contextHint": {
+      "type": "string",
+      "description": "Optional VTA context path the bridge runs under, to scope approver resolution."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent Request — response payload",
+      "description": "Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "refused"
+          ],
+          "description": "`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "The VTA's id for the pending consent (set when accepted), for correlation and polling."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `refused`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "receive",
+        "converse"
+      ],
+      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
+    },
+    "ConsentSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "conversationRef",
+        "kind",
+        "agent"
+      ],
+      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the AI agent the conversation would reach."
+        }
+      }
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "dm",
+        "group",
+        "channel"
+      ],
+      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent Request — response payload",
+      "description": "Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "refused"
+          ],
+          "description": "`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "The VTA's id for the pending consent (set when accepted), for correlation and polling."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `refused`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "receive",
+        "converse"
+      ],
+      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
+    },
+    "ConsentSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "conversationRef",
+        "kind",
+        "agent"
+      ],
+      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the AI agent the conversation would reach."
+        }
+      }
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "dm",
+        "group",
+        "channel"
+      ],
+      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -112,4 +374,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

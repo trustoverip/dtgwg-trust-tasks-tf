@@ -92,15 +92,306 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/list/0
 export type Response = VTCMembersListResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/list/0.1",
+  "title": "VTC Members List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Filter to members with this role (wire form, e.g. `admin`, `custom:editor`)."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "Page size; the maintainer clamps to 1..=200 (default 50)."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MemberResponse"
+          }
+        },
+        "nextCursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Continuation token for the next page, or null when this is the last."
+        },
+        "totalEstimate": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Approximate total matching members, when the maintainer can cheaply estimate it."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "MemberResponse": {
+      "$anchor": "memberResponse",
+      "title": "MemberResponse",
+      "description": "One community member as the maintainer sees it: the membership record joined with its ACL role.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "role",
+        "joinedAt",
+        "publishConsent",
+        "departurePreference",
+        "extensions"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member's DID."
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`)."
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Optional human-readable label."
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publishConsent": {
+          "type": "boolean",
+          "description": "Whether the member consented to being published in the community directory."
+        },
+        "departurePreference": {
+          "type": "string",
+          "enum": [
+            "purge",
+            "tombstone",
+            "historical",
+            "policydefault"
+          ],
+          "description": "How the member's record is handled on departure."
+        },
+        "statusListIndex": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "The member's slot on the community's membership status list, when allocated."
+        },
+        "currentVmcId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Id of the member's current Verifiable Membership Credential, if issued."
+        },
+        "currentRoleVecId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation)."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MemberResponse"
+          }
+        },
+        "nextCursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Continuation token for the next page, or null when this is the last."
+        },
+        "totalEstimate": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Approximate total matching members, when the maintainer can cheaply estimate it."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "MemberResponse": {
+      "$anchor": "memberResponse",
+      "title": "MemberResponse",
+      "description": "One community member as the maintainer sees it: the membership record joined with its ACL role.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "role",
+        "joinedAt",
+        "publishConsent",
+        "departurePreference",
+        "extensions"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member's DID."
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`)."
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Optional human-readable label."
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publishConsent": {
+          "type": "boolean",
+          "description": "Whether the member consented to being published in the community directory."
+        },
+        "departurePreference": {
+          "type": "string",
+          "enum": [
+            "purge",
+            "tombstone",
+            "historical",
+            "policydefault"
+          ],
+          "description": "How the member's record is handled on departure."
+        },
+        "statusListIndex": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "The member's slot on the community's membership status list, when allocated."
+        },
+        "currentVmcId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Id of the member's current Verifiable Membership Credential, if issued."
+        },
+        "currentRoleVecId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation)."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -113,4 +404,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

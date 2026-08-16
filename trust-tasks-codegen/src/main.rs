@@ -604,8 +604,37 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         )
     })?;
 
-    // The inlined, self-contained schema is now the on-the-wire SCHEMA_JSON.
+    // The inlined, self-contained schema is now the on-the-wire
+    // `Payload::PAYLOAD_SCHEMA`.
     let raw = serde_json::to_string_pretty(&schema)? + "\n";
+
+    // The response variant needs a schema of its own: the root schema
+    // describes the *request* payload, and `$defs.Response` describes the
+    // response. Wrap the latter in a document that keeps `$defs` reachable so
+    // its internal `$ref`s still resolve, rather than lifting the subschema
+    // out and breaking them.
+    let response_raw = schema
+        .get("$defs")
+        .and_then(|d| d.get("Response"))
+        .map(|_| {
+            let mut doc = serde_json::Map::new();
+            if let Some(s) = schema.get("$schema") {
+                doc.insert("$schema".into(), s.clone());
+            }
+            // No `$id`: JSON Schema 2020-12 forbids a non-empty fragment in
+            // `$id`, so the natural `<base>#response` is not a legal value and
+            // a compliant validator refuses to compile the document. The
+            // response schema needs no identity of its own — nothing `$ref`s
+            // it from outside — and `#/$defs/...` resolves against the
+            // document root either way.
+            doc.insert("$ref".into(), Value::String("#/$defs/Response".into()));
+            doc.insert(
+                "$defs".into(),
+                schema.get("$defs").cloned().unwrap_or(Value::Null),
+            );
+            serde_json::to_string_pretty(&Value::Object(doc)).map(|s| s + "\n")
+        })
+        .transpose()?;
 
     // After `raw` is captured: this rewrites descriptions for rustdoc's benefit
     // only, and SCHEMA_JSON must keep the descriptions the registry publishes.
@@ -647,6 +676,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         recipient_required,
         issuer_required,
         &raw,
+        response_raw.as_deref(),
     );
 
     let parsed: syn::File = syn::parse2(module_tokens.clone()).with_context(|| {
@@ -926,6 +956,7 @@ fn render_module(
     recipient_required: bool,
     issuer_required: bool,
     schema_json: &str,
+    response_schema_json: Option<&str>,
 ) -> TokenStream {
     let type_uri = spec.type_uri();
     let response_uri = format!("{type_uri}#response");
@@ -971,6 +1002,16 @@ fn render_module(
         quote! {}
     };
 
+    // SPEC §7.2 item 2 — the schema the payload is validated against, carried
+    // on the type itself so a consumer never has to find it. Emitted
+    // unconditionally: it is a `&'static str` and pulls in no dependency, and
+    // gating it behind `validate` was what left the schema unreachable to
+    // anyone who had not already opted in.
+    let resp_schema_const = match response_schema_json {
+        Some(json) => quote! { const PAYLOAD_SCHEMA: Option<&'static str> = Some(#json); },
+        None => quote! {},
+    };
+
     let response_payload_impl = if has_response {
         quote! {
             impl crate::Payload for Response {
@@ -978,17 +1019,11 @@ fn render_module(
                 #bearer_const
                 #resp_proof_const
                 #resp_recipient_const
+                #resp_schema_const
             }
         }
     } else {
         quote! {}
-    };
-
-    let validate_request_impl = quote! {
-        #[cfg(feature = "validate")]
-        impl crate::validate::ValidatedPayload for Payload {
-            const SCHEMA_JSON: &'static str = #schema_json;
-        }
     };
 
     let conformance_mod = render_conformance_mod(examples, invalid_examples, has_response);
@@ -1008,11 +1043,10 @@ fn render_module(
             #bearer_const
             #req_proof_const
             #req_recipient_const
+            const PAYLOAD_SCHEMA: Option<&'static str> = Some(#schema_json);
         }
 
         #response_payload_impl
-
-        #validate_request_impl
 
         #conformance_mod
     }
@@ -1148,7 +1182,7 @@ struct ModNode {
 /// Emit `trust-tasks-rs/src/schema_index.rs` — a Type URI → payload schema lookup.
 ///
 /// Without this, a consumer that dispatches on a Type URI has no way to *find* the
-/// schema for the payload it is about to run: `ValidatedPayload::SCHEMA_JSON` is a
+/// schema for the payload it is about to run: `Payload::PAYLOAD_SCHEMA` is a
 /// per-type associated const, and a generic gate has no type to name. It could
 /// only validate by hand-writing a match arm per task and remembering to add one
 /// with every new task — which is to say, it would validate whatever somebody
@@ -1167,7 +1201,7 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
             .collect::<Vec<_>>()
             .join("::");
         arms.push_str(&format!(
-            "        {:?} => Some(<crate::specs::{}::{}::Payload as crate::validate::ValidatedPayload>::SCHEMA_JSON),\n",
+            "        {:?} => <crate::specs::{}::{}::Payload as crate::Payload>::PAYLOAD_SCHEMA,\n",
             spec.type_uri(),
             path,
             spec.version_module(),
@@ -1185,7 +1219,11 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
 /// consumer that treats "no schema" as "anything goes" has opted out of
 /// validation for exactly the tasks it understands least — which is the wrong way
 /// round.
-#[cfg(feature = "validate")]
+///
+/// Available without the `validate` feature: the schemas are `&'static str`
+/// constants and cost nothing to carry. Only *evaluating* one needs a JSON
+/// Schema implementation, which the caller supplies via
+/// [`crate::PayloadValidator`].
 pub fn schema_for(type_uri: &str) -> Option<&'static str> {{
     match type_uri {{
 {arms}        _ => None,

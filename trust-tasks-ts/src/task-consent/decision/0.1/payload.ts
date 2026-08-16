@@ -71,15 +71,207 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/task-consent/decis
 export type Response = TaskConsentDecisionResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/task-consent/decision/0.1",
+  "title": "Task Consent Decision — payload",
+  "description": "An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "challenge",
+    "payloadDigest",
+    "decision"
+  ],
+  "properties": {
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Echoes the task-consent/request this decision answers, binding it to that one pending request. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it."
+    },
+    "payloadDigest": {
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "Echoes the digest of the task being authorized, in the encoding `task-consent/request` carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention."
+    },
+    "decision": {
+      "$ref": "#/$defs/Decision"
+    },
+    "reason": {
+      "type": "string",
+      "description": "OPTIONAL human-facing note, most useful on a `deny`."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Task Consent Decision — response payload",
+      "description": "Acknowledgement of the recorded decision, and whether the approval threshold is now met.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "payloadDigest"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "granted",
+            "pending",
+            "denied"
+          ],
+          "description": "`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted."
+        },
+        "payloadDigest": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "The digest this decision concerned, in the encoding `task-consent/request` carried it."
+        },
+        "approvals": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct approvals recorded so far."
+        },
+        "needed": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Distinct approvals required. Present when status is `pending`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
+    "Decision": {
+      "title": "Decision",
+      "type": "string",
+      "enum": [
+        "approve",
+        "deny"
+      ],
+      "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Task Consent Decision — response payload",
+      "description": "Acknowledgement of the recorded decision, and whether the approval threshold is now met.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "payloadDigest"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "granted",
+            "pending",
+            "denied"
+          ],
+          "description": "`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted."
+        },
+        "payloadDigest": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "The digest this decision concerned, in the encoding `task-consent/request` carried it."
+        },
+        "approvals": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct approvals recorded so far."
+        },
+        "needed": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Distinct approvals required. Present when status is `pending`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
+    "Decision": {
+      "title": "Decision",
+      "type": "string",
+      "enum": [
+        "approve",
+        "deny"
+      ],
+      "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -92,4 +284,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

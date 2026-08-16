@@ -53,15 +53,168 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/trust-task-discove
 export type Response = TrustTaskDiscoveryResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task-discovery/0.1",
+  "title": "Trust Task Discovery — payload",
+  "description": "Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "patterns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'."
+      },
+      "description": "Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Trust Task Discovery — response payload",
+      "description": "List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supportedTypes"
+      ],
+      "properties": {
+        "supportedTypes": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uri",
+                "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set."
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists."
+                  },
+                  "requiredExt": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
+                  }
+                },
+                "description": "Object form: lists a Type URI together with optional capability annotations."
+              }
+            ],
+            "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`)."
+          },
+          "description": "Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form."
+        },
+        "frameworkVersion": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "description": "MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Trust Task Discovery — response payload",
+      "description": "List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supportedTypes"
+      ],
+      "properties": {
+        "supportedTypes": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uri",
+                "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set."
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists."
+                  },
+                  "requiredExt": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
+                  }
+                },
+                "description": "Object form: lists a Type URI together with optional capability annotations."
+              }
+            ],
+            "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`)."
+          },
+          "description": "Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form."
+        },
+        "frameworkVersion": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "description": "MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -74,4 +227,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

@@ -124,15 +124,401 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/governance/capabil
 export type Response = GovernanceCapabilityListResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/governance/capability/list/0.1",
+  "title": "Governance Capability List — payload",
+  "description": "List a community's capabilities and their manifests — the query behind a capability management surface. Defaults to enabled capabilities only.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "enabled",
+        "available",
+        "all"
+      ],
+      "description": "Which capabilities to list: `enabled` (the default when absent), `available` (known to the host but not enabled), or `all`."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Governance Capability List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capabilities"
+      ],
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "manifest",
+              "enabled"
+            ],
+            "properties": {
+              "manifest": {
+                "$ref": "#/$defs/CapabilityManifest"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "enabledAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When the capability was enabled, for enabled entries."
+              },
+              "delegate": {
+                "type": "string",
+                "description": "DID of the companion serving this capability, when not built in."
+              }
+            }
+          }
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CapabilityManifest": {
+      "title": "CapabilityManifest",
+      "description": "The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability",
+        "version",
+        "specs"
+      ],
+      "properties": {
+        "capability": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "The capability's namespace slug, e.g. `git-trust`."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "Manifest/capability version, `MAJOR.MINOR`."
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable capability name for management surfaces."
+        },
+        "description": {
+          "type": "string",
+          "description": "One-paragraph description for management surfaces."
+        },
+        "specs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled."
+        },
+        "vocabulary": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.",
+          "required": [
+            "actions"
+          ],
+          "properties": {
+            "actions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              },
+              "description": "TRQP `action` values this capability owns, e.g. `git.commit.sign`."
+            },
+            "resourcePattern": {
+              "type": "string",
+              "description": "Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`."
+            }
+          }
+        },
+        "roles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it."
+        },
+        "lifecycleHooks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`."
+        },
+        "consentClass": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "elevated",
+              "destructive"
+            ]
+          },
+          "description": "Map of capability operation to the consent class its execution requires under the host's delegated-execution policy."
+        },
+        "externalAdapters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "ref"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "description": "Adapter type, e.g. `github-action`, `webhook`."
+              },
+              "ref": {
+                "type": "string",
+                "description": "Where the adapter lives, e.g. a repository path or URL."
+              }
+            }
+          },
+          "description": "Out-of-stack components that consume this capability's trust decisions."
+        },
+        "configSchema": {
+          "type": "string",
+          "description": "Spec slug of the JSON schema the per-community `config` document must validate against."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Governance Capability List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capabilities"
+      ],
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "manifest",
+              "enabled"
+            ],
+            "properties": {
+              "manifest": {
+                "$ref": "#/$defs/CapabilityManifest"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "enabledAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When the capability was enabled, for enabled entries."
+              },
+              "delegate": {
+                "type": "string",
+                "description": "DID of the companion serving this capability, when not built in."
+              }
+            }
+          }
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CapabilityManifest": {
+      "title": "CapabilityManifest",
+      "description": "The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability",
+        "version",
+        "specs"
+      ],
+      "properties": {
+        "capability": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "The capability's namespace slug, e.g. `git-trust`."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "Manifest/capability version, `MAJOR.MINOR`."
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable capability name for management surfaces."
+        },
+        "description": {
+          "type": "string",
+          "description": "One-paragraph description for management surfaces."
+        },
+        "specs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled."
+        },
+        "vocabulary": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.",
+          "required": [
+            "actions"
+          ],
+          "properties": {
+            "actions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              },
+              "description": "TRQP `action` values this capability owns, e.g. `git.commit.sign`."
+            },
+            "resourcePattern": {
+              "type": "string",
+              "description": "Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`."
+            }
+          }
+        },
+        "roles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it."
+        },
+        "lifecycleHooks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`."
+        },
+        "consentClass": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "elevated",
+              "destructive"
+            ]
+          },
+          "description": "Map of capability operation to the consent class its execution requires under the host's delegated-execution policy."
+        },
+        "externalAdapters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "ref"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "description": "Adapter type, e.g. `github-action`, `webhook`."
+              },
+              "ref": {
+                "type": "string",
+                "description": "Where the adapter lives, e.g. a repository path or URL."
+              }
+            }
+          },
+          "description": "Out-of-stack components that consume this capability's trust decisions."
+        },
+        "configSchema": {
+          "type": "string",
+          "description": "Spec slug of the JSON schema the per-community `config` document must validate against."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -145,4 +531,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

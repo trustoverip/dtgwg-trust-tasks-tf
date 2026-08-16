@@ -84,15 +84,237 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/recogniti
 export type Response = RegistryRecognitionResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/recognition/0.1",
+  "title": "Registry Recognition — payload",
+  "description": "TRQP v2.0 recognition query: ask a trust registry whether an entity is recognised by an authority for a given action+resource. Field names are verbatim from the TRQP recognition request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entity_id",
+    "authority_id",
+    "action",
+    "resource"
+  ],
+  "properties": {
+    "entity_id": {
+      "type": "string",
+      "description": "Identifier of the entity being tested for recognition."
+    },
+    "authority_id": {
+      "type": "string",
+      "description": "Identifier of the authority being queried to recognise the entity."
+    },
+    "action": {
+      "type": "string",
+      "description": "The action the query is checking recognition for."
+    },
+    "resource": {
+      "type": "string",
+      "description": "The resource the query is checking recognition for."
+    },
+    "context": {
+      "$ref": "#/$defs/QueryContext"
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Recognition — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity_id",
+        "authority_id",
+        "action",
+        "resource",
+        "recognized",
+        "time_evaluated"
+      ],
+      "properties": {
+        "entity_id": {
+          "type": "string"
+        },
+        "authority_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "resource": {
+          "type": "string"
+        },
+        "recognized": {
+          "type": "boolean",
+          "description": "True if the action+resource has been recognised, false otherwise."
+        },
+        "time_evaluated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server time the query was evaluated at, per the endpoint clock."
+        },
+        "time_requested": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The requested server time, echoed from the request `context.time` when supplied."
+        },
+        "message": {
+          "type": "string",
+          "description": "Additional human-readable detail about the recognition response."
+        },
+        "context": {
+          "$ref": "#/$defs/QueryContext"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "QueryContext": {
+      "title": "QueryContext",
+      "type": "object",
+      "description": "Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.",
+      "properties": {
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time."
+        },
+        "locator": {
+          "type": "string",
+          "description": "Optional hint for systems that need extra information to locate the records in question (authorization queries)."
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Recognition — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity_id",
+        "authority_id",
+        "action",
+        "resource",
+        "recognized",
+        "time_evaluated"
+      ],
+      "properties": {
+        "entity_id": {
+          "type": "string"
+        },
+        "authority_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "resource": {
+          "type": "string"
+        },
+        "recognized": {
+          "type": "boolean",
+          "description": "True if the action+resource has been recognised, false otherwise."
+        },
+        "time_evaluated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server time the query was evaluated at, per the endpoint clock."
+        },
+        "time_requested": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The requested server time, echoed from the request `context.time` when supplied."
+        },
+        "message": {
+          "type": "string",
+          "description": "Additional human-readable detail about the recognition response."
+        },
+        "context": {
+          "$ref": "#/$defs/QueryContext"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "QueryContext": {
+      "title": "QueryContext",
+      "type": "object",
+      "description": "Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.",
+      "properties": {
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time."
+        },
+        "locator": {
+          "type": "string",
+          "description": "Optional hint for systems that need extra information to locate the records in question (authorization queries)."
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -105,4 +327,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

@@ -66,15 +66,219 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/wipe/0.1#re
 export type Response = DeviceWipeResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/device/wipe/0.1",
+  "title": "Device Wipe — payload",
+  "description": "The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "deviceId",
+    "scope",
+    "reason"
+  ],
+  "properties": {
+    "deviceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "cache",
+        "cache-and-keys",
+        "full"
+      ],
+      "description": "How aggressively the target should wipe:\n- `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.\n- `cache-and-keys` — discard cache + device-local key material; consumer must re-onboard.\n- `full` — `cache-and-keys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent."
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Wipe-issuance timestamp; identical to the document's `issuedAt`, repeated here so the body is self-contained for offline-queued delivery."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Wipe — response payload",
+      "description": "Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deviceId",
+        "scope",
+        "completedAt"
+      ],
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "cache",
+            "cache-and-keys",
+            "full"
+          ]
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "diagnostics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacheBytesWiped": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keysWiped": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "osHooksInvoked": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "OS-level revocation hooks the target managed to invoke (e.g. \"navigator.credentials.preventSilentAccess\", \"ASCredentialIdentityStore.removeAllCredentialIdentities\")."
+            },
+            "partialReasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Free-form reasons why the wipe was partial (e.g. \"os-keychain-unavailable\", \"extension-storage-quota-exceeded\")."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Wipe — response payload",
+      "description": "Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deviceId",
+        "scope",
+        "completedAt"
+      ],
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "cache",
+            "cache-and-keys",
+            "full"
+          ]
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "diagnostics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cacheBytesWiped": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keysWiped": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "osHooksInvoked": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "OS-level revocation hooks the target managed to invoke (e.g. \"navigator.credentials.preventSilentAccess\", \"ASCredentialIdentityStore.removeAllCredentialIdentities\")."
+            },
+            "partialReasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Free-form reasons why the wipe was partial (e.g. \"os-keychain-unavailable\", \"extension-storage-quota-exceeded\")."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -87,4 +291,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

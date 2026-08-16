@@ -75,15 +75,272 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/login
 export type Response = AuthPasskeyLoginStartResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/login/start/0.2",
+  "title": "Auth — Passkey Login (start)",
+  "description": "Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer."
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "login",
+        "stepUp"
+      ],
+      "description": "Producer-declared intent. `login` issues a new session; `stepUp` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Login Start — response payload",
+      "description": "Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authId",
+        "options"
+      ],
+      "properties": {
+        "authId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque server handle correlating this start with the matching finish."
+        },
+        "options": {
+          "$ref": "#/$defs/CredentialRequestOptions",
+          "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CredentialRequestOptions": {
+      "$anchor": "credentialRequestOptions",
+      "title": "PublicKeyCredentialRequestOptions",
+      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rpId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "userVerification": {
+          "enum": [
+            "discouraged",
+            "preferred",
+            "required"
+          ]
+        }
+      }
+    },
+    "CredentialDescriptor": {
+      "$anchor": "credentialDescriptor",
+      "title": "PublicKeyCredentialDescriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "public-key"
+        },
+        "id": {
+          "type": "string",
+          "description": "base64url-encoded credential id."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "usb",
+              "nfc",
+              "ble",
+              "internal",
+              "hybrid"
+            ]
+          }
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Login Start — response payload",
+      "description": "Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authId",
+        "options"
+      ],
+      "properties": {
+        "authId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque server handle correlating this start with the matching finish."
+        },
+        "options": {
+          "$ref": "#/$defs/CredentialRequestOptions",
+          "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CredentialRequestOptions": {
+      "$anchor": "credentialRequestOptions",
+      "title": "PublicKeyCredentialRequestOptions",
+      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rpId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "userVerification": {
+          "enum": [
+            "discouraged",
+            "preferred",
+            "required"
+          ]
+        }
+      }
+    },
+    "CredentialDescriptor": {
+      "$anchor": "credentialDescriptor",
+      "title": "PublicKeyCredentialDescriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "public-key"
+        },
+        "id": {
+          "type": "string",
+          "description": "base64url-encoded credential id."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "usb",
+              "nfc",
+              "ble",
+              "internal",
+              "hybrid"
+            ]
+          }
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -96,4 +353,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

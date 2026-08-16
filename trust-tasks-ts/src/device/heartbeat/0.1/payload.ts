@@ -64,15 +64,195 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/heartbeat/0
 export type Response = DeviceHeartbeatResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/device/heartbeat/0.1",
+  "title": "Device Heartbeat — payload",
+  "description": "Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "platform": {
+      "type": "string",
+      "description": "Updated platform descriptor if it changed since registration (e.g. browser updated)."
+    },
+    "vaultSeq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Heartbeat — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "serverTime"
+      ],
+      "properties": {
+        "serverTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Authoritative timestamp — consumers MAY use to detect clock drift."
+        },
+        "queuedOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/QueuedOperation"
+          },
+          "description": "Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op."
+        },
+        "syncHint": {
+          "type": "string",
+          "enum": [
+            "up-to-date",
+            "sync-due",
+            "full-resync-required"
+          ],
+          "description": "Tells the consumer whether to call vault/sync."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "QueuedOperation": {
+      "title": "QueuedOperation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "task"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "wipe",
+            "policy-reload",
+            "config-update"
+          ],
+          "description": "Discriminator. The framework currently supports wipe; future versions may add others."
+        },
+        "task": {
+          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Device Heartbeat — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "serverTime"
+      ],
+      "properties": {
+        "serverTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Authoritative timestamp — consumers MAY use to detect clock drift."
+        },
+        "queuedOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/QueuedOperation"
+          },
+          "description": "Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op."
+        },
+        "syncHint": {
+          "type": "string",
+          "enum": [
+            "up-to-date",
+            "sync-due",
+            "full-resync-required"
+          ],
+          "description": "Tells the consumer whether to call vault/sync."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "QueuedOperation": {
+      "title": "QueuedOperation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "task"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "wipe",
+            "policy-reload",
+            "config-update"
+          ],
+          "description": "Discriminator. The framework currently supports wipe; future versions may add others."
+        },
+        "task": {
+          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -85,4 +265,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

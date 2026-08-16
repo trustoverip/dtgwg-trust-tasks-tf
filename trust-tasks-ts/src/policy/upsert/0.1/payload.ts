@@ -67,15 +67,287 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/upsert/0.1#
 export type Response = PolicyUpsertResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/upsert/0.1",
+  "title": "Policy Upsert — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "module"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expectedVersion": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1024
+    },
+    "module": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Rego source. The maintainer parses and validates against its evaluator before persisting; a syntactically invalid module is rejected."
+    },
+    "appliesTo": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Upsert — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "created"
+      ],
+      "properties": {
+        "policy": {
+          "$ref": "#/$defs/PolicyModule"
+        },
+        "created": {
+          "type": "boolean"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PolicyModule": {
+      "title": "PolicyModule",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "module",
+        "version",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\")."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision."
+        },
+        "appliesTo": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy)."
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins."
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Upsert — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "created"
+      ],
+      "properties": {
+        "policy": {
+          "$ref": "#/$defs/PolicyModule"
+        },
+        "created": {
+          "type": "boolean"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PolicyModule": {
+      "title": "PolicyModule",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "module",
+        "version",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\")."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision."
+        },
+        "appliesTo": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy)."
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins."
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -88,4 +360,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

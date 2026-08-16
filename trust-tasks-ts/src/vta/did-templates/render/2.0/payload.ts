@@ -59,15 +59,130 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/
 export type Response = VTADIDTemplateRenderResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/render/2.0",
+  "title": "VTA DID-Template Render — payload",
+  "description": "Render a DID template to a DID document. Omit `contextId` to render a global template; set it to render a template scoped to that context (requires access to the context; the VTA MAY fall back to a global template of the same name). Callers supply variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW — plus CONTEXT_ID and, if set on the context, CONTEXT_DID when contextId is present) server-side, merges the caller's on top, substitutes every placeholder, and returns the rendered document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scope selector. Absent: the global scope. Present: the context whose template is rendered; the caller MUST have access to that context. When present the VTA additionally injects the ambient variables CONTEXT_ID and (if set on the context) CONTEXT_DID."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Resource id — the name of the template to render within the selected scope."
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {},
+      "description": "Caller-supplied template variables, keyed by name. The VTA injects ambient variables (VTA_DID, VTA_URL, NOW; plus CONTEXT_ID / CONTEXT_DID when contextId is present) server-side and merges these on top."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Render — response payload",
+      "description": "The rendered DID document.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "type": "object",
+          "description": "The rendered DID document with all placeholders substituted."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Render — response payload",
+      "description": "The rendered DID document.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "type": "object",
+          "description": "The rendered DID document with all placeholders substituted."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -80,4 +195,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

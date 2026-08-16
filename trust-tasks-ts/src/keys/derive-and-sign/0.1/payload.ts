@@ -73,15 +73,188 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/keys/derive-and-si
 export type Response = KeysDeriveAndSignResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/derive-and-sign/0.1",
+  "title": "Keys Derive-and-Sign — payload",
+  "description": "Derive a key at a path and sign with it in one step, without adding a stored key record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyType",
+    "derivationPath",
+    "payload",
+    "algorithm"
+  ],
+  "properties": {
+    "keyType": {
+      "$ref": "#/$defs/KeyType",
+      "description": "Algorithm to derive. MUST be one that can sign."
+    },
+    "derivationPath": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Hierarchical-deterministic path to derive at. The same path against the same seed always yields the same key, which is what makes this reproducible rather than ephemeral."
+    },
+    "payload": {
+      "type": "string",
+      "description": "The exact bytes to sign, base64url-encoded without padding. Signed verbatim — not parsed, canonicalized or wrapped."
+    },
+    "algorithm": {
+      "$ref": "#/$defs/SignAlgorithm",
+      "description": "Signature algorithm. MUST be compatible with the derived key's type."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Derive-and-Sign — response payload",
+      "description": "The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicKey",
+        "signature",
+        "algorithm"
+      ],
+      "properties": {
+        "publicKey": {
+          "type": "string",
+          "description": "Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored."
+        },
+        "signature": {
+          "type": "string",
+          "description": "Signature bytes, base64url-encoded without padding."
+        },
+        "algorithm": {
+          "$ref": "#/$defs/SignAlgorithm"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "SignAlgorithm": {
+      "title": "SignAlgorithm",
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "ES256"
+      ],
+      "description": "`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one."
+    },
+    "KeyType": {
+      "title": "KeyType",
+      "type": "string",
+      "enum": [
+        "ed25519",
+        "x25519",
+        "p256"
+      ],
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256)."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Derive-and-Sign — response payload",
+      "description": "The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicKey",
+        "signature",
+        "algorithm"
+      ],
+      "properties": {
+        "publicKey": {
+          "type": "string",
+          "description": "Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored."
+        },
+        "signature": {
+          "type": "string",
+          "description": "Signature bytes, base64url-encoded without padding."
+        },
+        "algorithm": {
+          "$ref": "#/$defs/SignAlgorithm"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "SignAlgorithm": {
+      "title": "SignAlgorithm",
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "ES256"
+      ],
+      "description": "`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one."
+    },
+    "KeyType": {
+      "title": "KeyType",
+      "type": "string",
+      "enum": [
+        "ed25519",
+        "x25519",
+        "p256"
+      ],
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256)."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -94,4 +267,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

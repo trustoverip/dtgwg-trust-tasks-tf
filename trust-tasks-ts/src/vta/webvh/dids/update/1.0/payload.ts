@@ -91,15 +91,199 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/upd
 export type Response = WebVHDIDUpdateResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/update/1.0",
+  "title": "WebVH DID Update — payload",
+  "description": "Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the update key for. The agent decides whether to do so; the caller proposes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The did:webvh being updated. The agent MUST verify it speaks for this subject."
+    },
+    "document": {
+      "type": "object",
+      "description": "The new DID document. Omit to leave it unchanged. Supplying this ROTATES the DID's update key and refreshes its pre-rotation commitments, as a parallel consequence of the change — a consequence not visible anywhere in this payload, because it lives in the executing handler's semantics. A consent surface MUST therefore render effects the executor computed, and MUST NOT derive them from this document."
+    },
+    "preRotationCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of pre-rotation commitments to publish. Omit to keep the current count; `0` disables pre-rotation going forward."
+    },
+    "witnesses": {
+      "description": "New witness configuration. Omit to keep the current one."
+    },
+    "watchers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "New watcher URLs. Omit to keep the current set; an empty array removes them."
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "New TTL in seconds. Omit to keep the current value."
+    },
+    "label": {
+      "type": "string",
+      "description": "Operator-facing audit label."
+    },
+    "expectedVersionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optimistic-concurrency precondition: the versionId the caller based this edit on. The agent MUST refuse the update if the DID's latest entry no longer matches. Without it a `get -> edit -> save` cycle silently overwrites a concurrent edit with a chain that is structurally valid, verifies perfectly, and is based on a stale read. Where a human approves the update the window is minutes wide, so this is a routine race rather than an exotic one. OPTIONAL because a scripted caller with no concurrent writers has nothing to protect against; not optional for anything a person looked at."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "WebVH DID Update — response payload",
+      "description": "The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "newVersionId"
+      ],
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`."
+        },
+        "newScid": {
+          "type": "string"
+        },
+        "newLogEntry": {
+          "type": "string",
+          "description": "The appended log entry, as JSON text."
+        },
+        "updateKeysCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything."
+        },
+        "preRotationKeyCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Pre-rotation commitments published by this entry."
+        },
+        "serverless": {
+          "type": "boolean",
+          "description": "True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "WebVH DID Update — response payload",
+      "description": "The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "newVersionId"
+      ],
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`."
+        },
+        "newScid": {
+          "type": "string"
+        },
+        "newLogEntry": {
+          "type": "string",
+          "description": "The appended log entry, as JSON text."
+        },
+        "updateKeysCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything."
+        },
+        "preRotationKeyCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Pre-rotation commitments published by this entry."
+        },
+        "serverless": {
+          "type": "boolean",
+          "description": "True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -112,4 +296,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

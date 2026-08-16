@@ -285,15 +285,814 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/list/0.2#res
 export type Response = VaultListResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/list/0.2",
+  "title": "Vault List — payload",
+  "description": "Query a vault maintainer for the metadata view of stored entries. All filters are AND-combined. Pagination is opaque-cursor based; the maintainer chooses page size within the caller's bound and its own ceiling. Secret material is NEVER returned by this task — even when the requesting consumer has VaultRead capability for the entry, the secret is only released via vault/release/0.1.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — only entries belonging to this trust context (persona) are returned. Omit to query across all contexts the requesting consumer has VaultRead on."
+    },
+    "targetOriginPrefix": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri",
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `webOrigin` whose origin starts with this prefix. Useful for \"all my github.* logins\". Maintainers MUST canonicalise (lowercase host) before comparison."
+    },
+    "targetDid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `did` exactly equal to this value."
+    },
+    "targetIosBundleId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9.-]+$",
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `iosApp` whose `bundleId` exactly equals this value. The typical iOS Companion lookup."
+    },
+    "targetAndroidPackage": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+      "description": "Optional filter — only entries with at least one `targets[]` entry of kind `androidApp` whose `packageName` exactly equals this value. The typical Android Companion lookup."
+    },
+    "secretKind": {
+      "$ref": "#/$defs/SecretKind",
+      "description": "Optional filter — only entries of this secret kind are returned."
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Optional filter — only entries whose `tags` array contains this tag."
+    },
+    "usedSince": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional filter — only entries whose `lastUsedAt` is greater than or equal to this timestamp are returned. Entries that have never been used are excluded when this filter is present."
+    },
+    "neverUsed": {
+      "type": "boolean",
+      "description": "Optional filter — when true, only entries with no `lastUsedAt` are returned. Mutually exclusive with `usedSince`; maintainers MUST reject documents that supply both."
+    },
+    "expiresBefore": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional filter — only entries whose `expiresAt` is less than this timestamp are returned. Useful for \"what's about to expire\" panels."
+    },
+    "breached": {
+      "type": "boolean",
+      "description": "Optional filter — when true, only entries with `breachedAt` set are returned; when false, only entries with `breachedAt` absent are returned."
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Maximum number of entries to return. Maintainer-defined default and ceiling; the maintainer MAY return fewer."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token returned by the maintainer in a previous response. Consumers MUST treat the cursor as opaque and re-send it verbatim."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "deleted",
+        "all"
+      ],
+      "default": "active",
+      "description": "Archival-lifecycle view selector. Omitted or `active` lists only live entries; `archived` and `deleted` list those respectively (a `deleted` entry is a tombstone still inside its grace window); `all` lists every entry regardless of lifecycle state."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault List — response payload",
+      "description": "The success response to a vault/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vault/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries",
+        "truncated"
+      ],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VaultEntry"
+          },
+          "description": "Matching VaultEntry items in metadata-only view, in maintainer-defined order (RECOMMENDED: most-recently-used first when no other order is implied by the filters). May be empty."
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point."
+        },
+        "redactedFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of VaultEntry fields the maintainer redacted from every returned entry (for example, ['lastUsedAt'] when releasing to a consumer whose policy does not permit timing-data exposure)."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "VaultEntry": {
+      "title": "VaultEntry",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "contextId",
+        "targets",
+        "label",
+        "secretKind",
+        "createdAt",
+        "updatedAt",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque vault-maintainer-assigned identifier for the entry. ULID/UUID/base32 are common; the wire spec only requires non-empty string equality."
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the trust context (persona) the entry belongs to. Opaque string interpreted by the vault maintainer; corresponds to a single ContextRecord on the VTA side."
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/SiteTarget"
+          },
+          "description": "One or more binding targets — web origins, mobile app identifiers, and/or DIDs — that this credential applies to. A request from any matching target uses this entry. A typical entry for a service that exists as both a website and mobile apps will list a web origin, an iOS bundle id, and an Android package id; passkeys for that service typically list only the origin (because iOS Associated Domains and Android Asset Links bind apps to the domain at the OS level)."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable display name (e.g. \"Work GitHub\", \"Personal bank — checking\"). Maintainers MAY enforce a maximum length; the wire spec does not."
+        },
+        "secretKind": {
+          "$ref": "#/$defs/SecretKind",
+          "description": "Discriminator for the kind of secret this entry holds. The secret material itself is NEVER returned in metadata views; the kind is exposed so consumers can render an appropriate UI affordance and so policy decisions can route by kind."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "uniqueItems": true,
+          "description": "User-defined tags for organisation and filtering (e.g. [\"family\", \"finance\"]). Maintainers MAY enforce a maximum count; the wire spec does not."
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "Non-sensitive notes the user attached to the entry. Visible in metadata view (suitable for support contact, account number, expiry policy memos). SENSITIVE notes belong in the secret payload as a `secureNotes` field — those are only released by vault/release/0.1."
+        },
+        "favicon": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URI of an icon to display in the consumer UI. Maintainers MAY fetch and cache; consumers SHOULD treat as untrusted content and fetch via a sandboxed pipeline."
+        },
+        "selectors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Opaque maintainer-defined selector strings fed to the policy engine when this entry is requested (e.g. \"recent_uv_required\", \"network_class=corp\", \"step_up_push\"). Consumers MUST treat selectors as opaque; they exist for policy authoring on the maintainer side."
+        },
+        "customFieldNames": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true,
+          "description": "Names of additional fields the user has attached (e.g. [\"security-question-1\", \"account-number\"]). The VALUES live in the secret payload and are only delivered by vault/release/0.1. Exposing names in metadata lets the consumer render the right form layout before requesting release."
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AttachmentRef"
+          },
+          "description": "References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional time after which the credential is no longer expected to be valid (e.g. an OAuth refresh token's known expiry, a time-limited API token, an enterprise password rotation policy). Maintainers MAY surface this in the consumer UI as a warning."
+        },
+        "breachedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Set by the maintainer (via HIBP integration or equivalent) when the password material associated with this entry is known to appear in a public breach. Consumers SHOULD surface this prominently. Cleared when the user rotates the password and the new password is not in any known breach."
+        },
+        "passwordChangedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Set whenever the password component of the secret payload is rotated. Maintainers MUST update this on every secret-material change for entries of kind `password` (or any kind that carries a password component). Used by consumers to surface rotation-overdue warnings."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "VID of the consumer that originally created the entry."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "VID of the consumer that last modified the entry."
+        },
+        "lastUsedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent time the entry was used (either released or proxy-login performed). Maintainers MAY return this with reduced precision (e.g. hour-floored) when releasing to a less-trusted consumer."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync."
+        },
+        "principalDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional cached DID the entry will act AS for DID-shaped flows — mirrors the `did` field of the entry's secret payload when `secretKind` carries one (`didSelfIssued`, `didcommPeer`). Absent for kinds that have no DID concept (`password`, `passkey`, `oauthTokens`, `bearerToken`, `sshKey`, `custom`). MAINTAINER-DERIVED, NOT CONSUMER-SUPPLIED: the maintainer MUST recompute this from the canonical secret at every upsert / secret rotation; a producer-supplied value on `vault/upsert/0.1` MUST be ignored (no error, but no honour). Read-only on the wire, present in metadata views so consumers can drive RP-side flows (e.g. fetch `/auth/challenge` keyed on the principal DID before requesting a proxy-login) without releasing the secret."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces."
+        }
+      }
+    },
+    "AttachmentRef": {
+      "title": "AttachmentRef",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "sizeBytes",
+        "sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "User-supplied filename (e.g. \"recovery-codes.txt\")."
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the encrypted blob in bytes. Maintainers MAY enforce a maximum per attachment and per entry."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Hex-encoded SHA-256 of the encrypted blob bytes (post-encryption). Lets the consumer verify integrity after fetch."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "Optional MIME type hint for the consumer UI (e.g. \"text/plain\", \"application/x-pem-file\")."
+        }
+      }
+    },
+    "SecretKind": {
+      "title": "SecretKind",
+      "type": "string",
+      "enum": [
+        "password",
+        "passkey",
+        "oauthTokens",
+        "didSelfIssued",
+        "didcommPeer",
+        "bearerToken",
+        "sshKey",
+        "custom"
+      ],
+      "description": "Discriminator for the secret type stored in the entry. Definitions:\n- `password` — username + password (+ optional TOTP seed).\n- `passkey` — WebAuthn discoverable credential (private key + rpId + userHandle).\n- `oauthTokens` — OAuth 2.0 refresh + access token bundle for a specific provider.\n- `didSelfIssued` — Self-Issued OpenID Provider v2 (SIOP) credential: the entry points at a DID + signing key already managed by the VTA.\n- `didcommPeer` — DIDComm peer identity used to authenticate against a DIDComm-speaking relying party.\n- `bearerToken` — opaque bearer token carried in a maintainer-named header (covers API tokens, long-lived JWTs, personal-access tokens).\n- `sshKey` — SSH private key + comment.\n- `custom` — arbitrary structured fields; release-time consumer responsible for interpretation."
+    },
+    "SiteTarget": {
+      "title": "SiteTarget",
+      "description": "A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.",
+      "oneOf": [
+        {
+          "title": "WebOrigin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "origin"
+          ],
+          "properties": {
+            "kind": {
+              "const": "webOrigin"
+            },
+            "origin": {
+              "type": "string",
+              "format": "uri",
+              "description": "Web origin per RFC 6454 (scheme + host + optional port), e.g. \"https://github.com\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard."
+            }
+          }
+        },
+        {
+          "title": "Did",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "did"
+          ],
+          "properties": {
+            "kind": {
+              "const": "did"
+            },
+            "did": {
+              "type": "string",
+              "minLength": 1,
+              "description": "DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry."
+            }
+          }
+        },
+        {
+          "title": "IosApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bundleId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "iosApp"
+            },
+            "bundleId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9.-]+$",
+              "description": "iOS bundle identifier in reverse-DNS form (e.g. \"com.github.stwalkerster.codehub\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration)."
+            },
+            "teamId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Z0-9]+$",
+              "description": "Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices."
+            }
+          }
+        },
+        {
+          "title": "AndroidApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "packageName",
+            "sha256CertFingerprints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "androidApp"
+            },
+            "packageName": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+              "description": "Android package name in reverse-DNS form (e.g. \"com.github.android\")."
+            },
+            "sha256CertFingerprints": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{2}(:[0-9A-F]{2}){31}$"
+              },
+              "uniqueItems": true,
+              "description": "SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing)."
+            }
+          }
+        }
+      ]
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault List — response payload",
+      "description": "The success response to a vault/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vault/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries",
+        "truncated"
+      ],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VaultEntry"
+          },
+          "description": "Matching VaultEntry items in metadata-only view, in maintainer-defined order (RECOMMENDED: most-recently-used first when no other order is implied by the filters). May be empty."
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point."
+        },
+        "redactedFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of VaultEntry fields the maintainer redacted from every returned entry (for example, ['lastUsedAt'] when releasing to a consumer whose policy does not permit timing-data exposure)."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "VaultEntry": {
+      "title": "VaultEntry",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "contextId",
+        "targets",
+        "label",
+        "secretKind",
+        "createdAt",
+        "updatedAt",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque vault-maintainer-assigned identifier for the entry. ULID/UUID/base32 are common; the wire spec only requires non-empty string equality."
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the trust context (persona) the entry belongs to. Opaque string interpreted by the vault maintainer; corresponds to a single ContextRecord on the VTA side."
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/SiteTarget"
+          },
+          "description": "One or more binding targets — web origins, mobile app identifiers, and/or DIDs — that this credential applies to. A request from any matching target uses this entry. A typical entry for a service that exists as both a website and mobile apps will list a web origin, an iOS bundle id, and an Android package id; passkeys for that service typically list only the origin (because iOS Associated Domains and Android Asset Links bind apps to the domain at the OS level)."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable display name (e.g. \"Work GitHub\", \"Personal bank — checking\"). Maintainers MAY enforce a maximum length; the wire spec does not."
+        },
+        "secretKind": {
+          "$ref": "#/$defs/SecretKind",
+          "description": "Discriminator for the kind of secret this entry holds. The secret material itself is NEVER returned in metadata views; the kind is exposed so consumers can render an appropriate UI affordance and so policy decisions can route by kind."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "uniqueItems": true,
+          "description": "User-defined tags for organisation and filtering (e.g. [\"family\", \"finance\"]). Maintainers MAY enforce a maximum count; the wire spec does not."
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "Non-sensitive notes the user attached to the entry. Visible in metadata view (suitable for support contact, account number, expiry policy memos). SENSITIVE notes belong in the secret payload as a `secureNotes` field — those are only released by vault/release/0.1."
+        },
+        "favicon": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URI of an icon to display in the consumer UI. Maintainers MAY fetch and cache; consumers SHOULD treat as untrusted content and fetch via a sandboxed pipeline."
+        },
+        "selectors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Opaque maintainer-defined selector strings fed to the policy engine when this entry is requested (e.g. \"recent_uv_required\", \"network_class=corp\", \"step_up_push\"). Consumers MUST treat selectors as opaque; they exist for policy authoring on the maintainer side."
+        },
+        "customFieldNames": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true,
+          "description": "Names of additional fields the user has attached (e.g. [\"security-question-1\", \"account-number\"]). The VALUES live in the secret payload and are only delivered by vault/release/0.1. Exposing names in metadata lets the consumer render the right form layout before requesting release."
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AttachmentRef"
+          },
+          "description": "References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional time after which the credential is no longer expected to be valid (e.g. an OAuth refresh token's known expiry, a time-limited API token, an enterprise password rotation policy). Maintainers MAY surface this in the consumer UI as a warning."
+        },
+        "breachedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Set by the maintainer (via HIBP integration or equivalent) when the password material associated with this entry is known to appear in a public breach. Consumers SHOULD surface this prominently. Cleared when the user rotates the password and the new password is not in any known breach."
+        },
+        "passwordChangedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Set whenever the password component of the secret payload is rotated. Maintainers MUST update this on every secret-material change for entries of kind `password` (or any kind that carries a password component). Used by consumers to surface rotation-overdue warnings."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "VID of the consumer that originally created the entry."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "VID of the consumer that last modified the entry."
+        },
+        "lastUsedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent time the entry was used (either released or proxy-login performed). Maintainers MAY return this with reduced precision (e.g. hour-floored) when releasing to a less-trusted consumer."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync."
+        },
+        "principalDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional cached DID the entry will act AS for DID-shaped flows — mirrors the `did` field of the entry's secret payload when `secretKind` carries one (`didSelfIssued`, `didcommPeer`). Absent for kinds that have no DID concept (`password`, `passkey`, `oauthTokens`, `bearerToken`, `sshKey`, `custom`). MAINTAINER-DERIVED, NOT CONSUMER-SUPPLIED: the maintainer MUST recompute this from the canonical secret at every upsert / secret rotation; a producer-supplied value on `vault/upsert/0.1` MUST be ignored (no error, but no honour). Read-only on the wire, present in metadata views so consumers can drive RP-side flows (e.g. fetch `/auth/challenge` keyed on the principal DID before requesting a proxy-login) without releasing the secret."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces."
+        }
+      }
+    },
+    "AttachmentRef": {
+      "title": "AttachmentRef",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "sizeBytes",
+        "sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "User-supplied filename (e.g. \"recovery-codes.txt\")."
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the encrypted blob in bytes. Maintainers MAY enforce a maximum per attachment and per entry."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Hex-encoded SHA-256 of the encrypted blob bytes (post-encryption). Lets the consumer verify integrity after fetch."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "Optional MIME type hint for the consumer UI (e.g. \"text/plain\", \"application/x-pem-file\")."
+        }
+      }
+    },
+    "SecretKind": {
+      "title": "SecretKind",
+      "type": "string",
+      "enum": [
+        "password",
+        "passkey",
+        "oauthTokens",
+        "didSelfIssued",
+        "didcommPeer",
+        "bearerToken",
+        "sshKey",
+        "custom"
+      ],
+      "description": "Discriminator for the secret type stored in the entry. Definitions:\n- `password` — username + password (+ optional TOTP seed).\n- `passkey` — WebAuthn discoverable credential (private key + rpId + userHandle).\n- `oauthTokens` — OAuth 2.0 refresh + access token bundle for a specific provider.\n- `didSelfIssued` — Self-Issued OpenID Provider v2 (SIOP) credential: the entry points at a DID + signing key already managed by the VTA.\n- `didcommPeer` — DIDComm peer identity used to authenticate against a DIDComm-speaking relying party.\n- `bearerToken` — opaque bearer token carried in a maintainer-named header (covers API tokens, long-lived JWTs, personal-access tokens).\n- `sshKey` — SSH private key + comment.\n- `custom` — arbitrary structured fields; release-time consumer responsible for interpretation."
+    },
+    "SiteTarget": {
+      "title": "SiteTarget",
+      "description": "A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.",
+      "oneOf": [
+        {
+          "title": "WebOrigin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "origin"
+          ],
+          "properties": {
+            "kind": {
+              "const": "webOrigin"
+            },
+            "origin": {
+              "type": "string",
+              "format": "uri",
+              "description": "Web origin per RFC 6454 (scheme + host + optional port), e.g. \"https://github.com\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard."
+            }
+          }
+        },
+        {
+          "title": "Did",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "did"
+          ],
+          "properties": {
+            "kind": {
+              "const": "did"
+            },
+            "did": {
+              "type": "string",
+              "minLength": 1,
+              "description": "DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry."
+            }
+          }
+        },
+        {
+          "title": "IosApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bundleId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "iosApp"
+            },
+            "bundleId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9.-]+$",
+              "description": "iOS bundle identifier in reverse-DNS form (e.g. \"com.github.stwalkerster.codehub\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration)."
+            },
+            "teamId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Z0-9]+$",
+              "description": "Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices."
+            }
+          }
+        },
+        {
+          "title": "AndroidApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "packageName",
+            "sha256CertFingerprints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "androidApp"
+            },
+            "packageName": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+              "description": "Android package name in reverse-DNS form (e.g. \"com.github.android\")."
+            },
+            "sha256CertFingerprints": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{2}(:[0-9A-F]{2}){31}$"
+              },
+              "uniqueItems": true,
+              "description": "SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing)."
+            }
+          }
+        }
+      ]
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -306,4 +1105,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

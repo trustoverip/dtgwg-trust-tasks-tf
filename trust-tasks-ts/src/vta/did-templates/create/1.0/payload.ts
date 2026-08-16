@@ -121,15 +121,468 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/
 export type Response = VTADIDTemplateCreateResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/did-templates/create/1.0",
+  "title": "VTA DID-Template Create — payload",
+  "description": "Create a new global DID template on a VTA. Super-admin gated. The template's own `name` is the resource id within the global scope; the VTA refuses duplicates (use update to replace). The success response is the persisted DidTemplateRecord.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "template"
+  ],
+  "properties": {
+    "template": {
+      "$ref": "#/$defs/DidTemplate",
+      "description": "Full template document to store. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "DidTemplate": {
+      "title": "DidTemplate",
+      "description": "Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1,
+          "description": "Template schema version. Currently always 1."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Template id within its scope. Lowercase alphanumeric and hyphen only."
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Human-readable description of what the template provisions."
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "DID methods this template targets, e.g. [\"webvh\", \"web\"] for a hosted DID or [\"key\"] for a did:key."
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW)."
+        },
+        "optionalVars": {
+          "type": "object",
+          "description": "Variables with default values, keyed by variable name.",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).",
+          "additionalProperties": true
+        },
+        "document": {
+          "type": "object",
+          "description": "The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name."
+        }
+      }
+    },
+    "Scope": {
+      "title": "Scope",
+      "description": "Where a stored template lives. Tagged by `type`.",
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "Builtin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "builtin"
+            }
+          }
+        },
+        {
+          "title": "Global",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "global"
+            }
+          }
+        },
+        {
+          "title": "Context",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "contextId"
+          ],
+          "properties": {
+            "type": {
+              "const": "context"
+            },
+            "contextId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Create — response payload",
+      "description": "The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document",
+        "scope",
+        "createdAt",
+        "updatedAt",
+        "createdBy"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalVars": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "document": {
+          "type": "object"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Resolved scope of the stored template."
+        },
+        "createdAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds the template was first stored."
+        },
+        "updatedAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds of the last write."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "DID of the admin who last wrote the template."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "DidTemplate": {
+      "title": "DidTemplate",
+      "description": "Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1,
+          "description": "Template schema version. Currently always 1."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Template id within its scope. Lowercase alphanumeric and hyphen only."
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Human-readable description of what the template provisions."
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "DID methods this template targets, e.g. [\"webvh\", \"web\"] for a hosted DID or [\"key\"] for a did:key."
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW)."
+        },
+        "optionalVars": {
+          "type": "object",
+          "description": "Variables with default values, keyed by variable name.",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).",
+          "additionalProperties": true
+        },
+        "document": {
+          "type": "object",
+          "description": "The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name."
+        }
+      }
+    },
+    "Scope": {
+      "title": "Scope",
+      "description": "Where a stored template lives. Tagged by `type`.",
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "Builtin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "builtin"
+            }
+          }
+        },
+        {
+          "title": "Global",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "global"
+            }
+          }
+        },
+        {
+          "title": "Context",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "contextId"
+          ],
+          "properties": {
+            "type": {
+              "const": "context"
+            },
+            "contextId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DID-Template Create — response payload",
+      "description": "The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document",
+        "scope",
+        "createdAt",
+        "updatedAt",
+        "createdBy"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalVars": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "document": {
+          "type": "object"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Resolved scope of the stored template."
+        },
+        "createdAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds the template was first stored."
+        },
+        "updatedAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds of the last write."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "DID of the admin who last wrote the template."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -142,4 +595,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

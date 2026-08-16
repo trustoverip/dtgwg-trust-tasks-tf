@@ -85,15 +85,268 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/decision/1
 export type Response = ConsentDecisionResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/decision/1.0",
+  "title": "Consent Decision — payload",
+  "description": "An approver allows or denies an AI agent's access to a messaging conversation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "effect"
+  ],
+  "properties": {
+    "subject": {
+      "$ref": "#/$defs/ConsentSubject"
+    },
+    "effect": {
+      "$ref": "#/$defs/Effect"
+    },
+    "scope": {
+      "$ref": "#/$defs/Scope",
+      "description": "Granted scope. REQUIRED when `effect` is `allow`."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Echoes the consent/request challenge this decision answers. Omit only for an operator-initiated pre-authorization."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional grant TTL; after it the subject must be re-consented."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent Decision — response payload",
+      "description": "Acknowledgement that the decision was recorded (or rejected).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "recorded",
+            "rejected"
+          ],
+          "description": "`recorded` = a grant was written. `rejected` = not accepted; `reason` MUST be set."
+        },
+        "grantId": {
+          "type": "string",
+          "description": "The VTA's id for the recorded grant (set when recorded)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `rejected`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "receive",
+        "converse"
+      ],
+      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
+    },
+    "Effect": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny"
+      ],
+      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
+    },
+    "ConsentSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "conversationRef",
+        "kind",
+        "agent"
+      ],
+      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the AI agent the conversation would reach."
+        }
+      }
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "dm",
+        "group",
+        "channel"
+      ],
+      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent Decision — response payload",
+      "description": "Acknowledgement that the decision was recorded (or rejected).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "recorded",
+            "rejected"
+          ],
+          "description": "`recorded` = a grant was written. `rejected` = not accepted; `reason` MUST be set."
+        },
+        "grantId": {
+          "type": "string",
+          "description": "The VTA's id for the recorded grant (set when recorded)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `rejected`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "receive",
+        "converse"
+      ],
+      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
+    },
+    "Effect": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny"
+      ],
+      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
+    },
+    "ConsentSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "conversationRef",
+        "kind",
+        "agent"
+      ],
+      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the AI agent the conversation would reach."
+        }
+      }
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "dm",
+        "group",
+        "channel"
+      ],
+      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -106,4 +359,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

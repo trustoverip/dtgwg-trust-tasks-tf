@@ -84,15 +84,312 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/usage/0.2#re
 export type Response = VaultUsageResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/usage/0.2",
+  "title": "Vault Usage — payload",
+  "description": "Consumer queries the maintainer's audit log of recent vault uses (proxy-logins, releases). Drives UIs like \"recent activity\" and \"which AI agent has been using my GitHub credential\". Read-only.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "entryId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — usage for this entry only."
+    },
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — usage within this trust context only."
+    },
+    "byConsumer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional filter — usage by this consumer DID only. Useful for \"what has AI agent X been doing on my behalf\"."
+    },
+    "since": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "kindFilter": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "proxyLogin",
+          "release"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "cursor": {
+      "type": "string"
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Usage — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uses",
+        "truncated"
+      ],
+      "properties": {
+        "uses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UsageRecord"
+          }
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "cursor": {
+          "type": "string"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "UsageRecord": {
+      "title": "UsageRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "entryId",
+        "contextId",
+        "consumerDid",
+        "kind",
+        "outcome",
+        "occurredAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumerDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DID of the Companion/Service that initiated the use."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "proxyLogin",
+            "release"
+          ]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "allowed",
+            "denied",
+            "stepUpRequired",
+            "stepUpSatisfied",
+            "targetUnreachable",
+            "credentialRejected",
+            "policyDeny"
+          ]
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "For successful proxy-logins, the maintainer-assigned session id; absent for releases and for failures."
+        },
+        "policyDecisionId": {
+          "type": "string",
+          "description": "Pointer to the policy evaluation record for forensic detail."
+        },
+        "errorCode": {
+          "type": "string",
+          "description": "Trust Task error code when outcome is a failure."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Usage — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uses",
+        "truncated"
+      ],
+      "properties": {
+        "uses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UsageRecord"
+          }
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "cursor": {
+          "type": "string"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "UsageRecord": {
+      "title": "UsageRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "entryId",
+        "contextId",
+        "consumerDid",
+        "kind",
+        "outcome",
+        "occurredAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumerDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DID of the Companion/Service that initiated the use."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "proxyLogin",
+            "release"
+          ]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "allowed",
+            "denied",
+            "stepUpRequired",
+            "stepUpSatisfied",
+            "targetUnreachable",
+            "credentialRejected",
+            "policyDeny"
+          ]
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "For successful proxy-logins, the maintainer-assigned session id; absent for releases and for failures."
+        },
+        "policyDecisionId": {
+          "type": "string",
+          "description": "Pointer to the policy evaluation record for forensic detail."
+        },
+        "errorCode": {
+          "type": "string",
+          "description": "Trust Task error code when outcome is a failure."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -105,4 +402,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

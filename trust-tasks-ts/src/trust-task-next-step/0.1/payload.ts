@@ -83,13 +83,115 @@ export const TYPE_URI = "https://trusttasks.org/spec/trust-task-next-step/0.1" a
 export type Payload = TrustTaskNextStepPayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task-next-step/0.1",
+  "title": "Trust Task Next Step — payload",
+  "description": "The recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.\n\nA next step is neither a success response nor a failure. The originating task is left open — a consumer that means 'no' returns a trust-task-error instead, and one that means 'done' returns the originating specification's #response variant.\n\nThis specification declares no response anchor: a producer answers a next step by issuing a document of the expected type, not by responding to this one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expects"
+  ],
+  "properties": {
+    "expects": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The continuations the recipient will accept, in the producer's order of preference where the recipient has one. More than one entry means ALTERNATIVES — satisfying any single entry unblocks the exchange, never all of them. A recipient that needs several things done first names the one it wants next and issues a further next step afterwards; expressing a conjunction here would be a flow definition, which belongs to a ceremony rather than to a single response.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "typeUri"
+        ],
+        "properties": {
+          "typeUri": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "description": "The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section)."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs."
+          },
+          "hint": {
+            "type": "object",
+            "description": "Optional structured data the producer MAY use when composing the expected document — a challenge to echo, an identifier to quote, a presentation definition to satisfy. Its shape is governed by the specification named in typeUri, not by this one. A producer MUST NOT treat a hint as authoritative for any value it can determine itself."
+          }
+        }
+      }
+    },
+    "continuation": {
+      "enum": [
+        "resubmit",
+        "proceed"
+      ],
+      "default": "resubmit",
+      "description": "What happens once an expected task completes. `resubmit` (the default) means the expected task is a PREREQUISITE and the producer re-issues the originating request to continue — a new document with a fresh id and the same threadId, which SPEC §8.4 distinguishes from a retry, since a retry is bit-for-bit identical and is not what happens here; this matches the established pattern of task-consent/granted, where the requester re-submits once approval lands. `proceed` means the expected task IS the continuation and the originating request is not re-issued, as in an offer answered by a request.",
+      "$comment": "Two values rather than a boolean, because 'resubmit: false' reads as a negation of something the reader has to reconstruct."
+    },
+    "inResponseTo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typeUri"
+      ],
+      "description": "Identifies the Trust Task document this next step answers. SHOULD be populated, for the reason SPEC §8.2 gives for the identical member on an error response: threadId correlates the exchange only for a party that already saw the request, so a retained next step otherwise names neither the task it interrupted nor the instance.",
+      "properties": {
+        "typeUri": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "The Type URI of the document being answered, including any fragment it carried."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The id of the specific document being answered (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange."
+        }
+      }
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;

@@ -120,13 +120,205 @@ export const TYPE_URI = "https://trusttasks.org/spec/chat/message/0.1" as const;
 export type Payload = ChatMessagePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/chat/message/0.1",
+  "title": "Chat Message — payload",
+  "description": "A conversational message exchanged between an AI agent and a messaging-platform bridge. Signed by its author (via the document `proof`) and hash-linked to the previous message in the conversation (`prev`), so a third party can verify each message's author and ordering after the transport has closed — for audit and dispute resolution. Conversations and contacts are referenced by opaque, bridge-issued handles, never raw platform addresses.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "conversationId",
+    "direction",
+    "sentAt"
+  ],
+  "properties": {
+    "conversationId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque, bridge-issued conversation handle. MUST NOT be a raw platform address (phone number, chat id)."
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ],
+      "description": "`inbound` = platform → agent (the bridge attests what it received and normalized); `outbound` = agent → platform (authored by the agent)."
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OPTIONAL. Platform key the message belongs to (e.g. `signal`, `whatsapp`). Advisory."
+    },
+    "text": {
+      "type": "string",
+      "description": "OPTIONAL. Plain-text body. Absent for attachment-only messages."
+    },
+    "mentions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Mention"
+      },
+      "description": "OPTIONAL. @-mentions carried by the message, ordered to match the U+FFFC sentinel placeholders in `text`: the Nth U+FFFC binds to the Nth entry. Absent/empty when the message mentions no one. The producer is responsible for emitting one U+FFFC sentinel per mention, in order — translating each platform's native mention encoding into this neutral form."
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/AttachmentRef"
+      },
+      "description": "OPTIONAL. Attachments carried by reference, never inline."
+    },
+    "replyToId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OPTIONAL. The `id` of the message this one replies to."
+    },
+    "isGroup": {
+      "type": "boolean",
+      "description": "OPTIONAL. True when the conversation is a group/channel, false (or absent) for a 1:1 DM. Part of the signed record so the audit chain captures where a message was sent, not just its text."
+    },
+    "isMention": {
+      "type": "boolean",
+      "description": "OPTIONAL. Platform-confirmed signal that this (inbound) message addresses the agent — e.g. an @-mention of the agent, or any DM. Lets a group-aware consumer decide whether a group message is for it without agent-name heuristics. Distinct from `mentions`, which lists the participants referenced in the body. Outbound messages leave this absent/false."
+    },
+    "prev": {
+      "$ref": "#/$defs/ChainLink",
+      "description": "OPTIONAL on the first message in a conversation; present on every message thereafter. Links to the previous message so the conversation forms a verifiable, ordered chain."
+    },
+    "sentAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp the author asserts for this message."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "AttachmentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "mediaType"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque attachment id, resolvable via the bridge's attachment fetch."
+        },
+        "filename": {
+          "type": "string",
+          "description": "OPTIONAL. Suggested filename."
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA media type (e.g. `image/jpeg`)."
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "OPTIONAL. Size in bytes, if known ahead of fetch."
+        },
+        "digest": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper."
+        }
+      }
+    },
+    "ChainLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "digest"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The `id` of the previous `chat/message` Trust Task document in this conversation."
+        },
+        "digest": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the previous document, so a gap, reorder, or removal in the chain is detectable. The algorithm travels in the multihash rather than being fixed here."
+        }
+      }
+    },
+    "Mention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "participant",
+        "start",
+        "length"
+      ],
+      "properties": {
+        "participant": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, bridge-issued handle for the mentioned participant. MUST NOT be a raw platform address; like `conversationId` it carries no platform-native identifier (phone number, UUID, member id) upstream."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention."
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Source-platform native start offset of the sentinel span in `text`. Advisory: offset units differ across platforms, so the authoritative binding is positional (Nth U+FFFC → Nth mention), not by offset."
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Source-platform native length of the sentinel span in `text`. Advisory; see `start`."
+        }
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
