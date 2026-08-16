@@ -4,7 +4,7 @@
  */
 
 /**
- * Digest over the RFC 8785 canonicalization of the delivered credential, computed by the witness. It binds this evidence to one specific credential rather than to the session alone, so a verifier pairing a presented VWC with this response can check it is the credential this session issued and not another the same witness signed.
+ * Digest over the RFC 8785 canonicalization of the delivered credential, computed by the witness. It binds this evidence to one specific credential rather than to the session alone, so a verifier pairing a presented VWC with this response can check it is the credential this session issued and not another the same witness signed. This covers the credential whole, proof included — unlike the task digest of SPEC.md §4.9.3, which excludes the top-level proof of the Trust Task document it names. The inputs differ because the questions do: this value identifies one delivered artifact, a task digest identifies what a document says whether or not it was signed.
  */
 export type DigestMultibase = string;
 
@@ -29,7 +29,7 @@ export interface Ext {
  */
 export interface WitnessSessionSubmitResponsePayload {
   /**
-   * A signed Verifiable Witness Credential (opaque here; its schema belongs to DTG Core Credentials). Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1).
+   * A signed Verifiable Witness Credential (opaque here; its schema belongs to DTG Core Credentials). Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1) — and its taskDigestMultibase MUST be that document's task digest (SPEC.md §4.9.3). The id locates the session document; the digest binds it, because an id is a name anyone can reuse on a counterfeit.
    */
   vwc: {};
   vwcDigestMultibase: DigestMultibase;
