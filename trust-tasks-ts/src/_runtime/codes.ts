@@ -19,6 +19,7 @@ export const STANDARD_CODES = [
   "wrongRecipient",
   "identityMismatch",
   "idConflict",
+  "cancelled",
   "taskFailed",
   "unavailable",
   "internalError",
@@ -40,6 +41,7 @@ const LEGACY_STANDARD: Readonly<Record<string, StandardCode>> = {
   wrong_recipient: "wrongRecipient",
   identity_mismatch: "identityMismatch",
   id_conflict: "idConflict",
+  canceled: "cancelled",
   task_failed: "taskFailed",
   internal_error: "internalError",
 };

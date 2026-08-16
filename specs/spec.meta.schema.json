@@ -37,6 +37,7 @@
             "trust-task-ok",
             "trust-task-next-step",
             "trust-task-discovery",
+            "trust-task-control",
             "trust-ceremony-receipt"
           ]
         }

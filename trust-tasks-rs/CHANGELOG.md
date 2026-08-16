@@ -29,6 +29,38 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.8.0] - 2026-08-16
+
+### Added
+
+- **`StandardCode::Cancelled`** — the `cancelled` code introduced by framework
+  0.4 (SPEC §8.3), for a consumer that stops a task on its own initiative.
+  Deliberately distinct from a producer-requested cancellation, which is
+  answered by a response to the `trust-task-control` document: without the
+  distinction no party, and no auditor reading the retained documents, could
+  tell a withdrawal from a refusal.
+
+- **`trust-task-control/0.1`** payload types, generated from the new registry
+  entry — the task-control request of SPEC §12 (`cancel`, `suspend`, `resume`).
+
+### Changed
+
+- **BREAKING for TypeScript consumers, additive for Rust.** Adding a standard
+  code widens `@openvtc/trust-tasks`'s `StandardCode` string-literal union,
+  which breaks exhaustive `switch` statements there. On the Rust side
+  `StandardCode` has been `#[non_exhaustive]` since 0.7.0, so the same addition
+  is additive and `trust-tasks-https` compiled unchanged. Both libraries move
+  to 0.8.0 together to keep their versions in step, per CLAUDE.md.
+
+- **The SDK now emits `trust-task-error/0.5`** (was `0.4`). `cancelled` is
+  absent from `0.4`'s code enum and does not match its extended-code pattern,
+  so a document carrying it would not validate as `0.4`. Per SPEC §5.2
+  forward-minor compatibility a `0.4` consumer SHOULD accept it.
+
+- **`trust-tasks-https` maps `cancelled` to HTTP 422** — the same bucket as
+  `taskFailed`, because a deliberate stop is neither a server fault nor a
+  malformed request.
+
 ## [0.7.0] - 2026-08-15
 
 ### Added

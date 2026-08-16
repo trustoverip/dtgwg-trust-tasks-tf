@@ -7,7 +7,7 @@
 //! identity, integrity, and freshness semantics.
 //!
 //! The crate tracks the `SPEC.md` framework at version `0.4`; it emits
-//! `trust-task-error/0.4` and still parses the `0.1` snake_case error codes for
+//! `trust-task-error/0.5` and still parses the `0.1` snake_case error codes for
 //! backwards compatibility. See the spec sections referenced from each item for
 //! the normative text.
 //!
