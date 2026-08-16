@@ -81,7 +81,7 @@ The framework aims to solve four related problems that arise wherever two or mor
 
 3. **Payload freedom, declared at the boundaries.** The framework defines the outer document shape and deliberately leaves the `payload` unconstrained. Each *Trust Task specification* chooses its own payload structure, JSON Schema, and — where useful — JSON-LD context. The framework only requires that each choice be declared explicitly ([§7.3](#73-specification-requirements)) and be machine-validatable.
 
-4. **A standard family of response types.** Many tasks need a structured way for a *recipient party* to report what happened. The framework reserves a small set of response-type *Trust Task specifications* addressing the common cases — failure ([§8](#8-error-responses)), success with metadata (`trust-task-ok`), and a recipient-suggested continuation (`trust-task-next-step`) — each itself a *Trust Task* so that one validation, signing, and transport pipeline serves both the task and its response. Failure and continuation are specified in this revision; `trust-task-ok` remains reserved (see [§8.6](#86-reserved-response-type-slugs)) and will be specified in a future revision.
+4. **A standard family of response types.** Many tasks need a structured way for a *recipient party* to report what happened. The framework reserves a small set of response-type *Trust Task specifications* addressing the common cases — failure ([§8](#8-error-responses)), success with metadata (`trust-task-ok`), and a recipient-suggested continuation (`trust-task-next-step`) — each itself a *Trust Task* so that one validation, signing, and transport pipeline serves both the task and its response. All three are specified as of this revision (see [§8](#8-error-responses) and [§8.6](#86-reserved-response-type-slugs)).
 
 ## 2. Terminology
 
@@ -612,7 +612,7 @@ The following slugs are **RESERVED** for framework-defined specifications and **
   | Slug                     | Purpose                                                                 |
   |--------------------------|-------------------------------------------------------------------------|
   | `trust-task-error`       | Error-response payload — see [§8.1](#81-the-trust-task-error-specification). |
-  | `trust-task-ok`          | Success-response with metadata — reserved, see [§8.6](#86-reserved-response-type-slugs). |
+  | `trust-task-ok`          | Courtesy acknowledgement of a task that defines no success response — see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-next-step`   | Recipient-suggested continuation — see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-discovery`   | Discovery and capability negotiation — see [§11](#11-discovery-and-capability-negotiation). |
   | `trust-task-control`     | Cancellation, suspension, and resumption of an accepted task — see [§12](#12-task-control). |
@@ -975,12 +975,16 @@ The framework reserves the following additional response-type *Trust Task specif
 
 | Slug | Purpose |
 |---|---|
-| `trust-task-ok` | Success with metadata — acknowledging that a task was performed and conveying any resulting references, receipts, or transient state. |
+| `trust-task-ok` | A courtesy acknowledgement — confirming that a task defining no success response of its own was received and performed, and optionally surfacing opaque references the *consumer* chose to share. Never relied upon. |
 | `trust-task-next-step` | A recipient-suggested continuation — indicating that the original task was understood but cannot complete in isolation, together with the next *Trust Task* the *recipient party* expects in order to proceed. |
 
 `trust-task-next-step` is published; its registry entry at `https://trusttasks.org/spec/trust-task-next-step/0.1` defines the normative `payload` shape and conformance requirements, in the same relationship to this section that the `trust-task-discovery` entry has to [§11](#11-discovery-and-capability-negotiation). A *next step* is a **third** disposition alongside the success response and the *error response* of this section: it reports that the originating task was understood and is **blocked**, leaving the exchange open where the other two close it. A *consumer* **MUST NOT** report a blocked task as an *error response*, nor a refusal as a *next step*; the three replies are not interchangeable. A *next step* confers no authorization — the *Type URI* it names is a suggestion the receiving party evaluates under its own policy, on the same advisory footing as a discovery response ([§11.4](#114-status-of-the-response)).
 
-The payload structure of `trust-task-ok` remains out of scope for this revision and will be specified in a future revision of this framework. Implementations encountering a *Trust Task document* of a reserved type whose specification is not yet published **MAY** ignore the document or **MAY** return an `unsupportedVersion` *error response*.
+`trust-task-ok` is published; its registry entry at `https://trusttasks.org/spec/trust-task-ok/0.1` defines the normative `payload` shape. It is a **courtesy acknowledgement**: a *consumer* **MAY** return one to confirm that it received and performed a *Trust Task* whose specification defines no success-response document of its own, and **MUST NOT** send one in place of a response a specification does define — two success dispositions for one task leave a *producer* unable to tell which is authoritative.
+
+Its weakness is deliberate. A *producer* **MUST NOT** rely on receiving an acknowledgement, and **the absence of one carries no information**: a *consumer* may not implement the specification, may implement it and not send one, or the document may be lost. A *producer* that reads absence as failure and reissues a *consequential Trust Task* causes exactly the duplicate effect [§7.2](#72-consumer-requirements) item 11 exists to prevent. Accordingly an acknowledgement that genuinely matters — one a third party will rely on, audit, or dispute — is **not** this document: such a task declares its own success response, or a dedicated receipt task with its own proof requirement.
+
+Implementations encountering a *Trust Task document* of a reserved type whose specification is not yet published **MAY** ignore the document or **MAY** return an `unsupportedVersion` *error response*.
 
 ## 9. Transport bindings
 
@@ -1361,6 +1365,14 @@ If any step fails, the *consumer* returns an *error response* per [§8](#8-error
 
     Additive: the wire format is unchanged and every document conforming to 0.3 still conforms. A *consumer* that already separated authorization from validation needs no change.
 
+* **`trust-task-ok` published ([§8.6](#86-reserved-response-type-slugs)).** The success acknowledgement reserved since 0.1 now has a registry entry, and the four revisions it spent unspecified are the reason it is narrower than its original description implied. A *consumer* **MAY** return one to confirm that it received and performed a task whose specification defines no success response of its own; it **MUST NOT** be sent in place of a response a specification does define, because two success dispositions for one task leave a *producer* unable to tell which is authoritative.
+
+    **Its weakness is the design.** A *producer* **MUST NOT** rely on receiving one, and **the absence of one carries no information** — a *consumer* may not implement it, may implement it and stay silent, or the document may be lost. That rule is what keeps the specification safe to add at all: a *producer* that read absence as failure and reissued a *consequential Trust Task* would cause exactly the duplicate effect [§7.2](#72-consumer-requirements) item 11 exists to prevent, and it also leaves item 11's own use of silence — an absorbed duplicate of a fire-and-forget task — unambiguous.
+
+    Accordingly an acknowledgement that genuinely matters is **not** this document. A task whose acknowledgement will be relied on, audited, or disputed declares its own success response, or a dedicated receipt task with its own proof requirement — the choice `chat/message/0.1` already made deliberately, so that its acknowledgement is a signed link in a chain rather than a transport-level ack.
+
+    Additive: the wire format is unchanged, and a *consumer* that ignores acknowledgements loses nothing it was entitled to.
+
 * **Task control ([§12](#12-task-control), [§6.1](#61-type-uri), [§8.3](#83-standard-error-codes)).** A *producer* can now withdraw or pause work a *consumer* has already accepted. The framework could express what should happen next — `parentThreadId`, ceremonies, `trust-task-next-step` — but nothing let a request be taken back, which for long-running and agentic execution is a **corrigibility** gap: an agent could be told to start and had no defined way to be told to stop. Transport-level cancellation is not a substitute, because a document that has been accepted, queued, or forwarded survives the connection that delivered it.
 
     The mechanism is deliberately small, because three rules added earlier in this revision already do most of the work. **[§7.2](#72-consumer-requirements) item 12 is where a control operation takes effect** — a received, authorized operation is one of the conditions it re-evaluates before each irreversible effect, and §12.3 says so explicitly rather than leaving it to be inferred. Item 12 already requires that the subsequent effect not be performed and that partial execution be reported distinguishably, so no separate race protocol was needed. Item 11's per-`id` record serves as the tombstone for a control document that arrives before the task it names, bounded by the same acceptance window. Item 10 settles who may ask.
@@ -1399,7 +1411,7 @@ If any step fails, the *consumer* returns an *error response* per [§8](#8-error
 
 * **The term *consequential Trust Task* ([§2](#2-terminology)).** The predicate `sideEffects.level ∈ {mutating, destructive} ∨ exposure.discloses = secret ∨ exposure.actsAsSubject = true` is now named once rather than re-spelled at each use, with the fail-safe reading of an absent or unresolvable declaration folded into the definition. No new obligation attaches to the term itself.
 
-* **`trust-task-next-step` published ([§8.6](#86-reserved-response-type-slugs)).** The continuation response reserved since 0.1 now has a registry entry defining its payload. A *next step* is a **third** disposition alongside the success response and the *error response*: the two of those close the originating task, and a next step leaves it **open**. A *consumer* **MUST NOT** report a blocked task as an error, nor a refusal as a next step. `trust-task-ok` remains reserved.
+* **`trust-task-next-step` published ([§8.6](#86-reserved-response-type-slugs)).** The continuation response reserved since 0.1 now has a registry entry defining its payload. A *next step* is a **third** disposition alongside the success response and the *error response*: the two of those close the originating task, and a next step leaves it **open**. A *consumer* **MUST NOT** report a blocked task as an error, nor a refusal as a next step.
 
 ### 0.3
 

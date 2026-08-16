@@ -213,6 +213,7 @@ export * as TrustTaskError_v0_3 from "./trust-task-error/0.3/payload.js";
 export * as TrustTaskError_v0_4 from "./trust-task-error/0.4/payload.js";
 export * as TrustTaskError_v0_5 from "./trust-task-error/0.5/payload.js";
 export * as TrustTaskNextStep_v0_1 from "./trust-task-next-step/0.1/payload.js";
+export * as TrustTaskOk_v0_1 from "./trust-task-ok/0.1/payload.js";
 export * as ConsumerContextShared_v0_1 from "./vault/_shared/0.1/consumer-context.js";
 export * as SealedEnvelopeShared_v0_1 from "./vault/_shared/0.1/sealed-envelope.js";
 export * as SessionBlobShared_v0_1 from "./vault/_shared/0.1/session-blob.js";
