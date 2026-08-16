@@ -1,5 +1,6 @@
 //! Error-response payload for the `trust-task-error` framework spec. The SDK
-//! emits the `0.4` form — lowerCamelCase codes including `idConflict`, and the
+//! emits the `0.5` form — lowerCamelCase codes including `idConflict` and
+//! `cancelled`, and the
 //! `inResponseTo` member that names the document being reported on. The parser
 //! also accepts the `0.1` snake_case codes, so a current consumer can read a
 //! `0.1` peer.
@@ -42,7 +43,7 @@ pub struct InResponseTo {
     pub id: Option<String>,
 }
 
-/// The `payload` of a `trust-task-error/0.4` document, per SPEC.md §8.2.
+/// The `payload` of a `trust-task-error/0.5` document, per SPEC.md §8.2.
 ///
 /// Exchange-level correlation is carried by the surrounding
 /// [`TrustTask`](crate::TrustTask)'s `threadId`; *which document* this error
@@ -264,6 +265,11 @@ pub enum StandardCode {
     /// The document's `id` matches one the consumer has already accepted, but
     /// its content differs (SPEC.md §7.2 item 11).
     IdConflict,
+    /// The consumer stopped the task on its own initiative — operator action,
+    /// policy, capacity, or a compliance hold (SPEC.md §12). Distinct from a
+    /// producer-requested cancellation, which is answered by a response to the
+    /// `trust-task-control` document rather than by an error.
+    Cancelled,
     /// The recipient party attempted the task and could not complete it.
     TaskFailed,
     /// The recipient party is temporarily unable to process the task.
@@ -301,6 +307,7 @@ impl StandardCode {
             StandardCode::WrongRecipient => "wrongRecipient",
             StandardCode::IdentityMismatch => "identityMismatch",
             StandardCode::IdConflict => "idConflict",
+            StandardCode::Cancelled => "cancelled",
             StandardCode::TaskFailed => "taskFailed",
             StandardCode::Unavailable => "unavailable",
             StandardCode::InternalError => "internalError",
@@ -571,6 +578,7 @@ fn parse_standard(s: &str) -> Result<StandardCode, ParseCodeError> {
         "permissionDenied" | "permission_denied" => StandardCode::PermissionDenied,
         "wrongRecipient" | "wrong_recipient" => StandardCode::WrongRecipient,
         "idConflict" | "id_conflict" => StandardCode::IdConflict,
+        "cancelled" | "canceled" => StandardCode::Cancelled,
         "identityMismatch" | "identity_mismatch" => StandardCode::IdentityMismatch,
         "taskFailed" | "task_failed" => StandardCode::TaskFailed,
         "unavailable" => StandardCode::Unavailable,

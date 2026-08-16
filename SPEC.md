@@ -45,10 +45,11 @@ This document is governed by the [Trust Over IP Foundation Patent and Copyright 
 9. [Transport bindings](#9-transport-bindings)
 10. [Security and Privacy Considerations](#10-security-and-privacy-considerations)
 11. [Discovery and capability negotiation](#11-discovery-and-capability-negotiation)
-12. [References](#12-references)
-13. [Acknowledgments](#13-acknowledgments)
-14. [Appendix A — Example Trust Task specification](#appendix-a--example-trust-task-specification)
-15. [Appendix B — Changelog](#appendix-b--changelog)
+12. [Task control](#12-task-control)
+13. [References](#13-references)
+14. [Acknowledgments](#14-acknowledgments)
+15. [Appendix A — Example Trust Task specification](#appendix-a--example-trust-task-specification)
+16. [Appendix B — Changelog](#appendix-b--changelog)
 
 ---
 
@@ -614,6 +615,7 @@ The following slugs are **RESERVED** for framework-defined specifications and **
   | `trust-task-ok`          | Success-response with metadata — reserved, see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-next-step`   | Recipient-suggested continuation — see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-discovery`   | Discovery and capability negotiation — see [§11](#11-discovery-and-capability-negotiation). |
+  | `trust-task-control`     | Cancellation, suspension, and resumption of an accepted task — see [§12](#12-task-control). |
   | `trust-ceremony-receipt` | Evidence that one *enactment* of a *Trust Ceremony* completed — see [§4.11](#411-the-ceremony-member). |
 
 The *Type URI* is the single canonical, resolvable reference to a versioned *Trust Task specification*. It serves both humans (rendered prose) and machines (validation schema, optional JSON-LD context) under content negotiation as defined in [§6.2](#62-content-negotiation).
@@ -740,7 +742,7 @@ A *conforming consumer* **MUST**:
 9. Not grant any authority on the basis of a `ceremony` member. Membership of an *enactment* is an assertion by the document's *issuer*, not a verified fact, and every authorization decision **MUST** be reached under item 10 below exactly as for a document carrying no such member. See [§4.11.4](#4114-membership-is-a-claim-not-a-permission). A *consumer* that does not implement ceremonies applies the unrecognized-member rule below and forgoes nothing by doing so.
 10. Not treat identity or document-proof validation as authorization. Successful validation of a *VID*, `issuer`, `recipient`, transport-derived identity, or `proof` establishes **who** made the assertion and that the document reached the *consumer* unaltered. It **MUST NOT**, by itself, be treated as establishing that the *producer* is authorized to request the outcome the *Trust Task* describes, or that the *consumer* is authorized to perform it. Before executing a *Trust Task*, a *consumer* **MUST** evaluate whatever authorization requirements apply under the *Trust Task specification* identified by the document's `type`, the *consumer*'s own policy, and the trust or governance framework it operates under.
 11. Not execute a *consequential Trust Task* ([§2](#2-terminology)) twice on account of the same *Trust Task document*. Once a *consumer* has accepted a document with a given `id` for execution, receipt of that same document again **MUST NOT** cause the consequential effect to occur a second time, unless the *Trust Task specification* identified by the document's `type` explicitly declares repeated execution safe and intended. A *consumer* receiving a document whose `id` matches one it has already accepted but whose content differs **MUST** reject the later document with `idConflict` ([§8.3](#83-standard-error-codes)) and **MUST NOT** treat it as a retry of the original. Transport request identifiers, transport message identifiers, and execution handles **MUST NOT** substitute for the *Trust Task document*'s `id` as the key for this rule.
-12. Re-evaluate, immediately before each irreversible or externally visible effect of a *consequential Trust Task* ([§2](#2-terminology)), every condition that the *Trust Task specification* and the *consumer*'s own policy require for that effect. Successful validation establishes that a document was eligible for processing **when it was validated**; it does not establish that the work remains executable indefinitely, and for execution that is delayed, long-running, or resumed the two instants can be far apart. Where a required condition — an authorization, delegation, mandate, capability, membership, standing, credential or key status, subject relationship, or a deadline the *Trust Task specification* defines for itself — is no longer satisfied at that point, the *consumer* **MUST NOT** perform the subsequent effect.
+12. Re-evaluate, immediately before each irreversible or externally visible effect of a *consequential Trust Task* ([§2](#2-terminology)), every condition that the *Trust Task specification* and the *consumer*'s own policy require for that effect. Successful validation establishes that a document was eligible for processing **when it was validated**; it does not establish that the work remains executable indefinitely, and for execution that is delayed, long-running, or resumed the two instants can be far apart. Where a required condition — an authorization, delegation, mandate, capability, membership, standing, credential or key status, subject relationship, or a deadline the *Trust Task specification* defines for itself — is no longer satisfied at that point, the *consumer* **MUST NOT** perform the subsequent effect. A valid, authorized control operation the *consumer* has received under [§12](#12-task-control) is such a condition.
 
 For each of the rules in this section that references the `issuer` or `recipient` party, the in-band member value is authoritative when present and the transport-derived identity is a cross-check; when the in-band member is absent the *consumer* **MAY** derive the value from the transport. This precedence is defined normatively in [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity).
 
@@ -907,6 +909,7 @@ The framework defines the error codes listed below. A *conforming consumer* **MU
 | `wrongRecipient` | The document's `recipient` does not identify the receiving *consumer*. | `false` |
 | `identityMismatch` | An in-band `issuer` or `recipient` value is inconsistent with the corresponding transport-authenticated identity. | `false` |
 | `idConflict` | The document's `id` matches one the *consumer* has already accepted, but its content differs — see [§7.2](#72-consumer-requirements) item 11. | `false` |
+| `cancelled` | The *consumer* stopped the task on its own initiative — operator action, policy, capacity, or a compliance hold. Distinct from a *producer*-requested cancellation, which is answered by a response to the control document ([§12](#12-task-control)). | `false` |
 | `taskFailed` | The *recipient party* attempted the task and could not complete it; further detail **SHOULD** appear in `details`. | varies |
 | `unavailable` | The *recipient party* is temporarily unable to process the task. | `true` |
 | `internalError` | The *recipient party* encountered an unexpected internal failure. | `true` |
@@ -1138,9 +1141,77 @@ A *discovery response* is **advisory**. A *Type URI*'s presence is a hint that t
 
 A discovery response leaks information about which specifications the responder implements. Responders that consider their supported task set sensitive **SHOULD** authenticate the discoverer before responding, and **MAY** return a filtered subset of their true capabilities (or no response at all) when the discoverer is unknown or unauthenticated. See the discovery spec's "Privacy considerations" section for additional discussion.
 
-## 12. References
+## 12. Task control
 
-### 12.1 Normative references
+Acceptance of a *Trust Task document*, or commencement of execution upon it, **MUST NOT** by itself make the requested work semantically irrevocable. This section defines transport-independent semantics by which a *producer* can withdraw or pause work a *consumer* has already accepted.
+
+The mechanism is a *Trust Task document* like any other, of the framework-reserved specification `trust-task-control` ([§6.1](#61-type-uri)). It is a **request**, not a response: it flows from *producer* to *consumer*, and is therefore not one of the reserved response-type slugs of [§8.6](#86-reserved-response-type-slugs). Its payload, its response variant, and its conformance requirements are defined by its registry entry.
+
+The framework defines three operations: **cancel**, **suspend**, and **resume**. The corresponding operation for a *consumer* that stops work on its own initiative is not a control operation at all — it is an *error response* carrying `cancelled` ([§8.3](#83-standard-error-codes)), because a *consumer* refusing or abandoning work is already the case [§8](#8-error-responses) covers. The two directions are deliberately not symmetric: only a *producer* sends a control document, and only a *consumer* emits `cancelled`, so that no party and no auditor need infer from a document alone which of them decided.
+
+### 12.1 Authorization
+
+The *party* identified by the target document's `issuer` is authorized to cancel, suspend, or resume that task **by default**; a *consumer* **MUST NOT** require further authorization evidence from that party. Where the target document carried no in-band `issuer`, the authorized party is the identity authenticated for it under [§4.8.1](#481-precedence-of-in-band-over-transport-derived-identity).
+
+Whether a *consumer* honors a control document from **any other** *party* is that *consumer*'s own decision under [§7.2](#72-consumer-requirements) item 10, evaluated exactly as for any other *Trust Task*. This is a floor, not a ceiling: a *consumer* executing work on behalf of a mandate holder, a supervising principal, or an organization whose agent initiated the task **MAY** recognize that party's authority to stop it, under its own policy and applicable governance framework. The framework does not foreclose that, and a *consumer* that recognizes only the initiator is equally conformant.
+
+A control document **MUST** carry a `proof`, and the audience-binding rule of [§4.8.2](#482-audience-binding) applies to it. A control operation that cannot be attributed is worthless as evidence of withdrawal, and an unattributable one is a denial-of-service vector against another party's work. Membership of a *Trust Ceremony* confers no authority here, exactly as [§4.11.4](#4114-membership-is-a-claim-not-a-permission) provides generally.
+
+### 12.2 Identifying the target
+
+A control document **MUST** identify the specific *Trust Task document* to which it applies, by that document's `id`. It **SHOULD** also carry the target's `type`, so that a *consumer* can detect a control document aimed at an `id` it holds under a different *Trust Task specification*, and **SHOULD** carry the same `threadId` as the target so the two correlate within one exchange.
+
+`threadId`, `parentThreadId`, and `ceremony` membership **MUST NOT**, by themselves, identify the controlled task. More than one *Trust Task document* can occur within a single exchange or *enactment*, and an operation naming only the exchange is ambiguous exactly when it matters most — in a flow busy enough to have several tasks in flight.
+
+### 12.3 When a control operation takes effect
+
+**A valid, authorized control operation that a *consumer* has received is one of the conditions that [§7.2](#72-consumer-requirements) item 12 requires it to re-evaluate before each irreversible or externally visible effect.** This is the normative connection between the two mechanisms, and it is stated here explicitly rather than left to be inferred from item 12's general wording.
+
+A *consumer* therefore does not need a separate race protocol. Having received and authorized a cancellation or suspension, it records it; at the next item 12 checkpoint the condition fails, and item 12 already requires that the subsequent effect **MUST NOT** be performed and that partial execution be reported distinguishably from a task that was never begun.
+
+Where an irreversible or externally visible effect has **already** occurred, a *consumer* **MUST NOT** report the task as cleanly cancelled. It reports what occurred, so that the *producer* can determine whether a compensating action is required (see [§12.4](#124-control-does-not-roll-back)).
+
+**Cancellation is terminal.** A cancelled task **MUST NOT** be resumed, retried, or cancelled again; a *producer* that still wants the work issues a **new** *Trust Task document* with a fresh `id`. This is the same line [§8.4](#84-retry-semantics) draws for error responses, and for the same reason: a document with two contradictory lifecycle states cannot be reasoned about by any party that retains it.
+
+A control document **MAY** arrive before the *Trust Task document* it names — ordinary on asynchronous and store-and-forward transports. A *consumer* **SHOULD** record it against the target `id` and refuse the later-arriving document rather than execute it. The record required by [§7.2](#72-consumer-requirements) item 11 serves this purpose and is bounded by the same acceptance window; a control document naming an `id` whose window has lapsed has nothing to match, and is reported as such. The item 11 record **MUST** survive cancellation for the remainder of that window, so that a re-delivery of the original document after cancellation is absorbed rather than executed.
+
+### 12.4 Control does not roll back
+
+Cancellation prevents future effects. It **MUST NOT** be understood to undo effects that have already occurred, and this framework does not require a *consumer* to retain state for the purpose of reversing them.
+
+Many effects are irreversible by construction — [§7.3](#73-specification-requirements) item 13 defines `destructive` in those terms — and for many others the state needed to reverse the effect is precisely the material the task existed to destroy or to disclose. Where an effect can be undone at all, the undoing is a distinct act with its own authority, its own audit trail, and frequently its own *Trust Task specification*; a *Trust Task specification* **MAY** name such a compensating task in its prose, and a *consumer* **MUST NOT** be presumed to perform one automatically.
+
+What the framework requires instead is **information**: the response to a control operation reports which effects were created before the operation took hold, so that the *producer* can decide whether to invoke a compensating task itself.
+
+### 12.5 Suspension and resumption
+
+A suspension **halts further effects while preserving the *consumer*'s current execution state**. It does not return the task to a pre-execution state, and it does not undo work already performed — that would be the rollback [§12.4](#124-control-does-not-roll-back) declines to require. Resumption continues from the state the *consumer* holds.
+
+A *consumer* **MUST NOT** resume a suspended task after the target document's `expiresAt`. Resumption is a fresh decision to proceed — the acceptance question of [§7.2](#72-consumer-requirements) item 4, asked a second time — whereas execution already in progress is protected by item 12's deliberate exclusion of expiry from the conditions it re-evaluates. A suspension preserves state; it does not preserve an indefinite right to restart. A *producer* that still wants the work issues a new document.
+
+A control document **MUST NOT** carry an instruction that a suspension resume automatically after an interval of the *producer*'s choosing. Such an interval is a deadline the *producer* cannot calculate — it does not know how long the *consumer*'s work takes — and it lets a *producer* pin *consumer* state for a period of its own election. How long a *consumer* retains a suspended task is that *consumer*'s own policy, bounded by `expiresAt` where present.
+
+### 12.6 Notifications, and the meaning of silence
+
+A *party* **SHOULD** notify its counterparty when a task is cancelled or when a suspended task lapses, so that the other side can release whatever state it holds. Such notifications are **fire-and-forget**: no response is expected, and a *consumer* that does not implement task control emits none.
+
+Accordingly: **no *party* may infer the state of a task from the absence of a notification.** A notification may be lost, discarded by an intermediary, or never sent. A *producer* that reads silence as "still running" waits indefinitely; one that reads it as "safely abandoned" and reissues can cause exactly the second consequential effect that [§7.2](#72-consumer-requirements) item 11 exists to prevent.
+
+The response to a control document is **not** such a notification. It is a reply to a request, its content is relied upon under [§12.4](#124-control-does-not-roll-back), and it is subject to the ordinary rules of [§4.4.1](#441-request-and-response-variants).
+
+### 12.7 Transport-level cancellation is not semantic cancellation
+
+Cancelling a transport operation — abandoning an HTTP request, cancelling a queue delivery, closing a session, discarding an execution handle — terminates *that delivery*. It **MUST NOT** be interpreted as semantic cancellation of the underlying *Trust Task*, unless the applicable *transport binding* carries a framework-defined control operation with equivalent semantics ([§9](#9-transport-bindings)).
+
+A *Trust Task document* that has been accepted, queued, forwarded, or handed to a worker survives the connection that delivered it, and may be held by a *consumer* the withdrawing *party* is no longer in contact with. A *consumer* that treats a dropped connection as a withdrawal will stop work the *producer* still wants; a *producer* that treats one as a withdrawal will believe it has stopped work that is still running.
+
+### 12.8 Support is optional
+
+A *consumer* that does not implement task control rejects a control document with `unsupportedType` ([§8.3](#83-standard-error-codes)), as it would any other unrecognized `type`. Task control is therefore **best-effort**, and a *producer* **MUST NOT** rely on a cancellation having been honored in the absence of a response confirming it. A *consumer* that does implement it **SHOULD** advertise `trust-task-control` through discovery ([§11](#11-discovery-and-capability-negotiation)), so that a *producer* can establish before the wire trip whether the work it is about to request can later be stopped.
+
+## 13. References
+
+### 13.1 Normative references
 
 * **[RFC2119]** Bradner, S. *Key words for use in RFCs to Indicate Requirement Levels*. RFC 2119, March 1997. <https://www.rfc-editor.org/rfc/rfc2119>
 * **[RFC8174]** Leiba, B. *Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words*. RFC 8174, May 2017. <https://www.rfc-editor.org/rfc/rfc8174>
@@ -1155,12 +1226,12 @@ A discovery response leaks information about which specifications the responder 
 * **[JSON-SCHEMA-2020-12]** Wright, A. et al. *JSON Schema: A Media Type for Describing JSON Documents*. Draft 2020-12. <https://json-schema.org/draft/2020-12/schema>
 * **[DID-CORE]** Sporny, M., Longley, D., Sabadello, M., Reed, D., Steele, O., Allen, C. *Decentralized Identifiers (DIDs) v1.0*. W3C Recommendation. <https://www.w3.org/TR/did-core/>
 
-### 12.2 Informative references
+### 13.2 Informative references
 
 * **[VC-DATA-MODEL]** Sporny, M. et al. *Verifiable Credentials Data Model v2.0*. W3C Recommendation. <https://www.w3.org/TR/vc-data-model-2.0/>
 * **[W3C-MANUAL-OF-STYLE]** W3C. *Manual of Style*. <https://www.w3.org/guide/manual-of-style/>
 
-## 13. Acknowledgments
+## 14. Acknowledgments
 
 The editor thanks the members of the Trust Over IP Foundation Decentralized Trust Graph Working Group for their ongoing review and contributions to this specification.
 
@@ -1289,6 +1360,22 @@ If any step fails, the *consumer* returns an *error response* per [§8](#8-error
     The rule is deliberately **model-neutral**: it requires that an authorization decision be made, not how. A verified assertion may still *be* the authorization where a specification defines that role and the *consumer*'s policy accepts it — the `task-consent` design — but that is now an explicit declaration under item 15 rather than an available default.
 
     Additive: the wire format is unchanged and every document conforming to 0.3 still conforms. A *consumer* that already separated authorization from validation needs no change.
+
+* **Task control ([§12](#12-task-control), [§6.1](#61-type-uri), [§8.3](#83-standard-error-codes)).** A *producer* can now withdraw or pause work a *consumer* has already accepted. The framework could express what should happen next — `parentThreadId`, ceremonies, `trust-task-next-step` — but nothing let a request be taken back, which for long-running and agentic execution is a **corrigibility** gap: an agent could be told to start and had no defined way to be told to stop. Transport-level cancellation is not a substitute, because a document that has been accepted, queued, or forwarded survives the connection that delivered it.
+
+    The mechanism is deliberately small, because three rules added earlier in this revision already do most of the work. **[§7.2](#72-consumer-requirements) item 12 is where a control operation takes effect** — a received, authorized operation is one of the conditions it re-evaluates before each irreversible effect, and §12.3 says so explicitly rather than leaving it to be inferred. Item 12 already requires that the subsequent effect not be performed and that partial execution be reported distinguishably, so no separate race protocol was needed. Item 11's per-`id` record serves as the tombstone for a control document that arrives before the task it names, bounded by the same acceptance window. Item 10 settles who may ask.
+
+    **Authorization is a floor, not a ceiling.** The target's `issuer` is authorized by default; whether a *consumer* honors any other party is its own decision under item 10. An absolute rule would have foreclosed the mandate holder and supervising principal — the delegated execution this framework exists to support — at framework level, where every other authorization decision is the *consumer*'s.
+
+    **Cancellation prevents future effects and never undoes past ones** ([§12.4](#124-control-does-not-roll-back)). Many effects are irreversible by construction, and the state needed to reverse one is frequently the material the task existed to destroy: retaining a superseded private key so a rotation could be rolled back would defeat the rotation. What the framework requires instead is information — the response reports what occurred, so the *producer* can invoke a compensating task itself.
+
+    **Suspension halts further effects while preserving execution state** ([§12.5](#125-suspension-and-resumption)); it does not rewind the task, which would be the rollback §12.4 declines to require. A *consumer* **MUST NOT** resume after `expiresAt`, because resumption is the acceptance question of item 4 asked a second time — while execution already under way stays protected by item 12's exclusion of expiry.
+
+    **Silence carries no information** ([§12.6](#126-notifications-and-the-meaning-of-silence)). Notifications are fire-and-forget and a *consumer* need not implement control at all, so a *producer* that reads silence as "safely abandoned" and reissues can cause the second consequential effect item 11 exists to prevent.
+
+    Additive: the wire format is unchanged for every existing task, and a *consumer* that does not implement control rejects the new type as it would any other it does not recognize.
+
+* **`cancelled` ([§8.3](#83-standard-error-codes)).** A new standard error code for a *consumer* that stops a task on its own initiative — operator action, policy, capacity, a compliance hold. Named for what happened rather than who caused it, since an operator is one reason among several. It is distinct from a *producer*-requested cancellation, which is answered by a response to the control document: without the distinction, no party and no auditor reading the retained documents could tell a withdrawal from a refusal, and the two imply opposite things about whether to try again. Carried by `trust-task-error/0.5`.
 
 * **Validity during execution ([§7.2](#72-consumer-requirements) item 12, [§7.3](#73-specification-requirements) item 16, [§4.2](#42-top-level-members)).** Validating a document established that it was eligible for processing *at the instant it was validated*. For execution that is delayed, long-running, resumed, or agentic, that instant and the instant a consequential effect actually lands can be far apart — and the authority in between can evaporate. A *consumer* **MUST** now re-evaluate, immediately before each irreversible or externally visible effect, every condition its policy and the *Trust Task specification* require: delegation, mandate, capability, membership, standing, credential or key status, subject relationship. `task-consent/decision/0.1` already required this locally, re-checking policy and approver enrolment so a device revoked during the approval window cannot carry a task through; item 12 makes the general case normative.
 

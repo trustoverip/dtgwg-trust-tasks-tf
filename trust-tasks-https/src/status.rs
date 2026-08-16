@@ -48,6 +48,10 @@ fn standard_status(code: StandardCode) -> u16 {
         | StandardCode::WrongRecipient
         | StandardCode::IdentityMismatch => 403,
         StandardCode::IdConflict => 409,
+        // A deliberate stop by the consumer is not a server fault and not a
+        // malformed request: the task was understood and accepted, and then
+        // ended. 422 is the same bucket as `TaskFailed` for the same reason.
+        StandardCode::Cancelled => 422,
         StandardCode::TaskFailed => 422,
         StandardCode::Unavailable => 503,
         StandardCode::InternalError => 500,

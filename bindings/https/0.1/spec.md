@@ -80,6 +80,7 @@ The server **SHOULD** map the *Trust Task document* response to an HTTP status a
 | `expired`                                                | `422 Unprocessable Entity`            |
 | `proofRequired` / `proofInvalid` / `identityMismatch`    | `422 Unprocessable Entity`            |
 | `wrongRecipient`                                         | `422 Unprocessable Entity`            |
+| `cancelled`                                              | `422 Unprocessable Entity`            |
 | `taskFailed`                                             | `422 Unprocessable Entity`            |
 | `unavailable`                                            | `503 Service Unavailable`             |
 | `internalError`                                          | `500 Internal Server Error`           |

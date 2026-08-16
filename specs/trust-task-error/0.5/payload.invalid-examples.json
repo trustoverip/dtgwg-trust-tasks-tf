@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Empty payload omits required member(s): code, retryable.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "Required member `code` has the wrong type (expected string).",
+    "payload": {
+      "code": 12345
+    }
+  }
+]

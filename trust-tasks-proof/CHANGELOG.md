@@ -4,6 +4,15 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.8.0] - 2026-08-16
+
+### Changed
+
+- Requires `trust-tasks-rs` 0.8, which adds the `cancelled` standard error code
+  (framework 0.4, SPEC §8.3) and the `trust-task-control/0.1` payload types.
+  Additive on the Rust side — `StandardCode` has been `#[non_exhaustive]` since
+  0.7.0 — so this crate needed no source change.
+
 ## [0.7.0] - 2026-08-15
 
 ### Changed
