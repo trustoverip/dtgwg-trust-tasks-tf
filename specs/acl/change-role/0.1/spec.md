@@ -89,6 +89,16 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 
 Maintainers **MAY** require stronger transport-binding-level authentication for transitions into elevated roles (e.g. a passkey step-up). Such requirements are documented by the maintainer and enforced by its transport handler; this task carries intent, not the step-up dance.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is the *changing authority*'s standing to alter this subject's role in **this** ACL, determined by the ACL maintainer's own policy. The role vocabulary is the maintainer's (`acl/change-role:role_not_recognized`), and so is the question of who may move a subject between roles within it.
+
+Neither of the checks Conformance names is that question. Verifying the `proof` establishes who asked; confirming `payload.fromRole` against the maintainer's own record establishes that the caller is not acting on stale state, and a `state_mismatch` is a concurrency failure rather than a permission one. A caller that passes both and is not entitled to change roles is refused with `permissionDenied`.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Definitions
 
 * **Changing authority.** The party invoking the role change; identified by `issuer`.

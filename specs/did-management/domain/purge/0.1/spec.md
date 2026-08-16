@@ -53,6 +53,16 @@ Draft.
 
 Admin caller emits `type: https://trusttasks.org/spec/did-management/domain/purge/0.1` with `payload.name` and optional `payload.purgeServers`. Consumer rejects if the domain is not disabled or is the current default; otherwise removes the domain entry, cancels any pending purge timer, and (when fanout is requested) records each instance's queue status.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is **administrator standing on this consumer**. This task is `destructive` — it removes a domain entry — so the check matters more here than on its siblings, not less.
+
+The state preconditions Conformance names — that the domain is disabled, and is not the current default — are safety interlocks, not authorization. They stop an administrator purging something still in use; they say nothing about whether the caller is an administrator. A caller that satisfies both and lacks standing is refused with `permissionDenied`.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Request
 
 ```json

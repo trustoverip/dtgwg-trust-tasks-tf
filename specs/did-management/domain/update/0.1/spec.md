@@ -45,6 +45,14 @@ Draft.
 
 Admin caller emits `type: https://trusttasks.org/spec/did-management/domain/update/0.1` with `payload.name` and `payload.label`. The consumer updates the entry and returns the new `DomainEntry`.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is **administrator standing on this consumer**, established from the authenticated producer identity and the consumer's own records. Nothing in the payload conveys it.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Request
 
 ```json

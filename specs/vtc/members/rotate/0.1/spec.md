@@ -48,6 +48,16 @@ Producer: supply `rotationId`, `oldDid`, `newDid`, and both signatures. Carry a 
 
 Consumer: look up the `rotationId`; if unknown or expired, return `rotationExpired`. Verify both signatures over the challenge; if either fails, return `signatureInvalid` and change nothing. Otherwise repoint the member to `newDid`, re-issue the credentials, and return `{ newDid, method, vmc, roleVec }`. Audit the rotation.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is **both signatures over the challenge** — the old DID's and the new DID's — against a `rotationId` that is still live.
+
+Requiring both is what makes rotation safe in each direction. The old DID's signature establishes that the party currently holding the membership consents to move it; the new DID's establishes that the party receiving it controls the key it is being moved to. Either alone would allow a hostile transfer: one steals a membership, the other strands it on a key nobody holds. A failure of either changes nothing and returns `signatureInvalid`.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Security & Privacy
 
 **Dual-key proof plus attribution.** The old signature proves the member still controls the retiring key; the new signature proves control of the replacement — together they authorize the rotation. The framework proof is additionally REQUIRED so the ceremony is attributable to the authenticated session, closing the gap between "someone holds these keys" and "this session performed the rotation".
