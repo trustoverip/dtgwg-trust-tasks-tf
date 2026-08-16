@@ -99,15 +99,268 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/age
 export type Response = DIDManagementDisableAgentNameResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/agent-name/disable/0.1",
+  "title": "DID Management Disable Agent Name — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mnemonic",
+    "name",
+    "didData"
+  ],
+  "properties": {
+    "mnemonic": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The hosted DID slot."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The agent name's local part, without the leading `@`."
+    },
+    "didData": {
+      "description": "A new signed document whose `alsoKnownAs` no longer claims the name; published in the same commit that parks the binding.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "domain": {
+      "type": "string",
+      "description": "Optional explicit hosting domain. See category CONVENTIONS §1."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Disable Agent Name — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record"
+      ],
+      "properties": {
+        "record": {
+          "$ref": "#/$defs/DidRecord"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DidRecord": {
+      "title": "DidRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mnemonic",
+        "owner",
+        "createdAt",
+        "updatedAt",
+        "versionCount"
+      ],
+      "properties": {
+        "mnemonic": {
+          "type": "string",
+          "description": "Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form."
+        },
+        "owner": {
+          "type": "string",
+          "description": "VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC3339 timestamp of initial reservation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC3339 timestamp of the most recent record mutation."
+        },
+        "versionCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet."
+        },
+        "didId": {
+          "type": "string",
+          "description": "Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`."
+        },
+        "didUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published."
+        },
+        "method": {
+          "type": "string",
+          "description": "DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era."
+        },
+        "domain": {
+          "type": "string",
+          "description": "Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier."
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy."
+        },
+        "totalResolves": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Lifetime resolve counter, when the host exposes per-DID statistics."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management Disable Agent Name — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record"
+      ],
+      "properties": {
+        "record": {
+          "$ref": "#/$defs/DidRecord"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DidRecord": {
+      "title": "DidRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mnemonic",
+        "owner",
+        "createdAt",
+        "updatedAt",
+        "versionCount"
+      ],
+      "properties": {
+        "mnemonic": {
+          "type": "string",
+          "description": "Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form."
+        },
+        "owner": {
+          "type": "string",
+          "description": "VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC3339 timestamp of initial reservation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC3339 timestamp of the most recent record mutation."
+        },
+        "versionCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet."
+        },
+        "didId": {
+          "type": "string",
+          "description": "Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`."
+        },
+        "didUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published."
+        },
+        "method": {
+          "type": "string",
+          "description": "DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era."
+        },
+        "domain": {
+          "type": "string",
+          "description": "Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier."
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy."
+        },
+        "totalResolves": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Lifetime resolve counter, when the host exposes per-DID statistics."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -120,4 +373,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

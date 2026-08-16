@@ -121,15 +121,525 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enrol
 export type Response = AuthPasskeyEnrollStartResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/start/0.2",
+  "title": "Auth — Passkey Enroll (start)",
+  "description": "Ask the auth service to begin a WebAuthn registration ceremony. The response carries PublicKeyCredentialCreationOptions; the producer hands them to `navigator.credentials.create({ publicKey: ... })`.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "deviceLabel": {
+      "type": "string",
+      "description": "Operator-facing label for the credential (e.g. \"Alice's MacBook\"). Surfaced in the credential list for later management."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Enroll Start — response payload",
+      "description": "Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enrollmentId",
+        "options"
+      ],
+      "properties": {
+        "enrollmentId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim."
+        },
+        "options": {
+          "$ref": "#/$defs/CredentialCreationOptions",
+          "description": "PublicKeyCredentialCreationOptions for navigator.credentials.create."
+        },
+        "uvOptions": {
+          "$ref": "#/$defs/CredentialRequestOptions",
+          "description": "New in 0.2. PublicKeyCredentialRequestOptions for a concurrent user-verification ceremony against the subject's EXISTING credentials. Present when the consumer requires re-authentication to add an authenticator — normally whenever the subject already has one. Absent for a first enrollment, when there is nothing to re-authenticate against. When present the producer MUST run both ceremonies and return both results to finish."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CredentialRequestOptions": {
+      "$anchor": "credentialRequestOptions",
+      "title": "PublicKeyCredentialRequestOptions",
+      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rpId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "userVerification": {
+          "enum": [
+            "discouraged",
+            "preferred",
+            "required"
+          ]
+        }
+      }
+    },
+    "CredentialDescriptor": {
+      "$anchor": "credentialDescriptor",
+      "title": "PublicKeyCredentialDescriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "public-key"
+        },
+        "id": {
+          "type": "string",
+          "description": "base64url-encoded credential id."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "usb",
+              "nfc",
+              "ble",
+              "internal",
+              "hybrid"
+            ]
+          }
+        }
+      }
+    },
+    "CredentialCreationOptions": {
+      "$anchor": "credentialCreationOptions",
+      "title": "PublicKeyCredentialCreationOptions",
+      "description": "Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge",
+        "rp",
+        "user",
+        "pubKeyCredParams"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "rp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "user": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "displayName"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "displayName": {
+              "type": "string"
+            }
+          }
+        },
+        "pubKeyCredParams": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "alg"
+            ],
+            "properties": {
+              "type": {
+                "const": "public-key"
+              },
+              "alg": {
+                "type": "integer",
+                "description": "COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256)."
+              }
+            }
+          }
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "excludeCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "authenticatorSelection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "authenticatorAttachment": {
+              "enum": [
+                "platform",
+                "cross-platform"
+              ]
+            },
+            "requireResidentKey": {
+              "type": "boolean"
+            },
+            "residentKey": {
+              "enum": [
+                "discouraged",
+                "preferred",
+                "required"
+              ]
+            },
+            "userVerification": {
+              "enum": [
+                "discouraged",
+                "preferred",
+                "required"
+              ]
+            }
+          }
+        },
+        "attestation": {
+          "enum": [
+            "none",
+            "indirect",
+            "direct",
+            "enterprise"
+          ]
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Enroll Start — response payload",
+      "description": "Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enrollmentId",
+        "options"
+      ],
+      "properties": {
+        "enrollmentId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim."
+        },
+        "options": {
+          "$ref": "#/$defs/CredentialCreationOptions",
+          "description": "PublicKeyCredentialCreationOptions for navigator.credentials.create."
+        },
+        "uvOptions": {
+          "$ref": "#/$defs/CredentialRequestOptions",
+          "description": "New in 0.2. PublicKeyCredentialRequestOptions for a concurrent user-verification ceremony against the subject's EXISTING credentials. Present when the consumer requires re-authentication to add an authenticator — normally whenever the subject already has one. Absent for a first enrollment, when there is nothing to re-authenticate against. When present the producer MUST run both ceremonies and return both results to finish."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CredentialRequestOptions": {
+      "$anchor": "credentialRequestOptions",
+      "title": "PublicKeyCredentialRequestOptions",
+      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rpId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "userVerification": {
+          "enum": [
+            "discouraged",
+            "preferred",
+            "required"
+          ]
+        }
+      }
+    },
+    "CredentialDescriptor": {
+      "$anchor": "credentialDescriptor",
+      "title": "PublicKeyCredentialDescriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "public-key"
+        },
+        "id": {
+          "type": "string",
+          "description": "base64url-encoded credential id."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "usb",
+              "nfc",
+              "ble",
+              "internal",
+              "hybrid"
+            ]
+          }
+        }
+      }
+    },
+    "CredentialCreationOptions": {
+      "$anchor": "credentialCreationOptions",
+      "title": "PublicKeyCredentialCreationOptions",
+      "description": "Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge",
+        "rp",
+        "user",
+        "pubKeyCredParams"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "rp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "user": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "displayName"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "displayName": {
+              "type": "string"
+            }
+          }
+        },
+        "pubKeyCredParams": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "alg"
+            ],
+            "properties": {
+              "type": {
+                "const": "public-key"
+              },
+              "alg": {
+                "type": "integer",
+                "description": "COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256)."
+              }
+            }
+          }
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "excludeCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "authenticatorSelection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "authenticatorAttachment": {
+              "enum": [
+                "platform",
+                "cross-platform"
+              ]
+            },
+            "requireResidentKey": {
+              "type": "boolean"
+            },
+            "residentKey": {
+              "enum": [
+                "discouraged",
+                "preferred",
+                "required"
+              ]
+            },
+            "userVerification": {
+              "enum": [
+                "discouraged",
+                "preferred",
+                "required"
+              ]
+            }
+          }
+        },
+        "attestation": {
+          "enum": [
+            "none",
+            "indirect",
+            "direct",
+            "enterprise"
+          ]
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -142,4 +652,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

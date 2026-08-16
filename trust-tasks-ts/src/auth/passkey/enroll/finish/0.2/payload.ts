@@ -95,15 +95,388 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enrol
 export type Response = AuthPasskeyEnrollFinishResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2",
+  "title": "Auth — Passkey Enroll (finish)",
+  "description": "Submit the WebAuthn attestation that completes a passkey-enrollment ceremony. On success the auth service binds the credential to the subject's VID.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "enrollmentId",
+    "credential"
+  ],
+  "properties": {
+    "enrollmentId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim."
+    },
+    "credential": {
+      "$ref": "#/$defs/AttestationResponse",
+      "description": "AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded."
+    },
+    "uvCredential": {
+      "$ref": "#/$defs/AssertionResponse",
+      "description": "New in 0.2. AuthenticatorAssertionResponse over the uvOptions returned by start, proving a human with an already-enrolled authenticator authorized adding this one. REQUIRED whenever start returned uvOptions; omitted otherwise. A consumer that issued uvOptions MUST reject a finish that lacks this member — the re-authentication requirement is the consumer's, so treating a missing assertion as consent would let a producer decline it unilaterally."
+    },
+    "deviceLabel": {
+      "type": "string",
+      "description": "Final operator-facing label for the credential. Overrides any label passed at start."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Enroll Finish — response payload",
+      "description": "Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialId",
+        "subject",
+        "registeredAt"
+      ],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "description": "base64url-encoded WebAuthn credential id, durable identifier for later management."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The VID the credential is now bound to. Echoed for symmetry with finish-time error responses."
+        },
+        "deviceLabel": {
+          "type": "string",
+          "description": "The label persisted with the credential."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "AssertionResponse": {
+      "$anchor": "assertionResponse",
+      "title": "AuthenticatorAssertionResponse (login)",
+      "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "rawId",
+        "type",
+        "response"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rawId": {
+          "type": "string"
+        },
+        "type": {
+          "const": "public-key"
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "clientDataJSON",
+            "authenticatorData",
+            "signature"
+          ],
+          "properties": {
+            "clientDataJSON": {
+              "type": "string"
+            },
+            "authenticatorData": {
+              "type": "string"
+            },
+            "signature": {
+              "type": "string"
+            },
+            "userHandle": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "authenticatorAttachment": {
+          "enum": [
+            "platform",
+            "cross-platform"
+          ]
+        },
+        "clientExtensionResults": {
+          "type": "object"
+        }
+      }
+    },
+    "AttestationResponse": {
+      "$anchor": "attestationResponse",
+      "title": "AuthenticatorAttestationResponse (registration)",
+      "description": "The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "rawId",
+        "type",
+        "response"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rawId": {
+          "type": "string"
+        },
+        "type": {
+          "const": "public-key"
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "clientDataJSON",
+            "attestationObject"
+          ],
+          "properties": {
+            "clientDataJSON": {
+              "type": "string"
+            },
+            "attestationObject": {
+              "type": "string"
+            },
+            "transports": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "authenticatorAttachment": {
+          "enum": [
+            "platform",
+            "cross-platform"
+          ]
+        },
+        "clientExtensionResults": {
+          "type": "object"
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Enroll Finish — response payload",
+      "description": "Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialId",
+        "subject",
+        "registeredAt"
+      ],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "description": "base64url-encoded WebAuthn credential id, durable identifier for later management."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The VID the credential is now bound to. Echoed for symmetry with finish-time error responses."
+        },
+        "deviceLabel": {
+          "type": "string",
+          "description": "The label persisted with the credential."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "AssertionResponse": {
+      "$anchor": "assertionResponse",
+      "title": "AuthenticatorAssertionResponse (login)",
+      "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "rawId",
+        "type",
+        "response"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rawId": {
+          "type": "string"
+        },
+        "type": {
+          "const": "public-key"
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "clientDataJSON",
+            "authenticatorData",
+            "signature"
+          ],
+          "properties": {
+            "clientDataJSON": {
+              "type": "string"
+            },
+            "authenticatorData": {
+              "type": "string"
+            },
+            "signature": {
+              "type": "string"
+            },
+            "userHandle": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "authenticatorAttachment": {
+          "enum": [
+            "platform",
+            "cross-platform"
+          ]
+        },
+        "clientExtensionResults": {
+          "type": "object"
+        }
+      }
+    },
+    "AttestationResponse": {
+      "$anchor": "attestationResponse",
+      "title": "AuthenticatorAttestationResponse (registration)",
+      "description": "The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "rawId",
+        "type",
+        "response"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rawId": {
+          "type": "string"
+        },
+        "type": {
+          "const": "public-key"
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "clientDataJSON",
+            "attestationObject"
+          ],
+          "properties": {
+            "clientDataJSON": {
+              "type": "string"
+            },
+            "attestationObject": {
+              "type": "string"
+            },
+            "transports": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "authenticatorAttachment": {
+          "enum": [
+            "platform",
+            "cross-platform"
+          ]
+        },
+        "clientExtensionResults": {
+          "type": "object"
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -116,4 +489,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

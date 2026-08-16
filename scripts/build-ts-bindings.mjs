@@ -50,6 +50,126 @@ const SPECS_DIR = path.join(REPO_ROOT, "specs");
 const OUT_DIR = path.join(REPO_ROOT, "trust-tasks-ts", "src");
 const RUNTIME_DIR = "_runtime";
 
+// --- Self-contained schema emission (SPEC.md §7.2 item 2) -------------------
+//
+// The generated modules carry their `payload.schema.json` as a value so a
+// consumer can actually perform item 2 at runtime. Types are erased in
+// TypeScript, so without this there is no artifact to validate against and
+// every REQUIRED payload member is optional in practice.
+//
+// The on-disk schemas carry cross-file `$ref`s into `_shared/` and
+// `_framework/`. Those are resolved for the *type* emission by
+// json-schema-to-typescript's own walker, which leaves nothing behind at
+// runtime — so the refs are inlined here into a self-contained document,
+// mirroring `resolve_cross_file_refs` in trust-tasks-codegen. Both libraries
+// must end up validating against the same schema text; `npm run
+// check-bindings` is what holds them to it.
+
+/** Split `<path>#/$defs/<name>` into its two halves, or null if it is not that shape. */
+function splitExternalRef(s) {
+  const hash = s.indexOf("#");
+  if (hash < 0) return null;
+  const filePath = s.slice(0, hash);
+  const defName = s.slice(hash + 1).replace(/^\/\$defs\//, "");
+  if (!filePath || !defName || defName.includes("/") || defName === s.slice(hash + 1)) return null;
+  return { filePath, defName };
+}
+
+/** Every `$ref` in `node` matching `predicate`, in document order. */
+function collectRefs(node, predicate, out = []) {
+  if (Array.isArray(node)) {
+    for (const item of node) collectRefs(item, predicate, out);
+  } else if (node && typeof node === "object") {
+    if (typeof node.$ref === "string" && predicate(node.$ref)) out.push(node.$ref);
+    for (const value of Object.values(node)) collectRefs(value, predicate, out);
+  }
+  return out;
+}
+
+/** Rewrite every external `$ref` to its local `#/$defs/<name>` form, in place. */
+function localizeRefs(node) {
+  if (Array.isArray(node)) {
+    node.forEach(localizeRefs);
+  } else if (node && typeof node === "object") {
+    if (typeof node.$ref === "string" && !node.$ref.startsWith("#")) {
+      const split = splitExternalRef(node.$ref);
+      if (split) node.$ref = `#/$defs/${split.defName}`;
+    }
+    for (const value of Object.values(node)) localizeRefs(value);
+  }
+}
+
+/**
+ * Inline every cross-file `$ref` into the schema's own `$defs`, so the emitted
+ * schema resolves with no filesystem access.
+ */
+function inlineCrossFileRefs(schema, baseDir) {
+  const isExternal = (r) => !r.startsWith("#");
+  const frontier = collectRefs(schema, isExternal).map((ref) => ({ ref, ownerDir: baseDir }));
+  const seen = new Set();
+
+  while (frontier.length > 0) {
+    const { ref, ownerDir } = frontier.pop();
+    const split = splitExternalRef(ref);
+    if (!split) throw new Error(`external $ref ${JSON.stringify(ref)} is not <path>#/$defs/<name>`);
+    const abs = path.resolve(ownerDir, split.filePath);
+    const key = `${abs}#/$defs/${split.defName}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const referenced = JSON.parse(fsSync.readFileSync(abs, "utf8"));
+    const fragment = referenced?.$defs?.[split.defName];
+    if (fragment === undefined) {
+      throw new Error(`${abs} has no $defs/${split.defName} (referenced from ${ownerDir})`);
+    }
+
+    schema.$defs ??= {};
+    const existing = schema.$defs[split.defName];
+    if (existing !== undefined) {
+      if (JSON.stringify(existing) !== JSON.stringify(fragment)) {
+        throw new Error(
+          `schema already defines $defs/${split.defName} with a different shape; ` +
+            `the cross-file $ref splice would overwrite it`,
+        );
+      }
+    } else {
+      schema.$defs[split.defName] = fragment;
+    }
+
+    // A spliced fragment can carry refs of its own. External ones resolve
+    // against the file it came from, not the original base; internal ones
+    // (`#/$defs/X`) point at siblings in that same file, so recast them as
+    // external refs against it and let the same path handle both.
+    const fragmentDir = path.dirname(abs);
+    for (const r of collectRefs(fragment, isExternal)) {
+      frontier.push({ ref: r, ownerDir: fragmentDir });
+    }
+    for (const r of collectRefs(fragment, (x) => x.startsWith("#"))) {
+      frontier.push({ ref: `${split.filePath}${r}`, ownerDir: ownerDir });
+    }
+  }
+
+  localizeRefs(schema);
+  return schema;
+}
+
+/**
+ * The response variant needs a schema of its own: the root describes the
+ * *request* payload and `$defs.Response` describes the response. Wrap the
+ * latter so `$defs` stays reachable and its internal `$ref`s still resolve.
+ *
+ * No `$id`: 2020-12 forbids a non-empty fragment in `$id`, so the natural
+ * `<base>#response` will not compile under a conforming validator.
+ */
+function responseSchemaOf(schema) {
+  if (schema?.$defs?.Response === undefined) return null;
+  const doc = {};
+  if (schema.$schema !== undefined) doc.$schema = schema.$schema;
+  doc.$ref = "#/$defs/Response";
+  doc.$defs = schema.$defs;
+  return doc;
+}
+
 // Slug → ts type renames go here when json-schema-to-typescript's
 // auto-naming clashes with reserved words or produces awkward identifiers.
 // Empty for now; populate as ergonomic issues come up.
@@ -276,7 +396,7 @@ function stripResponseProbe(ts, schemaPath) {
   return { ts: stripped, responseType: m[1] };
 }
 
-function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
+function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, schemas) {
   if (!slugInfo) return ""; // shared schemas are not Trust Tasks
   const { slug, version } = slugInfo;
   const typeUri = `https://trusttasks.org/spec/${slug}/${version}`;
@@ -315,14 +435,38 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
     );
   }
 
+  if (schemas?.request) {
+    lines.push(
+      `/**`,
+      ` * This specification's payload schema, as a value.`,
+      ` *`,
+      ` * SPEC.md §7.2 item 2 is performed against this. It is shipped as data`,
+      ` * rather than only as a \`.json\` file because TypeScript types are erased`,
+      ` * at runtime: without a schema a consumer has nothing to validate, and`,
+      ` * every REQUIRED payload member is optional in practice. Cross-file`,
+      ` * \`$ref\`s are already inlined, so it needs no resolver.`,
+      ` */`,
+      `export const PAYLOAD_SCHEMA = ${JSON.stringify(schemas.request, null, 2)} as const;`,
+      "",
+    );
+    if (schemas.response) {
+      lines.push(
+        `/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */`,
+        `export const RESPONSE_PAYLOAD_SCHEMA = ${JSON.stringify(schemas.response, null, 2)} as const;`,
+        "",
+      );
+    }
+  }
+
   if (policy) {
-    const obj = (uri, isProofRequired, isRecipientRequired) =>
+    const obj = (uri, isProofRequired, isRecipientRequired, schemaConst) =>
       [
         `{`,
         `  typeUri: ${uri},`,
         `  isBearer: ${policy.isBearer},`,
         `  isProofRequired: ${isProofRequired},`,
         `  isRecipientRequired: ${isRecipientRequired},`,
+        `  payloadSchema: ${schemaConst},`,
         `} as const;`,
       ].join("\n");
 
@@ -330,9 +474,15 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
       `/**`,
       ` * SPEC.md §7.2 policy for the request variant, from this specification's`,
       ` * front matter. Pass to \`consumeInbound\` — items 5b, 7 and 8 are`,
-      ` * per-specification and cannot be derived from the document alone.`,
+      ` * per-specification and cannot be derived from the document alone, and`,
+      ` * item 2 needs the schema this carries.`,
       ` */`,
-      `export const SPEC = ${obj("TYPE_URI", policy.isProofRequired, policy.isRecipientRequired)}`,
+      `export const SPEC = ${obj(
+        "TYPE_URI",
+        policy.isProofRequired,
+        policy.isRecipientRequired,
+        schemas?.request ? "PAYLOAD_SCHEMA" : "undefined",
+      )}`,
       "",
     );
 
@@ -347,6 +497,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy) {
           "RESPONSE_TYPE_URI",
           policy.responseIsProofRequired,
           policy.responseIsRecipientRequired,
+          schemas?.response ? "RESPONSE_PAYLOAD_SCHEMA" : "undefined",
         )}`,
         "",
       );
@@ -397,6 +548,17 @@ async function generateOne(schemaPath) {
     // would then have nothing to apply §7.2 items 5b/7/8 with.
     throw new Error(`${schemaPath}: could not read spec.md front matter for the §7.2 policy`);
   }
+  // Build the self-contained schema from a fresh parse: `raw` is handed to
+  // other emitters and inlining mutates in place.
+  let schemas = null;
+  if (slugInfo) {
+    const selfContained = inlineCrossFileRefs(
+      JSON.parse(await fs.readFile(schemaPath, "utf8")),
+      path.dirname(schemaPath),
+    );
+    schemas = { request: selfContained, response: responseSchemaOf(selfContained) };
+  }
+
   const tail = emitTail(
     slugInfo,
     ts,
@@ -404,6 +566,7 @@ async function generateOne(schemaPath) {
     responseType,
     schemaPath,
     policy,
+    schemas,
   );
   await fs.writeFile(outPath, ts + tail, "utf8");
   return { outPath, slugInfo };

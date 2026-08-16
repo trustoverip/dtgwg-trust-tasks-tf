@@ -95,15 +95,312 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/appro
 export type Response = AuthStepUpApproveRequestResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approve-request/0.1",
+  "title": "Auth — Step-up Approve Request",
+  "description": "A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "sessionId",
+    "challenge",
+    "reason"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID whose session is being elevated. The approver MUST verify this is a VID it can speak for."
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The session the relying party wants elevated. Opaque to the approver."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable explanation of WHY the relying party is asking (e.g. \"confirm transfer of 1000 USD to bob.example\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently."
+    },
+    "targetAcr": {
+      "type": "string",
+      "description": "The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level."
+    },
+    "acceptableEvidence": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "did-signed",
+          "webauthn"
+        ]
+      },
+      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`."
+    },
+    "webauthn": {
+      "$ref": "#/$defs/CredentialRequestOptions",
+      "description": "Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with."
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Step-up Approve Request — response payload",
+      "description": "Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "refused"
+          ],
+          "description": "`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `refused`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CredentialRequestOptions": {
+      "$anchor": "credentialRequestOptions",
+      "title": "PublicKeyCredentialRequestOptions",
+      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rpId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "userVerification": {
+          "enum": [
+            "discouraged",
+            "preferred",
+            "required"
+          ]
+        }
+      }
+    },
+    "CredentialDescriptor": {
+      "$anchor": "credentialDescriptor",
+      "title": "PublicKeyCredentialDescriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "public-key"
+        },
+        "id": {
+          "type": "string",
+          "description": "base64url-encoded credential id."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "usb",
+              "nfc",
+              "ble",
+              "internal",
+              "hybrid"
+            ]
+          }
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Step-up Approve Request — response payload",
+      "description": "Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "refused"
+          ],
+          "description": "`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required when status is `refused`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "CredentialRequestOptions": {
+      "$anchor": "credentialRequestOptions",
+      "title": "PublicKeyCredentialRequestOptions",
+      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "description": "base64url-encoded one-time nonce."
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rpId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowCredentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CredentialDescriptor"
+          }
+        },
+        "userVerification": {
+          "enum": [
+            "discouraged",
+            "preferred",
+            "required"
+          ]
+        }
+      }
+    },
+    "CredentialDescriptor": {
+      "$anchor": "credentialDescriptor",
+      "title": "PublicKeyCredentialDescriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "public-key"
+        },
+        "id": {
+          "type": "string",
+          "description": "base64url-encoded credential id."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "usb",
+              "nfc",
+              "ble",
+              "internal",
+              "hybrid"
+            ]
+          }
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -116,4 +413,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

@@ -97,15 +97,314 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/keys/show/0.1#resp
 export type Response = KeysShowResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/show/0.1",
+  "title": "Keys Show — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyId"
+  ],
+  "properties": {
+    "keyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the key to read."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Show — response payload",
+      "description": "The success response to a keys/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "description": "The record the custodian holds, or null where it holds none for this identifier. 'No such key' is a successful answer, not an error.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/KeyRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "KeyRecord": {
+      "title": "KeyRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyId",
+        "keyType",
+        "status",
+        "publicKey",
+        "createdAt"
+      ],
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`."
+        },
+        "keyType": {
+          "$ref": "#/$defs/KeyType"
+        },
+        "status": {
+          "$ref": "#/$defs/KeyStatus"
+        },
+        "publicKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The public half, multibase-encoded. The private half is never carried by any keys/* response."
+        },
+        "derivationPath": {
+          "type": "string",
+          "description": "Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path."
+        },
+        "seedId": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys."
+        },
+        "origin": {
+          "$ref": "#/$defs/KeyOrigin"
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
+        },
+        "contextId": {
+          "type": "string",
+          "description": "Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp at which the key was created or imported."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp of the last change to the record (rename, revocation)."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "KeyOrigin": {
+      "title": "KeyOrigin",
+      "type": "string",
+      "enum": [
+        "derived",
+        "imported"
+      ],
+      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately.",
+      "default": "derived"
+    },
+    "KeyStatus": {
+      "title": "KeyStatus",
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "description": "Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated."
+    },
+    "KeyType": {
+      "title": "KeyType",
+      "type": "string",
+      "enum": [
+        "ed25519",
+        "x25519",
+        "p256"
+      ],
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256)."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Show — response payload",
+      "description": "The success response to a keys/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "description": "The record the custodian holds, or null where it holds none for this identifier. 'No such key' is a successful answer, not an error.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/KeyRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "KeyRecord": {
+      "title": "KeyRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyId",
+        "keyType",
+        "status",
+        "publicKey",
+        "createdAt"
+      ],
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`."
+        },
+        "keyType": {
+          "$ref": "#/$defs/KeyType"
+        },
+        "status": {
+          "$ref": "#/$defs/KeyStatus"
+        },
+        "publicKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The public half, multibase-encoded. The private half is never carried by any keys/* response."
+        },
+        "derivationPath": {
+          "type": "string",
+          "description": "Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path."
+        },
+        "seedId": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys."
+        },
+        "origin": {
+          "$ref": "#/$defs/KeyOrigin"
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
+        },
+        "contextId": {
+          "type": "string",
+          "description": "Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp at which the key was created or imported."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp of the last change to the record (rename, revocation)."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "KeyOrigin": {
+      "title": "KeyOrigin",
+      "type": "string",
+      "enum": [
+        "derived",
+        "imported"
+      ],
+      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately.",
+      "default": "derived"
+    },
+    "KeyStatus": {
+      "title": "KeyStatus",
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "description": "Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated."
+    },
+    "KeyType": {
+      "title": "KeyType",
+      "type": "string",
+      "enum": [
+        "ed25519",
+        "x25519",
+        "p256"
+      ],
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256)."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -118,4 +417,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

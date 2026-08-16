@@ -80,15 +80,294 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/config/export/
 export type Response = VTCConfigExportResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/config/export/0.1",
+  "title": "VTC Config Export — payload",
+  "description": "Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Config Export — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "$ref": "#/$defs/ConfigExportDocument",
+          "description": "The portable configuration document, ready to feed back to vtc/config/import."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "ConfigExportDocument": {
+      "$anchor": "configExportDocument",
+      "title": "ConfigExportDocument",
+      "description": "A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\n\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "exportedAt",
+        "configOverrides"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess."
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the export was taken. Provenance for the operator; a consumer does not act on it."
+        },
+        "communityProfile": {
+          "$ref": "#/$defs/CommunityProfileSnapshot",
+          "description": "The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap."
+        },
+        "configOverrides": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "CommunityProfileSnapshot": {
+      "$anchor": "communityProfileSnapshot",
+      "title": "CommunityProfileSnapshot",
+      "description": "A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\n\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "communityDid",
+        "name",
+        "language"
+      ],
+      "properties": {
+        "communityDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DID of the community this document was taken from. Immutable, set at install."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "logoUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publicUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1,
+          "description": "BCP 47 language tag."
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Opaque community-defined extension bag."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community was created. Provenance only — an import never writes it."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Config Export — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "$ref": "#/$defs/ConfigExportDocument",
+          "description": "The portable configuration document, ready to feed back to vtc/config/import."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "ConfigExportDocument": {
+      "$anchor": "configExportDocument",
+      "title": "ConfigExportDocument",
+      "description": "A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\n\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "exportedAt",
+        "configOverrides"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess."
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the export was taken. Provenance for the operator; a consumer does not act on it."
+        },
+        "communityProfile": {
+          "$ref": "#/$defs/CommunityProfileSnapshot",
+          "description": "The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap."
+        },
+        "configOverrides": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "CommunityProfileSnapshot": {
+      "$anchor": "communityProfileSnapshot",
+      "title": "CommunityProfileSnapshot",
+      "description": "A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\n\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "communityDid",
+        "name",
+        "language"
+      ],
+      "properties": {
+        "communityDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DID of the community this document was taken from. Immutable, set at install."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "logoUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publicUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1,
+          "description": "BCP 47 language tag."
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Opaque community-defined extension bag."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community was created. Provenance only — an import never writes it."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -101,4 +380,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

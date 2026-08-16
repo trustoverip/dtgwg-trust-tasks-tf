@@ -70,13 +70,104 @@ export const TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.5" as co
 export type Payload = TrustTaskErrorPayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-task-error/0.5",
+  "title": "Trust Task Error — payload",
+  "description": "The canonical error-response payload per SPEC.md §8.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "code",
+    "retryable"
+  ],
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Short identifier for the failure category. MUST be either a framework standard code (SPEC.md §8.3) or an extended code namespaced by the originating spec's slug (SPEC.md §8.5, e.g. 'acl/grant:role_not_recognized').",
+      "anyOf": [
+        {
+          "enum": [
+            "malformedRequest",
+            "unsupportedType",
+            "unsupportedVersion",
+            "expired",
+            "proofRequired",
+            "proofInvalid",
+            "permissionDenied",
+            "wrongRecipient",
+            "identityMismatch",
+            "idConflict",
+            "cancelled",
+            "taskFailed",
+            "unavailable",
+            "internalError"
+          ]
+        },
+        {
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*:[a-z][a-zA-Z0-9_]*$"
+        }
+      ]
+    },
+    "inResponseTo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typeUri"
+      ],
+      "description": "Identifies the Trust Task document this error reports on. RECOMMENDED on every error response, and REQUIRED in practice for any error a third party may later be asked to rely on: threadId correlates the exchange only for a party that saw the request, so without this an error retained as evidence names neither the task it terminated nor the instance.",
+      "properties": {
+        "typeUri": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "The Type URI of the document being reported on, including any #request or #response fragment it carried. This is what tells a consumer which specification's semantics apply to an extended code, and which specification declared the requirement that was breached."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The id of the specific document being reported on (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange. Omit only where echoing it would disclose more than the error already does."
+        }
+      }
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of the error. Non-normative; intended for logs and operator UI."
+    },
+    "retryable": {
+      "type": "boolean",
+      "description": "true if the producer of the original document MAY retry; false if retrying with the same document is not expected to succeed."
+    },
+    "retryAfter": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp before which the producer SHOULD NOT retry. Meaningful only when retryable is true."
+    },
+    "details": {
+      "type": "object",
+      "description": "Optional task-specific extension data. Per-spec error code declarations may pin the shape via a JSON Schema fragment."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;

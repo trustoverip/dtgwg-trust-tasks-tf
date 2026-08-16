@@ -123,15 +123,419 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/backup/import/
 export type Response = VTCBackupImportResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/backup/import/0.1",
+  "title": "VTC Backup Import — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "backup",
+    "password"
+  ],
+  "properties": {
+    "backup": {
+      "$ref": "#/$defs/BackupEnvelope",
+      "description": "The envelope returned by `vtc/backup/export`."
+    },
+    "password": {
+      "type": "string",
+      "minLength": 12,
+      "description": "The passphrase the envelope was encrypted under."
+    },
+    "confirm": {
+      "type": "boolean",
+      "default": false,
+      "description": "`false` (default) previews: row counts, no mutation. `true` clears the backed-up keyspaces and applies the backup."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Backup Import — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "counts",
+        "message"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "imported"
+          ],
+          "description": "`preview` when `confirm` was not set; `imported` after a restore."
+        },
+        "sourceDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The community DID the envelope was taken from."
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Per-keyspace row counts written, or that would be written on a preview."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable summary for the operator."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "BackupEnvelope": {
+      "$anchor": "backupEnvelope",
+      "title": "BackupEnvelope",
+      "description": "Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "format",
+        "createdAt",
+        "sourceVersion",
+        "kdf",
+        "encryption",
+        "includesAudit",
+        "ciphertext"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Envelope schema version."
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Envelope format tag, e.g. `vtc-backup-v1`."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the export was taken."
+        },
+        "sourceDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "DID of the community exported from, when it has one. An import cross-checks this against the running community."
+        },
+        "sourceVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Version of the software that produced the envelope."
+        },
+        "kdf": {
+          "$ref": "#/$defs/KdfParams"
+        },
+        "encryption": {
+          "$ref": "#/$defs/EncryptionParams"
+        },
+        "includesAudit": {
+          "type": "boolean",
+          "description": "Whether the audit log and its signed checkpoints are inside `ciphertext`."
+        },
+        "ciphertext": {
+          "type": "string",
+          "minLength": 1,
+          "description": "base64url(AEAD(JSON(payload)))."
+        }
+      }
+    },
+    "EncryptionParams": {
+      "$anchor": "encryptionParams",
+      "title": "EncryptionParams",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "nonce"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "minLength": 1,
+          "description": "AEAD identifier, e.g. `aes-256-gcm`."
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "description": "base64url, 12 bytes."
+        }
+      }
+    },
+    "KdfParams": {
+      "$anchor": "kdfParams",
+      "title": "KdfParams",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "salt",
+        "mCost",
+        "tCost",
+        "pCost"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "minLength": 1,
+          "description": "KDF identifier, e.g. `argon2id`."
+        },
+        "salt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "base64url, 32 bytes."
+        },
+        "mCost": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Argon2id memory cost (KiB)."
+        },
+        "tCost": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Argon2id time cost (iterations)."
+        },
+        "pCost": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Argon2id parallelism."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Backup Import — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "counts",
+        "message"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "imported"
+          ],
+          "description": "`preview` when `confirm` was not set; `imported` after a restore."
+        },
+        "sourceDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The community DID the envelope was taken from."
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Per-keyspace row counts written, or that would be written on a preview."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable summary for the operator."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "BackupEnvelope": {
+      "$anchor": "backupEnvelope",
+      "title": "BackupEnvelope",
+      "description": "Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "format",
+        "createdAt",
+        "sourceVersion",
+        "kdf",
+        "encryption",
+        "includesAudit",
+        "ciphertext"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Envelope schema version."
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Envelope format tag, e.g. `vtc-backup-v1`."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the export was taken."
+        },
+        "sourceDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "DID of the community exported from, when it has one. An import cross-checks this against the running community."
+        },
+        "sourceVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Version of the software that produced the envelope."
+        },
+        "kdf": {
+          "$ref": "#/$defs/KdfParams"
+        },
+        "encryption": {
+          "$ref": "#/$defs/EncryptionParams"
+        },
+        "includesAudit": {
+          "type": "boolean",
+          "description": "Whether the audit log and its signed checkpoints are inside `ciphertext`."
+        },
+        "ciphertext": {
+          "type": "string",
+          "minLength": 1,
+          "description": "base64url(AEAD(JSON(payload)))."
+        }
+      }
+    },
+    "EncryptionParams": {
+      "$anchor": "encryptionParams",
+      "title": "EncryptionParams",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "nonce"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "minLength": 1,
+          "description": "AEAD identifier, e.g. `aes-256-gcm`."
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "description": "base64url, 12 bytes."
+        }
+      }
+    },
+    "KdfParams": {
+      "$anchor": "kdfParams",
+      "title": "KdfParams",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "salt",
+        "mCost",
+        "tCost",
+        "pCost"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "minLength": 1,
+          "description": "KDF identifier, e.g. `argon2id`."
+        },
+        "salt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "base64url, 32 bytes."
+        },
+        "mCost": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Argon2id memory cost (KiB)."
+        },
+        "tCost": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Argon2id time cost (iterations)."
+        },
+        "pCost": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Argon2id parallelism."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -144,4 +548,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

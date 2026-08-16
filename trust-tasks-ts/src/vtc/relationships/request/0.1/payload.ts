@@ -47,15 +47,123 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/
 export type Response = VTCRelationshipsRequestResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/relationships/request/0.1",
+  "title": "VTC Relationships Request — payload",
+  "description": "A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships Request — response payload",
+      "description": "The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vrc"
+      ],
+      "properties": {
+        "vrc": {
+          "type": "object",
+          "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged."
+        },
+        "vrcSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships Request — response payload",
+      "description": "The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vrc"
+      ],
+      "properties": {
+        "vrc": {
+          "type": "object",
+          "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged."
+        },
+        "vrcSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -68,4 +176,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

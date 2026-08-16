@@ -40,7 +40,10 @@ pub mod schema_index;
 pub mod validate;
 
 pub use ceremony::{Ceremony, CeremonyPrev};
-pub use consume::{consume_inbound, ConsumeOutcome, ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY};
+pub use consume::{
+    consume_inbound, ConsumeOutcome, NoValidator, PayloadPolicy, PayloadValidator, ProofPolicy,
+    PROOF_NOT_ACCEPTED_BY_POLICY,
+};
 pub use dispatcher::Dispatcher;
 pub use document::{ErrorResponse, JsonLdContext, TrustTask};
 pub use error::{

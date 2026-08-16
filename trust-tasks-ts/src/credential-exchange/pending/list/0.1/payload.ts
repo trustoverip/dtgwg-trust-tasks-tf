@@ -84,15 +84,274 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/credential-exchang
 export type Response = CredentialExchangePendingListResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/credential-exchange/pending/list/0.1",
+  "title": "Credential Exchange Pending List — payload",
+  "description": "List the presentation requests this holder deferred for consent and that can still be acted on. Takes no parameters: the caller's authenticated identity is the scope, and a holder agent answers only for its own wallet.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Credential Exchange Pending List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pending"
+      ],
+      "properties": {
+        "pending": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeferredPresentation"
+          },
+          "description": "The actionable deferrals. A consumer MUST omit records that are already terminal or past their `expiresAt` — they cannot be approved, so listing them would offer the approver a decision that is guaranteed to fail. An empty array means nothing is awaiting a decision."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DeferredPresentation": {
+      "$anchor": "deferredPresentation",
+      "title": "DeferredPresentation",
+      "description": "One presentation request awaiting the holder's decision, as the approver sees it.\n\nThis is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer \"should I disclose this\": who is asking, why, and precisely which claims of which held credentials would leave the wallet.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "verifierDid",
+        "requested",
+        "purpose",
+        "createdAt",
+        "expiresAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Approval handle for this deferral — the value `pending/approve` and `pending/deny` act on."
+        },
+        "verifierDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The verifier that asked. An approved presentation binds to this audience, so approving is a decision about *this* party and not a standing permission."
+        },
+        "requested": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RequestedCredential"
+          },
+          "description": "Every held credential the query would disclose, resolved against what the holder actually holds. This is the authorization surface: the approver is consenting to these claims leaving the wallet, not to the query in the abstract."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the deferral was recorded."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check."
+        }
+      }
+    },
+    "RequestedCredential": {
+      "$anchor": "requestedCredential",
+      "title": "RequestedCredential",
+      "description": "One held credential a deferred query asked for, and the claims of it that would be disclosed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialQueryId",
+        "credentialId",
+        "claims"
+      ],
+      "properties": {
+        "credentialQueryId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The DCQL `credential_query_id` this held credential satisfied."
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The held credential that would satisfy it."
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The claims the query asks to disclose from this credential. An empty array means the query matched the credential without naming claims — a consumer SHOULD treat that as a request for the whole credential and present it to the approver as such."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Credential Exchange Pending List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pending"
+      ],
+      "properties": {
+        "pending": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeferredPresentation"
+          },
+          "description": "The actionable deferrals. A consumer MUST omit records that are already terminal or past their `expiresAt` — they cannot be approved, so listing them would offer the approver a decision that is guaranteed to fail. An empty array means nothing is awaiting a decision."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DeferredPresentation": {
+      "$anchor": "deferredPresentation",
+      "title": "DeferredPresentation",
+      "description": "One presentation request awaiting the holder's decision, as the approver sees it.\n\nThis is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer \"should I disclose this\": who is asking, why, and precisely which claims of which held credentials would leave the wallet.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "verifierDid",
+        "requested",
+        "purpose",
+        "createdAt",
+        "expiresAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Approval handle for this deferral — the value `pending/approve` and `pending/deny` act on."
+        },
+        "verifierDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The verifier that asked. An approved presentation binds to this audience, so approving is a decision about *this* party and not a standing permission."
+        },
+        "requested": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RequestedCredential"
+          },
+          "description": "Every held credential the query would disclose, resolved against what the holder actually holds. This is the authorization surface: the approver is consenting to these claims leaving the wallet, not to the query in the abstract."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the deferral was recorded."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check."
+        }
+      }
+    },
+    "RequestedCredential": {
+      "$anchor": "requestedCredential",
+      "title": "RequestedCredential",
+      "description": "One held credential a deferred query asked for, and the claims of it that would be disclosed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialQueryId",
+        "credentialId",
+        "claims"
+      ],
+      "properties": {
+        "credentialQueryId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The DCQL `credential_query_id` this held credential satisfied."
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The held credential that would satisfy it."
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The claims the query asks to disclose from this credential. An empty array means the query matched the credential without naming claims — a consumer SHOULD treat that as a request for the whole credential and present it to the approver as such."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -105,4 +364,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

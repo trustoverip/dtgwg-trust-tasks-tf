@@ -128,15 +128,336 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/consent/list/1.0#r
 export type Response = ConsentListResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/list/1.0",
+  "title": "Consent List — payload",
+  "description": "A bridge fetches the consent grants it should enforce.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agent": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Restrict to grants for this agent VID."
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Restrict to this platform tag."
+    },
+    "subject": {
+      "$ref": "#/$defs/ConsentSubject",
+      "description": "Optional. A full subject, to point-check a single conversation."
+    },
+    "since": {
+      "type": "string",
+      "description": "Optional opaque cursor; return only grants changed after it."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent List — response payload",
+      "description": "The grants the requesting bridge is authorized to enforce.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grants"
+      ],
+      "properties": {
+        "grants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ConsentGrant"
+          },
+          "description": "Matching consent grants."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Optional cursor for incremental follow-up."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "ConsentGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "effect",
+        "grantedBy",
+        "grantedAt"
+      ],
+      "description": "A recorded consent decision over a ConsentSubject.",
+      "properties": {
+        "subject": {
+          "$ref": "#/$defs/ConsentSubject"
+        },
+        "effect": {
+          "$ref": "#/$defs/Effect"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`."
+        },
+        "grantedBy": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID of the approver who made the decision."
+        },
+        "grantedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 time the decision was recorded."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional. After this time the grant lapses and the subject must be re-consented."
+        },
+        "evidence": {
+          "type": "string",
+          "description": "How the decision was authorized — e.g. \"did-signed\" (approver's DID signed the consent/decision) or \"bridge-attested\" (an enrolled bridge relayed the operator's out-of-band choice)."
+        }
+      }
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "receive",
+        "converse"
+      ],
+      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
+    },
+    "Effect": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny"
+      ],
+      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
+    },
+    "ConsentSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "conversationRef",
+        "kind",
+        "agent"
+      ],
+      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the AI agent the conversation would reach."
+        }
+      }
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "dm",
+        "group",
+        "channel"
+      ],
+      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Consent List — response payload",
+      "description": "The grants the requesting bridge is authorized to enforce.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grants"
+      ],
+      "properties": {
+        "grants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ConsentGrant"
+          },
+          "description": "Matching consent grants."
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Optional cursor for incremental follow-up."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "ConsentGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "effect",
+        "grantedBy",
+        "grantedAt"
+      ],
+      "description": "A recorded consent decision over a ConsentSubject.",
+      "properties": {
+        "subject": {
+          "$ref": "#/$defs/ConsentSubject"
+        },
+        "effect": {
+          "$ref": "#/$defs/Effect"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`."
+        },
+        "grantedBy": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID of the approver who made the decision."
+        },
+        "grantedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 time the decision was recorded."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional. After this time the grant lapses and the subject must be re-consented."
+        },
+        "evidence": {
+          "type": "string",
+          "description": "How the decision was authorized — e.g. \"did-signed\" (approver's DID signed the consent/decision) or \"bridge-attested\" (an enrolled bridge relayed the operator's out-of-band choice)."
+        }
+      }
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "receive",
+        "converse"
+      ],
+      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
+    },
+    "Effect": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny"
+      ],
+      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
+    },
+    "ConsentSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "conversationRef",
+        "kind",
+        "agent"
+      ],
+      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "VID (DID) of the AI agent the conversation would reach."
+        }
+      }
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "dm",
+        "group",
+        "channel"
+      ],
+      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -149,4 +470,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

@@ -29,6 +29,53 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.9.0] - 2026-08-16
+
+### Changed — BREAKING
+
+- **`consume_inbound` now performs SPEC.md §7.2 item 2, and takes a
+  `PayloadPolicy` to say how.** The function gains a third positional argument
+  (`PayloadPolicy::Validate(&validator)` or
+  `PayloadPolicy::<NoValidator>::AcceptUnvalidated`) and a seventh generic
+  parameter. Every call site must be updated; `cargo check` finds them all.
+
+  The policy is required rather than defaulted because the honest answer to
+  "does this consumer validate?" was previously "no, and nothing said so". The
+  crate deliberately does not bundle a JSON Schema engine — the same reason it
+  bundles no cryptosuite — so the validator is yours to supply via the new
+  `PayloadValidator` trait. `crate::validate::against_schema` (feature
+  `validate`) is a ready-made implementation.
+
+  **What this actually buys you in Rust is narrower than it sounds, and the
+  docs now say so.** Deserializing into the generated types already enforces
+  required members, member types, `additionalProperties: false`, and the
+  `pattern` / `minLength` constraints typify emits as validating newtypes. The
+  residue is what a Rust type cannot express — `minProperties`, `minItems` on
+  an optional array, conditional subschemas. That residue is what `Validate`
+  catches. (The TypeScript binding was in a far worse position: its types erase
+  at runtime, so nothing was enforced at all. Both libraries now take the
+  policy as a required argument so the two reach the same verdict.)
+
+- **`ValidatedPayload::SCHEMA_JSON` is gone.** The schema moved to
+  `Payload::PAYLOAD_SCHEMA: Option<&'static str>`, emitted unconditionally
+  rather than behind the `validate` feature — it is a `&'static str` and costs
+  no dependency, and gating it was what left the schema unreachable to anyone
+  who had not already opted in. `ValidatedPayload` is now a blanket impl over
+  every `Payload`, replacing ~300 generated impl blocks; `validate_value` is
+  unchanged and still feature-gated.
+
+- **`schema_index::schema_for` is no longer behind the `validate` feature**,
+  for the same reason.
+
+### Added
+
+- **`Payload::PAYLOAD_SCHEMA`** on both the request and the **response**
+  variant. Response payloads previously had no schema at all — the defect in
+  #230 was reported against a response.
+- **`PayloadValidator`**, **`PayloadPolicy`**, **`NoValidator`** (pins the type
+  parameter on the `AcceptUnvalidated` path, which carries no validator to
+  infer from).
+
 ## [0.8.2] - 2026-08-16
 
 ### Changed

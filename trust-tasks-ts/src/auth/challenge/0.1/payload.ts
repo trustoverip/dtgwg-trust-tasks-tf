@@ -61,15 +61,147 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/challenge/0.1
 export type Response = AuthChallengeResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/challenge/0.1",
+  "title": "Auth — Challenge",
+  "description": "Request a one-time challenge nonce that the subject will sign to prove control of their VID.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID the producer intends to authenticate as. Optional — when omitted, the issuer MAY return a subject-agnostic challenge whose binding is established at authenticate time. When present, the issuer SHOULD bind the challenge to this subject so a successful authenticate proves control of THIS VID, not any VID."
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Producer-declared intent (e.g. \"login\", \"step-up\", \"sign-out\"). Consumers MAY surface this in audit logs or use it to scope the issued nonce. Free-form; ecosystems define the vocabulary."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Challenge — response payload",
+      "description": "Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge",
+        "sessionId",
+        "expiresAt"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "minLength": 16,
+          "description": "base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign."
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Challenge — response payload",
+      "description": "Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge",
+        "sessionId",
+        "expiresAt"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "minLength": 16,
+          "description": "base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign."
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -82,4 +214,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

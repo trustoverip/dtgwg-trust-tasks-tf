@@ -142,15 +142,710 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.
 export type Response = PolicyEvaluateResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/evaluate/0.2",
+  "title": "Policy Evaluate — payload",
+  "description": "Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected deny/allow outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "$ref": "#/$defs/PolicyInput"
+    },
+    "candidateModule": {
+      "type": "string",
+      "description": "Optional — when supplied, evaluate as if this Rego source were active (e.g. preview a pending upsert). The candidate is layered into the evaluator at the priority specified by `candidatePriority` (default 1000) for this call only."
+    },
+    "candidatePriority": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "default": 1000
+    },
+    "includeTrace": {
+      "type": "boolean",
+      "default": false
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Evaluate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision"
+      ],
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/PolicyDecision"
+        },
+        "matchedPolicies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy."
+        },
+        "trace": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PolicyDecision": {
+      "title": "PolicyDecision",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision"
+      ],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "deny",
+            "requireStepUp"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "proxy",
+            "fill"
+          ],
+          "description": "When decision == \"allow\", whether the maintainer should proxy-login or release-for-fill. Default: proxy."
+        },
+        "stepUp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method"
+          ],
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": [
+                "webauthnUv",
+                "pushApproval",
+                "totp"
+              ]
+            },
+            "ttlSeconds": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "description": "When decision == \"require_step_up\", which method to demand."
+        },
+        "ttlSecondsCap": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "When decision == \"allow\", maximum lifetime of the issued session blob / released secret."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Human-readable explanation for diagnostic display."
+        }
+      }
+    },
+    "PolicyInput": {
+      "title": "PolicyInput",
+      "description": "The structured input fed to a policy evaluator on every vault/proxy-login, vault/release, and policy/evaluate call.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request",
+        "site",
+        "contextId",
+        "consumer"
+      ],
+      "properties": {
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "proxyLogin",
+                "release",
+                "stepUpResponse"
+              ]
+            }
+          }
+        },
+        "site": {
+          "$ref": "#/$defs/SiteTarget"
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "did"
+          ],
+          "properties": {
+            "did": {
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/ConsumerKind"
+            },
+            "deviceId": {
+              "type": "string"
+            },
+            "lastUserVerificationAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "networkClass": {
+              "type": "string",
+              "enum": [
+                "unknown",
+                "home",
+                "corp",
+                "public",
+                "vpn"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "ConsumerKind": {
+      "title": "ConsumerKind",
+      "description": "Discriminator: is this consumer a user-driven Companion or a headless Service?",
+      "oneOf": [
+        {
+          "title": "Companion",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "formFactor"
+          ],
+          "properties": {
+            "kind": {
+              "const": "companion"
+            },
+            "formFactor": {
+              "type": "string",
+              "enum": [
+                "browser",
+                "mobile",
+                "desktop"
+              ]
+            }
+          }
+        },
+        {
+          "title": "Service",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "serviceKind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "service"
+            },
+            "serviceKind": {
+              "type": "string",
+              "enum": [
+                "mediator",
+                "aiAgent",
+                "daemon"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "SiteTarget": {
+      "title": "SiteTarget",
+      "description": "A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.",
+      "oneOf": [
+        {
+          "title": "WebOrigin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "origin"
+          ],
+          "properties": {
+            "kind": {
+              "const": "webOrigin"
+            },
+            "origin": {
+              "type": "string",
+              "format": "uri",
+              "description": "Web origin per RFC 6454 (scheme + host + optional port), e.g. \"https://github.com\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard."
+            }
+          }
+        },
+        {
+          "title": "Did",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "did"
+          ],
+          "properties": {
+            "kind": {
+              "const": "did"
+            },
+            "did": {
+              "type": "string",
+              "minLength": 1,
+              "description": "DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry."
+            }
+          }
+        },
+        {
+          "title": "IosApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bundleId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "iosApp"
+            },
+            "bundleId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9.-]+$",
+              "description": "iOS bundle identifier in reverse-DNS form (e.g. \"com.github.stwalkerster.codehub\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration)."
+            },
+            "teamId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Z0-9]+$",
+              "description": "Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices."
+            }
+          }
+        },
+        {
+          "title": "AndroidApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "packageName",
+            "sha256CertFingerprints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "androidApp"
+            },
+            "packageName": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+              "description": "Android package name in reverse-DNS form (e.g. \"com.github.android\")."
+            },
+            "sha256CertFingerprints": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{2}(:[0-9A-F]{2}){31}$"
+              },
+              "uniqueItems": true,
+              "description": "SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing)."
+            }
+          }
+        }
+      ]
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy Evaluate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision"
+      ],
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/PolicyDecision"
+        },
+        "matchedPolicies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy."
+        },
+        "trace": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PolicyDecision": {
+      "title": "PolicyDecision",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision"
+      ],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "deny",
+            "requireStepUp"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "proxy",
+            "fill"
+          ],
+          "description": "When decision == \"allow\", whether the maintainer should proxy-login or release-for-fill. Default: proxy."
+        },
+        "stepUp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method"
+          ],
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": [
+                "webauthnUv",
+                "pushApproval",
+                "totp"
+              ]
+            },
+            "ttlSeconds": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "description": "When decision == \"require_step_up\", which method to demand."
+        },
+        "ttlSecondsCap": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "When decision == \"allow\", maximum lifetime of the issued session blob / released secret."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Human-readable explanation for diagnostic display."
+        }
+      }
+    },
+    "PolicyInput": {
+      "title": "PolicyInput",
+      "description": "The structured input fed to a policy evaluator on every vault/proxy-login, vault/release, and policy/evaluate call.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request",
+        "site",
+        "contextId",
+        "consumer"
+      ],
+      "properties": {
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "proxyLogin",
+                "release",
+                "stepUpResponse"
+              ]
+            }
+          }
+        },
+        "site": {
+          "$ref": "#/$defs/SiteTarget"
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "did"
+          ],
+          "properties": {
+            "did": {
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/ConsumerKind"
+            },
+            "deviceId": {
+              "type": "string"
+            },
+            "lastUserVerificationAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "networkClass": {
+              "type": "string",
+              "enum": [
+                "unknown",
+                "home",
+                "corp",
+                "public",
+                "vpn"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "ConsumerKind": {
+      "title": "ConsumerKind",
+      "description": "Discriminator: is this consumer a user-driven Companion or a headless Service?",
+      "oneOf": [
+        {
+          "title": "Companion",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "formFactor"
+          ],
+          "properties": {
+            "kind": {
+              "const": "companion"
+            },
+            "formFactor": {
+              "type": "string",
+              "enum": [
+                "browser",
+                "mobile",
+                "desktop"
+              ]
+            }
+          }
+        },
+        {
+          "title": "Service",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "serviceKind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "service"
+            },
+            "serviceKind": {
+              "type": "string",
+              "enum": [
+                "mediator",
+                "aiAgent",
+                "daemon"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "SiteTarget": {
+      "title": "SiteTarget",
+      "description": "A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.",
+      "oneOf": [
+        {
+          "title": "WebOrigin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "origin"
+          ],
+          "properties": {
+            "kind": {
+              "const": "webOrigin"
+            },
+            "origin": {
+              "type": "string",
+              "format": "uri",
+              "description": "Web origin per RFC 6454 (scheme + host + optional port), e.g. \"https://github.com\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard."
+            }
+          }
+        },
+        {
+          "title": "Did",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "did"
+          ],
+          "properties": {
+            "kind": {
+              "const": "did"
+            },
+            "did": {
+              "type": "string",
+              "minLength": 1,
+              "description": "DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry."
+            }
+          }
+        },
+        {
+          "title": "IosApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bundleId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "iosApp"
+            },
+            "bundleId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9.-]+$",
+              "description": "iOS bundle identifier in reverse-DNS form (e.g. \"com.github.stwalkerster.codehub\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration)."
+            },
+            "teamId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Z0-9]+$",
+              "description": "Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices."
+            }
+          }
+        },
+        {
+          "title": "AndroidApp",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "packageName",
+            "sha256CertFingerprints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "androidApp"
+            },
+            "packageName": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+              "description": "Android package name in reverse-DNS form (e.g. \"com.github.android\")."
+            },
+            "sha256CertFingerprints": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{2}(:[0-9A-F]{2}){31}$"
+              },
+              "uniqueItems": true,
+              "description": "SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing)."
+            }
+          }
+        }
+      ]
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -163,4 +858,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

@@ -37,20 +37,30 @@ use crate::payload::Payload;
 /// Implemented automatically by the codegen for every generated request and
 /// response payload type.
 pub trait ValidatedPayload: Payload {
-    /// Raw text of the `payload.schema.json` (or extracted sub-schema)
-    /// describing values of this type.
-    const SCHEMA_JSON: &'static str;
-
-    /// Validate `value` against [`SCHEMA_JSON`](Self::SCHEMA_JSON).
+    /// Validate `value` against [`Payload::PAYLOAD_SCHEMA`].
     ///
     /// Returns [`ValidationError`] with the collected schema-validation
-    /// errors when the value does not conform. The default implementation
-    /// dispatches to [`against_schema`]; override only if a payload needs
-    /// special preprocessing.
+    /// errors when the value does not conform. Where the payload type
+    /// carries no schema (`PAYLOAD_SCHEMA` is `None` — the hand-modelled
+    /// `trust-task-error`), there is nothing to check and this succeeds:
+    /// the Rust type the value deserialized into is itself the constraint.
     fn validate_value(value: &Value) -> Result<(), ValidationError> {
-        against_schema(Self::SCHEMA_JSON, value)
+        match Self::PAYLOAD_SCHEMA {
+            Some(schema) => against_schema(schema, value),
+            None => Ok(()),
+        }
     }
 }
+
+/// Every [`Payload`] is validatable, because every `Payload` carries its
+/// schema (or states that it has none).
+///
+/// Before 0.9.0 this trait declared its own `SCHEMA_JSON` const and the
+/// codegen emitted one impl per generated type. The schema now lives on
+/// `Payload` itself — reachable without the `validate` feature, since a
+/// `&'static str` costs nothing — and this blanket impl replaces roughly
+/// three hundred generated impl blocks.
+impl<P: Payload> ValidatedPayload for P {}
 
 /// Compile `schema_json` as a JSON Schema and validate `value` against it.
 ///

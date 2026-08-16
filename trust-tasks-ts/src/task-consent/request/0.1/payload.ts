@@ -168,15 +168,409 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/task-consent/reque
 export type Response = TaskConsentRequestResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/task-consent/request/0.1",
+  "title": "Task Consent Request — payload",
+  "description": "The executor asks an enrolled approver device to authorize one pending privileged task, presenting the effects it computed by dry-running the real handler against its own prior state. The executor signs this document; the approver renders only what it verifies under that signature.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "challenge",
+    "taskType",
+    "payloadDigest",
+    "sideEffects",
+    "exposure",
+    "effects",
+    "requester",
+    "approverSet",
+    "minApprovals",
+    "excludeRequester",
+    "expiresAt"
+  ],
+  "properties": {
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it."
+    },
+    "taskType": {
+      "type": "string",
+      "format": "uri",
+      "description": "Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one."
+    },
+    "payloadDigest": {
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit."
+    },
+    "sideEffects": {
+      "type": "string",
+      "enum": [
+        "none",
+        "mutating",
+        "destructive"
+      ],
+      "description": "Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class."
+    },
+    "exposure": {
+      "$ref": "#/$defs/Exposure"
+    },
+    "effects": {
+      "type": "array",
+      "description": "What executing this task will actually do, computed by dry-running the real handler against the executor's prior state. MAY be empty when the executor has no dry-run for this handler — in which case `consequences` carries the specification's static fallback text. When BOTH are empty the surface MUST tell the approver the consequences could not be determined, and MUST NOT present the task as though it had none.",
+      "items": {
+        "$ref": "#/$defs/Effect"
+      }
+    },
+    "consequences": {
+      "type": "array",
+      "description": "Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "subject": {
+      "type": "string",
+      "description": "OPTIONAL identifier the task acts on — the value at the specification's `subjectPath`, usually a DID. Absent for subjectless tasks."
+    },
+    "requester": {
+      "type": "string",
+      "description": "DID that submitted the pending task. Shown to the approver, and compared against the approver when `excludeRequester` is set."
+    },
+    "requesterDeviceId": {
+      "type": "string",
+      "description": "OPTIONAL enrolled device the task was submitted from."
+    },
+    "origin": {
+      "type": "string",
+      "description": "OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author."
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true."
+    },
+    "statePin": {
+      "$ref": "#/$defs/StatePin"
+    },
+    "approverSet": {
+      "type": "string",
+      "description": "Name of the approver set the policy's `requireConsent` named."
+    },
+    "minApprovals": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Distinct approvals from the set required before the task may execute."
+    },
+    "excludeRequester": {
+      "type": "boolean",
+      "description": "When true, `requester` may not count toward the threshold — so a single compromised device cannot both propose and approve. A surface MUST NOT offer to approve a request whose `requester` is its own subject when this is set."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "After this instant the pending request lapses and no decision is accepted for it."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Task Consent Request — response payload",
+      "description": "Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "prompted",
+            "refused"
+          ],
+          "description": "`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set."
+        },
+        "reason": {
+          "type": "string",
+          "description": "REQUIRED when status is `refused`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "StatePin": {
+      "title": "StatePin",
+      "description": "The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource",
+        "version"
+      ],
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the pinned resource (usually the subject DID)."
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it."
+        }
+      }
+    },
+    "Effect": {
+      "title": "Effect",
+      "description": "One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "summary"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]*$",
+          "description": "Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose."
+        },
+        "path": {
+          "type": "string",
+          "description": "OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`)."
+        },
+        "before": {
+          "description": "OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry."
+        },
+        "after": {
+          "description": "OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`."
+        },
+        "detail": {
+          "type": "object",
+          "description": "OPTIONAL kind-specific structured extras (e.g. `{ \"commitments\": 2 }` for `preRotationRefresh`).",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Exposure": {
+      "title": "Exposure",
+      "description": "The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discloses",
+        "actsAsSubject"
+      ],
+      "properties": {
+        "discloses": {
+          "type": "string",
+          "enum": [
+            "none",
+            "metadata",
+            "secret"
+          ],
+          "description": "Sensitivity of data the task returns to its caller."
+        },
+        "actsAsSubject": {
+          "type": "boolean",
+          "description": "Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name."
+        }
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Task Consent Request — response payload",
+      "description": "Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "prompted",
+            "refused"
+          ],
+          "description": "`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set."
+        },
+        "reason": {
+          "type": "string",
+          "description": "REQUIRED when status is `refused`."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "StatePin": {
+      "title": "StatePin",
+      "description": "The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource",
+        "version"
+      ],
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the pinned resource (usually the subject DID)."
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it."
+        }
+      }
+    },
+    "Effect": {
+      "title": "Effect",
+      "description": "One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "summary"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]*$",
+          "description": "Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose."
+        },
+        "path": {
+          "type": "string",
+          "description": "OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`)."
+        },
+        "before": {
+          "description": "OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry."
+        },
+        "after": {
+          "description": "OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`."
+        },
+        "detail": {
+          "type": "object",
+          "description": "OPTIONAL kind-specific structured extras (e.g. `{ \"commitments\": 2 }` for `preRotationRefresh`).",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Exposure": {
+      "title": "Exposure",
+      "description": "The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discloses",
+        "actsAsSubject"
+      ],
+      "properties": {
+        "discloses": {
+          "type": "string",
+          "enum": [
+            "none",
+            "metadata",
+            "secret"
+          ],
+          "description": "Sensitivity of data the task returns to its caller."
+        },
+        "actsAsSubject": {
+          "type": "boolean",
+          "description": "Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name."
+        }
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -189,4 +583,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

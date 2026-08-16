@@ -79,15 +79,186 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/access-l
 export type Response = MessagingListAccessListResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/access-list/list/0.1",
+  "title": "Messaging List Access List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "#/$defs/Vid",
+      "description": "The target account's DID whose access list is being enumerated."
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Vid"
+      },
+      "description": "Membership filter: return only these DIDs, and of them only those present in the account's access list. A supplied DID absent from the response's entries is not in the list. Omitted = enumerate the whole list."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque pagination cursor from a previous page's nextCursor. Omitted on the first request; echoed verbatim thereafter. Opaque to the requester."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Maximum number of entries to return in this page. The mediator MAY apply a smaller server-side bound."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging List Access List — response payload",
+      "description": "The success response to a messaging/access-list/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "entries",
+        "accessListCount"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "#/$defs/Vid",
+          "description": "The account whose access list was enumerated."
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Vid"
+          },
+          "description": "The current page of entries from the account's access list."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque cursor to fetch the next page. Present only where further entries remain; omitted on the final page."
+        },
+        "accessListCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The total number of entries in the account's access list."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "Vid": {
+      "title": "Vid",
+      "type": "string",
+      "minLength": 1,
+      "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging List Access List — response payload",
+      "description": "The success response to a messaging/access-list/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "entries",
+        "accessListCount"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "#/$defs/Vid",
+          "description": "The account whose access list was enumerated."
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Vid"
+          },
+          "description": "The current page of entries from the account's access list."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque cursor to fetch the next page. Present only where further entries remain; omitted on the final page."
+        },
+        "accessListCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The total number of entries in the account's access list."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "Vid": {
+      "title": "Vid",
+      "type": "string",
+      "minLength": 1,
+      "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -100,4 +271,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

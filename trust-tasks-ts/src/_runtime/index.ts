@@ -56,6 +56,8 @@ export {
   refuse,
   type ConsumeOptions,
   type ConsumeOutcome,
+  type PayloadPolicy,
+  type PayloadValidator,
   type ProofPolicy,
   type ProofVerifier,
 } from "./consume.js";

@@ -237,15 +237,437 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/account/
 export type Response = MessagingUpdateAccountResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/account/update/0.1",
+  "title": "Messaging Update Account — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "#/$defs/Vid",
+      "description": "The DID of the account being updated."
+    },
+    "accountType": {
+      "$ref": "#/$defs/AccountType",
+      "description": "The role to assign. Omitted = the role is left unchanged. Assigning or modifying the rootAdmin role requires a rootAdmin requester."
+    },
+    "acl": {
+      "$ref": "#/$defs/MediatorAcl",
+      "description": "Access-control capability members to apply as a partial update. A capability present is set; a capability omitted is left unchanged. Omitted entirely = the capability set is left unchanged."
+    },
+    "queueLimits": {
+      "$ref": "#/$defs/QueueLimits",
+      "description": "Queued-message limit members to apply as a partial update. A member present is set (-1 = unlimited); a member omitted is left unchanged. Omitted entirely = the limits are left unchanged."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Update Account — response payload",
+      "description": "The success response to a messaging/account/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "#/$defs/Account",
+          "description": "The full realized mediator view of the account after the update."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "Account": {
+      "title": "Account",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "accountType",
+        "acl"
+      ],
+      "description": "The mediator's view of one served account.",
+      "properties": {
+        "did": {
+          "$ref": "#/$defs/Vid",
+          "description": "The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept."
+        },
+        "accountType": {
+          "$ref": "#/$defs/AccountType"
+        },
+        "acl": {
+          "$ref": "#/$defs/MediatorAcl"
+        },
+        "queueLimits": {
+          "$ref": "#/$defs/QueueLimits"
+        },
+        "sendQueueCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current count of queued send messages."
+        },
+        "sendQueueBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current byte size of queued send messages."
+        },
+        "receiveQueueCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current count of queued receive messages."
+        },
+        "receiveQueueBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current byte size of queued receive messages."
+        },
+        "accessListCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of entries in the account's access list."
+        }
+      }
+    },
+    "QueueLimits": {
+      "title": "QueueLimits",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.",
+      "properties": {
+        "sendQueueLimit": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "Maximum queued send messages; -1 = unlimited."
+        },
+        "receiveQueueLimit": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "Maximum queued receive messages; -1 = unlimited."
+        }
+      }
+    },
+    "MediatorAcl": {
+      "title": "MediatorAcl",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.",
+      "properties": {
+        "accessListMode": {
+          "type": "string",
+          "enum": [
+            "explicitAllow",
+            "explicitDeny"
+          ],
+          "description": "How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone)."
+        },
+        "blocked": {
+          "type": "boolean",
+          "description": "The account is blocked from authenticating and transacting."
+        },
+        "local": {
+          "type": "boolean",
+          "description": "Messages for this account may be stored locally at this mediator for pickup."
+        },
+        "sendMessages": {
+          "type": "boolean",
+          "description": "May send direct messages through the mediator."
+        },
+        "receiveMessages": {
+          "type": "boolean",
+          "description": "May receive direct messages."
+        },
+        "sendForwarded": {
+          "type": "boolean",
+          "description": "May send routing/forward (relay) messages."
+        },
+        "receiveForwarded": {
+          "type": "boolean",
+          "description": "May be the next hop of a forwarded message."
+        },
+        "createInvites": {
+          "type": "boolean",
+          "description": "May create out-of-band invitations."
+        },
+        "anonReceive": {
+          "type": "boolean",
+          "description": "Accepts anonymous (no authenticated sender) messages."
+        },
+        "selfManageList": {
+          "type": "boolean",
+          "description": "May self-manage its own access list."
+        },
+        "selfManageSendQueueLimit": {
+          "type": "boolean",
+          "description": "May self-manage its own send-queue limit."
+        },
+        "selfManageReceiveQueueLimit": {
+          "type": "boolean",
+          "description": "May self-manage its own receive-queue limit."
+        },
+        "didcommEnabled": {
+          "type": "boolean",
+          "description": "The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node."
+        },
+        "tspEnabled": {
+          "type": "boolean",
+          "description": "The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node."
+        }
+      }
+    },
+    "AccountType": {
+      "title": "AccountType",
+      "type": "string",
+      "enum": [
+        "standard",
+        "admin",
+        "rootAdmin",
+        "mediator"
+      ],
+      "description": "The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role."
+    },
+    "Vid": {
+      "title": "Vid",
+      "type": "string",
+      "minLength": 1,
+      "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging Update Account — response payload",
+      "description": "The success response to a messaging/account/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "#/$defs/Account",
+          "description": "The full realized mediator view of the account after the update."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "Account": {
+      "title": "Account",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "accountType",
+        "acl"
+      ],
+      "description": "The mediator's view of one served account.",
+      "properties": {
+        "did": {
+          "$ref": "#/$defs/Vid",
+          "description": "The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept."
+        },
+        "accountType": {
+          "$ref": "#/$defs/AccountType"
+        },
+        "acl": {
+          "$ref": "#/$defs/MediatorAcl"
+        },
+        "queueLimits": {
+          "$ref": "#/$defs/QueueLimits"
+        },
+        "sendQueueCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current count of queued send messages."
+        },
+        "sendQueueBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current byte size of queued send messages."
+        },
+        "receiveQueueCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current count of queued receive messages."
+        },
+        "receiveQueueBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current byte size of queued receive messages."
+        },
+        "accessListCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of entries in the account's access list."
+        }
+      }
+    },
+    "QueueLimits": {
+      "title": "QueueLimits",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.",
+      "properties": {
+        "sendQueueLimit": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "Maximum queued send messages; -1 = unlimited."
+        },
+        "receiveQueueLimit": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "Maximum queued receive messages; -1 = unlimited."
+        }
+      }
+    },
+    "MediatorAcl": {
+      "title": "MediatorAcl",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.",
+      "properties": {
+        "accessListMode": {
+          "type": "string",
+          "enum": [
+            "explicitAllow",
+            "explicitDeny"
+          ],
+          "description": "How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone)."
+        },
+        "blocked": {
+          "type": "boolean",
+          "description": "The account is blocked from authenticating and transacting."
+        },
+        "local": {
+          "type": "boolean",
+          "description": "Messages for this account may be stored locally at this mediator for pickup."
+        },
+        "sendMessages": {
+          "type": "boolean",
+          "description": "May send direct messages through the mediator."
+        },
+        "receiveMessages": {
+          "type": "boolean",
+          "description": "May receive direct messages."
+        },
+        "sendForwarded": {
+          "type": "boolean",
+          "description": "May send routing/forward (relay) messages."
+        },
+        "receiveForwarded": {
+          "type": "boolean",
+          "description": "May be the next hop of a forwarded message."
+        },
+        "createInvites": {
+          "type": "boolean",
+          "description": "May create out-of-band invitations."
+        },
+        "anonReceive": {
+          "type": "boolean",
+          "description": "Accepts anonymous (no authenticated sender) messages."
+        },
+        "selfManageList": {
+          "type": "boolean",
+          "description": "May self-manage its own access list."
+        },
+        "selfManageSendQueueLimit": {
+          "type": "boolean",
+          "description": "May self-manage its own send-queue limit."
+        },
+        "selfManageReceiveQueueLimit": {
+          "type": "boolean",
+          "description": "May self-manage its own receive-queue limit."
+        },
+        "didcommEnabled": {
+          "type": "boolean",
+          "description": "The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node."
+        },
+        "tspEnabled": {
+          "type": "boolean",
+          "description": "The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node."
+        }
+      }
+    },
+    "AccountType": {
+      "title": "AccountType",
+      "type": "string",
+      "enum": [
+        "standard",
+        "admin",
+        "rootAdmin",
+        "mediator"
+      ],
+      "description": "The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role."
+    },
+    "Vid": {
+      "title": "Vid",
+      "type": "string",
+      "minLength": 1,
+      "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -258,4 +680,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

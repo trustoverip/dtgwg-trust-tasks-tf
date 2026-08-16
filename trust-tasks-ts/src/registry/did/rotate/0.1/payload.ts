@@ -52,15 +52,135 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/did/rotat
 export type Response = RegistryDIDRotateResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/did/rotate/0.1",
+  "title": "Registry DID Rotate — payload",
+  "description": "An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Field names are snake_case, frozen from the pre-existing deployed wire form this specification documents (matching the registry/* family convention).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "pre_rotation_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Override the number of pre-rotation key commitments published for the new key set. Absent: the managing agent's default."
+    },
+    "label": {
+      "type": "string",
+      "description": "Operator-facing audit label for the rotation."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry DID Rotate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "new_scid",
+        "new_version_id"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "description": "The DID whose keys were rotated."
+        },
+        "new_scid": {
+          "type": "string",
+          "description": "The DID's SCID after rotation."
+        },
+        "new_version_id": {
+          "type": "string",
+          "description": "The did:webvh log's new versionId after rotation."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry DID Rotate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "new_scid",
+        "new_version_id"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "description": "The DID whose keys were rotated."
+        },
+        "new_scid": {
+          "type": "string",
+          "description": "The DID's SCID after rotation."
+        },
+        "new_version_id": {
+          "type": "string",
+          "description": "The did:webvh log's new versionId after rotation."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -73,4 +193,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

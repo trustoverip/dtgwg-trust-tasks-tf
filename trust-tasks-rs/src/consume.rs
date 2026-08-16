@@ -1,15 +1,17 @@
-//! Inbound-document orchestration for SPEC.md §7.2 items 4–8.
+//! Inbound-document orchestration for SPEC.md §7.2 item 2 and items 4–8.
 //!
 //! [`consume_inbound`] is the framework-level helper a *consumer* uses to
 //! avoid hand-wiring the eight-step §7.2 list across every spec they
-//! implement. It accepts a typed [`TrustTask<P>`] (items 1–3 having already
-//! been handled by the caller's [`Dispatcher`](crate::Dispatcher) /
+//! implement. It accepts a typed [`TrustTask<P>`] (items 1 and 3 having
+//! already been handled by the caller's [`Dispatcher`](crate::Dispatcher) /
 //! `serde` pipeline), runs the remaining framework checks, optionally
-//! verifies the `proof`, and either calls the caller's business handler
-//! or builds the [`ErrorResponse`] routed per §8.1.
+//! verifies the `proof` and the payload schema, and either calls the caller's
+//! business handler or builds the [`ErrorResponse`] routed per §8.1.
 //!
 //! ```rust,ignore
-//! use trust_tasks_rs::{consume_inbound, ConsumeOutcome, ProofPolicy, TrustTask};
+//! use trust_tasks_rs::{
+//!     consume_inbound, ConsumeOutcome, PayloadPolicy, ProofPolicy, TrustTask,
+//! };
 //!
 //! async fn on_inbound<P>(
 //!     transport: &MyHandler,
@@ -21,6 +23,7 @@
 //!     let outcome = consume_inbound(
 //!         transport,
 //!         ProofPolicy::Verify(verifier),
+//!         PayloadPolicy::Validate(schema_validator),
 //!         doc,
 //!         "did:web:maintainer.example",
 //!         chrono::Utc::now(),
@@ -45,16 +48,25 @@
 //! }
 //! ```
 //!
-//! The function does not attempt items 1 (framework outer-schema
-//! validation), 2 (payload schema validation), or 3 (unknown Type URI).
-//! Those belong to the caller's deserialize + [`Dispatcher`](crate::Dispatcher)
-//! pipeline — by the time you hold a `TrustTask<P>` they have already
-//! succeeded.
+//! The function does not attempt item 1 (framework outer-schema validation)
+//! or item 3 (unknown Type URI). Those belong to the caller's deserialize +
+//! [`Dispatcher`](crate::Dispatcher) pipeline — by the time you hold a
+//! `TrustTask<P>` they have already succeeded.
+//!
+//! Item 2 (payload schema) is deliberately *not* in that list, though it once
+//! was. Deserializing into `P` performs most of it — required members, member
+//! types, `additionalProperties`, and the string constraints typify emits as
+//! validating newtypes — but not the constraints a Rust type cannot carry
+//! (`minProperties`, `minItems` on an optional array, conditional subschemas).
+//! Treating the whole of item 2 as "already succeeded" therefore overstated
+//! what the parse step had established, so the residue is now a policy the
+//! caller chooses: see [`PayloadPolicy`].
 
 use std::future::Future;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+use serde_json::Value;
 
 use crate::document::{ErrorResponse, TrustTask};
 use crate::error::RejectReason;
@@ -101,6 +113,94 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     AcceptUnverified,
 }
 
+/// Evaluates a payload against its `payload.schema.json` (SPEC.md §7.2 item 2).
+///
+/// The framework does not bundle a JSON Schema implementation, for the same
+/// reason it does not bundle a cryptosuite: the choice of engine, its draft
+/// support, and its resource limits belong to the consumer. Implement this
+/// over whichever validator you already run — or over
+/// [`crate::validate::against_schema`], which the `validate` feature provides
+/// on top of the `jsonschema` crate.
+pub trait PayloadValidator {
+    /// Check `payload` against `schema_json`.
+    ///
+    /// `schema_json` is [`Payload::PAYLOAD_SCHEMA`] — a string constant
+    /// inlined from this repo at codegen time, so it is trusted input. Return
+    /// a human-readable reason on failure; it lands in the `malformedRequest`
+    /// error's message.
+    fn validate(&self, schema_json: &str, payload: &Value) -> Result<(), String>;
+}
+
+/// How [`consume_inbound`] performs SPEC.md §7.2 item 2 — payload-schema
+/// validation.
+///
+/// **Read this before reaching for [`AcceptUnvalidated`](Self::AcceptUnvalidated).**
+/// In this library, item 2 is *mostly* already done by the time you hold a
+/// `TrustTask<P>`: deserializing into the generated types enforces required
+/// members, member types, `additionalProperties: false`, and the `pattern` /
+/// `minLength` constraints typify expresses as validating newtypes. A
+/// document that got this far has cleared all of that.
+///
+/// What it has *not* cleared is everything typify cannot express in a Rust
+/// type — `minProperties`, `minItems` on an optional array, conditional
+/// subschemas. That residue is what [`Validate`](Self::Validate) catches, and
+/// it is why the choice is a required argument rather than a default: a
+/// consumer should decide knowingly whether that residue matters to it, not
+/// discover later that it never checked.
+///
+/// (The TypeScript binding is in a different position entirely — its types are
+/// erased at runtime, so *nothing* is enforced without a validator. Both
+/// libraries take the policy as a required argument so the two reach the same
+/// verdict on the same document.)
+#[non_exhaustive]
+pub enum PayloadPolicy<'a, V: PayloadValidator + ?Sized> {
+    /// Validate `doc.payload` against [`Payload::PAYLOAD_SCHEMA`] using `V`.
+    /// Failures map to `malformedRequest` per §7.2 item 2.
+    ///
+    /// Where the payload type carries no schema (`PAYLOAD_SCHEMA` is `None`,
+    /// i.e. the hand-modelled `trust-task-error`) there is nothing to check
+    /// and the document passes: the Rust type it deserialized into is itself
+    /// the constraint.
+    Validate(&'a V),
+
+    /// Accept the payload on the strength of deserialization alone, without
+    /// the residual schema check.
+    ///
+    /// Defensible — deserialization is a real check here, not a formality —
+    /// but it is a decision, and this names it.
+    ///
+    /// This variant carries no validator, so nothing pins `V`. Write it as
+    /// `PayloadPolicy::<NoValidator>::AcceptUnvalidated`.
+    AcceptUnvalidated,
+}
+
+/// Pins the validator type on the [`PayloadPolicy::AcceptUnvalidated`] path.
+///
+/// `AcceptUnvalidated` holds no validator, so type inference has nothing to
+/// work from and the call will not compile without naming a type. This is that
+/// type:
+///
+/// ```rust,ignore
+/// consume_inbound(
+///     transport,
+///     ProofPolicy::Verify(verifier),
+///     PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+///     doc,
+///     // …
+/// )
+/// ```
+///
+/// Its [`PayloadValidator`] impl accepts everything, so it is also usable as a
+/// stub in tests — but prefer the explicit `AcceptUnvalidated` variant in
+/// production code, because the variant is what a reader greps for.
+pub struct NoValidator;
+
+impl PayloadValidator for NoValidator {
+    fn validate(&self, _schema_json: &str, _payload: &Value) -> Result<(), String> {
+        Ok(())
+    }
+}
+
 /// Possible outcomes of [`consume_inbound`].
 #[derive(Debug)]
 pub enum ConsumeOutcome<R> {
@@ -124,12 +224,14 @@ pub enum ConsumeOutcome<R> {
     Suppressed,
 }
 
-/// Run SPEC.md §7.2 items 4–8 against `doc`, then either call `handler`
-/// or build the routed error response per §8.1.
+/// Run SPEC.md §7.2 item 2 and items 4–8 against `doc`, then either call
+/// `handler` or build the routed error response per §8.1.
 ///
-/// `P` is the typed payload (already deserialized by the caller — items
-/// 1–3 happen upstream). `R` is the success-response payload type the
-/// handler returns on acceptance.
+/// `P` is the typed payload. Items 1 and 3 happen upstream, in the caller's
+/// parse and dispatch. Item 2 is *shared*: deserializing into `P` performed
+/// most of it, and `payload_policy` decides whether the residue typify cannot
+/// express is checked here too — see [`PayloadPolicy`], which is worth
+/// reading before choosing.
 ///
 /// `transport` supplies the transport-derived identity for the §4.8.1
 /// cross-check (item 6) and the §8.1 routing exception for
@@ -165,9 +267,10 @@ pub enum ConsumeOutcome<R> {
 /// `recipient`) is safe for most refusals but is **not** safe under
 /// rejections that contest the in-band identity.
 #[allow(clippy::too_many_arguments)]
-pub async fn consume_inbound<P, R, T, V, F, Fut>(
+pub async fn consume_inbound<P, R, T, V, W, F, Fut>(
     transport: &T,
     policy: ProofPolicy<'_, V>,
+    payload_policy: PayloadPolicy<'_, W>,
     doc: TrustTask<P>,
     my_vid: &str,
     now: DateTime<Utc>,
@@ -178,9 +281,45 @@ where
     P: Payload + Serialize + Send + Sync,
     T: TransportHandler + Sync + ?Sized,
     V: ProofVerifier + ?Sized,
+    W: PayloadValidator + ?Sized,
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
     Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
+    // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
+    // before any check that consults the payload's meaning: a document whose
+    // payload is not the shape the specification declares should be refused as
+    // malformed rather than reasoned about. Deserialization into `P` already
+    // carried most of this; see `PayloadPolicy` for what is left.
+    if let PayloadPolicy::Validate(validator) = payload_policy {
+        if let Some(schema) = P::PAYLOAD_SCHEMA {
+            match serde_json::to_value(&doc.payload) {
+                Ok(value) => {
+                    if let Err(reason) = validator.validate(schema, &value) {
+                        return route_rejection(
+                            transport,
+                            &doc,
+                            RejectReason::MalformedRequest { reason },
+                            error_id_factory,
+                        );
+                    }
+                }
+                // A payload that cannot be re-serialized cannot be checked.
+                // Refusing is the only safe reading: the alternative is to
+                // accept precisely the documents the validator could not see.
+                Err(e) => {
+                    return route_rejection(
+                        transport,
+                        &doc,
+                        RejectReason::MalformedRequest {
+                            reason: format!("payload could not be serialized for validation: {e}"),
+                        },
+                        error_id_factory,
+                    );
+                }
+            }
+        }
+    }
+
     // §7.2 items 4 + 5a — expiry and wrong-recipient enforcement.
     if let Err(reason) = doc.validate_basic(now, my_vid) {
         return route_rejection(transport, &doc, reason, error_id_factory);
@@ -332,6 +471,17 @@ mod tests {
         outcome: Result<(), VerificationError>,
     }
 
+    /// Refuses everything, so a test can prove the validator was consulted at
+    /// all — a validator that is never called passes vacuously, which is the
+    /// failure mode this whole change is about.
+    struct RejectingValidator;
+
+    impl PayloadValidator for RejectingValidator {
+        fn validate(&self, _schema_json: &str, _payload: &Value) -> Result<(), String> {
+            Err("stub validator refuses every payload".to_string())
+        }
+    }
+
     #[async_trait::async_trait]
     impl ProofVerifier for StubVerifier {
         async fn verify<P>(&self, _doc: &TrustTask<P>) -> Result<(), VerificationError>
@@ -362,6 +512,7 @@ mod tests {
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -391,6 +542,99 @@ mod tests {
         }
     }
 
+    /// §7.2 item 2 runs, and runs *before* the handler. A validator that
+    /// refuses everything must stop the document; if the handler is reached,
+    /// the policy was never consulted — which was the defect.
+    #[tokio::test]
+    async fn payload_policy_rejects_before_the_handler_runs() {
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = TrustTask::for_payload("req-1", grant_payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.proof = Some(dummy_proof());
+
+        let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            PayloadPolicy::Validate(&RejectingValidator),
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-1".to_string(),
+            |_req, _parties| async move {
+                panic!("handler must not run when the payload policy rejects");
+            },
+        )
+        .await;
+
+        match outcome {
+            ConsumeOutcome::Rejected(err) => {
+                assert_eq!(err.payload.code, StandardCode::MalformedRequest.into());
+                assert!(
+                    err.payload
+                        .message
+                        .as_deref()
+                        .is_some_and(|m| m.contains("refuses every payload")),
+                    "the validator's own reason should reach the error message, got: {:?}",
+                    err.payload.message
+                );
+            }
+            other => panic!("expected Rejected, got {other:?}"),
+        }
+    }
+
+    /// The opt-out is a real opt-out: the same document the validator would
+    /// have refused is accepted when the policy declines to check it.
+    #[tokio::test]
+    async fn accept_unvalidated_skips_the_check() {
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = TrustTask::for_payload("req-1", grant_payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.proof = Some(dummy_proof());
+
+        let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-1".to_string(),
+            |req, _parties| async move {
+                let resp_payload = grant::Response {
+                    entry: req.payload.entry.clone(),
+                    ext: None,
+                };
+                Ok(req.respond_with("resp-1", resp_payload))
+            },
+        )
+        .await;
+
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+    }
+
+    /// Every generated payload type carries its schema, and it is reachable
+    /// without the `validate` feature — the property that makes a caller-
+    /// supplied validator possible at all.
+    #[test]
+    fn generated_payloads_carry_their_schema() {
+        assert!(
+            <grant::Payload as Payload>::PAYLOAD_SCHEMA.is_some(),
+            "request payloads must carry PAYLOAD_SCHEMA"
+        );
+        assert!(
+            <grant::Response as Payload>::PAYLOAD_SCHEMA.is_some(),
+            "response payloads must carry PAYLOAD_SCHEMA — the reported defect \
+             was found on a response variant"
+        );
+        // `trust-task-error` is hand-modelled and outside the codegen, so it
+        // has no generated schema; `PAYLOAD_SCHEMA` defaults to `None` for any
+        // such type, which is what makes the default safe rather than silent.
+    }
+
     #[tokio::test]
     async fn wrong_recipient_routes_error_to_original_issuer() {
         let transport = NoopHandler::new();
@@ -399,9 +643,10 @@ mod tests {
         doc.recipient = Some("did:web:someone-else.example".into());
 
         let outcome: ConsumeOutcome<grant::Response> =
-            consume_inbound::<_, _, _, StubVerifier, _, _>(
+            consume_inbound::<_, _, _, StubVerifier, NoValidator, _, _>(
                 &transport,
                 ProofPolicy::RejectIfPresent,
+                PayloadPolicy::<NoValidator>::AcceptUnvalidated,
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -441,6 +686,7 @@ mod tests {
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -473,6 +719,7 @@ mod tests {
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -507,9 +754,10 @@ mod tests {
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> =
-            consume_inbound::<_, _, _, StubVerifier, _, _>(
+            consume_inbound::<_, _, _, StubVerifier, NoValidator, _, _>(
                 &transport,
                 ProofPolicy::RejectIfPresent,
+                PayloadPolicy::<NoValidator>::AcceptUnvalidated,
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -557,6 +805,7 @@ mod tests {
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -619,6 +868,7 @@ mod tests {
         let outcome: ConsumeOutcome<list::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -664,9 +914,10 @@ mod tests {
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<list::Response> =
-            consume_inbound::<_, _, _, StubVerifier, _, _>(
+            consume_inbound::<_, _, _, StubVerifier, NoValidator, _, _>(
                 &transport,
                 ProofPolicy::AcceptUnverified,
+                PayloadPolicy::<NoValidator>::AcceptUnvalidated,
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -706,6 +957,7 @@ mod tests {
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -757,9 +1009,10 @@ mod tests {
         doc.recipient = Some("did:web:maintainer.example".into());
 
         let outcome: ConsumeOutcome<list::Response> =
-            consume_inbound::<_, _, _, StubVerifier, _, _>(
+            consume_inbound::<_, _, _, StubVerifier, NoValidator, _, _>(
                 &transport,
                 ProofPolicy::RejectIfPresent,
+                PayloadPolicy::<NoValidator>::AcceptUnvalidated,
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -848,9 +1101,10 @@ mod tests {
         }
 
         let outcome: ConsumeOutcome<crate::specs::acl::list::v0_1::Response> =
-            consume_inbound::<_, _, _, StubVerifier, _, _>(
+            consume_inbound::<_, _, _, StubVerifier, NoValidator, _, _>(
                 &MismatchingNoSenderTransport,
                 ProofPolicy::RejectIfPresent,
+                PayloadPolicy::<NoValidator>::AcceptUnvalidated,
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),

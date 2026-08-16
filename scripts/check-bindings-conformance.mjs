@@ -223,6 +223,87 @@ function comparePolicy(where, variant, expected, actual, lang) {
 
 /* ── Main ───────────────────────────────────────────────────────────────── */
 
+/** Key-sorted JSON, so two documents compare on content rather than key order. */
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${stableJson(value[k])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/** Every `$ref` in `node` that points outside the document. */
+function collectExternalRefs(node, out = []) {
+  if (Array.isArray(node)) {
+    node.forEach((v) => collectExternalRefs(v, out));
+  } else if (node && typeof node === "object") {
+    if (typeof node.$ref === "string" && !node.$ref.startsWith("#")) out.push(node.$ref);
+    for (const v of Object.values(node)) collectExternalRefs(v, out);
+  }
+  return out;
+}
+
+/**
+ * Parse `export const <name> = { … } as const;` out of a generated TS module.
+ *
+ * Brace-counting rather than a regex: the schema is a large nested literal and
+ * a lazy match stops at the first `}`. String literals are skipped so a brace
+ * inside a `pattern` or a description does not throw the count off.
+ */
+function tsSchemaConst(src, name) {
+  const start = src.indexOf(`export const ${name} = {`);
+  if (start < 0) return null;
+  const open = src.indexOf("{", start);
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = open; i < src.length; i++) {
+    const ch = src[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}" && --depth === 0) {
+      try {
+        return JSON.parse(src.slice(open, i + 1));
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Parse `const PAYLOAD_SCHEMA: Option<&'static str> = Some("…")` out of the
+ * `impl crate::Payload for <ident>` block of a generated Rust module.
+ *
+ * rustfmt splits the string literal across lines with `\` continuations, so the
+ * lines are rejoined before unescaping.
+ */
+function rustSchemaConst(src, ident) {
+  const implStart = src.indexOf(`impl crate::Payload for ${ident} {`);
+  if (implStart < 0) return null;
+  const implEnd = src.indexOf("\n}", implStart);
+  const block = src.slice(implStart, implEnd < 0 ? undefined : implEnd);
+  const m = /const PAYLOAD_SCHEMA: Option<&'static str> = Some\(\s*"([\s\S]*?)"\s*,?\s*\)\s*;/.exec(block);
+  if (!m) return null;
+  // Undo rustfmt's line continuations, then the Rust string escapes.
+  const joined = m[1].replace(/\\\r?\n\s*/g, "");
+  try {
+    return JSON.parse(JSON.parse(`"${joined}"`));
+  } catch {
+    return null;
+  }
+}
+
 const specs = discoverSpecs();
 const tsByUri = indexGenerated(TS_DIR, /^payload\.ts$/, /export const TYPE_URI = "([^"]+)"/);
 const rsByUri = indexGenerated(RS_DIR, /^v\d+_\d+\.rs$/, /const TYPE_URI: &'static str =\s*"([^"]+)"/);
@@ -352,6 +433,58 @@ for (const spec of specs) {
     comparePolicy(where, "request", expected.request, reqPolicy, "Rust");
     if (hasResponse && respPolicy) {
       comparePolicy(where, "response", expected.response, respPolicy, "Rust");
+    }
+
+    /* — The two shipped schemas must be the same document — */
+    //
+    // Each generator inlines cross-file `$ref`s itself: `resolve_cross_file_refs`
+    // in Rust, `inlineCrossFileRefs` in the TS script. Two independent
+    // implementations of the same splice, and SPEC §7.2 item 2 is only
+    // well-defined if they agree — a consumer validating in Rust and one
+    // validating in TypeScript must accept and reject the same payloads.
+    //
+    // Compared as parsed JSON, so formatting differences between
+    // `serde_json::to_string_pretty` and `JSON.stringify` are not failures.
+    // Nothing here re-derives the expected schema: this asserts the two
+    // generators agree with *each other*, which is the property neither can
+    // establish alone.
+    if (ts) {
+      for (const [variant, tsConst, rsConst] of [
+        ["request", "PAYLOAD_SCHEMA", "Payload"],
+        ["response", "RESPONSE_PAYLOAD_SCHEMA", "Response"],
+      ]) {
+        if (variant === "response" && !hasResponse) continue;
+        const tsSchema = tsSchemaConst(ts.src, tsConst);
+        const rsSchema = rustSchemaConst(rs.src, rsConst);
+        if (!tsSchema) {
+          fail(where, `the TypeScript module exports no ${tsConst} — §7.2 item 2 has no artifact to run against.`);
+          continue;
+        }
+        if (!rsSchema) {
+          fail(where, `the Rust ${rsConst} impl carries no PAYLOAD_SCHEMA — §7.2 item 2 has no artifact to run against.`);
+          continue;
+        }
+        if (stableJson(tsSchema) !== stableJson(rsSchema)) {
+          fail(
+            where,
+            `the ${variant} schema shipped by trust-tasks-ts and the one shipped by trust-tasks-rs are not the ` +
+              `same document. The two $ref inliners have diverged, so the two libraries would disagree about ` +
+              `which payloads conform.`,
+          );
+        }
+        // An un-inlined cross-file $ref is unresolvable at runtime: the
+        // consumer has no filesystem to walk and no base URI to resolve against.
+        for (const [lang, doc] of [["TypeScript", tsSchema], ["Rust", rsSchema]]) {
+          const external = collectExternalRefs(doc);
+          if (external.length > 0) {
+            fail(
+              where,
+              `the ${variant} schema shipped by ${lang} still carries unresolved cross-file $ref(s) ` +
+                `(${external.slice(0, 3).join(", ")}) — a runtime validator cannot follow them.`,
+            );
+          }
+        }
+      }
     }
   }
 }

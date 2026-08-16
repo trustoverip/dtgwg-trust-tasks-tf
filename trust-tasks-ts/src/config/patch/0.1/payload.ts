@@ -57,15 +57,204 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/config/patch/0.1#r
 export type Response = ConfigPatchResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/config/patch/0.1",
+  "title": "Config Patch — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "overrides"
+  ],
+  "properties": {
+    "overrides": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "description": "A key -> value map of overrides to write. Keys are configuration keys; values are the desired new values. Wrapped in an object (rather than being the top-level payload) so the payload keeps a fixed, additionalProperties:false envelope. Each entry is validated independently — an invalid or unknown key is reported under `rejected` and does not block the rest."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Config Patch — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applied",
+        "pendingRestart",
+        "rejected"
+      ],
+      "properties": {
+        "applied": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Keys whose new value is now in effect."
+        },
+        "pendingRestart": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true)."
+        },
+        "rejected": {
+          "type": "array",
+          "description": "Keys that were not applied, each with a reason. Empty when every override succeeded.",
+          "items": {
+            "$ref": "#/$defs/RejectedKey"
+          }
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "RejectedKey": {
+      "$anchor": "rejectedKey",
+      "title": "RejectedKey",
+      "description": "A key a patch declined to apply, with the reason.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "reason"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Config Patch — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applied",
+        "pendingRestart",
+        "rejected"
+      ],
+      "properties": {
+        "applied": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Keys whose new value is now in effect."
+        },
+        "pendingRestart": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true)."
+        },
+        "rejected": {
+          "type": "array",
+          "description": "Keys that were not applied, each with a reason. Empty when every override succeeded.",
+          "items": {
+            "$ref": "#/$defs/RejectedKey"
+          }
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "RejectedKey": {
+      "$anchor": "rejectedKey",
+      "title": "RejectedKey",
+      "description": "A key a patch declined to apply, with the reason.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "reason"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -78,4 +267,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

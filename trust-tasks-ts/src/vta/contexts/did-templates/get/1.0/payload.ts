@@ -83,15 +83,343 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-t
 export type Response = VTAContextDIDTemplateGetResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/did-templates/get/1.0",
+  "title": "VTA Context DID-Template Get — payload",
+  "description": "Fetch one context-scoped DID template by name from a VTA. Gated on context access. The success response is the persisted DidTemplateRecord.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "name"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The context the template is scoped to."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Template id within the context scope."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Scope": {
+      "title": "Scope",
+      "description": "Where a stored template lives. Tagged by `type`.",
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "Builtin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "builtin"
+            }
+          }
+        },
+        {
+          "title": "Global",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "global"
+            }
+          }
+        },
+        {
+          "title": "Context",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "contextId"
+          ],
+          "properties": {
+            "type": {
+              "const": "context"
+            },
+            "contextId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Context DID-Template Get — response payload",
+      "description": "The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document",
+        "scope",
+        "createdAt",
+        "updatedAt",
+        "createdBy"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalVars": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "document": {
+          "type": "object"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Resolved scope of the stored template."
+        },
+        "createdAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds the template was first stored."
+        },
+        "updatedAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds of the last write."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "DID of the admin who last wrote the template."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Scope": {
+      "title": "Scope",
+      "description": "Where a stored template lives. Tagged by `type`.",
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "Builtin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "builtin"
+            }
+          }
+        },
+        {
+          "title": "Global",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "global"
+            }
+          }
+        },
+        {
+          "title": "Context",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "contextId"
+          ],
+          "properties": {
+            "type": {
+              "const": "context"
+            },
+            "contextId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Context DID-Template Get — response payload",
+      "description": "The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document",
+        "scope",
+        "createdAt",
+        "updatedAt",
+        "createdBy"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalVars": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "document": {
+          "type": "object"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Resolved scope of the stored template."
+        },
+        "createdAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds the template was first stored."
+        },
+        "updatedAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds of the last write."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "DID of the admin who last wrote the template."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -104,4 +432,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

@@ -119,15 +119,292 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/en
 export type Response = VTAPasskeyVMEnrollSubmitResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1",
+  "title": "VTA Passkey-VM Enroll Submit — payload",
+  "description": "Finalise passkey enrolment by submitting the WebAuthn registration result for a ceremony opened by vta/passkey-vms/enroll-challenge. The VTA re-derives the Multikey from attestationObject.authData and rejects on mismatch with the browser-claimed publicKeyMultibase — the browser's value is NOT trusted as authoritative. On success the VTA appends the verificationMethod to the DID document via a WebVH log entry. All byte-valued fields are base64url-encoded (no padding).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "ceremonyId",
+    "credentialId",
+    "publicKeyMultibase",
+    "coseAlgorithm",
+    "attestationObject",
+    "clientDataJson",
+    "authenticatorData"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID the new verificationMethod is to be added to. MUST match the DID bound to `ceremonyId` at challenge time — a mismatch is rejected as a cross-DID replay."
+    },
+    "ceremonyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The `ceremonyId` returned by vta/passkey-vms/enroll-challenge. Single-use; consumed by this submission."
+    },
+    "credentialId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "WebAuthn `credential.id` (base64url, no padding). The published verificationMethod `id` fragment is derived as `passkey-<base64url(sha256(credentialId))>`."
+    },
+    "publicKeyMultibase": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Browser-computed W3C Multikey for the credential public key. ADVISORY: the VTA re-derives the Multikey from `attestationObject.authData` and rejects this submission if the values differ (anti-tamper gate). The re-derived key — not this one — is what gets published."
+    },
+    "coseAlgorithm": {
+      "type": "integer",
+      "description": "COSE algorithm identifier of the credential key (e.g. -7 for ES256, -8 for EdDSA). Must be an algorithm the VTA can convert to a Multikey."
+    },
+    "attestationObject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw WebAuthn `attestationObject` — base64url-encoded CBOR. The VTA parses `authData` from this to re-derive the authoritative public key."
+    },
+    "clientDataJson": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw WebAuthn `clientDataJSON` (base64url, no padding). Bound to the ceremony `challenge` during WebAuthn verification."
+    },
+    "authenticatorData": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw WebAuthn `authenticatorData` (base64url, no padding)."
+    },
+    "transports": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Transport hints reported by the authenticator (e.g. `internal`, `hybrid`). Advisory; carried through to the published verificationMethod's `webauthnTransports`."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Optional operator-supplied label (e.g. \"MacBook Touch ID\"), carried through to the published verificationMethod."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Passkey-VM Enroll Submit — response payload",
+      "description": "Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verificationMethod",
+        "webvhVersion"
+      ],
+      "properties": {
+        "verificationMethod": {
+          "$ref": "#/$defs/PasskeyVerificationMethod",
+          "description": "The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative."
+        },
+        "webvhVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The WebVH log-entry version that recorded the change (e.g. \"3-Qm…\")."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PasskeyVerificationMethod": {
+      "title": "PasskeyVerificationMethod",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "controller",
+        "publicKeyMultibase",
+        "webauthnCredentialId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`."
+        },
+        "type": {
+          "type": "string",
+          "const": "Multikey",
+          "description": "Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it."
+        },
+        "controller": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The DID this verificationMethod is published on (the DID being augmented)."
+        },
+        "publicKeyMultibase": {
+          "type": "string",
+          "minLength": 1,
+          "description": "W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit)."
+        },
+        "webauthnCredentialId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment."
+        },
+        "webauthnTransports": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Optional operator-supplied human-readable label (e.g. \"MacBook Touch ID\"). Informational; not authoritative and not a security input."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Passkey-VM Enroll Submit — response payload",
+      "description": "Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verificationMethod",
+        "webvhVersion"
+      ],
+      "properties": {
+        "verificationMethod": {
+          "$ref": "#/$defs/PasskeyVerificationMethod",
+          "description": "The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative."
+        },
+        "webvhVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The WebVH log-entry version that recorded the change (e.g. \"3-Qm…\")."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PasskeyVerificationMethod": {
+      "title": "PasskeyVerificationMethod",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "controller",
+        "publicKeyMultibase",
+        "webauthnCredentialId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`."
+        },
+        "type": {
+          "type": "string",
+          "const": "Multikey",
+          "description": "Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it."
+        },
+        "controller": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The DID this verificationMethod is published on (the DID being augmented)."
+        },
+        "publicKeyMultibase": {
+          "type": "string",
+          "minLength": 1,
+          "description": "W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit)."
+        },
+        "webauthnCredentialId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment."
+        },
+        "webauthnTransports": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Optional operator-supplied human-readable label (e.g. \"MacBook Touch ID\"). Informational; not authoritative and not a security input."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -140,4 +417,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

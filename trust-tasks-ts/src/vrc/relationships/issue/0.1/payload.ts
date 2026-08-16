@@ -52,15 +52,139 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vrc/relationships/
 export type Response = VRCRelationshipsIssueResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vrc/relationships/issue/0.1",
+  "title": "VRC Relationships Issue — payload",
+  "description": "Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange. Performed once in each direction; the response is a delivery receipt naming what was stored, and does not echo the credential back.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vrc"
+  ],
+  "properties": {
+    "vrc": {
+      "type": "object",
+      "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing party's relationship DID and its credential subject MUST name the receiving party's relationship DID — the values the accepted proposal exchanged."
+    },
+    "vrcDigestMultibase": {
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "Digest over the RFC 8785 canonicalization of the credential, so the delivery can be tied to later references to it without re-hashing. A producer SHOULD set it; the receipt's own digest is what makes the round trip checkable, so a producer that omits it can still verify the delivery against the credential it holds."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VRC Relationships Issue — response payload",
+      "description": "The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\n\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vrcDigestMultibase"
+      ],
+      "properties": {
+        "vrcDigestMultibase": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VRC Relationships Issue — response payload",
+      "description": "The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\n\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vrcDigestMultibase"
+      ],
+      "properties": {
+        "vrcDigestMultibase": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -73,4 +197,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

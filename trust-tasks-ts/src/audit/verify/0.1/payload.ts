@@ -79,15 +79,252 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/audit/verify/0.1#r
 export type Response = AuditVerifyResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/audit/verify/0.1",
+  "title": "Audit Verify — payload",
+  "description": "Request to verify the integrity of a maintainer's append-only audit hash chain. The request carries no parameters — verification is store-wide.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Audit Verify — response payload",
+      "description": "The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified",
+        "entriesExamined",
+        "entriesVerified",
+        "legacySkipped",
+        "unparseableSkipped"
+      ],
+      "properties": {
+        "verified": {
+          "type": "boolean",
+          "description": "True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity."
+        },
+        "entriesExamined": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total envelopes walked, including those skipped."
+        },
+        "entriesVerified": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes whose links were actually checked (examined minus skipped)."
+        },
+        "legacySkipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix."
+        },
+        "unparseableSkipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed."
+        },
+        "head": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty."
+        },
+        "chainBreak": {
+          "$ref": "#/$defs/ChainBreak",
+          "description": "Present iff `verified` is false — the first inconsistency found. Absent when verified."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "ChainBreak": {
+      "$anchor": "chainBreak",
+      "title": "ChainBreak",
+      "description": "Locates the first envelope at which chain verification failed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "index"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "tamperedEntry",
+            "brokenLink"
+          ],
+          "description": "`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication."
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based position in chronological order of the offending envelope."
+        },
+        "eventId": {
+          "type": "string",
+          "description": "Identifier of the offending envelope, when it has one (an unparseable envelope may not)."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Audit Verify — response payload",
+      "description": "The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified",
+        "entriesExamined",
+        "entriesVerified",
+        "legacySkipped",
+        "unparseableSkipped"
+      ],
+      "properties": {
+        "verified": {
+          "type": "boolean",
+          "description": "True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity."
+        },
+        "entriesExamined": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total envelopes walked, including those skipped."
+        },
+        "entriesVerified": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes whose links were actually checked (examined minus skipped)."
+        },
+        "legacySkipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix."
+        },
+        "unparseableSkipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed."
+        },
+        "head": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty."
+        },
+        "chainBreak": {
+          "$ref": "#/$defs/ChainBreak",
+          "description": "Present iff `verified` is false — the first inconsistency found. Absent when verified."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "ChainBreak": {
+      "$anchor": "chainBreak",
+      "title": "ChainBreak",
+      "description": "Locates the first envelope at which chain verification failed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "index"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "tamperedEntry",
+            "brokenLink"
+          ],
+          "description": "`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication."
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based position in chronological order of the offending envelope."
+        },
+        "eventId": {
+          "type": "string",
+          "description": "Identifier of the offending envelope, when it has one (an unparseable envelope may not)."
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -100,4 +337,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

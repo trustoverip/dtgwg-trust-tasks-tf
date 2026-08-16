@@ -124,13 +124,148 @@ export const TYPE_URI = "https://trusttasks.org/spec/trust-ceremony-receipt/0.1"
 export type Payload = TrustCeremonyReceiptPayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/trust-ceremony-receipt/0.1",
+  "title": "Trust Ceremony Receipt — payload",
+  "description": "Evidence that one enactment of a Trust Ceremony completed (SPEC §4.11, §6.7).\n\nThe recorder attests COMPLETENESS AND ORDERING ONLY — never the content of any step. Each enumerated step carries its own issuer's proof and is verifiable independently, so a receipt does not make its recorder a trusted third party: it makes the recorder's claim checkable.\n\nA verifier evaluates the definition's completion rule itself over the enumerated steps. `complete` records what the recorder believed, not what the verifier may assume.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "enactment",
+    "definition",
+    "definitionDigest",
+    "complete",
+    "steps"
+  ],
+  "properties": {
+    "enactment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The enactment this receipt reports on — the value every enumerated step carries in its `ceremony.enactment` member. Globally unique and never reused (SPEC §4.11)."
+    },
+    "parentEnactment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The enactment containing this one, where the ceremony was conducted as a step of another. Present so a receipt used as a parent's step evidence names its own place in the tree; one level, as on the envelope member."
+    },
+    "definition": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "description": "The ceremony definition the enactment ran under (SPEC §6.7). REQUIRED here, unlike on the envelope: a receipt asserts that a flow COMPLETED, and completeness is meaningless without the rule that defines it."
+    },
+    "definitionDigest": {
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "Multibase-multihash over the RFC 8785 (JCS) canonicalization of that definition. MUST equal the `ceremony.definitionDigest` every enumerated step carried. It is what stops the completion rule being changed after the fact by whoever controls the definition URI."
+    },
+    "complete": {
+      "type": "boolean",
+      "description": "Whether the recorder considers the enactment complete.\n\nNOT authoritative. A verifier holding the pinned definition evaluates its completion rule over `steps` directly, and a receipt whose enumerated steps do not satisfy that rule is incomplete however this member is set. It is carried because it distinguishes a recorder that is mistaken from one that is lying — both are visible, and only the second is an attack."
+    },
+    "salt": {
+      "type": "string",
+      "minLength": 22,
+      "description": "The per-enactment salt used to compute every step digest, multibase-encoded, with at least 128 bits of entropy.\n\nREQUIRED whenever any step of the enactment carried `ceremony.prev`, because without it the chain cannot be recomputed and the recorder's ordering claim rests on nothing — which is the whole reason `receipt` implies `chained`.\n\nRevealing it here is deliberate. The salt defends against a party who observes a document or a bare digest in transit, which is the threat `task-consent` names for its own salted digest; it is not intended to defend against a party holding this receipt, who is by construction entitled to know the enactment happened and in what order. A ceremony whose step CONTENT must stay hidden from receipt holders wants `enactmentPrivacy: blinded`, not a withheld salt."
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every step of the enactment, in the order the recorder observed them. A set containing no step marked `terminal` is a PREFIX, not a completed enactment — which is what makes truncation detectable, since the marker cannot be minted without the terminal step issuer's key.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step",
+          "typeUri",
+          "issuer",
+          "id",
+          "digestMultibase"
+        ],
+        "properties": {
+          "step": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The step name from the definition, as carried in the document's `ceremony.step`."
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The document's `ceremony.round`, where the definition permits bounded repetition. Absent means 1. Enumerating rounds separately is what lets a verifier check the repetition bound."
+          },
+          "typeUri": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "description": "The Type URI the step enacted, including any fragment. Checked against the definition's declared type for that step."
+          },
+          "issuer": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The VID that issued the step document. For a step whose multiplicity is `perRole`, this is what distinguishes one instance from another — N approvers each performing one step are N entries differing only here."
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The step document's `id` (SPEC §4.3) — globally unique and never reused, so it names one instance where the step name names a position in the flow, and so a verifier can locate the document the digest is over."
+          },
+          "digestMultibase": {
+            "$ref": "#/$defs/DigestMultibase",
+            "description": "Salted digest of the step document, computed as the specification's Conformance section defines. A verifier holding the document recomputes it; a verifier that does not hold the document still learns that the recorder committed to a specific one."
+          },
+          "terminal": {
+            "type": "boolean",
+            "description": "Whether the step document carried `ceremony.terminal`. At least one enumerated step MUST carry it for the enactment to be complete."
+          }
+        }
+      }
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: true,
   isProofRequired: true,
   isRecipientRequired: false,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;

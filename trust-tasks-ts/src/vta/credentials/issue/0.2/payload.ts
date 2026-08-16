@@ -77,15 +77,290 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/credentials/is
 export type Response = VTACredentialsIssueResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/credentials/issue/0.2",
+  "title": "VTA Credentials Issue — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "holder",
+    "claims",
+    "validitySeconds"
+  ],
+  "properties": {
+    "holder": {
+      "type": "string",
+      "description": "DID of the credential's subject/holder (becomes credentialSubject.id).",
+      "pattern": "^did:"
+    },
+    "claims": {
+      "type": "object",
+      "description": "The scoped claims to attest — the share's scope. Opaque to the framework; non-empty.",
+      "minProperties": 1
+    },
+    "credentialType": {
+      "type": "string",
+      "description": "Additional credential type beyond VerifiableCredential (e.g. ScopedShareCredential). Some values name a claims profile defined by this specification (e.g. GovernancePolicyCredential), which constrains the shape of `claims`."
+    },
+    "validitySeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Credential lifetime in seconds from issuance. The issuer MAY cap this."
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Optional human-readable rationale, recorded for audit."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "GovernancePolicyClaims": {
+      "$anchor": "governancePolicyClaims",
+      "title": "GovernancePolicyClaims",
+      "description": "Claims profile activated by credentialType \"GovernancePolicyCredential\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "policy",
+        "policyHash"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name."
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Trust context the domain belongs to, when the issuing VTA partitions per context."
+        },
+        "policy": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose."
+        },
+        "policyHash": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation."
+        },
+        "policyMediaType": {
+          "type": "string",
+          "description": "Media type of the `policy` document. Default application/json."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Credentials Issue — response payload",
+      "description": "The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/IssuedCredentialBase"
+        }
+      ],
+      "properties": {
+        "supersedes": {
+          "type": "string",
+          "description": "credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "IssuedCredentialBase": {
+      "$anchor": "issuedCredentialBase",
+      "title": "IssuedCredentialBase",
+      "description": "The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.\n\nA closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.",
+      "type": "object",
+      "required": [
+        "credentialId",
+        "credential",
+        "expiresAt"
+      ],
+      "properties": {
+        "credentialId": {
+          "$ref": "#/$defs/CredentialId"
+        },
+        "credential": {
+          "type": "object",
+          "description": "The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential was minted."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential's validUntil falls due."
+        }
+      }
+    },
+    "CredentialId": {
+      "$anchor": "credentialId",
+      "title": "CredentialId",
+      "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "GovernancePolicyClaims": {
+      "$anchor": "governancePolicyClaims",
+      "title": "GovernancePolicyClaims",
+      "description": "Claims profile activated by credentialType \"GovernancePolicyCredential\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "policy",
+        "policyHash"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name."
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Trust context the domain belongs to, when the issuing VTA partitions per context."
+        },
+        "policy": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose."
+        },
+        "policyHash": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation."
+        },
+        "policyMediaType": {
+          "type": "string",
+          "description": "Media type of the `policy` document. Default application/json."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Credentials Issue — response payload",
+      "description": "The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/IssuedCredentialBase"
+        }
+      ],
+      "properties": {
+        "supersedes": {
+          "type": "string",
+          "description": "credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "IssuedCredentialBase": {
+      "$anchor": "issuedCredentialBase",
+      "title": "IssuedCredentialBase",
+      "description": "The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.\n\nA closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.",
+      "type": "object",
+      "required": [
+        "credentialId",
+        "credential",
+        "expiresAt"
+      ],
+      "properties": {
+        "credentialId": {
+          "$ref": "#/$defs/CredentialId"
+        },
+        "credential": {
+          "type": "object",
+          "description": "The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential was minted."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential's validUntil falls due."
+        }
+      }
+    },
+    "CredentialId": {
+      "$anchor": "credentialId",
+      "title": "CredentialId",
+      "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -98,4 +373,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

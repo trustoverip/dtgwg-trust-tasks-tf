@@ -3,7 +3,7 @@
 
 #![cfg(feature = "validate")]
 
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, validate::ValidatedPayload};
+use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, validate::ValidatedPayload, Payload};
 
 #[test]
 fn valid_payload_passes_schema_check() {
@@ -45,9 +45,15 @@ fn unknown_field_fails_when_schema_forbids_it() {
 
 #[test]
 fn schema_json_is_embedded_at_compile_time() {
-    // The const is exposed via the trait — implementors can read it for
-    // logging or to wire up custom validators.
-    let schema = grant::Payload::SCHEMA_JSON;
+    // Exposed on `Payload` rather than on `ValidatedPayload`, and without the
+    // `validate` feature: a caller supplying their own validator needs the
+    // schema, and gating it was what put it out of reach.
+    let schema = <grant::Payload as Payload>::PAYLOAD_SCHEMA.expect("generated payloads carry it");
     assert!(schema.contains("\"$id\""));
     assert!(schema.contains("acl/grant/0.1"));
+
+    // Response variants carry one too — the defect in #230 was on a response.
+    let response =
+        <grant::Response as Payload>::PAYLOAD_SCHEMA.expect("response variants carry it too");
+    assert!(response.contains("#/$defs/Response"));
 }

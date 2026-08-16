@@ -18,6 +18,8 @@ import {
   StaticTransport,
   UnauthenticatedTransport,
   type ConsumeOutcome,
+  type PayloadPolicy,
+  type PayloadValidator,
   type ProofPolicy,
   type ProofVerifier,
   type SpecPolicy,
@@ -73,6 +75,37 @@ const PROOF = {
 };
 
 const alwaysValid: ProofVerifier = { verify: () => true };
+
+/** A schema that requires `role`, standing in for a generated PAYLOAD_SCHEMA. */
+const ROLE_SCHEMA = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  type: "object",
+  required: ["role"],
+  properties: { role: { type: "string" } },
+} as const;
+
+const SPEC_WITH_SCHEMA: SpecPolicy = { ...REQUIRED_SPEC, payloadSchema: ROLE_SCHEMA };
+
+/**
+ * Stands in for ajv: refuses any payload missing a member the schema's
+ * `required` names. Deliberately not a real JSON Schema engine — these tests
+ * assert that the pipeline consults the validator and routes its verdict, not
+ * that somebody else's validator is correct.
+ */
+const requiredMembersValidator: PayloadValidator = {
+  validate(schema, payload) {
+    const required = (schema as { required?: string[] }).required ?? [];
+    const obj = (payload ?? {}) as Record<string, unknown>;
+    const missing = required.filter((k) => !(k in obj));
+    return missing.length === 0 ? true : { ok: false, errors: missing.map((k) => `missing ${k}`) };
+  },
+};
+
+const throwingValidator: PayloadValidator = {
+  validate() {
+    throw new Error("validator exploded");
+  },
+};
 const alwaysInvalid: ProofVerifier = { verify: () => false };
 
 const CLOCK = () => "2026-01-01T00:00:00.000Z";
@@ -82,14 +115,17 @@ function run(
   opts: {
     spec?: SpecPolicy;
     proofPolicy?: ProofPolicy;
+    payloadPolicy?: PayloadPolicy;
     transport?: TransportHandler;
     handlerShouldNotRun?: boolean;
+    handlerReturnsNothing?: boolean;
   } = {},
 ): Promise<ConsumeOutcome<Response>> {
   return consumeInbound<Payload, Response>({
     transport: opts.transport ?? new UnauthenticatedTransport(),
     spec: opts.spec ?? REQUIRED_SPEC,
     proofPolicy: opts.proofPolicy ?? { kind: "verify", verify: alwaysValid },
+    payloadPolicy: opts.payloadPolicy ?? { kind: "acceptUnvalidated" },
     doc: doc(over),
     myVid: ME,
     now: Date.parse("2026-01-01T00:00:00Z"),
@@ -97,6 +133,7 @@ function run(
     clock: CLOCK,
     handler: (accepted) => {
       if (opts.handlerShouldNotRun) assert.fail("handler must not run");
+      if (opts.handlerReturnsNothing) return undefined;
       return respondWith<Payload, Response>(accepted, "resp-1", { ok: true }, CLOCK);
     },
   });
@@ -245,6 +282,7 @@ describe("§4.8.1 party resolution", () => {
       transport,
       spec: RELAXED_SPEC,
       proofPolicy: { kind: "rejectIfPresent" },
+      payloadPolicy: { kind: "acceptUnvalidated" },
       doc: doc({ issuer: undefined, recipient: ME }),
       myVid: ME,
       now: Date.now(),
@@ -303,6 +341,7 @@ describe("handler refusals", () => {
       transport: new UnauthenticatedTransport(),
       spec: RELAXED_SPEC,
       proofPolicy: { kind: "rejectIfPresent" },
+      payloadPolicy: { kind: "acceptUnvalidated" },
       doc: doc({ proof: undefined }),
       myVid: ME,
       now: Date.now(),
@@ -415,5 +454,96 @@ describe("§8.2 inResponseTo", () => {
     assert.ok(outcome.kind === "rejected");
     assert.equal(outcome.error.payload.inResponseTo?.typeUri, REQUIRED_SPEC.typeUri);
     assert.equal(outcome.error.payload.inResponseTo?.id, "req-1");
+  });
+});
+
+describe("§7.2 item 2 — payload schema validation", () => {
+  it("rejects a payload missing a REQUIRED member, before the handler runs", async () => {
+    // The defect this suite exists for: with no validator this document was
+    // `handled`, and every REQUIRED member was optional in practice.
+    const outcome = await run(
+      { proof: PROOF, payload: {} as never },
+      {
+        spec: SPEC_WITH_SCHEMA,
+        payloadPolicy: { kind: "validate", validate: requiredMembersValidator },
+        handlerShouldNotRun: true,
+      },
+    );
+    assert.equal(rejectedCode(outcome), "malformedRequest");
+    assert.ok(outcome.kind === "rejected");
+    assert.match(outcome.error.payload.message ?? "", /missing role/);
+    assert.match(outcome.error.payload.message ?? "", /item 2/);
+  });
+
+  it("accepts a conforming payload", async () => {
+    const outcome = await run(
+      { proof: PROOF },
+      {
+        spec: SPEC_WITH_SCHEMA,
+        payloadPolicy: { kind: "validate", validate: requiredMembersValidator },
+      },
+    );
+    assert.equal(outcome.kind, "handled");
+  });
+
+  it("treats a throwing validator as a rejection, not a pass", async () => {
+    // A validator that throws has not accepted anything. Letting the exception
+    // through — or swallowing it — would make a broken validator behave like a
+    // passing one, which is the failure mode this policy removes.
+    const outcome = await run(
+      { proof: PROOF },
+      {
+        spec: SPEC_WITH_SCHEMA,
+        payloadPolicy: { kind: "validate", validate: throwingValidator },
+        handlerShouldNotRun: true,
+      },
+    );
+    assert.equal(rejectedCode(outcome), "malformedRequest");
+    assert.ok(outcome.kind === "rejected");
+    assert.match(outcome.error.payload.message ?? "", /validator exploded/);
+  });
+
+  it("acceptUnvalidated really does skip the check", async () => {
+    const outcome = await run(
+      { proof: PROOF, payload: {} as never },
+      { spec: SPEC_WITH_SCHEMA, payloadPolicy: { kind: "acceptUnvalidated" } },
+    );
+    assert.equal(outcome.kind, "handled");
+  });
+
+  it("is a no-op when the spec carries no schema", async () => {
+    // A hand-written SpecPolicy may omit payloadSchema. Validating against
+    // `undefined` would reject everything; skipping is the only sane reading.
+    const outcome = await run(
+      { proof: PROOF },
+      {
+        spec: REQUIRED_SPEC,
+        payloadPolicy: { kind: "validate", validate: requiredMembersValidator },
+      },
+    );
+    assert.equal(outcome.kind, "handled");
+  });
+
+  it("generated SPEC objects carry the schema", async () => {
+    const { WitnessSessionSubmit_v0_1: S } = await import("../src/index.js");
+    assert.ok(S.SPEC.payloadSchema !== undefined, "request SPEC must carry its schema");
+    assert.ok(
+      S.RESPONSE_SPEC.payloadSchema !== undefined,
+      "RESPONSE_SPEC must carry its schema — the reported defect was on a response",
+    );
+    // Self-contained: no cross-file $ref survives into the shipped value.
+    const text = JSON.stringify(S.RESPONSE_SPEC.payloadSchema);
+    assert.doesNotMatch(text, /"\$ref":"[^#]/, "cross-file $refs must be inlined");
+    assert.match(text, /vwcDigestMultibase/);
+  });
+});
+
+describe("a handler that returns nothing", () => {
+  it("yields `accepted` rather than throwing", async () => {
+    // SPEC §4.4.1: a spec with no success response has consumers that MUST NOT
+    // emit one. Before this, returning nothing threw a bare TypeError out of
+    // isErrorResponse.
+    const outcome = await run({ proof: PROOF }, { handlerReturnsNothing: true });
+    assert.equal(outcome.kind, "accepted");
   });
 });

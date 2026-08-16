@@ -114,15 +114,385 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/sign-trust-t
 export type Response = VaultSignTrustTaskResponsePayload;
 
 /**
+ * This specification's payload schema, as a value.
+ *
+ * SPEC.md §7.2 item 2 is performed against this. It is shipped as data
+ * rather than only as a `.json` file because TypeScript types are erased
+ * at runtime: without a schema a consumer has nothing to validate, and
+ * every REQUIRED payload member is optional in practice. Cross-file
+ * `$ref`s are already inlined, so it needs no resolver.
+ */
+export const PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vault/sign-trust-task/0.2",
+  "title": "Vault Sign Trust Task — payload",
+  "description": "Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` or `didcommPeer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.1`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId",
+    "unsignedEnvelope"
+  ],
+  "properties": {
+    "entryId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the vault entry whose principal will sign. The maintainer rejects with `not_signable` when `entry.secretKind` is not `didSelfIssued` or `didcommPeer` (other kinds have no DID-based signing identity)."
+    },
+    "unsignedEnvelope": {
+      "$ref": "#/$defs/UnsignedTrustTaskEnvelope",
+      "description": "The Trust Task document to sign. MUST satisfy the framework's structural requirements (id/type/issuer/recipient/issuedAt/payload). MUST NOT carry a `proof`. `issuer` MUST equal the referenced entry's principalDid — the maintainer refuses to silently rewrite `issuer` (see `envelope_issuer_mismatch`)."
+    },
+    "consumerContext": {
+      "$ref": "#/$defs/ConsumerContext",
+      "description": "Caller's situational context — fed to the policy engine."
+    },
+    "stepUpProof": {
+      "$ref": "#/$defs/StepUpProof",
+      "description": "Step-up proof on retry after `stepUpRequired`."
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "UnsignedTrustTaskEnvelope": {
+      "$anchor": "unsigned-envelope",
+      "title": "Unsigned Trust Task envelope",
+      "description": "Permissive shape for an unsigned Trust Task document — the framework-required members MUST be present, and `proof` MUST NOT be. The maintainer does not validate the inner `payload` against the embedded `type`'s schema; that validation is the recipient's responsibility.",
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "issuer",
+        "recipient",
+        "issuedAt",
+        "payload"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Envelope identifier. Set by the producer of the inner task."
+        },
+        "threadId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional thread/correlation id, per framework §4.x."
+        },
+        "type": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`)."
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Issuer DID of the inner task. MUST equal the vault entry's principalDid — the maintainer rejects mismatches with `envelope_issuer_mismatch` rather than overwriting."
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recipient DID — the relying party / audience the signed envelope will be delivered to."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Producer's wall-clock when the inner task was constructed. Maintainer copies through; the proof's `created` is the maintainer's wall-clock at signing."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional inner-task expiry. The maintainer rejects with `envelope_expired` when this is in the past at sign time."
+        },
+        "payload": {
+          "description": "Inner task's payload object. Opaque to the maintainer — passed through unchanged into the signed envelope."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      },
+      "not": {
+        "required": [
+          "proof"
+        ]
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Sign Trust Task — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signedEnvelope"
+      ],
+      "properties": {
+        "signedEnvelope": {
+          "type": "object",
+          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
+          "required": [
+            "id",
+            "type",
+            "issuer",
+            "recipient",
+            "issuedAt",
+            "payload",
+            "proof"
+          ]
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "StepUpProof": {
+      "title": "StepUpProof",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "proof",
+        "challengeId"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "webauthnUv",
+            "pushApproval",
+            "totp"
+          ]
+        },
+        "proof": {
+          "type": "string",
+          "description": "Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code."
+        },
+        "challengeId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Maintainer-issued challenge id the proof responds to."
+        }
+      }
+    },
+    "ConsumerContext": {
+      "title": "ConsumerContext",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity."
+        },
+        "lastUserVerificationAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds."
+        },
+        "networkClass": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "home",
+            "corp",
+            "public",
+            "vpn"
+          ],
+          "description": "Producer-supplied network classification. Advisory."
+        }
+      }
+    }
+  }
+} as const;
+
+/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
+export const RESPONSE_PAYLOAD_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Response",
+  "$defs": {
+    "UnsignedTrustTaskEnvelope": {
+      "$anchor": "unsigned-envelope",
+      "title": "Unsigned Trust Task envelope",
+      "description": "Permissive shape for an unsigned Trust Task document — the framework-required members MUST be present, and `proof` MUST NOT be. The maintainer does not validate the inner `payload` against the embedded `type`'s schema; that validation is the recipient's responsibility.",
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "issuer",
+        "recipient",
+        "issuedAt",
+        "payload"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Envelope identifier. Set by the producer of the inner task."
+        },
+        "threadId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional thread/correlation id, per framework §4.x."
+        },
+        "type": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`)."
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Issuer DID of the inner task. MUST equal the vault entry's principalDid — the maintainer rejects mismatches with `envelope_issuer_mismatch` rather than overwriting."
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recipient DID — the relying party / audience the signed envelope will be delivered to."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Producer's wall-clock when the inner task was constructed. Maintainer copies through; the proof's `created` is the maintainer's wall-clock at signing."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional inner-task expiry. The maintainer rejects with `envelope_expired` when this is in the past at sign time."
+        },
+        "payload": {
+          "description": "Inner task's payload object. Opaque to the maintainer — passed through unchanged into the signed envelope."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      },
+      "not": {
+        "required": [
+          "proof"
+        ]
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Vault Sign Trust Task — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signedEnvelope"
+      ],
+      "properties": {
+        "signedEnvelope": {
+          "type": "object",
+          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
+          "required": [
+            "id",
+            "type",
+            "issuer",
+            "recipient",
+            "issuedAt",
+            "payload",
+            "proof"
+          ]
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "StepUpProof": {
+      "title": "StepUpProof",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "proof",
+        "challengeId"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "webauthnUv",
+            "pushApproval",
+            "totp"
+          ]
+        },
+        "proof": {
+          "type": "string",
+          "description": "Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code."
+        },
+        "challengeId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Maintainer-issued challenge id the proof responds to."
+        }
+      }
+    },
+    "ConsumerContext": {
+      "title": "ConsumerContext",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity."
+        },
+        "lastUserVerificationAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds."
+        },
+        "networkClass": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "home",
+            "corp",
+            "public",
+            "vpn"
+          ],
+          "description": "Producer-supplied network classification. Advisory."
+        }
+      }
+    }
+  }
+} as const;
+
+/**
  * SPEC.md §7.2 policy for the request variant, from this specification's
  * front matter. Pass to `consumeInbound` — items 5b, 7 and 8 are
- * per-specification and cannot be derived from the document alone.
+ * per-specification and cannot be derived from the document alone, and
+ * item 2 needs the schema this carries.
  */
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
 /**
@@ -135,4 +505,5 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
+  payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

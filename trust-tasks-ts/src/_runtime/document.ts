@@ -172,6 +172,15 @@ export interface SpecPolicy {
   readonly isProofRequired: boolean;
   /** §7.3 item 5 — the party filling `recipient` is REQUIRED. */
   readonly isRecipientRequired: boolean;
+  /**
+   * §7.2 item 2 — this variant's payload schema, as a value.
+   *
+   * Carried here because TypeScript types are erased at runtime: a consumer
+   * holding a `TrustTaskDocument<P>` has no artifact to validate against
+   * unless the schema travels with the policy. `undefined` only for a
+   * hand-written policy that omits it.
+   */
+  readonly payloadSchema?: unknown;
 }
 
 /** Why a consumer rejected a document, and the §8.3 code it maps to. */
