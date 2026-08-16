@@ -48,6 +48,16 @@ Draft.
 
 Admin caller emits `type: https://trusttasks.org/spec/did-management/domain/assign/0.1` with `payload.instanceId` and `payload.domain`. Consumer validates both, queues the outbound assign, and replies with the queued status.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is **administrator standing on this consumer**, in the sense the consumer's own deployment defines. The Abstract calls the producer an "admin caller"; that names who the task expects, not something the document proves.
+
+Nothing in the payload carries that standing, and nothing in the document can. The consumer establishes it from the authenticated producer identity and its own records, and refuses with `permissionDenied` where it is absent.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Request
 
 ```json

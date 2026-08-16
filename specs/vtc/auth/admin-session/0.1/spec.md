@@ -51,6 +51,16 @@ Consumer: validate the token exactly as a bearer on any other route — same aud
 
 The cookie side-effect is a **transport binding concern**, not payload: a non-browser consumer of this task gets the same session semantics without cookies.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is possession of a **currently-valid `accessToken` issued by this community**, validated exactly as a bearer credential on any other route — same audience, same expiry, same session lookup. A token this community did not issue is refused with `invalidToken`.
+
+This exchange creates a cookie session, so the authority it rests on is bearer authority and carries bearer risk: whoever holds the token gets the session. The declared exposure (`discloses: secret`, `actsAsSubject: true`) is a statement about that. Binding the cookie session to the same identity and expiry as the token is what stops the exchange silently extending a session's life beyond the authority that created it.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Security & Privacy
 
 `exposure.discloses` is `secret` because the response *is* an authenticator — the `Set-Cookie` headers authenticate every subsequent request from that browser.

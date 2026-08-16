@@ -82,6 +82,16 @@ A conforming **consumer** (the VTA) **MUST**:
 2. Respond with `vta/credentials/revoke:not_found` when the id is unknown, and `vta/credentials/revoke:already_revoked` when it was already revoked.
 3. Otherwise mark the credential revoked (recording `revokedAt`) and return the `#response` document.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is the producer's standing as the **issuing authority for the credential named by `payload.credentialId`** — in the ordinary case, the party that issued it. The VTA establishes that from the authenticated producer identity and its own issuance record.
+
+Neither error code Conformance names is that check. `not_found` and `already_revoked` are both statements about the credential's state, and a consumer that returns them without first establishing standing has told an unauthorized caller whether a credential exists and whether it is live. Where the producer lacks standing the VTA refuses with `permissionDenied`, and **SHOULD** do so without distinguishing an unknown credential from one the caller may not revoke.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Definitions
 
 * **Issuing authority.** The party instructing revocation; identified by `issuer`.

@@ -86,6 +86,16 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 4. Reject any revocation that would leave the ACL with no holder of a privileged role required by the maintainer's policy, returning `acl/revoke:last_authority_protected`.
 5. On acceptance, persist the document as the evidentiary record of the change.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is either **self-revocation** — the revoking party is the subject — or the revoking party's standing to remove that subject, as Conformance item 2 already requires the maintainer to confirm.
+
+The `acl/revoke:last_authority_protected` refusal is **not** an authorization check and must not be mistaken for one. It fires after the caller has been authorized, and protects the ACL from being left with no holder of a privileged role — a policy invariant about the resulting state, not about who asked.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Definitions
 
 * **Revoking party.** The party invoking the revocation; identified by `issuer`. May be an authorized administrator or the subject themselves.

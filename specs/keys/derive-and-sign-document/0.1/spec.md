@@ -66,6 +66,16 @@ A conforming **consumer** (the key custodian) **MUST**:
 4. Canonicalize and construct the proof, recording `proofPurpose` (defaulting to `assertionMethod`) and a verification method that resolves under the derived `did:key`.
 5. Return `signerDid` and the proofed `document`, and **not** the derived private key.
 
+## Authorization
+
+*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+
+The authorization evidence this task presupposes is the consumer's own decision, made per request, that **this producer may derive and sign at this path** — the same policy question `keys/derive-and-sign` asks, applied to a document rather than to raw bytes.
+
+A derivation path is not a stored record, so there is no per-key ACL to consult and the policy has to be expressed over paths. `exposure.actsAsSubject` is `true` here: the signature is produced under the subject's own authority, so an over-broad path policy does not merely leak, it lets a producer act as someone else.
+
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+
 ## Definitions
 
 * **Producer.** The party supplying the document; identified by `issuer`.
