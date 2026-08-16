@@ -74,6 +74,7 @@ pub mod trust_ceremony_receipt;
 pub mod trust_task_control;
 pub mod trust_task_discovery;
 pub mod trust_task_next_step;
+pub mod trust_task_ok;
 pub mod vault;
 pub mod vrc;
 pub mod vta;

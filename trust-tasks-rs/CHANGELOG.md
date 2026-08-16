@@ -29,6 +29,22 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.8.1] - 2026-08-16
+
+### Added
+
+- **`trust-task-ok/0.1`** payload types, generated from the new registry entry —
+  the courtesy acknowledgement reserved at SPEC §8.6 since framework 0.1.
+
+  Additive in both libraries: a new module and its exports, no change to any
+  hand-written runtime type. Adding it required no new error code and widened no
+  enum, which is why this is a patch rather than the workspace event 0.8.0 was.
+
+  Note for consumers: the acknowledgement is deliberately weak. SPEC §8.6 makes
+  it normative that a producer MUST NOT rely on receiving one and that the
+  absence of one carries no information, so nothing in this crate treats it as a
+  signal — it is parsed and surfaced, never awaited.
+
 ## [0.8.0] - 2026-08-16
 
 ### Added
