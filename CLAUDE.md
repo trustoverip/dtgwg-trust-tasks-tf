@@ -39,6 +39,30 @@ two lists in lockstep. `checkCategoryTaxonomy()` in `scripts/build-registry.mjs`
 now **fails the build** on an enum entry missing from `data.js` (and warns on the
 reverse), so CI catches this — but the two files are still edited by hand.
 
+## ⚠️ Adding a framework-reserved slug — allowlist it in `spec.meta.schema.json`
+
+The third instance of the same failure mode. SPEC §6.1 reserves every slug
+matching `^trust-(task|ceremony)($|-|/)`, and `specs/spec.meta.schema.json`
+enforces that with a hand-maintained **allowlist** at
+`#/properties/slug/anyOf[1]/enum` naming the framework slugs permitted to use
+the reserved namespace. Publishing a new one (`trust-task-control`,
+`trust-task-ok` when it lands) means updating **both**:
+
+1. `SPEC.md` §6.1 — the reserved-slug table, so the slug is documented.
+2. `specs/spec.meta.schema.json` — the `enum`, so the build accepts it.
+
+Forget the second and `npm run build` fails with:
+
+```
+- trust-task-control/0.1/spec.md: /slug must NOT be valid
+- trust-task-control/0.1/spec.md: /slug must be equal to one of the allowed values
+```
+
+which is the schema saying "your slug hit the reservation and is not on the
+allowlist" in the least helpful way available. The build does catch it — unlike
+the `data.js` trap below, nothing ships broken — but the message points at the
+spec rather than at the list you actually need to edit.
+
 ## ⚠️ Adding a transport binding — register it in `bindings.js` too
 
 Same failure mode, different list. `npm run build` **copies** `bindings/` to
