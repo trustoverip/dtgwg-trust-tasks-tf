@@ -368,6 +368,8 @@ The rule is that such a reference **MUST** name the *innermost* exchange whose d
 
 Naming an enclosing exchange instead collects evidence of the wrong event. Where a witnessing ceremony is conducted inside a broader relationship exchange, for example, only the ceremony's own response attests that the witnessing took place; the enclosing exchange's response attests the relationship interaction and says nothing about the witnessing. A consumer verifying the outer reference would conclude something the documents do not support.
 
+Naming the right exchange is necessary but not sufficient: an `id` identifies a document without binding the citation to it, so a citation relied upon outside the exchange also carries a digest over the document it names. See [§4.9.3](#493-binding-a-citation-to-the-document-it-names).
+
 #### 4.9.2 The `parentThreadId` member
 
 A *Trust Task document* **MAY** include a `parentThreadId` member whose value is the `threadId` of the exchange that contains this one. Its purpose is navigation: it lets a party holding a document from the inner exchange find the exchange it was conducted within, which a flat `threadId` cannot express.
@@ -431,6 +433,35 @@ Where the transport carries its own parent-thread concept, the two **MUST** agre
 > ```
 >
 > Both documents now share `threadId = 4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2`; any subsequent document in this exchange — for example, a retry with a fresh `id` and a valid `proof` — would carry the same `threadId`.
+
+#### 4.9.3 Binding a citation to the document it names
+
+[§4.9.1](#491-naming-an-exchange-from-outside-the-framework) requires an external citation to name an exchange by the `id` of the document that initiated it. An `id` is a *name*. [§4.3](#43-the-id-member) obliges a *conforming producer* to mint it globally unique and never to reuse it, but that obligation constrains conforming producers and nobody else: anyone may write a different document — different parties, different `payload` — and give it the same `id`. A consumer that pairs a citation with a document by comparing `id`s alone accepts that substitute, and then reports an event the documents do not attest.
+
+A citation that will be relied upon by parties outside the exchange **SHOULD** therefore carry, alongside the `id`, a **task digest** over the document it names. Where a citation carries one, it **MUST** be computed as:
+
+```
+taskDigest = multibase( multihash( H( JCS( document ∖ proof ) ) ) )
+```
+
+where:
+
+* `document ∖ proof` is the *Trust Task document* with its **top-level `proof` member removed** where present, and no other member removed or added. A `proof` appearing *within* `payload` — in an embedded presentation, credential, or other artifact — is part of that payload's content and **MUST NOT** be removed. Where the document carries no top-level `proof`, the input is the document unchanged; no placeholder is substituted.
+* `JCS` is the [[RFC8785]] canonicalization, serialized as UTF-8, as used elsewhere in this framework.
+* `H` is any hash function expressible in multihash; the multihash prefix declares which, so the algorithm is not fixed by this specification and survives an algorithm change without a format revision. SHA-256 is **RECOMMENDED**.
+* The result is encoded as a multibase-encoded multihash, per the `DigestMultibase` definition of the framework's *shared schema component* ([§6.6](#66-shared-schema-components)).
+
+The top-level `proof` is excluded because [§4.7](#47-proof) already defines it as excluded from the content a `proof` covers. The digest and the document's own signature therefore commit to the same content, and a document has exactly **one** task digest whether or not anyone ever signed it. A digest whose input included `proof` would be undefined for the documents [§4.7.1](#471-when-to-include-a-proof) permits to carry none, and would change value the moment a document was signed — so a citing party and a verifying party computing it at different points in the document's life would disagree.
+
+A *consumer* verifying a citation **MUST** recompute the digest from the document it holds — removing the top-level `proof` first, where present — and **MUST** compare the **decoded multihash bytes**, not the encoded strings. `DigestMultibase` admits more than one base encoding, and two conforming encodings of the same digest are different strings; a string comparison rejects a valid pairing. A *consumer* that does not implement the hash algorithm named by the multihash prefix **MUST** treat the citation as unverified: it **MUST NOT** recompute under a different algorithm, and **MUST NOT** fall back to `id` comparison alone.
+
+**This is not the document identity of [§7.2](#72-consumer-requirements) item 11.** The two answer different questions and are deliberately computed differently. Item 11 and [§8.4](#84-retry-semantics) ask *which serialization arrived*, so a re-signed `proof` over identical content makes a different document — that is the `idConflict` case, and the distinction is the whole point of the rule. A citation asks *what the document says*, so the same statement signed, unsigned, or re-signed is one document with one task digest. A specification requiring the bytes-as-received sense — [`trust-ceremony-receipt`](https://trusttasks.org/spec/trust-ceremony-receipt/0.1)'s step digest, for one — states so and computes over the document including its `proof`; it is not applying this section loosely.
+
+> **What a task digest establishes, and what it does not** *(this note is non-normative)*
+>
+> Recomputation is unconditional: content that differs cannot produce the value, and there is no string for a substitute document to copy. That is why a digest is preferred here to the cited document's own `proof` value. A `proofValue` is a string, and a string can be pasted verbatim onto a counterfeit; it binds only behind full signature verification — canonicalize, hash, resolve the signer's verification method, verify — which costs more than the digest recompute and is unavailable entirely for the documents [§4.7.1](#471-when-to-include-a-proof) permits to carry no `proof` at all.
+>
+> The digest attests **content**, not authenticity. It is load-bearing because the *citing artifact* carries it under the citer's own signature: a party cannot obtain a signature over a digest of a document the signer never saw, so a counterfeit that borrowed the `id` fails the pairing no matter who wrote it. It says nothing about whether the cited document itself was signed, and a `proof`-stripped copy of a genuine document reproduces the same value by design. Authenticity of the exchange comes from the documents' own proofs under [§4.7.1](#471-when-to-include-a-proof) — a specification whose citations must also establish that the cited document was attributable **MUST** require a `proof` on it, and **MUST NOT** rely on the task digest for that.
 
 ### 4.10 Naming conventions
 
@@ -1410,6 +1441,14 @@ If any step fails, the *consumer* returns an *error response* per [§8](#8-error
 * **`idConflict` ([§8.3](#83-standard-error-codes)).** A new standard error code for a document whose `id` matches one already accepted but whose content differs. Distinguishing this from a retry is the point: a retry is absorbed silently, a conflict is refused. Consumers at earlier framework versions will not recognize the code; `trust-task-error/0.4` carries it.
 
 * **The term *consequential Trust Task* ([§2](#2-terminology)).** The predicate `sideEffects.level ∈ {mutating, destructive} ∨ exposure.discloses = secret ∨ exposure.actsAsSubject = true` is now named once rather than re-spelled at each use, with the fail-safe reading of an absent or unresolvable declaration folded into the definition. No new obligation attaches to the term itself.
+
+* **Binding a citation to the document it names ([§4.9.3](#493-binding-a-citation-to-the-document-it-names)).** §4.9.1 has required an external citation to name an exchange by the initiating document's `id` since 0.3, and an `id` turns out to be only half of an anchor. §4.3's uniqueness obligation binds *conforming producers*; it stops nobody from writing a different document — different parties, different `payload` — and giving it the same `id`. A verifier pairing a credential with a document by `id` equality alone accepts that counterfeit and then reports an event the documents do not attest. The gap was found from the DTG Core Credentials side, on a Verifiable Witness Credential whose `taskContext` is exactly such a citation.
+
+    A citation relied upon outside the exchange now **SHOULD** carry a **task digest** over the document it names, and the computation is fixed where one is carried: JCS over the document with its **top-level `proof` removed**, hashed, multihash-tagged, multibase-encoded. Excluding `proof` is what makes the value well-defined — §4.7 already excludes `proof` from the content a proof covers, so the digest and the signature commit to the same content, and a document has one task digest whether or not it was ever signed. A digest that included `proof` would be undefined for every document §4.7.1 permits to carry none, and would change value at the moment of signing.
+
+    Two rules exist because the obvious implementations get them wrong. Comparison is over the **decoded multihash bytes**, never the encoded string: `DigestMultibase` admits both base58btc and base64url, so two conforming encodings of one digest are different strings and a string compare rejects a valid pairing. And an unimplemented hash algorithm makes a citation **unverified** — never recomputed under a substitute algorithm, and never silently downgraded to `id` comparison.
+
+    The section states plainly what the mechanism does not do. The digest attests content, not authenticity; it is load-bearing because the *citing artifact* signs it, and a `proof`-stripped copy of a genuine document reproduces the same value by design. It is also **not** the document identity of §7.2 item 11, which asks which serialization arrived and counts a re-signed `proof` as a different document — that distinction is `idConflict` and remains untouched. Additive and non-breaking: no document member is added, and no existing citation becomes non-conforming.
 
 * **`trust-task-next-step` published ([§8.6](#86-reserved-response-type-slugs)).** The continuation response reserved since 0.1 now has a registry entry defining its payload. A *next step* is a **third** disposition alongside the success response and the *error response*: the two of those close the originating task, and a next step leaves it **open**. A *consumer* **MUST NOT** report a blocked task as an error, nor a refusal as a next step.
 

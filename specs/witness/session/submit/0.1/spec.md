@@ -72,10 +72,27 @@ obligation refers to:
 1. The delivered VWC's `taskContext` **MUST** equal the `id` of the
    `witness/session` document that opened **this** session — the innermost
    exchange that attests the witnessing, per
-   [SPEC.md §4.9.1](../../../../../SPEC.md#491-naming-an-exchange-from-outside-the-framework).
+   [SPEC.md §4.9.1](../../../../../SPEC.md#491-naming-an-exchange-from-outside-the-framework) —
+   **and** the VWC's `taskDigestMultibase` **MUST** be the *task digest* of
+   that same document, computed per
+   [SPEC.md §4.9.3](../../../../../SPEC.md#493-binding-a-citation-to-the-document-it-names).
+   The `id` locates the session document; the digest binds it. An `id` alone
+   proves nothing about *which* document opened the session, because anyone
+   may write a different one bearing the same `id`.
+
+   `taskDigestMultibase` is a member of the credential, whose schema belongs
+   to DTG Core Credentials; this specification states only the obligation
+   that the value pair with the session document, and §4.9.3 states how the
+   value is computed. Nothing about the session document's own wire shape
+   changes.
 2. A holder later presenting that VWC as proof the witnessing occurred
-   **MUST** retain this `#response` and ship it with the presentation. A
-   verifier pairing the two checks: the evidence's `threadId` equals the
+   **MUST** retain this `#response` **and the `witness/session` document that
+   opened the session**, and ship both with the presentation — the digest
+   check is not performable without the document it is taken over. A
+   verifier pairing them checks: the session document's `id` equals the VWC's
+   `taskContext` **and the VWC's `taskDigestMultibase` reproduces over that
+   document** under §4.9.3, comparing decoded multihash bytes rather than
+   encoded strings; the evidence's `threadId` equals the
    VWC's `taskContext`; the evidence's `type` is this specification's
    `#response`; the evidence's own REQUIRED proof verifies; the evidence's
    `issuer` is the witness that issued the VWC; and the presented credential's
@@ -83,6 +100,33 @@ obligation refers to:
 3. A `trust-task-error` terminating this exchange is diagnostic for the
    parties; it is **not** verifier-facing outcome evidence, and no credential
    may cite an exchange that terminated in one as completed.
+
+### What the digest check settles, and what carries the rest
+
+*This subsection is non-normative.*
+
+`witness/session` declares `proofRequirement.request: OPTIONAL`, so the session
+document a holder ships may carry no `proof` of its own — and per
+[§4.9.3](../../../../../SPEC.md#493-binding-a-citation-to-the-document-it-names)
+the task digest is taken over the document with any top-level `proof` removed,
+so a signed and an unsigned copy of the same session document reproduce the
+same value. Neither fact weakens the pairing, and it is worth being exact about
+why.
+
+The digest is not evidence the *holder* produces; it is a value the **witness
+signed into the VWC**. A witness computes it over the session document it
+actually received, and a counterfeit that borrowed the `id` cannot reproduce
+that value without reproducing the content — which is the attack this rule
+exists to stop. What the holder ships is only the input a verifier needs in
+order to recompute; a substituted input fails, and a `proof`-stripped copy of
+the genuine document is still the genuine document's content.
+
+Attribution of the exchange therefore rests where this specification already
+puts it: on the `#response`, whose `proof` is REQUIRED precisely because it is
+retained and relied upon by parties who were never in the exchange, and whose
+`issuer` a verifier checks against the VWC's issuer. The task digest answers
+*which session document*; the response's proof answers *that this witness
+conducted it*. A verifier needs both, and neither substitutes for the other.
 
 Documents of this exchange carry `parentThreadId` per the rule
 [`witness/session`](../../0.1/spec.md) states; it applies here unchanged.

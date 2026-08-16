@@ -29,6 +29,20 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.8.2] - 2026-08-16
+
+### Changed
+
+- **`witness/session/submit` — the `vwc` member's pairing rule is stated in
+  full.** A Verifiable Witness Credential's `taskContext` names the session
+  document by `id`; its `taskDigestMultibase` must now also be that document's
+  *task digest* (SPEC.md §4.9.3 — JCS over the document with its top-level
+  `proof` removed, multihash, multibase). The `id` locates, the digest binds.
+  Descriptive text only: `vwc` is opaque to this crate, the credential schema
+  belongs to DTG Core Credentials, and no generated type, constant, or wire
+  shape changes. Consumers relying on `SCHEMA_JSON` byte-equality across
+  versions will see the embedded description strings differ.
+
 ## [0.8.1] - 2026-08-16
 
 ### Added

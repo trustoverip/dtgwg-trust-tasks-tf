@@ -97,6 +97,8 @@ digestMultibase = multibase( multihash( H( JCS(document) ‖ salt ) ) )
 where:
 
 * `document` is the complete step *Trust Task document* **including its `proof`**. The digest names *the bytes a party received*, not a re-derivable signing input; excluding `proof` would let one issuer produce two equally valid documents sharing a digest.
+
+    This is deliberately **not** the *task digest* of [SPEC.md §4.9.3](../../../SPEC.md#493-binding-a-citation-to-the-document-it-names), which excludes the top-level `proof`. The two answer different questions. A task digest binds a citation made from outside the framework to *what a document says*, where the same statement legitimately exists in signed and unsigned form and must yield one value either way. A step digest is chain-of-custody within one enactment: the recorder is attesting the artifacts it actually held, this specification already requires each step to carry its own `proof` and a verifier to check it, and here two documents differing only in signature genuinely are two different steps. That is the same sense of document identity [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 11 keys on, and the opposite of what a citation needs.
 * `JCS` is the [[RFC8785]] canonicalization, as used elsewhere in this registry.
 * `salt` is the enactment salt, decoded from its multibase form.
 * `H` is any hash function expressible in multihash; the multihash prefix declares which, so the algorithm is not fixed by this specification.
