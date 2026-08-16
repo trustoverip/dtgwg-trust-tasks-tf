@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Proposed — decisions recorded, no normative text written yet |
-| **Date** | 2026-08-15 |
+| **Status** | Proposed — decisions recorded and reviewed on [#204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues/204); no normative text written yet |
+| **Date** | 2026-08-15, revised 2026-08-16 after review |
 | **Applies to** | Any *producer* that needs previously requested work to stop, and any *consumer* that executes work which outlives the exchange that requested it |
 | **Related** | [#204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues/204), SPEC §7.2 items 10–12, §8, §4.11.4, §6.1, `specs/trust-task-next-step/0.1` |
 
@@ -62,6 +62,16 @@ and it is already placed where it needs to be. What #204 adds is a document
 type, an authorization rule, and a set of dispositions — not a distributed
 algorithm.
 
+**This must be stated, not inferred.** The normative text **MUST** say outright
+that a valid, authorized `trust-task-control` operation is one of the conditions
+§7.2 item 12 requires a *consumer* to re-evaluate before the next irreversible
+effect. Item 12's own wording — "every condition that the *Trust Task
+specification* and the *consumer*'s own policy require for that effect" —
+accommodates a received cancellation, but does not obviously *name* one, and an
+implementer reading item 12 alone would not conclude that control operations
+belong in its scope. Leaving the connection implicit is the single most likely
+way this design fails in implementation.
+
 ## 3. The two directions are not symmetric
 
 An early instinct is to treat "producer cancels" and "recipient cancels" as one
@@ -77,9 +87,10 @@ refusing or abandoning, which §8 error responses already cover, and §7.2 item 
 already tells it to report partial execution distinguishably. It needs no
 control document, only a code that says what happened (§7).
 
-This asymmetry is also what makes §5's authorization rule tolerable. A recipient
-operator never needs to *send* a cancellation, so restricting who may send one
-does not disenfranchise them.
+The asymmetry also bounds what §5's authorization rule has to carry. A recipient
+operator never needs to *send* a cancellation — it stops and emits `cancelled` —
+so the question of who may send one concerns the *producer* side alone, and does
+not have to be stretched to cover operator intervention.
 
 ## 4. Scope
 
@@ -100,19 +111,49 @@ non-discriminating fields. A *consumer* at the older version fails validation
 rather than misbehaving, which is a safe failure — but it is a failure, and the
 version arithmetic should be decided deliberately when `supersede` lands.
 
-## 5. Authorization: only the initiator
+## 5. Authorization: the initiator by default
 
-**Decision: only the original initiator may cancel, suspend, or resume a task.**
+**Decision: the original initiator is authorized to cancel, suspend, or resume
+a task by default. Whether a *consumer* honours a control document from any
+other party is that *consumer*'s own policy under §7.2 item 10.**
 
-The control document's `issuer` **MUST** be the same party as the target
-document's `issuer`. Where the target carried no in-band `issuer`, "same party"
-means the same authenticated identity under §4.8.1's precedence.
+A control document whose `issuer` is the same party as the target document's
+`issuer` is authorized without further evidence. Where the target carried no
+in-band `issuer`, "same party" means the same authenticated identity under
+§4.8.1's precedence.
 
-This is stricter than the framework's usual posture — §7.2 item 10 leaves
-authorization to the *consumer*'s policy — and the strictness is affordable
-precisely because of §3: an operator who wants work stopped does not send a
-control document, it stops and emits `cancelled`. The two paths cover the two
-parties, and neither needs to reach into the other's.
+This is a **floor, not a ceiling**, and the distinction is the substantive
+correction to the first draft of this note. That draft made the initiator the
+*only* authorized party, on the reasoning that §3's asymmetry made the
+restriction affordable: an operator who wants work stopped does not send a
+control document, it stops and emits `cancelled`.
+
+That reasoning holds while the two parties are the only participants. It does
+not hold where a *consumer* executes on behalf of a third party — a mandate
+holder, a supervising principal, an organization whose agent initiated the work
+— which is exactly the delegated and agentic execution this framework exists to
+support. Such a party may have an entirely legitimate interest in stopping work
+it did not itself initiate, and an absolute rule would foreclose that at
+framework level, where §7.2 item 10 has deliberately left every other
+authorization decision to the *consumer*.
+
+Making it a default costs nothing: a *consumer* that wishes to recognize only
+the initiator simply does, and one operating under a governance framework that
+recognizes supervising principals may say so. Relaxing an absolute rule later
+would have been a breaking change to the control specification; declining to
+make it absolute now is free.
+
+Two consequences still fall out:
+
+* **Ceremony membership authorizes nothing.** §4.11.4 already says so, so being
+  a step of the same enactment does not let one party cancel another's task —
+  and this remains true under the relaxed rule, because ceremony membership is
+  an assertion by the document's issuer rather than verified authority.
+* **`proof` is REQUIRED on a control document**, with audience binding. A forged
+  cancellation is a denial-of-service against someone else's work, and the
+  document is worthless as evidence of withdrawal if it cannot be attributed.
+  This matters *more* under a floor than a ceiling: once a *consumer* may
+  recognize parties other than the initiator, attribution is doing more work.
 
 Two consequences fall out for free:
 
@@ -211,19 +252,34 @@ was stopped by the recipient may well want to.
 
 ## 9. Suspension, resumption, and expiry
 
-**A suspended task is not "under way."** It returns to a pre-execution state,
-and this single definition resolves the interaction with `expiresAt` without any
-new rule:
+**Suspension halts further effects and preserves current execution state.** It
+does **not** return the task to a pre-execution state.
 
-* §7.2 item 4 forbids *beginning* work on an expired document.
-* Resuming is beginning work.
-* Therefore a suspension that outlives `expiresAt` cannot be resumed, and the
-  *producer* issues a fresh document if it still wants the work.
+The first draft of this note said it did, and used that to derive the expiry
+behaviour below for free. That framing was wrong, and wrong in a way that
+contradicted §7 of this same note: you cannot return a task to a pre-execution
+state without undoing what it has already done, and §7 says cancellation never
+undoes anything. A suspended task that had applied partial effects still has
+them; the *consumer* retains whatever state it holds, and resumption continues
+from there rather than starting over.
 
-That is the desired behaviour, obtained for free, and — importantly — **without
-contradicting §7.2 item 12**, which forbids abandoning execution merely because
-`expiresAt` passed. Execution under way is protected; a suspension is not
-execution under way.
+**A suspension that outlives `expiresAt` cannot be resumed.** With the
+pre-execution fiction removed this is stated directly rather than derived:
+
+> A *consumer* **MUST NOT** resume a suspended task after the target document's
+> `expiresAt`.
+
+The justification is that **resumption is a fresh decision to proceed** — §7.2
+item 4's acceptance question asked a second time — whereas execution already in
+progress is protected by item 12's deliberate exclusion of expiry. Suspension
+preserves state; it does not preserve an indefinite right to restart. A
+*producer* that still wants the work issues a new document, as it would after
+any other refusal.
+
+This keeps all three constraints intact at once, which is why it is worth
+stating carefully: execution under way is never abandoned merely because a clock
+passed (§7.2 item 12); a suspension does not silently become permanent; and
+nothing is rolled back (§7).
 
 **A suspension carries no producer-set timer.** A "resume automatically after X"
 field was considered and rejected twice over. It repeats the mistake §7.2 item
@@ -351,20 +407,26 @@ A per-specification "is this cancellable" declaration was considered and
 
 *Recorded now, so a later reader can check these rather than rediscover them.*
 
-**"Only the initiator" may prove too strict.** It rests on §3's claim that a
-recipient operator never needs to send a control document. That holds while the
-two parties are the only participants. It is less obviously true where a
-*consumer* executes on behalf of a third party — a mandate holder, a supervising
-principal — who may have a legitimate interest in stopping work it did not
-itself initiate. §7.2 item 10 would let a *consumer* honour such a party as a
-matter of policy; this note forecloses that at the framework level. If that
-proves wrong, the fix is to relax the rule to a floor ("the initiator is
-authorized by default") rather than to redesign anything.
+**Resolved — "only the initiator" was too strict.** The first draft foreclosed
+third-party authorization at framework level; review ([#204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues/204))
+raised the supervising-principal and mandate-holder case, and §5 now states the
+initiator as a **default** rather than an absolute, leaving other parties to
+§7.2 item 10. The predicted fix and the applied fix are the same one, which is
+the only useful thing a section like this can demonstrate.
 
-**Suspension may not earn its place.** Cancel has a clear safety story. Suspend
-and resume bring a state machine, a retention obligation, and an exhaustion
-vector that §9 bounds by policy rather than by construction. If no flow adopts
-them, they are surface we did not need.
+**Resolved — suspension was described wrongly.** The first draft called a
+suspended task "returned to a pre-execution state" in order to derive the expiry
+rule for free. Review caught that this contradicts §7: returning to a
+pre-execution state means undoing work, and cancellation never undoes anything.
+§9 now describes suspension as halting further effects while preserving
+execution state, and states the expiry rule directly. The derivation was elegant
+and false; the explicit rule is neither.
+
+**Suspension may still not earn its place.** Cancel has a clear safety story.
+Suspend and resume bring a state machine, a retention obligation, and an
+exhaustion vector that §9 bounds by policy rather than by construction. Review
+supported keeping them, so they stay — but if no flow adopts them, they are
+surface we did not need.
 
 **The tombstone conflates two states.** "Cancelled before arrival" and
 "cancelled after acceptance" both occupy the item 11 record, and a *consumer*
