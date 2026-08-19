@@ -2387,7 +2387,10 @@ git diff --exit-code trust-tasks-rs/src/specs   # CI gate: codegen is idempotent
    BINDINGS — transport-binding hub + per-binding detail page
    ============================================================ */
 function BindingsPage({ setRoute }) {
-  const bindings = window.TT_BINDINGS || [];
+  // One card per binding slug — the latest version. Superseded versions stay
+  // reachable from the detail page's version switcher, the same way the
+  // registry and shared-schema hubs collapse their version lines.
+  const bindings = latestPerSlug(window.TT_BINDINGS || []);
   const accent = (c) => `var(--tt-${c})`;
 
   return (
@@ -2489,7 +2492,14 @@ function BindingSpecPage({ slug, version, setRoute }) {
   // previous behavior silently rendered the wrong spec when a route
   // arrived with no slug (e.g. when the parser failed to recognize a
   // URL form) or with an unknown slug.
-  const binding = all.find(b => b.slug === slug && (!version || b.version === version));
+  // A versionless /binding/<slug> — which is how the canonical binding URI is
+  // often typed — resolves to the latest registered version, not to whichever
+  // entry happens to be listed first.
+  const binding = version
+    ? all.find(b => b.slug === slug && b.version === version)
+    : all
+      .filter(b => b.slug === slug)
+      .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); })[0];
   if (!binding) {
     return (
       <section className="container">
@@ -2572,6 +2582,28 @@ function BindingSpecPage({ slug, version, setRoute }) {
         </div>
         <h1 className="tt-spec__title">{binding.title}</h1>
         <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{binding.summary}</p>
+
+        {(() => {
+          // Sibling versions of this binding slug, newest first. The hub lists
+          // only the latest, so this is the only navigation to the older ones.
+          const versions = all
+            .filter(b => b.slug === binding.slug)
+            .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); });
+          if (versions.length < 2) return null;
+          return (
+            <div style={{ marginBottom: "var(--tt-space-5)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)" }}>
+              <span style={{ color: "var(--tt-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "var(--tt-text-xs)", marginRight: "var(--tt-space-3)" }}>Versions</span>
+              {versions.map((v, i) => (
+                <React.Fragment key={v.version}>
+                  {i > 0 && <span style={{ color: "var(--tt-text-muted)" }}> · </span>}
+                  {v.version === binding.version
+                    ? <b>v{v.version}</b>
+                    : <a href={`/binding/${v.slug}/${v.version}`} onClick={(e) => { e.preventDefault(); setRoute({ name: "binding", slug: v.slug, version: v.version }); window.scrollTo(0, 0); }}>v{v.version}</a>}
+                </React.Fragment>
+              ))}
+            </div>
+          );
+        })()}
 
         <div
           style={{
