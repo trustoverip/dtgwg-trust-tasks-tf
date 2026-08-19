@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/delete/1.0",
+  "title": "VTA Contexts Delete — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context to delete."
+    },
+    "force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Delete even though the context still holds keys, DIDs or templates. Default false, and the default is the point: without it a context holding anything is refused, so the destructive case is always something a caller asked for explicitly."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Contexts Delete — response payload",
+      "description": "Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "deleted"],
+      "properties": {
+        "id": { "type": "string" },
+        "deleted": {
+          "type": "boolean",
+          "description": "Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

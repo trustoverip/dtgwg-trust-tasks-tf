@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/update-did/1.0",
+  "title": "VTA Contexts Update-DID \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "did"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context whose DID is being set."
+    },
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID this context acts as from now on. Anything that authenticated or signed as the previous DID keeps referring to it; this task does not migrate those references, and a consumer MUST NOT imply that it does."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Contexts Update-DID \u2014 response payload",
+      "description": "Success response to vta/contexts/update-did: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update-did/1.0#response.",
+      "$ref": "../../../_shared/0.1/context.schema.json#/$defs/ContextRecord"
+    }
+  }
+}
