@@ -14,6 +14,10 @@ export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
 export interface VTAServicesDisablePayload {
   service: ServiceKind;
   ext?: Ext;
+  /**
+   * `didcomm` only: how long the unadvertised mediator keeps accepting delivery. Absent takes the agent's default. **0 means immediate teardown, and is only honoured when the request did not arrive through the mediator being torn down** — over a DIDComm-carried request the agent enforces a floor (1 hour), because cutting the mediator mid-request would discard the reply to the very task asking for it. A caller cannot rely on 0 being obeyed; read `drainUntil` in the result to learn what actually happened.
+   */
+  drainTtlSecs?: number;
 }
 /**
  * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
@@ -96,6 +100,11 @@ export const PAYLOAD_SCHEMA = {
     },
     "ext": {
       "$ref": "#/$defs/Ext"
+    },
+    "drainTtlSecs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "`didcomm` only: how long the unadvertised mediator keeps accepting delivery. Absent takes the agent's default. **0 means immediate teardown, and is only honoured when the request did not arrive through the mediator being torn down** — over a DIDComm-carried request the agent enforces a floor (1 hour), because cutting the mediator mid-request would discard the reply to the very task asking for it. A caller cannot rely on 0 being obeyed; read `drainUntil` in the result to learn what actually happened."
     }
   },
   "$defs": {

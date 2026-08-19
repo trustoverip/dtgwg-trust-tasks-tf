@@ -62,6 +62,14 @@ is exactly the thing that must wait.
 Its absence means no drain was scheduled. It does **not** mean a drain completed
 instantly.
 
+## The caller proposes the window; the agent decides it
+
+`drainTtlSecs` is a request, not an instruction. `0` asks for immediate
+teardown, and the agent enforces a floor when the request arrived **through the
+mediator being torn down** — cutting it mid-request would discard the reply to
+the very task asking for it. So a caller cannot rely on `0` being obeyed: read
+`drainUntil` in the result to learn what the agent actually did.
+
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
@@ -91,7 +99,8 @@ is not the authorization; the caller's super-admin role is.
   "recipient": "did:web:vta.example",
   "issuedAt": "2026-08-19T09:10:00Z",
   "payload": {
-    "service": "didcomm"
+    "service": "didcomm",
+    "drainTtlSecs": 43200
   }
 }
 ```

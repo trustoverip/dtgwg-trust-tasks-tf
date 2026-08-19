@@ -14,6 +14,11 @@
     },
     "ext": {
       "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    },
+    "drainTtlSecs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "`didcomm` only: how long the unadvertised mediator keeps accepting delivery. Absent takes the agent's default. **0 means immediate teardown, and is only honoured when the request did not arrive through the mediator being torn down** \u2014 over a DIDComm-carried request the agent enforces a floor (1 hour), because cutting the mediator mid-request would discard the reply to the very task asking for it. A caller cannot rely on 0 being obeyed; read `drainUntil` in the result to learn what actually happened."
     }
   },
   "$defs": {
