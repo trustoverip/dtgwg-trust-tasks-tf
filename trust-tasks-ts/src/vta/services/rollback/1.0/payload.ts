@@ -25,35 +25,39 @@ export interface Ext {
  * Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.
  */
 export interface VTAServicesRollbackResponsePayload {
-  result: ServiceMutationResult;
+  result: RollbackResult;
   ext?: Ext;
 }
 /**
- * The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.
+ * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
  */
-export interface ServiceMutationResult {
+export interface RollbackResult {
   /**
-   * Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
+   * What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
    */
-  logEntryVersionId: string;
+  kind: "disabled" | "enabled" | "updated" | "noOp";
   /**
-   * RFC 3339 instant the change took effect — the same instant stamped on the new log entry.
+   * Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.
    */
-  effectiveAt: string;
+  logEntryVersionId?: string;
   /**
-   * Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.
+   * RFC 3339 instant the rollback took effect. Absent for `noOp`.
    */
-  drainUntil?: string;
+  effectiveAt?: string;
   /**
-   * The mediator being drained, when `drainUntil` is present.
+   * Present when rolling back DIDComm left a mediator draining.
    */
   drainingMediator?: string;
   /**
-   * The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.
+   * When that drain completes.
+   */
+  drainUntil?: string;
+  /**
+   * The agent's own DID.
    */
   vtaDid?: string;
   /**
-   * True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.
+   * True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.
    */
   serverless?: boolean;
   ext?: Ext;
@@ -110,7 +114,7 @@ export const PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "result": {
-          "$ref": "#/$defs/ServiceMutationResult"
+          "$ref": "#/$defs/RollbackResult"
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -127,43 +131,51 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "ServiceMutationResult": {
-      "title": "ServiceMutationResult",
-      "description": "The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.",
+    "RollbackResult": {
+      "title": "RollbackResult",
+      "description": "The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \"noOp\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "logEntryVersionId",
-        "effectiveAt"
+        "kind"
       ],
       "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled",
+            "updated",
+            "noOp"
+          ],
+          "description": "What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written."
+        },
         "logEntryVersionId": {
           "type": "string",
-          "minLength": 1,
-          "description": "Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history."
+          "description": "Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise."
         },
         "effectiveAt": {
           "type": "string",
           "format": "date-time",
-          "description": "RFC 3339 instant the change took effect — the same instant stamped on the new log entry."
+          "description": "RFC 3339 instant the rollback took effect. Absent for `noOp`."
+        },
+        "drainingMediator": {
+          "type": "string",
+          "description": "Present when rolling back DIDComm left a mediator draining."
         },
         "drainUntil": {
           "type": "string",
           "format": "date-time",
-          "description": "Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong."
-        },
-        "drainingMediator": {
-          "type": "string",
-          "description": "The mediator being drained, when `drainUntil` is present."
+          "description": "When that drain completes."
         },
         "vtaDid": {
           "type": "string",
-          "description": "The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip."
+          "description": "The agent's own DID."
         },
         "serverless": {
           "type": "boolean",
-          "description": "True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.",
-          "default": false
+          "default": false,
+          "description": "True when the entry was written locally but not published — the operator must redeploy before any verifier sees it."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -200,7 +212,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "result": {
-          "$ref": "#/$defs/ServiceMutationResult"
+          "$ref": "#/$defs/RollbackResult"
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -217,43 +229,51 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "ServiceMutationResult": {
-      "title": "ServiceMutationResult",
-      "description": "The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.",
+    "RollbackResult": {
+      "title": "RollbackResult",
+      "description": "The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \"noOp\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "logEntryVersionId",
-        "effectiveAt"
+        "kind"
       ],
       "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled",
+            "updated",
+            "noOp"
+          ],
+          "description": "What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written."
+        },
         "logEntryVersionId": {
           "type": "string",
-          "minLength": 1,
-          "description": "Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history."
+          "description": "Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise."
         },
         "effectiveAt": {
           "type": "string",
           "format": "date-time",
-          "description": "RFC 3339 instant the change took effect — the same instant stamped on the new log entry."
+          "description": "RFC 3339 instant the rollback took effect. Absent for `noOp`."
+        },
+        "drainingMediator": {
+          "type": "string",
+          "description": "Present when rolling back DIDComm left a mediator draining."
         },
         "drainUntil": {
           "type": "string",
           "format": "date-time",
-          "description": "Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong."
-        },
-        "drainingMediator": {
-          "type": "string",
-          "description": "The mediator being drained, when `drainUntil` is present."
+          "description": "When that drain completes."
         },
         "vtaDid": {
           "type": "string",
-          "description": "The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip."
+          "description": "The agent's own DID."
         },
         "serverless": {
           "type": "boolean",
-          "description": "True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.",
-          "default": false
+          "default": false,
+          "description": "True when the entry was written locally but not published — the operator must redeploy before any verifier sees it."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

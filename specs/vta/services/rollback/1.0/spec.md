@@ -55,6 +55,14 @@ of what happened. Anyone auditing the document afterwards sees the mistake and
 the correction, which is the intended behaviour and not a limitation to work
 around.
 
+## When there is nothing to write
+
+If the previous state already equals the current one, the rollback writes
+nothing and answers `kind: "noOp"` with no `logEntryVersionId`. That is a
+**success**: the requested state holds. Reporting it as a failure would be
+wrong, and reporting it as an ordinary success would name a log entry that does
+not exist — which is why `kind` is required and `logEntryVersionId` is not.
+
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
@@ -101,7 +109,8 @@ is not the authorization; the caller's super-admin role is.
   "threadId": "00000006-0000-4000-8000-000000000001",
   "payload": {
     "result": {
-      "logEntryVersionId": "4-zQmLogEntry",
+      "kind": "updated",
+      "logEntryVersionId": "5-zQmLogEntry",
       "effectiveAt": "2026-08-19T09:10:01Z",
       "vtaDid": "did:webvh:QmAgent:vta.example",
       "serverless": false

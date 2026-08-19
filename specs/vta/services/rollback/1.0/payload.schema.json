@@ -28,7 +28,7 @@
       ],
       "properties": {
         "result": {
-          "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceMutationResult"
+          "$ref": "../../../_shared/0.1/service.schema.json#/$defs/RollbackResult"
         },
         "ext": {
           "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"

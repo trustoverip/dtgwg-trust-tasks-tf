@@ -1,23 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/_shared/0.1/service",
-  "title": "Service definitions — shared across the vta/services/* spec family",
-  "description": "A *service* is a transport the agent advertises in its own DID document: DIDComm mediation, a REST endpoint, TSP mediation, or a WebAuthn origin. Enabling or disabling one edits `service` in the agent's did:webvh document and republishes the signed log, so every mutation in this family produces a new log entry rather than flipping a runtime flag — which is why they all return `ServiceMutationResult`. These shapes are defined once because `enable`, `disable`, `update` and `rollback` return the same result, and `list` and `get` return the same state; an inline copy per task would fork the moment one of them gained a member.",
+  "title": "Service definitions \u2014 shared across the vta/services/* spec family",
+  "description": "A *service* is a transport the agent advertises in its own DID document: DIDComm mediation, a REST endpoint, TSP mediation, or a WebAuthn origin. Enabling or disabling one edits `service` in the agent's did:webvh document and republishes the signed log, so every mutation in this family produces a new log entry rather than flipping a runtime flag \u2014 which is why they all return `ServiceMutationResult`. These shapes are defined once because `enable`, `disable`, `update` and `rollback` return the same result, and `list` and `get` return the same state; an inline copy per task would fork the moment one of them gained a member.",
   "$defs": {
     "ServiceKind": {
       "title": "ServiceKind",
       "description": "Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.",
       "type": "string",
-      "enum": ["didcomm", "rest", "tsp", "webauthn"]
+      "enum": [
+        "didcomm",
+        "rest",
+        "tsp",
+        "webauthn"
+      ]
     },
     "ServiceState": {
       "title": "ServiceState",
       "description": "What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "enabled"],
+      "required": [
+        "kind",
+        "enabled"
+      ],
       "properties": {
-        "kind": { "$ref": "#/$defs/ServiceKind" },
+        "kind": {
+          "$ref": "#/$defs/ServiceKind"
+        },
         "enabled": {
           "type": "boolean",
           "description": "Whether the agent currently advertises this transport in its DID document."
@@ -33,9 +43,11 @@
         "drainsUntil": {
           "type": "string",
           "format": "date-time",
-          "description": "RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`."
+          "description": "RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining \u2014 see `vta/services/drain/list`."
         },
-        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
       }
     },
     "ServiceMutationResult": {
@@ -43,7 +55,10 @@
       "description": "The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["logEntryVersionId", "effectiveAt"],
+      "required": [
+        "logEntryVersionId",
+        "effectiveAt"
+      ],
       "properties": {
         "logEntryVersionId": {
           "type": "string",
@@ -53,7 +68,7 @@
         "effectiveAt": {
           "type": "string",
           "format": "date-time",
-          "description": "RFC 3339 instant the change took effect — the same instant stamped on the new log entry."
+          "description": "RFC 3339 instant the change took effect \u2014 the same instant stamped on the new log entry."
         },
         "drainUntil": {
           "type": "string",
@@ -66,14 +81,16 @@
         },
         "vtaDid": {
           "type": "string",
-          "description": "The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip."
+          "description": "The agent's own DID \u2014 subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip."
         },
         "serverless": {
           "type": "boolean",
           "description": "True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.",
           "default": false
         },
-        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
       }
     },
     "DrainEntry": {
@@ -81,7 +98,11 @@
       "description": "A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["mediatorDid", "endpoint", "drainsUntil"],
+      "required": [
+        "mediatorDid",
+        "endpoint",
+        "drainsUntil"
+      ],
       "properties": {
         "mediatorDid": {
           "type": "string",
@@ -97,7 +118,60 @@
           "format": "date-time",
           "description": "RFC 3339 instant after which the mediator is dropped and messages routed through it are lost."
         },
-        "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "RollbackResult": {
+      "title": "RollbackResult",
+      "description": "The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \"noOp\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong \u2014 the requested state holds \u2014 and treating it as an ordinary success would report a log entry that does not exist.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled",
+            "updated",
+            "noOp"
+          ],
+          "description": "What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched \u2014 nothing was written."
+        },
+        "logEntryVersionId": {
+          "type": "string",
+          "description": "Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise."
+        },
+        "effectiveAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 instant the rollback took effect. Absent for `noOp`."
+        },
+        "drainingMediator": {
+          "type": "string",
+          "description": "Present when rolling back DIDComm left a mediator draining."
+        },
+        "drainUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When that drain completes."
+        },
+        "vtaDid": {
+          "type": "string",
+          "description": "The agent's own DID."
+        },
+        "serverless": {
+          "type": "boolean",
+          "default": false,
+          "description": "True when the entry was written locally but not published \u2014 the operator must redeploy before any verifier sees it."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }

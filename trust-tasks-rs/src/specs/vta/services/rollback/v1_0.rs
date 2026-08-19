@@ -186,7 +186,7 @@ pub struct Payload {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "result": {
-///      "$ref": "#/definitions/ServiceMutationResult"
+///      "$ref": "#/definitions/RollbackResult"
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -199,7 +199,194 @@ pub struct Payload {
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    pub result: ServiceMutationResult,
+    pub result: RollbackResult,
+}
+///The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "RollbackResult",
+///  "description": "The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \"noOp\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.",
+///  "type": "object",
+///  "required": [
+///    "kind"
+///  ],
+///  "properties": {
+///    "drainUntil": {
+///      "description": "When that drain completes.",
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "drainingMediator": {
+///      "description": "Present when rolling back DIDComm left a mediator draining.",
+///      "type": "string"
+///    },
+///    "effectiveAt": {
+///      "description": "RFC 3339 instant the rollback took effect. Absent for `noOp`.",
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "ext": {
+///      "$ref": "#/definitions/Ext"
+///    },
+///    "kind": {
+///      "description": "What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.",
+///      "type": "string",
+///      "enum": [
+///        "disabled",
+///        "enabled",
+///        "updated",
+///        "noOp"
+///      ]
+///    },
+///    "logEntryVersionId": {
+///      "description": "Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.",
+///      "type": "string"
+///    },
+///    "serverless": {
+///      "description": "True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.",
+///      "default": false,
+///      "type": "boolean"
+///    },
+///    "vtaDid": {
+///      "description": "The agent's own DID.",
+///      "type": "string"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct RollbackResult {
+    ///When that drain completes.
+    #[serde(
+        rename = "drainUntil",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub drain_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///Present when rolling back DIDComm left a mediator draining.
+    #[serde(
+        rename = "drainingMediator",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub draining_mediator: ::std::option::Option<::std::string::String>,
+    ///RFC 3339 instant the rollback took effect. Absent for `noOp`.
+    #[serde(
+        rename = "effectiveAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub effective_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    ///What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
+    pub kind: RollbackResultKind,
+    ///Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.
+    #[serde(
+        rename = "logEntryVersionId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub log_entry_version_id: ::std::option::Option<::std::string::String>,
+    ///True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.
+    #[serde(default)]
+    pub serverless: bool,
+    ///The agent's own DID.
+    #[serde(
+        rename = "vtaDid",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub vta_did: ::std::option::Option<::std::string::String>,
+}
+///What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.",
+///  "type": "string",
+///  "enum": [
+///    "disabled",
+///    "enabled",
+///    "updated",
+///    "noOp"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum RollbackResultKind {
+    #[serde(rename = "disabled")]
+    Disabled,
+    #[serde(rename = "enabled")]
+    Enabled,
+    #[serde(rename = "updated")]
+    Updated,
+    #[serde(rename = "noOp")]
+    NoOp,
+}
+impl ::std::fmt::Display for RollbackResultKind {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Disabled => f.write_str("disabled"),
+            Self::Enabled => f.write_str("enabled"),
+            Self::Updated => f.write_str("updated"),
+            Self::NoOp => f.write_str("noOp"),
+        }
+    }
+}
+impl ::std::str::FromStr for RollbackResultKind {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "disabled" => Ok(Self::Disabled),
+            "enabled" => Ok(Self::Enabled),
+            "updated" => Ok(Self::Updated),
+            "noOp" => Ok(Self::NoOp),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for RollbackResultKind {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RollbackResultKind {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RollbackResultKind {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
 }
 ///Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
 ///
@@ -285,167 +472,12 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceKind {
         value.parse()
     }
 }
-///The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ServiceMutationResult",
-///  "description": "The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.",
-///  "type": "object",
-///  "required": [
-///    "effectiveAt",
-///    "logEntryVersionId"
-///  ],
-///  "properties": {
-///    "drainUntil": {
-///      "description": "Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "drainingMediator": {
-///      "description": "The mediator being drained, when `drainUntil` is present.",
-///      "type": "string"
-///    },
-///    "effectiveAt": {
-///      "description": "RFC 3339 instant the change took effect — the same instant stamped on the new log entry.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "logEntryVersionId": {
-///      "description": "Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "serverless": {
-///      "description": "True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "vtaDid": {
-///      "description": "The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct ServiceMutationResult {
-    ///Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.
-    #[serde(
-        rename = "drainUntil",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub drain_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    ///The mediator being drained, when `drainUntil` is present.
-    #[serde(
-        rename = "drainingMediator",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub draining_mediator: ::std::option::Option<::std::string::String>,
-    ///RFC 3339 instant the change took effect — the same instant stamped on the new log entry.
-    #[serde(rename = "effectiveAt")]
-    pub effective_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub ext: ::std::option::Option<Ext>,
-    ///Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
-    #[serde(rename = "logEntryVersionId")]
-    pub log_entry_version_id: ServiceMutationResultLogEntryVersionId,
-    ///True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.
-    #[serde(default)]
-    pub serverless: bool,
-    ///The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.
-    #[serde(
-        rename = "vtaDid",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub vta_did: ::std::option::Option<::std::string::String>,
-}
-///Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct ServiceMutationResultLogEntryVersionId(::std::string::String);
-impl ::std::ops::Deref for ServiceMutationResultLogEntryVersionId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<ServiceMutationResultLogEntryVersionId> for ::std::string::String {
-    fn from(value: ServiceMutationResultLogEntryVersionId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for ServiceMutationResultLogEntryVersionId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for ServiceMutationResultLogEntryVersionId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for ServiceMutationResultLogEntryVersionId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for ServiceMutationResultLogEntryVersionId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for ServiceMutationResultLogEntryVersionId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/rollback/1.0";
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/ServiceMutationResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Rollback — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceMutationResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"The mediator being drained, when `drainUntil` is present.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"logEntryVersionId\",\n        \"effectiveAt\"\n      ],\n      \"title\": \"ServiceMutationResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/services/rollback/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for vta/services/rollback. Reverts a transport to its previous advertised settings by writing a NEW log entry — the history is append-only, so a rollback is a forward step that restores an earlier state, never an erasure of what happened.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"service\": {\n      \"$ref\": \"#/$defs/ServiceKind\"\n    }\n  },\n  \"required\": [\n    \"service\"\n  ],\n  \"title\": \"VTA Services — Rollback — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/RollbackResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Rollback — response payload\",\n      \"type\": \"object\"\n    },\n    \"RollbackResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \\\"noOp\\\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"When that drain completes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"Present when rolling back DIDComm left a mediator draining.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the rollback took effect. Absent for `noOp`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"description\": \"What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.\",\n          \"enum\": [\n            \"disabled\",\n            \"enabled\",\n            \"updated\",\n            \"noOp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.\",\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"RollbackResult\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/services/rollback/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for vta/services/rollback. Reverts a transport to its previous advertised settings by writing a NEW log entry — the history is append-only, so a rollback is a forward step that restores an earlier state, never an erasure of what happened.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"service\": {\n      \"$ref\": \"#/$defs/ServiceKind\"\n    }\n  },\n  \"required\": [\n    \"service\"\n  ],\n  \"title\": \"VTA Services — Rollback — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -453,7 +485,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/ServiceMutationResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Rollback — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceMutationResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"The mediator being drained, when `drainUntil` is present.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"logEntryVersionId\",\n        \"effectiveAt\"\n      ],\n      \"title\": \"ServiceMutationResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/RollbackResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Rollback — response payload\",\n      \"type\": \"object\"\n    },\n    \"RollbackResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \\\"noOp\\\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"When that drain completes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"Present when rolling back DIDComm left a mediator draining.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the rollback took effect. Absent for `noOp`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"description\": \"What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.\",\n          \"enum\": [\n            \"disabled\",\n            \"enabled\",\n            \"updated\",\n            \"noOp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.\",\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"RollbackResult\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 #[cfg(test)]
@@ -472,7 +504,7 @@ mod conformance {
     }
     #[test]
     fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"00000006-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vta/services/rollback/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkOperator\",\n  \"issuedAt\": \"2026-08-19T09:10:01Z\",\n  \"threadId\": \"00000006-0000-4000-8000-000000000001\",\n  \"payload\": {\n    \"result\": {\n      \"logEntryVersionId\": \"4-zQmLogEntry\",\n      \"effectiveAt\": \"2026-08-19T09:10:01Z\",\n      \"vtaDid\": \"did:webvh:QmAgent:vta.example\",\n      \"serverless\": false\n    }\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"00000006-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vta/services/rollback/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkOperator\",\n  \"issuedAt\": \"2026-08-19T09:10:01Z\",\n  \"threadId\": \"00000006-0000-4000-8000-000000000001\",\n  \"payload\": {\n    \"result\": {\n      \"kind\": \"updated\",\n      \"logEntryVersionId\": \"5-zQmLogEntry\",\n      \"effectiveAt\": \"2026-08-19T09:10:01Z\",\n      \"vtaDid\": \"did:webvh:QmAgent:vta.example\",\n      \"serverless\": false\n    }\n  }\n}\n";
         let doc: crate::TrustTask<super::Response> =
             serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
