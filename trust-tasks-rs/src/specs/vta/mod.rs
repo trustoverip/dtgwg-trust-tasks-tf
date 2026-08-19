@@ -5,4 +5,5 @@ pub mod credentials;
 pub mod did_templates;
 pub mod memory;
 pub mod passkey_vms;
+pub mod services;
 pub mod webvh;

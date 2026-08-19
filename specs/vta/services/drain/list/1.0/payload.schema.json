@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/drain/list/1.0",
+  "title": "VTA Services Drain \u2014 List \u2014 payload",
+  "description": "Request payload for vta/services/drain/list. Enumerates DIDComm mediators that are no longer advertised but are still accepting delivery.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services Drain \u2014 List \u2014 response payload",
+      "description": "Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries"
+      ],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "description": "Mediators currently draining. An empty array means nothing is draining \u2014 which is the ordinary state, not an error.",
+          "items": {
+            "$ref": "../../../../_shared/0.1/service.schema.json#/$defs/DrainEntry"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

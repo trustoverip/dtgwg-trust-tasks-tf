@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/drain/cancel/1.0",
+  "title": "VTA Services Drain \u2014 Cancel \u2014 payload",
+  "description": "Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainsUntil`. Messages still in flight through it are lost, which is the whole reason the drain window existed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mediatorDid"
+  ],
+  "properties": {
+    "mediatorDid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The draining mediator to drop. Refused if it is not draining, and refused if it is the currently advertised mediator \u2014 cancelling a drain on the active mediator would strand every route the agent depends on."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services Drain \u2014 Cancel \u2014 response payload",
+      "description": "Success response to vta/services/drain/cancel. Type https://trusttasks.org/spec/vta/services/drain/cancel/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mediatorDid"
+      ],
+      "properties": {
+        "mediatorDid": {
+          "type": "string",
+          "description": "The mediator that was dropped."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
