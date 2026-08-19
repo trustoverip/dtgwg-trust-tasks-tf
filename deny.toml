@@ -57,6 +57,38 @@ ignore = [
     "RUSTSEC-2026-0247", # bitmaps
     "RUSTSEC-2026-0248", # im
     "RUSTSEC-2026-0251", # sized-chunks
+    # h2 "unbounded empty DATA frames" — and unlike every entry above this one
+    # is an actual vulnerability, not a maintenance-status notice. It is here
+    # under protest, so read the reasoning before adding anything beside it.
+    #
+    # The graph carried two h2 lines. 0.4.x is FIXED rather than ignored: this
+    # entry's commit takes 0.4.14 → 0.4.16, the patched release. What remains
+    # is h2 0.3.27, and there is no version of it to move to — 0.3.27 IS the
+    # newest 0.3, and upstream patched only the 0.4 line.
+    #
+    # It arrives as hyper 0.14 → hyper-tls 0.5 → reqwest 0.11 →
+    # ssi-dids-core 0.1.3 → affinidi-did-resolver-cache-sdk, and reaches
+    # crates we publish: trust-tasks-tsp (via affinidi-tsp) and
+    # trust-tasks-proof. This is the NORMAL graph, not a dev-dependency.
+    #
+    # Nothing in this repo can shorten that chain. Our own requirements are
+    # already open (`affinidi-did-resolver-cache-sdk = "0.8"`,
+    # `affinidi-tsp = "0.1"`), and every 0.8.x of the resolver SDK up to and
+    # including the newest, 0.8.22, requires `ssi-dids-core ^0.1` — which is
+    # what pins reqwest 0.11 and so hyper 0.14 and so h2 0.3.
+    #
+    # Exposure, stated plainly rather than waved away: reqwest is an HTTP
+    # *client* here, used to resolve DIDs. The flaw is a peer queueing empty
+    # DATA frames without limit, so reaching it needs a hostile or compromised
+    # resolution endpoint, and the impact is memory growth or a panic —
+    # availability only, with no confidentiality or integrity component.
+    # Upstream rates it Low. That is the whole of the argument for accepting
+    # it, and it is an argument for accepting it *temporarily*.
+    #
+    # Clears when affinidi-did-resolver-cache-sdk moves to ssi-dids-core 0.3+,
+    # which is on reqwest 0.12 / hyper 1.x and so on the patched h2 line.
+    # Worth re-checking whenever the Affinidi crates are bumped.
+    "RUSTSEC-2026-0258",
 ]
 
 # ─── Licenses ──────────────────────────────────────────────────────────────
