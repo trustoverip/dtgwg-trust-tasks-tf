@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/create/1.0",
+  "title": "VTA WebVH DIDs Create — payload",
+  "description": "Mint a did:webvh: the VTA generates the keys, writes the log's first entry, and either hands it to a hosting server or returns it for the caller to serve.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID."
+    },
+    "serverId": {
+      "type": "string",
+      "description": "Hosting server to publish through. Absent means **serverless**: the caller serves the log itself at `url`, and the VTA holds no hosting registration for it."
+    },
+    "url": {
+      "type": "string",
+      "description": "Where the log will be served, for the serverless case. The DID's identity derives from this location, so changing it later is only possible for a `portable` DID."
+    },
+    "path": {
+      "type": "string",
+      "description": "Explicit path label under the host. Shorthand for pathMode `explicit`; supplying both is an error."
+    },
+    "pathMode": {
+      "$ref": "#/$defs/WebvhPathMode",
+      "description": "How the path under the host is chosen. Absent means `autoAssign`."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Hosting domain to publish under, when the server serves more than one."
+    },
+    "label": { "type": "string" },
+    "portable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this DID may later move to another domain and keep its identity. **Fixed at creation** — portability is committed in the first log entry and cannot be added afterwards. A DID created non-portable is tied to where it was published for its whole life."
+    },
+    "addMediatorService": {
+      "type": "boolean",
+      "description": "Add a DIDComm mediator service entry to the document."
+    },
+    "addTspService": {
+      "type": "boolean",
+      "description": "Add a TSP transport service entry to the document."
+    },
+    "additionalServices": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Further service entries, verbatim."
+    },
+    "preRotationCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How many successor keys to commit in advance. **`0` disables pre-rotation**, which means a compromise of the current key cannot be recovered from by rotating: the successor was never committed, so a thief can rotate to their own key as convincingly as the owner can."
+    },
+    "didDocument": {
+      "type": "object",
+      "description": "A DID document to publish rather than one the VTA composes."
+    },
+    "didLog": {
+      "type": "string",
+      "description": "An existing log to adopt, for importing a DID minted elsewhere."
+    },
+    "setPrimary": {
+      "type": "boolean",
+      "description": "Make this the context's primary DID."
+    },
+    "signingKeyId": {
+      "type": "string",
+      "description": "Existing key to sign log entries with. Absent mints a new one."
+    },
+    "kaKeyId": {
+      "type": "string",
+      "description": "Existing key-agreement key to publish. Absent mints a new one."
+    },
+    "template": {
+      "type": "string",
+      "description": "DID template to render the document from (see vta/did-templates/*)."
+    },
+    "templateContext": {
+      "type": "string",
+      "description": "Context whose templates to resolve `template` against. Absent uses the global scope, which is a different namespace and may hold a different template of the same name."
+    },
+    "templateVars": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Variables for the template's placeholders."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "WebvhPathMode": {
+      "title": "WebvhPathMode",
+      "description": "Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": { "mode": { "const": "wellKnown" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "path"],
+          "properties": {
+            "mode": { "const": "explicit" },
+            "path": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": { "mode": { "const": "autoAssign" } }
+        }
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Create — response payload",
+      "description": "Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "contextId", "scid", "portable", "signingKeyId", "kaKeyId", "preRotationKeyCount", "createdAt"],
+      "properties": {
+        "did": { "type": "string" },
+        "contextId": { "type": "string" },
+        "serverId": { "type": "string" },
+        "mnemonic": {
+          "type": "string",
+          "description": "The hosting server's handle for the record. Absent for a serverless DID."
+        },
+        "scid": {
+          "type": "string",
+          "description": "Self-certifying identifier committing to the log's first entry."
+        },
+        "portable": { "type": "boolean" },
+        "signingKeyId": { "type": "string" },
+        "kaKeyId": { "type": "string" },
+        "preRotationKeyCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Successor keys committed. `0` means pre-rotation is off for this DID."
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "didDocument": {
+          "type": "object",
+          "description": "The published document, when the VTA composed one."
+        },
+        "logEntry": {
+          "type": "string",
+          "description": "The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/get/1.0",
+  "title": "VTA WebVH DIDs Get — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1 },
+    "includeLog": {
+      "type": "boolean",
+      "default": false,
+      "description": "Return the DID's log as well as the record. The log is the DID's whole history and can be large; it is also the only thing a verifier can check the current document against, so a consumer auditing a DID asks for it."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Get — response payload",
+      "description": "Success response to vta/webvh/dids/get. Type https://trusttasks.org/spec/vta/webvh/dids/get/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record"],
+      "properties": {
+        "record": { "$ref": "../../../../_shared/0.1/webvh-records.schema.json#/$defs/WebvhDidRecord" },
+        "log": {
+          "type": "string",
+          "description": "The DID log, present only when `includeLog` was true. Its absence means it was not asked for — never that the DID has no history."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

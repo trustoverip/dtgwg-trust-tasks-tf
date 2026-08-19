@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0",
+  "title": "VTA WebVH DIDs Register-With-Server — payload",
+  "description": "Hand an existing DID's log to a hosting server so it is served there.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did", "serverId"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1 },
+    "serverId": { "type": "string", "minLength": 1, "description": "Hosting server to register with." },
+    "force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Overwrite a registration the server already holds at this location. Default false: the location may be somebody else's identity."
+    },
+    "domain": { "type": "string", "description": "Domain to publish under, when the server serves more than one." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Register-With-Server — response payload",
+      "description": "Success response to vta/webvh/dids/register-with-server. Type https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "serverId", "logEntryCount"],
+      "properties": {
+        "did": { "type": "string" },
+        "serverId": { "type": "string" },
+        "logEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Entries the server accepted. Compare it with the DID's own log length: a shorter count means the server holds a truncated history and will resolve to an older document."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

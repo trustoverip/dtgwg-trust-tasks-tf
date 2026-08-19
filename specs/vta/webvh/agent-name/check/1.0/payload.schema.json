@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0",
+  "title": "VTA WebVH Agent-Name Check \u2014 payload",
+  "description": "Ask whether a name is free before trying to take it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "name"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "DID the name is bound to."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The name, without the host \u2014 the full form is `<host>/@<name>`."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH Agent-Name Check \u2014 response payload",
+      "description": "Success response to vta/webvh/agent-name/check. Type https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "domain",
+        "available",
+        "reserved"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Host the name would live under. A name is only unique within its host."
+        },
+        "available": {
+          "type": "boolean",
+          "description": "Whether the name can be taken **now**. It is a snapshot, not a hold: another caller may take it between this answer and the attempt."
+        },
+        "reserved": {
+          "type": "boolean",
+          "description": "Whether the name is withheld by the host's own policy rather than taken by a DID. A reserved name is not available and will not become so by waiting."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

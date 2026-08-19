@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/list/1.0",
+  "title": "VTA WebVH DIDs List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": { "type": "string", "description": "Only DIDs in this context." },
+    "serverId": { "type": "string", "description": "Only DIDs published through this hosting server." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs List — response payload",
+      "description": "Success response to vta/webvh/dids/list. Type https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dids"],
+      "properties": {
+        "dids": {
+          "type": "array",
+          "description": "Matching DIDs the caller may see. An empty array is a successful answer and does not imply the VTA holds none.",
+          "items": { "$ref": "../../../../_shared/0.1/webvh-records.schema.json#/$defs/WebvhDidRecord" }
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

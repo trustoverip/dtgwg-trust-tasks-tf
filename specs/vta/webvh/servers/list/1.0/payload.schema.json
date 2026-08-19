@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/servers/list/1.0",
+  "title": "VTA WebVH Servers List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH Servers List — response payload",
+      "description": "Success response to vta/webvh/servers/list. Type https://trusttasks.org/spec/vta/webvh/servers/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["servers"],
+      "properties": {
+        "servers": {
+          "type": "array",
+          "description": "Hosting servers the VTA is registered with. Carries no credentials — what the VTA holds to authenticate against a server never appears in a response.",
+          "items": { "$ref": "../../../../_shared/0.1/webvh-records.schema.json#/$defs/WebvhServerRecord" }
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

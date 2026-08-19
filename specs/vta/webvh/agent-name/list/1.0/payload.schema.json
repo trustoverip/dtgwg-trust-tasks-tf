@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0",
+  "title": "VTA WebVH Agent-Name List \u2014 payload",
+  "description": "Every agent name held for a DID, enabled or not.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "DID the name is bound to."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH Agent-Name List \u2014 response payload",
+      "description": "Success response to vta/webvh/agent-name/list. Type https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "names"
+      ],
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "names": {
+          "type": "array",
+          "description": "Names held for the DID, including disabled ones \u2014 a disabled name is still held and cannot be taken by anyone else.",
+          "items": {
+            "$ref": "../../../../_shared/0.1/webvh-records.schema.json#/$defs/AgentNameEntry"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

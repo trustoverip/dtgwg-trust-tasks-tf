@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0",
+  "title": "VTA WebVH DIDs Rotate-Keys — payload",
+  "description": "Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": { "type": "string", "minLength": 1 },
+    "preRotationCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise."
+    },
+    "label": { "type": "string" },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Rotate-Keys — response payload",
+      "description": "Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "newVersionId", "newScid", "newLogEntry", "updateKeysCount", "preRotationKeyCount", "serverless"],
+      "properties": {
+        "did": { "type": "string" },
+        "newVersionId": { "type": "string", "description": "Version id of the appended entry." },
+        "newScid": { "type": "string", "description": "The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it." },
+        "newLogEntry": { "type": "string", "description": "The appended entry." },
+        "updateKeysCount": { "type": "integer", "minimum": 0 },
+        "preRotationKeyCount": { "type": "integer", "minimum": 0 },
+        "serverless": {
+          "type": "boolean",
+          "description": "True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

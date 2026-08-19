@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/servers/remove/1.0",
+  "title": "VTA WebVH Servers Remove — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH Servers Remove — response payload",
+      "description": "Success response to vta/webvh/servers/remove. Type https://trusttasks.org/spec/vta/webvh/servers/remove/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "removed"],
+      "properties": {
+        "id": { "type": "string" },
+        "removed": {
+          "type": "boolean",
+          "description": "Whether the registration was removed. Removing it does not unpublish anything: DIDs the server already serves keep resolving, and the VTA simply loses its route for updating them."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
