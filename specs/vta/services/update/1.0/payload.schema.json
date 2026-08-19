@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/update/1.0",
+  "title": "VTA Services \u2014 Update \u2014 payload",
+  "description": "Request payload for vta/services/update. Replaces the settings on a transport that is already advertised. Refused when the transport is not currently enabled \u2014 that case is `enable`, and conflating the two would let a typo silently advertise a service the operator meant to change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "service",
+    "config"
+  ],
+  "properties": {
+    "service": {
+      "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceKind"
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Kind-specific settings. Which member applies is decided by `service`, and the two must agree \u2014 a `rest` request carrying `mediatorDid` is malformed, not a request with an ignored field. `didcomm` and `tsp` take `mediatorDid`; `rest` and `webauthn` take `url`.",
+      "properties": {
+        "mediatorDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Mediator to route through. Applies to `didcomm` and `tsp`."
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo \u2014 the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "`didcomm` only: skip the mediator handshake except for DID resolution. Absent means the handshake runs, which is the safe reading \u2014 this carries no schema-level default on purpose, because a default would materialise the field into a `rest` or `webauthn` config where it has no meaning. The handshake is what proves the mediator is reachable and willing, so forcing past it can advertise a mediator that cannot actually deliver."
+        },
+        "handshakeTimeoutSecs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "`didcomm` only: trust-ping round-trip budget. Default 10."
+        }
+      }
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services \u2014 Update \u2014 response payload",
+      "description": "Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceMutationResult"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/list/1.0",
+  "title": "VTA Services \u2014 List \u2014 payload",
+  "description": "Request payload for vta/services/list. Takes no filters: the answer is the agent's whole advertised surface, which is public in its DID document anyway.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services \u2014 List \u2014 response payload",
+      "description": "Success response to vta/services/list. Type https://trusttasks.org/spec/vta/services/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "services"
+      ],
+      "properties": {
+        "services": {
+          "type": "array",
+          "description": "Every transport the agent knows about, advertised or not. A kind absent from this array has never been configured \u2014 distinct from one present with `enabled: false`.",
+          "items": {
+            "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceState"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -254,6 +254,7 @@ export * as VrcRelationshipsPropose_v0_1 from "./vrc/relationships/propose/0.1/p
 export * as ContextShared_v0_1 from "./vta/_shared/0.1/context.js";
 export * as DidTemplateShared_v0_1 from "./vta/_shared/0.1/did-template.js";
 export * as PasskeyVmShared_v0_1 from "./vta/_shared/0.1/passkey-vm.js";
+export * as ServiceShared_v0_1 from "./vta/_shared/0.1/service.js";
 export * as WebvhRecordsShared_v0_1 from "./vta/_shared/0.1/webvh-records.js";
 export * as VtaContextsCreate_v1_0 from "./vta/contexts/create/1.0/payload.js";
 export * as VtaContextsDelete_v1_0 from "./vta/contexts/delete/1.0/payload.js";
@@ -290,6 +291,14 @@ export * as VtaPasskeyVmsEnrollChallenge_v0_1 from "./vta/passkey-vms/enroll-cha
 export * as VtaPasskeyVmsEnrollSubmit_v0_1 from "./vta/passkey-vms/enroll-submit/0.1/payload.js";
 export * as VtaPasskeyVmsList_v0_1 from "./vta/passkey-vms/list/0.1/payload.js";
 export * as VtaPasskeyVmsRevoke_v0_1 from "./vta/passkey-vms/revoke/0.1/payload.js";
+export * as VtaServicesDisable_v1_0 from "./vta/services/disable/1.0/payload.js";
+export * as VtaServicesDrainCancel_v1_0 from "./vta/services/drain/cancel/1.0/payload.js";
+export * as VtaServicesDrainList_v1_0 from "./vta/services/drain/list/1.0/payload.js";
+export * as VtaServicesEnable_v1_0 from "./vta/services/enable/1.0/payload.js";
+export * as VtaServicesGet_v1_0 from "./vta/services/get/1.0/payload.js";
+export * as VtaServicesList_v1_0 from "./vta/services/list/1.0/payload.js";
+export * as VtaServicesRollback_v1_0 from "./vta/services/rollback/1.0/payload.js";
+export * as VtaServicesUpdate_v1_0 from "./vta/services/update/1.0/payload.js";
 export * as VtaWebvhAgentNameCheck_v1_0 from "./vta/webvh/agent-name/check/1.0/payload.js";
 export * as VtaWebvhAgentNameDisable_v1_0 from "./vta/webvh/agent-name/disable/1.0/payload.js";
 export * as VtaWebvhAgentNameEnable_v1_0 from "./vta/webvh/agent-name/enable/1.0/payload.js";

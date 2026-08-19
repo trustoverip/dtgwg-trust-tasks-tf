@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/disable/1.0",
+  "title": "VTA Services \u2014 Disable \u2014 payload",
+  "description": "Request payload for vta/services/disable. Stops advertising a transport and republishes the log. For `didcomm` this schedules a drain rather than cutting delivery immediately \u2014 see `drainUntil` in the result.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "service"
+  ],
+  "properties": {
+    "service": {
+      "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceKind"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services \u2014 Disable \u2014 response payload",
+      "description": "Success response to vta/services/disable. Type https://trusttasks.org/spec/vta/services/disable/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceMutationResult"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

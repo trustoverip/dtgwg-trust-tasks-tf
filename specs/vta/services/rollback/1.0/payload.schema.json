@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/rollback/1.0",
+  "title": "VTA Services \u2014 Rollback \u2014 payload",
+  "description": "Request payload for vta/services/rollback. Reverts a transport to its previous advertised settings by writing a NEW log entry \u2014 the history is append-only, so a rollback is a forward step that restores an earlier state, never an erasure of what happened.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "service"
+  ],
+  "properties": {
+    "service": {
+      "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceKind"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services \u2014 Rollback \u2014 response payload",
+      "description": "Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "../../../_shared/0.1/service.schema.json#/$defs/ServiceMutationResult"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
