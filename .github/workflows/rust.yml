@@ -77,6 +77,39 @@ jobs:
       - name: clippy (--all-features)
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
+  # The mirror of ts.yml's `version-bump`, for the same reason and with the same
+  # keying. `cargo publish` refuses a version already on crates.io, so a PR that
+  # regenerates `trust-tasks-rs/src/specs` without bumping leaves main and
+  # crates.io holding the SAME version with DIFFERENT contents — and a consumer
+  # depending on it cannot reach a spec that is merged and documented.
+  #
+  # This was missed when the TS guard landed: #243's families were stranded on
+  # BOTH sides, and only the TypeScript half was caught.
+  version-bump:
+    name: version bumped with the bindings
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Require a version bump when the generated bindings change
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --quiet "$BASE"...HEAD -- trust-tasks-rs/src/specs; then
+            echo "generated bindings unchanged — no bump required"
+            exit 0
+          fi
+          before=$(git show "$BASE":trust-tasks-rs/Cargo.toml | sed -n 's/^version = "\(.*\)"/\1/p' | head -1)
+          after=$(sed -n 's/^version = "\(.*\)"/\1/p' trust-tasks-rs/Cargo.toml | head -1)
+          if [ "$before" = "$after" ]; then
+            echo "::error::trust-tasks-rs/src/specs changed but trust-tasks-rs is still $after. cargo publish refuses a version already on crates.io, so these bindings would never reach a consumer while crates.io and main disagree about what $after contains. Bump trust-tasks-rs/Cargo.toml (minor for new families, patch for a description-only regeneration)."
+            git diff --stat "$BASE"...HEAD -- trust-tasks-rs/src/specs
+            exit 1
+          fi
+          echo "bindings changed and version moved $before → $after"
+
   codegen-drift:
     name: trust-tasks-codegen drift
     runs-on: ubuntu-latest
