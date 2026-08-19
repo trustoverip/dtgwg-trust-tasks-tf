@@ -34,21 +34,23 @@
 //! | `threadId` | `thid` |
 //! | `parentThreadId` | `pthid` |
 //!
-//! Producers populate the decorator *from* the members. Consumers compare only
-//! where **both** are explicitly present, and a disagreement is
-//! `malformedRequest` — not `identityMismatch`, which is reserved for a
-//! contested party identity. v1's `thid` defaults to the message `@id` and the
-//! framework's `threadId` falls back to the document's `id`; those are
-//! different identifiers, so an unconditional rule would reject exchanges that
-//! conform on both layers.
+//! Producers populate the decorator *from* the members — and only where the
+//! value satisfies RFC 0008's shape: a non-representable correlator (a
+//! `urn:uuid:` id, most prominently) is **omitted, never rewritten** (binding
+//! §4, the omit rule). Consumers compare only where **both** are explicitly
+//! present, and a disagreement is `malformedRequest` — not `identityMismatch`,
+//! which is reserved for a contested party identity. v1's `thid` defaults to
+//! the message `@id` and the framework's `threadId` falls back to the
+//! document's `id`; those are different identifiers, so an unconditional rule
+//! would reject exchanges that conform on both layers, and a consumer must not
+//! infer exchange continuation from a defaulted `thid`.
 //!
 //! # Status
 //!
-//! Implements [`bindings/didcomm-v1/0.1`](https://trusttasks.org/bindings/didcomm-v1/0.1),
-//! itself a draft written from this crate and offered to the DTG Core
-//! Credentials task force to take over. The carriage in [`pack`] is flagged
-//! open in §2 of that binding: nothing depends on it yet, so it can still move.
-//! Discussion on issue #173.
+//! Implements [`bindings/didcomm-v1/0.2`](https://trusttasks.org/bindings/didcomm-v1/0.2):
+//! the dedicated message type ([`pack::ENVELOPE_TYPE`]) as producer, both
+//! carriages as consumer (§2.3 — receivers move first), and the `~thread`
+//! omit rule of §4. Discussion on issue #173.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
@@ -59,7 +61,7 @@ pub mod pack;
 
 pub use error::DidcommV1Error;
 pub use handler::{DidcommV1Handler, BINDING_URI};
-pub use pack::{build_message, unpack_trust_task, ATTACHMENT_ID};
+pub use pack::{build_message, unpack_trust_task, ATTACHMENT_ID, ENVELOPE_TYPE};
 
 /// The `~thread` fields this binding maps onto the framework's thread members,
 /// documented as data so a consumer can assert the mapping rather than restate
