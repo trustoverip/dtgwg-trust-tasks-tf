@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/_shared/0.1/context",
+  "title": "ContextRecord — shared definition for the vta/contexts/* spec family",
+  "description": "A *context* is the VTA's unit of separation: keys, DIDs, vault entries, policies and memory all belong to exactly one, and an ACL entry's scopes are context ids. Contexts nest — `parent` names the context this one sits under, and `basePath` is the resolved path from the root — so authority granted at an ancestor reaches its descendants. `ContextRecord` is the persisted shape every task in the family returns; it is defined once here because `create`, `get`, `update`, `update-did` and `list` all hand back the same record, and an inline copy per task would fork the moment one of them gained a member.",
+  "$defs": {
+    "ContextRecord": {
+      "title": "ContextRecord",
+      "description": "A context as the VTA holds it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "basePath", "createdAt", "updatedAt"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name."
+        },
+        "did": {
+          "type": "string",
+          "description": "DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one."
+        },
+        "description": {
+          "type": "string",
+          "description": "Free-form description."
+        },
+        "parent": {
+          "type": "string",
+          "description": "Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope."
+        },
+        "basePath": {
+          "type": "string",
+          "description": "Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "ContextPolicy": {
+      "title": "ContextPolicy",
+      "description": "Per-context restrictions the VTA enforces. Every member is optional, and **absence means unrestricted, not empty** — a policy that omits `presentableTypes` permits every type, while one that sets it to `[]` permits none. The two are opposite instructions and a consumer MUST NOT collapse them.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trustedVerifiers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "VIDs permitted to receive presentations from this context. Absent: any verifier. Present-but-empty: none."
+        },
+        "presentableTypes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Credential types that may be presented from this context. Absent: any type. Present-but-empty: none."
+        },
+        "signableKeys": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Key ids the signing oracle may be invoked on within this context. Absent: every key the context holds. Present-but-empty: no keys."
+        },
+        "exportAllowed": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether material in this context may leave it through an export. Defaults to true; set it to false for a context whose contents must not be extractable."
+        },
+        "quotas": {
+          "type": "object",
+          "description": "Resource limits for the context. Shape is maintainer-defined.",
+          "additionalProperties": true
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

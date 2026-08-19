@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/update/1.0",
+  "title": "VTA Contexts Update \u2014 payload",
+  "description": "Request payload for vta/contexts/update. Every member except `id` is optional and omitting one leaves that field unchanged \u2014 this is a patch, not a replacement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context to update. Not itself changeable: an id is what ACL scopes name, so renaming one would silently unhook every grant that referenced it."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "New human-readable name."
+    },
+    "did": {
+      "type": "string",
+      "description": "DID this context acts as. Prefer vta/contexts/update-did, which is the task named and audited for this change; setting it here is permitted for a maintainer that treats the two as one write."
+    },
+    "description": {
+      "type": "string",
+      "description": "New description."
+    },
+    "contextPolicy": {
+      "$ref": "../../../_shared/0.1/context.schema.json#/$defs/ContextPolicy",
+      "description": "Replacement policy for the context. Supplied whole: the members present in the new policy are the policy, and one omitted from it becomes unrestricted rather than retaining its previous value."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Contexts Update \u2014 response payload",
+      "description": "Success response to vta/contexts/update: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update/1.0#response.",
+      "$ref": "../../../_shared/0.1/context.schema.json#/$defs/ContextRecord"
+    }
+  }
+}

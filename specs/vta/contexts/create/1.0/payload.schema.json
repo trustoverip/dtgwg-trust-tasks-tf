@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/create/1.0",
+  "title": "VTA Contexts Create \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id for the new context. When `parent` is present this is the leaf segment and the full id becomes `<parent>/<id>`; otherwise it is a top-level id. Must be unique within its parent \u2014 a collision is refused, never merged."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name. Operator-facing only; carries no authorization meaning."
+    },
+    "description": {
+      "type": "string",
+      "description": "Free-form description."
+    },
+    "parent": {
+      "type": "string",
+      "description": "Id of the context to nest under. Absent creates a top-level context. Nesting is not cosmetic: authority granted at the parent reaches this context."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Contexts Create \u2014 response payload",
+      "description": "Success response to vta/contexts/create: the realized context record, at the top level. Type https://trusttasks.org/spec/vta/contexts/create/1.0#response.",
+      "$ref": "../../../_shared/0.1/context.schema.json#/$defs/ContextRecord"
+    }
+  }
+}

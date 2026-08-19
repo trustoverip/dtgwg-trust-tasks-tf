@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/list/1.0",
+  "title": "VTA Contexts List — payload",
+  "description": "Request payload for vta/contexts/list. Takes no filters: the result is already narrowed to what the caller may reach.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Contexts List — response payload",
+      "description": "Success response to vta/contexts/list. Type https://trusttasks.org/spec/vta/contexts/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contexts"],
+      "properties": {
+        "contexts": {
+          "type": "array",
+          "description": "Contexts the caller may access, in maintainer-defined order. An empty array means the caller can reach none — which is a successful answer, and is not distinguishable from a VTA that holds none. A caller needing that distinction wants vta/contexts/get on a known id, which answers notFound.",
+          "items": {
+            "$ref": "../../../_shared/0.1/context.schema.json#/$defs/ContextRecord"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

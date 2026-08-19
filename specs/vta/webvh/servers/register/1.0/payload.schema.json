@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/servers/register/1.0",
+  "title": "VTA WebVH Servers Register — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "description": "Local id for the server. Referenced by every DID published through it." },
+    "did": { "type": "string", "description": "The server's DID, used to authenticate it. Absent where the VTA resolves it during registration." },
+    "label": { "type": "string" },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH Servers Register — response payload",
+      "description": "Success response to vta/webvh/servers/register: the registration the VTA now holds. Type https://trusttasks.org/spec/vta/webvh/servers/register/1.0#response.",
+      "$ref": "../../../../_shared/0.1/webvh-records.schema.json#/$defs/WebvhServerRecord"
+    }
+  }
+}
