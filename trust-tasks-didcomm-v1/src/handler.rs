@@ -16,7 +16,7 @@
 use trust_tasks_rs::{TransportContext, TransportHandler};
 
 /// Stable identifier for the DIDComm v1 binding, per SPEC.md §9.2.
-pub const BINDING_URI: &str = "https://trusttasks.org/binding/didcomm-v1/0.1";
+pub const BINDING_URI: &str = "https://trusttasks.org/binding/didcomm-v1/0.2";
 
 /// A [`TransportHandler`] for one DIDComm v1 exchange.
 ///

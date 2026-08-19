@@ -6514,7 +6514,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm-v1"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "affinidi-messaging-didcomm-v1",
  "serde",
