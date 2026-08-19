@@ -310,7 +310,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"92a3b4c5-d6e7-4f08-192a-3b4c5d6e7f08\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/delete/1.0\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T10:00:00Z\",\n  \"payload\": { \"id\": \"personal/banking\" },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-19T10:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z7QRs...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"92a3b4c5-d6e7-4f08-192a-3b4c5d6e7f08\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/delete/1.0\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T10:00:00Z\",\n  \"payload\": { \"id\": \"personal/banking\", \"force\": false },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-19T10:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z7QRs...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

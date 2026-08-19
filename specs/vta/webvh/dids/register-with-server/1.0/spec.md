@@ -87,7 +87,8 @@ Verifying the producer's VID or `proof` establishes *who is asking*, never *what
   "payload": {
     "did": "did:webvh:QmScidAbCdEfGh:example.com:alice",
     "serverId": "prod",
-    "domain": "example.com"
+    "domain": "example.com",
+    "force": false
   },
   "proof": {
     "type": "DataIntegrityProof",

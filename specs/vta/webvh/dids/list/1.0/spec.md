@@ -98,6 +98,8 @@ Verifying the producer's VID or `proof` establishes *who is asking*, never *what
         "contextId": "personal",
         "portable": true,
         "logEntryCount": 4,
+        "preRotationCount": 0,
+        "nextFragmentId": 1,
         "createdAt": "2026-08-19T11:00:01Z",
         "updatedAt": "2026-08-19T12:30:00Z"
       }

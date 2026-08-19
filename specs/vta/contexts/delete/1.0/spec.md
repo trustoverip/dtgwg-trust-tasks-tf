@@ -99,7 +99,7 @@ Refused, because the context still holds keys:
   "issuer": "did:key:z6MkAdmin",
   "recipient": "did:web:vta.example",
   "issuedAt": "2026-08-19T10:00:00Z",
-  "payload": { "id": "personal/banking" },
+  "payload": { "id": "personal/banking", "force": false },
   "proof": {
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-jcs-2022",
