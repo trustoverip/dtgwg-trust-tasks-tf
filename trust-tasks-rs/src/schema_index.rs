@@ -272,6 +272,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1" => <crate::specs::vta::webvh::servers::reconcile::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vta/webvh/servers/register/1.0" => <crate::specs::vta::webvh::servers::register::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vta/webvh/servers/remove/1.0" => <crate::specs::vta::webvh::servers::remove::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1" => <crate::specs::vta::webvh::servers::retire_orphan::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1" => <crate::specs::vtc::admin::bootstrap::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" => <crate::specs::vtc::admin::invites::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/admin/invites/list/0.1" => <crate::specs::vtc::admin::invites::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
