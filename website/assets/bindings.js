@@ -30,6 +30,26 @@ window.TT_BINDINGS = [
     ],
   },
   {
+    id: "https/0.2",
+    slug: "https",
+    version: "0.2",
+    title: "HTTPS",
+    summary:
+      "Carries Trust Task documents as JSON over HTTP/1.1 POST to a single endpoint. Adds endpoint discovery: the advertised serviceEndpoint is the Trust-Task base that /trust-tasks is appended to, discoverable from a TrustTaskHTTPS DID-document service entry.",
+    bindingURI: "https://trusttasks.org/binding/https/0.2",
+    envelopeType: null,
+    status: "draft",
+    accent: "teal",
+    prosePath: "/bindings/https/0.2/spec.md",
+    implementations: [
+      {
+        name: "trust-tasks-https",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-https",
+        language: "Rust",
+      },
+    ],
+  },
+  {
     id: "https/0.1",
     slug: "https",
     version: "0.1",
