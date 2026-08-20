@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1",
+  "title": "VTA WebVH Servers Retire Orphan — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["serverId", "slotId"],
+  "properties": {
+    "serverId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The hosting server holding the orphaned slot, as the agent has it registered."
+    },
+    "slotId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The slot to retire, as reported in a reconcile response's hostOnly. The slot identifier rather than the DID, because a slot reserved but never published to has no DID and is exactly as orphaned."
+    },
+    "expectedDid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Operator rationale, recorded in the agent's audit trail. The act has no undo, so why it was done outlives the record of what was done."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH Servers Retire Orphan — response payload",
+      "description": "Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serverId", "slotId", "retired"],
+      "properties": {
+        "serverId": { "type": "string" },
+        "slotId": { "type": "string" },
+        "retired": {
+          "type": "boolean",
+          "description": "Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it."
+        },
+        "did": {
+          "type": "string",
+          "description": "The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

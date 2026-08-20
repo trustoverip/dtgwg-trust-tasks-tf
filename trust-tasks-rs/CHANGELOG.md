@@ -29,6 +29,26 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.1] - 2026-08-20
+
+### Added
+
+- **`vta/webvh/servers/retire-orphan/0.1`** — the remedy for the one divergence
+  `vta/webvh/servers/reconcile` can name but nothing could repair.
+
+  An orphan is a slot a hosting server serves for an agent that has no record of
+  it. No ordinary delete reaches one: every delete addresses a DID via its local
+  record, to find the server and the signing keys, so the lookup fails before a
+  request leaves the agent. Nor can the producer remove it directly — the agent
+  holds the server credentials, not the producer. The slot is visible to both
+  parties and removable by neither.
+
+  The task's safety rests on the agent re-deriving orphanhood itself rather than
+  accepting the producer's word: a live DID has a record, and the record makes
+  the refusal automatic. The spec also forbids performing it on a sweep, because
+  the signal a sweeper would act on is an *absence*, and absences are produced by
+  bugs as readily as by orphaning.
+
 ## [0.9.0] - 2026-08-16
 
 ### Changed — BREAKING
