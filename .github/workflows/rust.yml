@@ -77,38 +77,56 @@ jobs:
       - name: clippy (--all-features)
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-  # The mirror of ts.yml's `version-bump`, for the same reason and with the same
-  # keying. `cargo publish` refuses a version already on crates.io, so a PR that
-  # regenerates `trust-tasks-rs/src/specs` without bumping leaves main and
-  # crates.io holding the SAME version with DIFFERENT contents — and a consumer
-  # depending on it cannot reach a spec that is merged and documented.
+  # A crate that changes and does not move its version never reaches crates.io:
+  # `cargo publish` skips a version already published, so the change sits on main
+  # while consumers keep resolving the old tarball. main and crates.io then hold
+  # the SAME version with DIFFERENT contents, which is worse than an unreleased
+  # change because the version number gives no hint.
   #
-  # This was missed when the TS guard landed: #243's families were stranded on
-  # BOTH sides, and only the TypeScript half was caught.
+  # This guard originally watched only `trust-tasks-rs/src/specs`, and that was
+  # too narrow: moving the sibling crates' `trust-tasks-rs` requirement to 0.11
+  # changed what each of them publishes, without touching a single line of their
+  # source. Six crates merged that way and none republished, so downstream
+  # consumers pulled tarballs still built against 0.9 and hit E0308 on a
+  # duplicated `TrustTask`. Any change to a crate's manifest or source counts.
   version-bump:
-    name: version bumped with the bindings
+    name: version bumped with the crate
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Require a version bump when the generated bindings change
+      - name: Require a version bump for every changed publishable crate
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: |
-          if git diff --quiet "$BASE"...HEAD -- trust-tasks-rs/src/specs; then
-            echo "generated bindings unchanged — no bump required"
-            exit 0
-          fi
-          before=$(git show "$BASE":trust-tasks-rs/Cargo.toml | sed -n 's/^version = "\(.*\)"/\1/p' | head -1)
-          after=$(sed -n 's/^version = "\(.*\)"/\1/p' trust-tasks-rs/Cargo.toml | head -1)
-          if [ "$before" = "$after" ]; then
-            echo "::error::trust-tasks-rs/src/specs changed but trust-tasks-rs is still $after. cargo publish refuses a version already on crates.io, so these bindings would never reach a consumer while crates.io and main disagree about what $after contains. Bump trust-tasks-rs/Cargo.toml (minor for new families, patch for a description-only regeneration)."
-            git diff --stat "$BASE"...HEAD -- trust-tasks-rs/src/specs
+          miss=0
+          # Publishable workspace members, as cargo sees them.
+          cargo metadata --format-version 1 --no-deps \
+            | jq -r '.packages[] | select(.publish != []) | "\(.name)\t\(.version)\t\(.manifest_path)"' \
+            > /tmp/crates.tsv
+          while IFS=$'\t' read -r name version manifest; do
+            dir=$(dirname "${manifest#$PWD/}")
+            git diff --quiet "$BASE"...HEAD -- "$dir" && continue
+            before=$(git show "$BASE:$dir/Cargo.toml" 2>/dev/null \
+                     | sed -n 's/^version = "\(.*\)"/\1/p' | head -1)
+            if [ -z "$before" ]; then
+              echo "  new  $name ($version)"
+              continue
+            fi
+            if [ "$before" = "$version" ]; then
+              echo "  MISS $name: changed but version still $version"
+              miss=1
+            else
+              echo "  ok   $name: $before -> $version"
+            fi
+          done < /tmp/crates.tsv
+          if [ "$miss" = "1" ]; then
+            echo "::error::Some changed publishable crates were not version-bumped. cargo publish skips a version already on crates.io, so those changes would never reach a consumer while the registry and main disagree about what that version contains."
             exit 1
           fi
-          echo "bindings changed and version moved $before → $after"
+          echo "every changed publishable crate moved its version"
 
   codegen-drift:
     name: trust-tasks-codegen drift
