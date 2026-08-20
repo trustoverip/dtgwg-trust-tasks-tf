@@ -317,6 +317,7 @@ export * as VtaWebvhServersList_v1_0 from "./vta/webvh/servers/list/1.0/payload.
 export * as VtaWebvhServersReconcile_v0_1 from "./vta/webvh/servers/reconcile/0.1/payload.js";
 export * as VtaWebvhServersRegister_v1_0 from "./vta/webvh/servers/register/1.0/payload.js";
 export * as VtaWebvhServersRemove_v1_0 from "./vta/webvh/servers/remove/1.0/payload.js";
+export * as VtaWebvhServersRetireOrphan_v0_1 from "./vta/webvh/servers/retire-orphan/0.1/payload.js";
 export * as BackupShared_v0_1 from "./vtc/_shared/0.1/backup.js";
 export * as CommunityShared_v0_1 from "./vtc/_shared/0.1/community.js";
 export * as ConfigPortabilityShared_v0_1 from "./vtc/_shared/0.1/config-portability.js";

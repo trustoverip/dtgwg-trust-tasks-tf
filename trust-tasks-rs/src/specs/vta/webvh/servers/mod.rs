@@ -5,3 +5,4 @@ pub mod list;
 pub mod reconcile;
 pub mod register;
 pub mod remove;
+pub mod retire_orphan;
