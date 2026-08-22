@@ -33,10 +33,12 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vta/app-state:contextNotFound
-    meaning: The named `contextId` does not exist at this maintainer, or is not reachable by the caller. Distinguished from an empty result so a consumer can tell "wrong context id" from "no records".
-    retryable: false
-  - code: vta/app-state:permissionDenied
-    meaning: The caller is authenticated but lacks read access to application state in the named context.
+    meaning: >-
+      OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such
+      context" from "not permitted to reach it". Where it cannot — an ACL that enumerates
+      the contexts a caller may act in answers both the same way — the framework's
+      standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this
+      code is never emitted. Refusing an unauthorized caller is NOT this code.
     retryable: false
   - code: vta/app-state/list:filterConflict
     meaning: The supplied combination of members is not answerable — `sinceVersion` without `namespace`, or `sinceVersion` with `includeDeleted` set to false.
@@ -127,8 +129,7 @@ until it has drained the final page of the feed.
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements). Where a `proof` is present, verify it.
-2. Refuse with `vta/app-state:contextNotFound` when `contextId` names no context it holds, rather than degrading to an empty result.
-3. Refuse with `vta/app-state:permissionDenied` when the caller lacks read access to application state in that context.
+2. Refuse a caller that lacks read access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)), and **MUST NOT** degrade an unreachable context to an empty result. A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 4. Refuse with `vta/app-state/list:filterConflict` and `reason: "sinceVersionRequiresNamespace"` when `sinceVersion` is present and `namespace` is not; and with `reason: "changeFeedCannotExcludeDeleted"` when `sinceVersion` is present and `includeDeleted` is false.
 5. In **snapshot** mode, return live records matching `namespace` and `prefix`, in ascending `key` order, and include tombstones still inside the retention window when `includeDeleted` is true.
 6. In **change-feed** mode, return every record in the namespace — live and tombstoned — whose `version` is strictly greater than `sinceVersion`, filtered by `prefix` where supplied, in **ascending `version` order**, so that a consumer applying them in order reaches the same state the maintainer holds.

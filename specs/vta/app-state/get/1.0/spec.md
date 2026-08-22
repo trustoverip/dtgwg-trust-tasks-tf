@@ -33,10 +33,12 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vta/app-state:contextNotFound
-    meaning: The named `contextId` does not exist at this maintainer, or is not reachable by the caller. Distinguished from an absent record so a consumer can tell "wrong context id" from "no such key".
-    retryable: false
-  - code: vta/app-state:permissionDenied
-    meaning: The caller is authenticated but lacks read access to application state in the named context.
+    meaning: >-
+      OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such
+      context" from "not permitted to reach it". Where it cannot — an ACL that enumerates
+      the contexts a caller may act in answers both the same way — the framework's
+      standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this
+      code is never emitted. Refusing an unauthorized caller is NOT this code.
     retryable: false
   - code: vta/app-state/get:notFound
     meaning: No record exists at `(contextId, namespace, key)`. Also returned when a tombstone exists but `includeDeleted` was not set.
@@ -89,8 +91,7 @@ A conforming **producer** (the application) **MUST**:
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements). Where a `proof` is present, verify it.
-2. Refuse with `vta/app-state:contextNotFound` when `contextId` names no context it holds, rather than degrading to an empty result — a consumer that mistypes a context id must not be told its records are gone.
-3. Refuse with `vta/app-state:permissionDenied` when the caller lacks read access to application state in that context.
+2. Refuse a caller that lacks read access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)), and **MUST NOT** degrade an unreachable context to an empty result — a consumer that mistypes a context id must not be told its records are gone. A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 4. Return the record at `(contextId, namespace, key)` with its `value`, `version` and timestamps.
 5. Refuse with `vta/app-state/get:notFound` when no live record exists at the address, and when a tombstone exists but `includeDeleted` was not set.
 6. Return a tombstone as a record with `deleted: true` and no `value` when `includeDeleted` is set.

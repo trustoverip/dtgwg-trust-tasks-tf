@@ -33,10 +33,12 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vta/app-state:contextNotFound
-    meaning: The named `contextId` does not exist at this maintainer, or is not reachable by the caller.
-    retryable: false
-  - code: vta/app-state:permissionDenied
-    meaning: The caller is authenticated but lacks write access to application state in the named context.
+    meaning: >-
+      OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such
+      context" from "not permitted to reach it". Where it cannot — an ACL that enumerates
+      the contexts a caller may act in answers both the same way — the framework's
+      standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this
+      code is never emitted. Refusing an unauthorized caller is NOT this code.
     retryable: false
   - code: vta/app-state/put:versionConflict
     meaning: The `expectedVersion` precondition failed. The details carry the maintainer's current version and value, so the caller can resolve without a re-read.
@@ -128,7 +130,7 @@ A conforming producer that intends a read-modify-write **SHOULD** supply `expect
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Refuse with `vta/app-state:contextNotFound` when `contextId` names no context it holds, and with `vta/app-state:permissionDenied` when the caller lacks write access to application state in that context.
+2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Enforce a **documented** per-record cap on the stored value and refuse an oversized write with `vta/app-state/put:valueTooLarge`, carrying both `limitBytes` and `actualBytes`. A maintainer **MUST NOT** silently truncate or drop an oversized write — refusing loudly at a knowable cap is the whole requirement, and a limit that drops a write silently has already cost a real deployment a lost join. The RECOMMENDED cap is **65536 bytes** measured over the UTF-8 encoding of the [[RFC8785]](https://www.rfc-editor.org/rfc/rfc8785) canonicalization of the value.
 4. Evaluate `expectedVersion` before writing:
    - absent → unconditional upsert;

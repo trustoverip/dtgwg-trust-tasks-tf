@@ -33,10 +33,12 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vta/app-state:contextNotFound
-    meaning: The named `contextId` does not exist at this maintainer, or is not reachable by the caller.
-    retryable: false
-  - code: vta/app-state:permissionDenied
-    meaning: The caller is authenticated but lacks write access to application state in the named context.
+    meaning: >-
+      OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such
+      context" from "not permitted to reach it". Where it cannot — an ACL that enumerates
+      the contexts a caller may act in answers both the same way — the framework's
+      standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this
+      code is never emitted. Refusing an unauthorized caller is NOT this code.
     retryable: false
   - code: vta/app-state/delete:versionConflict
     meaning: The `expectedVersion` precondition failed. The details carry the maintainer's current version and value, so the caller can see the edit it was about to discard.
@@ -102,7 +104,7 @@ A conforming producer deleting on the strength of something it read **SHOULD** s
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Refuse with `vta/app-state:contextNotFound` when `contextId` names no context it holds, and with `vta/app-state:permissionDenied` when the caller lacks write access to application state in that context.
+2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Refuse `expectedVersion: 0` with `vta/app-state/delete:versionConflict` and `reason: "createOnlyNotApplicable"` — a create-only precondition on a delete is never satisfiable and never intended.
 4. Evaluate a positive `expectedVersion` against the live record, refusing with `reason: "versionMismatch"` when it differs and `reason: "recordAbsent"` when no live record exists, and populating `currentVersion` / `currentValue` / `currentDeleted` in the details so the caller sees what it was about to discard.
 5. Replace a live record with a tombstone taking the namespace's next counter value, discard the value, and return `existed: true` with the tombstone's `version` and `deletedAt`.
