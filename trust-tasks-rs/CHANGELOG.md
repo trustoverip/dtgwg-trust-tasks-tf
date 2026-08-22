@@ -29,6 +29,39 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.2] - 2026-08-22
+
+### Added
+
+- **`vta/app-state/{get,put,list,delete,get-many,put-many}/1.0`** — a third
+  store on the VTA, beside the secrets vault and the credential vault, for
+  versioned, namespaced, per-context JSON that an application owns and the VTA
+  does not interpret.
+
+  Records are addressed by `(contextId, namespace, key)`. The namespace scopes
+  one application so several tools can share a context without colliding, and is
+  the seam a per-namespace grant would later use — which is why it is part of
+  the address rather than a prefix convention on the key.
+
+  Three properties are what make this a store rather than a field on an existing
+  one. `version` is a monotonic counter maintained **per `(contextId,
+  namespace)`**, not per record, so one number is simultaneously the
+  optimistic-concurrency token `expectedVersion` compares against and the
+  watermark `sinceVersion` compares against; a per-record counter could serve the
+  first but not the second. A failed precondition returns the maintainer's
+  *current version and value* with the rejection, because a bare rejection
+  obliges a re-read and the re-read races the next write. And `delete` leaves a
+  versioned tombstone, without which a consumer pulling from a watermark never
+  learns of a deletion and resurrects the record on its next rebuild.
+
+  Agent memory is deliberately untouched: `MemoryItem` has no version to hang a
+  precondition on and its `list` returns the whole context, but the settling
+  argument is that "forget everything" must stay a safe thing to ask an agent,
+  which it cannot be if account state lives there.
+
+  Blobs are deliberately out of scope in 1.0 — adding a `blobRef` later is
+  additive, and nothing in the first consumer's requirements needs one.
+
 ## [0.11.1] - 2026-08-20
 
 ### Added

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/app-state/get/1.0",
+  "title": "VTA Application State Get — payload",
+  "description": "Read one application-state record by its `(contextId, namespace, key)` address. Returns the record with its value and its version; the version is what a subsequent conditional write supplies as `expectedVersion`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "namespace", "key"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VTA context the record is scoped to; the isolation boundary."
+    },
+    "namespace": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Namespace"
+    },
+    "key": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Key"
+    },
+    "includeDeleted": {
+      "type": "boolean",
+      "description": "Defaults to false. When true, a tombstone at this address is returned as a record with `deleted: true` instead of being reported as absent. Lets a consumer distinguish \"deleted, and here is the version that deleted it\" from \"never existed, or deleted so long ago the tombstone was reaped\" — a distinction a repair path needs and a normal read does not."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Application State Get — response payload",
+      "description": "Success response to vta/app-state/get. Type https://trusttasks.org/spec/vta/app-state/get/1.0#response. An absent record is not a success: it is reported as a trust-task-error carrying vta/app-state/get:notFound.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record"],
+      "properties": {
+        "record": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/AppStateRecord",
+          "description": "The record at the requested address, with its `value` populated (unless it is a tombstone returned under `includeDeleted`)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

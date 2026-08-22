@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/app-state/put-many/1.0",
+  "title": "VTA Application State Put-Many — payload",
+  "description": "Write up to 64 application-state records in one round trip, each carrying its own optimistic-concurrency precondition. The batch `mode` decides what a single failure costs: `independent` (the default) applies each write on its own merits, `atomic` applies all or none.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "namespace", "writes"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VTA context the records are scoped to; the isolation boundary."
+    },
+    "namespace": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Namespace",
+      "description": "One namespace per batch. Atomicity is only meaningful within the counter the writes take their versions from, and that counter is per (contextId, namespace)."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["independent", "atomic"],
+      "default": "independent",
+      "description": "`independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.",
+      "$comment": "The default is load-bearing rather than a convenience; see the spec's Abstract."
+    },
+    "writes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/Write"
+      },
+      "description": "The writes to apply. Keys MUST be distinct: two writes to one key in a batch have no defined order and are refused rather than serialised."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Write": {
+      "title": "Write",
+      "description": "One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "oneOf": [
+        { "required": ["value"], "not": { "required": ["mergePatch"] } },
+        { "required": ["mergePatch"], "not": { "required": ["value"] } }
+      ],
+      "properties": {
+        "key": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Key"
+        },
+        "value": {
+          "description": "The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`."
+        },
+        "mergePatch": {
+          "type": "object",
+          "description": "An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`."
+        },
+        "expectedVersion": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/ExpectedVersion",
+          "description": "This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Application State Put-Many — response payload",
+      "description": "Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "results"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["independent", "atomic"],
+          "description": "The mode the maintainer applied, echoed so a caller relying on the default sees what it got."
+        },
+        "results": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/WriteResult"
+          },
+          "description": "One result per requested write, in request order. Every write is accounted for."
+        },
+        "highWatermark": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Version",
+          "description": "The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}
