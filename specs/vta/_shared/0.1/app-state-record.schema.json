@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/_shared/0.1/app-state-record",
+  "title": "AppStateRecord — shared definition for the vta/app-state/* spec family",
+  "description": "Application state is versioned, namespaced JSON that an application owns and the VTA stores without interpreting. A record is addressed by the triple `(contextId, namespace, key)`; `AppStateRecord` is the shape every task in the family hands back, defined once here because `get`, `list`, `get-many` and the conflict details of `put` and `put-many` all return the same record and an inline copy per task would fork the moment one of them gained a member.\n\nThe store is deliberately schema-agnostic: `value` is any JSON, and the maintainer never validates, migrates, or interprets it. It is also deliberately NOT a secret store — the vault (`vault/*`) is where secret material belongs, and a maintainer SHOULD surface application state in operator tooling on that understanding.\n\nThe version counter is the family's load-bearing invariant and is described once, here. `version` is a monotonically increasing integer maintained per `(contextId, namespace)` pair, NOT per record: every write in a namespace takes the next value of that namespace's counter, and a record's `version` is the counter value its most recent write took. One number therefore serves two purposes that would otherwise need two — it is the optimistic-concurrency token `expectedVersion` is compared against, and it is the watermark `sinceVersion` is compared against. A per-record counter could do the first but not the second, because two records' counters are not comparable to each other and so no single number can mean \"everything changed after this point\". Consumers MUST treat version numbers as opaque and monotonic: a record's version can jump by any amount between two writes, because writes to its neighbours consumed the intervening values.\n\nTimestamp invariants (SHOULD-level, prose — not expressible in JSON Schema): when `createdAt` is present, `updatedAt >= createdAt`; when `deletedAt` is present, `deleted` is true and `deletedAt >= createdAt`. Consumers SHOULD reject documents that violate either.",
+  "$defs": {
+    "Namespace": {
+      "title": "Namespace",
+      "description": "Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "Key": {
+      "title": "Key",
+      "description": "Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[^\\u0000]+$"
+    },
+    "Version": {
+      "title": "Version",
+      "description": "A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "ExpectedVersion": {
+      "title": "ExpectedVersion",
+      "description": "Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \"create only\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \"absent\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "AppStateRecord": {
+      "title": "AppStateRecord",
+      "description": "A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextId", "namespace", "key", "version", "deleted", "updatedAt"],
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The VTA context the record is scoped to; the isolation boundary."
+        },
+        "namespace": {
+          "$ref": "#/$defs/Namespace"
+        },
+        "key": {
+          "$ref": "#/$defs/Key"
+        },
+        "version": {
+          "$ref": "#/$defs/Version",
+          "description": "The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between."
+        },
+        "value": {
+          "description": "The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value."
+        },
+        "valueBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone."
+        },
+        "deleted": {
+          "type": "boolean",
+          "description": "True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the write that produced this `version` was applied. For a tombstone, when the delete was applied."
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten."
+        }
+      }
+    },
+    "WriteResult": {
+      "title": "WriteResult",
+      "description": "The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "outcome"],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/Key"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["written", "conflict", "tooLarge", "notFound", "skipped"],
+          "description": "`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed."
+        },
+        "version": {
+          "$ref": "#/$defs/Version",
+          "description": "The new version, on `written`."
+        },
+        "created": {
+          "type": "boolean",
+          "description": "On `written`: true when no live record existed at the address beforehand."
+        },
+        "currentVersion": {
+          "$ref": "#/$defs/Version",
+          "description": "On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty)."
+        },
+        "currentValue": {
+          "description": "On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists."
+        },
+        "currentDeleted": {
+          "type": "boolean",
+          "description": "On `conflict`: true when the address holds a tombstone rather than a live record."
+        },
+        "limitBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "On `tooLarge`: the maintainer's per-record cap in bytes."
+        },
+        "actualBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "On `tooLarge`: the size of the rejected value in bytes."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/app-state/put/1.0",
+  "title": "VTA Application State Put — payload",
+  "description": "Write one application-state record at its `(contextId, namespace, key)` address. Exactly one of `value` (whole-record replacement) or `mergePatch` (RFC 7386 partial update) is supplied. `expectedVersion` makes the write conditional: a positive value requires the record to be at exactly that version, and zero requires that no live record exists.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "namespace", "key"],
+  "oneOf": [
+    { "required": ["value"], "not": { "required": ["mergePatch"] } },
+    { "required": ["mergePatch"], "not": { "required": ["value"] } }
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VTA context the record is scoped to; the isolation boundary."
+    },
+    "namespace": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Namespace"
+    },
+    "key": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Key"
+    },
+    "value": {
+      "description": "The complete new value, replacing whatever the record held. Any JSON value, including `null` — a present-and-null `value` stores the JSON literal null and is not the same as omitting the member. Mutually exclusive with `mergePatch`."
+    },
+    "mergePatch": {
+      "description": "An RFC 7386 JSON Merge Patch applied to the record's current value. Cuts payload, and more usefully cuts conflicts: two instances editing different members of one record stop colliding entirely rather than serialising behind `expectedVersion`. Requires a live record at the address. Note RFC 7386's one sharp edge — a member set to `null` in the patch DELETES that member from the value, and there is no way to set a member to the JSON literal null through a patch; a writer that needs to do so must send a whole `value`. Mutually exclusive with `value`.",
+      "type": "object"
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/ExpectedVersion",
+      "description": "Optional precondition. Omit for a last-writer-wins upsert. Supply the version a prior read returned to make the write conditional; supply 0 to create only."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Application State Put — response payload",
+      "description": "Success response to vta/app-state/put. Type https://trusttasks.org/spec/vta/app-state/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying vta/app-state/put:versionConflict, whose details carry the maintainer's current version and value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextId", "namespace", "key", "version", "created", "updatedAt"],
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echoed from the request."
+        },
+        "namespace": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Namespace"
+        },
+        "key": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Key"
+        },
+        "version": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Version",
+          "description": "The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read."
+        },
+        "created": {
+          "type": "boolean",
+          "description": "True when no live record existed at the address beforehand — including when the address held a tombstone, since a tombstone is not a live record."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the write was applied."
+        },
+        "valueBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the stored value in bytes as the maintainer measured it against its per-record cap. Lets a writer see how close it is to the limit before it hits it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/app-state/delete/1.0",
+  "title": "VTA Application State Delete — payload",
+  "description": "Delete one application-state record, leaving a versioned tombstone so that consumers syncing incrementally learn of the deletion rather than resurrecting the record on their next rebuild. The tombstone is reaped after the maintainer's retention window.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "namespace", "key"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VTA context the record is scoped to; the isolation boundary."
+    },
+    "namespace": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Namespace"
+    },
+    "key": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Key"
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/ExpectedVersion",
+      "description": "Optional precondition, on the same terms as vta/app-state/put. A positive value requires the live record to be at exactly that version — so a delete cannot discard an edit the caller never saw. Zero is meaningless here (a create-only precondition on a delete can never be satisfiable and never useful) and MUST be refused."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Application State Delete — response payload",
+      "description": "Success response to vta/app-state/delete. Type https://trusttasks.org/spec/vta/app-state/delete/1.0#response. Deleting an address that holds nothing is a success, not an error — that is what makes the task converge under replay.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextId", "namespace", "key", "existed"],
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echoed from the request."
+        },
+        "namespace": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Namespace"
+        },
+        "key": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Key"
+        },
+        "existed": {
+          "type": "boolean",
+          "description": "True when a live record was removed by this request. False when the address already held a tombstone, or held nothing at all — both of which are successes, because the caller's intent is satisfied either way."
+        },
+        "version": {
+          "$ref": "../../../_shared/0.1/app-state-record.schema.json#/$defs/Version",
+          "description": "The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the address held nothing and no tombstone was written."
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the deletion was recorded. Absent on the same terms as `version`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}
