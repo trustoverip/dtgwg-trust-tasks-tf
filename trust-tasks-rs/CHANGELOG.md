@@ -29,6 +29,27 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.3] - 2026-08-22
+
+### Changed
+
+- **`vta/app-state/*` — `vta/app-state:permissionDenied` is withdrawn.** It was
+  declared as an *extended* code for a failure the framework already names as a
+  standard one (SPEC §8.3), so a consumer switching on `permissionDenied` would
+  not have matched it, and its `Extended` classification maps to `taskFailed` —
+  a strictly worse signal than the standard code it duplicated. A conforming VTA
+  answers an unauthorized caller with the standard code.
+
+- **`vta/app-state:contextNotFound` is restated as OPTIONAL.** It reads as a
+  diagnostic available to a maintainer whose authorization model can tell "no
+  such context" from "not permitted to reach it". Where the ACL enumerates the
+  contexts a caller may act in — the shape the reference VTA uses — both
+  conditions are the same answer, and the code is never emitted. The prior
+  wording made it a MUST that such a maintainer could not satisfy.
+
+  No payload, response, or generated type changes; the affected specs' declared
+  `errorCodes` and their Conformance prose do.
+
 ## [0.11.2] - 2026-08-22
 
 ### Added

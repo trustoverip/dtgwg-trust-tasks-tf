@@ -33,10 +33,12 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vta/app-state:contextNotFound
-    meaning: The named `contextId` does not exist at this maintainer, or is not reachable by the caller.
-    retryable: false
-  - code: vta/app-state:permissionDenied
-    meaning: The caller is authenticated but lacks read access to application state in the named context.
+    meaning: >-
+      OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such
+      context" from "not permitted to reach it". Where it cannot — an ACL that enumerates
+      the contexts a caller may act in answers both the same way — the framework's
+      standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this
+      code is never emitted. Refusing an unauthorized caller is NOT this code.
     retryable: false
   - code: vta/app-state/get-many:duplicateKey
     meaning: The `keys` array contains the same key more than once. Refused rather than deduplicated, because a caller that sent a duplicate did not mean to.
@@ -92,7 +94,7 @@ A conforming **producer** (the application) **MUST**:
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements). Where a `proof` is present, verify it.
-2. Refuse with `vta/app-state:contextNotFound` when `contextId` names no context it holds, and with `vta/app-state:permissionDenied` when the caller lacks read access to application state in that context.
+2. Refuse a caller that lacks read access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Refuse a `keys` array containing duplicates with `vta/app-state/get-many:duplicateKey`, naming the offending keys in the details.
 4. Return the found records in `records`, each with its `value`, **in the order the keys were requested** — so a caller can zip the two lists rather than index by key.
 5. Name in `missing` every requested key holding no record, and every key holding only a tombstone unless `includeDeleted` was set.

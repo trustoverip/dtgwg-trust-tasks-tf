@@ -33,10 +33,12 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vta/app-state:contextNotFound
-    meaning: The named `contextId` does not exist at this maintainer, or is not reachable by the caller.
-    retryable: false
-  - code: vta/app-state:permissionDenied
-    meaning: The caller is authenticated but lacks write access to application state in the named context.
+    meaning: >-
+      OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such
+      context" from "not permitted to reach it". Where it cannot — an ACL that enumerates
+      the contexts a caller may act in answers both the same way — the framework's
+      standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this
+      code is never emitted. Refusing an unauthorized caller is NOT this code.
     retryable: false
   - code: vta/app-state/put-many:duplicateKey
     meaning: Two writes in the batch name the same key. Refused rather than serialised, because their relative order is undefined and any choice the maintainer made would be arbitrary.
@@ -132,7 +134,7 @@ A conforming producer **MUST NOT** assume that the writes in an `independent` ba
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Refuse with `vta/app-state:contextNotFound` when `contextId` names no context it holds, and with `vta/app-state:permissionDenied` when the caller lacks write access to application state in that context.
+2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Refuse a batch containing two writes to the same key with `vta/app-state/put-many:duplicateKey`, naming them in the details.
 4. Refuse a batch whose aggregate size exceeds its request limit with `vta/app-state/put-many:batchTooLarge`, carrying both the limit and the actual size — a limit the caller cannot see is a limit it cannot plan around.
 5. Evaluate each write's `expectedVersion`, `mergePatch` and per-record size cap exactly as [`vta/app-state/put`](../../put/1.0/spec.md) specifies for a single write.
