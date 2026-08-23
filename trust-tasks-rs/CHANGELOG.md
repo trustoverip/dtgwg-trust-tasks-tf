@@ -29,6 +29,37 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.4] - 2026-08-23
+
+### Added
+
+- **`vtc/members/removal-notice/0.1`** — a community tells a member it removed
+  them: on whose authority, when, and why.
+
+  Removal is the most consequential thing a community does to a member and, so
+  far, the one it delivered with the least information — none. The only signal a
+  removed member could observe was a side effect, the revocation bit on their
+  membership credential flipping, from which they had to infer their own removal
+  and could learn nothing about the reason.
+
+  Deliberately not a receipt. `vtc/members/self-remove-receipt` answers a request
+  the member made and is correlated to it; this answers nothing, because the
+  member did not ask, is not waiting, and may well be offline. That asymmetry is
+  what drives the rest of the design: `decidedBy` and `reason` are carried here
+  and not there, because a departing member already knows why they left.
+
+  `proof` is REQUIRED rather than RECOMMENDED. This is the one member-facing
+  message whose value depends on being shown to somebody else — an appeal, a
+  dispute, another community assessing a rejected applicant. Authenticated
+  transport establishes the sender to the recipient and stops there, so an
+  unsigned notice would evidence nothing once forwarded.
+
+  The spec also states a delivery property rather than a transport: the act the
+  notice reports is the act that ends the member's ability to ask about it, so a
+  producer cannot rely on the member being reachable at that moment and cannot
+  offer a poll as the fallback — the endpoint that would answer is the one that
+  now refuses them.
+
 ## [0.11.3] - 2026-08-22
 
 ### Changed

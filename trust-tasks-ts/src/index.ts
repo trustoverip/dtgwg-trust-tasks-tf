@@ -377,6 +377,7 @@ export * as VtcMembersPersonhoodAssert_v0_1 from "./vtc/members/personhood/asser
 export * as VtcMembersPersonhoodChallenge_v0_1 from "./vtc/members/personhood/challenge/0.1/payload.js";
 export * as VtcMembersPersonhoodRevoke_v0_1 from "./vtc/members/personhood/revoke/0.1/payload.js";
 export * as VtcMembersPurge_v0_1 from "./vtc/members/purge/0.1/payload.js";
+export * as VtcMembersRemovalNotice_v0_1 from "./vtc/members/removal-notice/0.1/payload.js";
 export * as VtcMembersRemoved_v0_1 from "./vtc/members/removed/0.1/payload.js";
 export * as VtcMembersRenew_v0_1 from "./vtc/members/renew/0.1/payload.js";
 export * as VtcMembersRequestVmc_v0_1 from "./vtc/members/request-vmc/0.1/payload.js";

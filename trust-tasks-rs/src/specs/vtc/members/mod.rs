@@ -4,6 +4,7 @@ pub mod admin_remove;
 pub mod list;
 pub mod personhood;
 pub mod purge;
+pub mod removal_notice;
 pub mod removed;
 pub mod renew;
 pub mod request_vmc;
