@@ -555,8 +555,20 @@ function checkExampleDocuments() {
   const ajv = new Ajv({ allErrors: true, strict: false });
   addFormats(ajv);
   const validators = new Map();
-  for (const version of ['0.1', '0.2', '0.3']) {
-    const p = path.join(SPECS_DIR, '_framework', version, 'trust-task.schema.json');
+  // Derived from disk, never hand-listed: a hard-coded list silently stops
+  // covering the newest framework version the moment one lands, and the skip
+  // below is indistinguishable from a clean pass. That is exactly how every
+  // framework 0.4 example went unvalidated (#254).
+  const frameworkDir = path.join(SPECS_DIR, '_framework');
+  const frameworkVersions = fs.existsSync(frameworkDir)
+    ? fs
+        .readdirSync(frameworkDir, { withFileTypes: true })
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name)
+        .sort()
+    : [];
+  for (const version of frameworkVersions) {
+    const p = path.join(frameworkDir, version, 'trust-task.schema.json');
     if (!fs.existsSync(p)) continue;
     try {
       validators.set(version, ajv.compile(readJson(p)));
@@ -592,6 +604,7 @@ function checkExampleDocuments() {
 
   let checked = 0;
   let unparseable = 0;
+  const unvalidatedTargets = new Map();
   for (const file of sources) {
     const rel = path.relative(ROOT, file);
     const src = fs.readFileSync(file, 'utf8');
@@ -612,7 +625,12 @@ function checkExampleDocuments() {
       const bare = doc.type.split('#')[0];
       const target = targetByTypePrefix.get(bare) ?? '0.2';
       const validate = validators.get(target);
-      if (!validate) continue;
+      if (!validate) {
+        // Visible, not silent: a target with no compiled envelope schema means
+        // those documents go unchecked, which must not read as "validated fine".
+        unvalidatedTargets.set(target, (unvalidatedTargets.get(target) ?? 0) + 1);
+        continue;
+      }
 
       checked++;
       if (!validate(doc)) {
@@ -625,6 +643,13 @@ function checkExampleDocuments() {
   }
   if (unparseable > 0) {
     warn(`${unparseable} fenced JSON block(s) did not parse and were skipped — expected for illustrative fragments, but check none is a malformed example`);
+  }
+  for (const [target, count] of [...unvalidatedTargets].sort()) {
+    warn(
+      `${count} example document(s) target framework ${target}, for which no envelope schema ` +
+        `compiled — add specs/_framework/${target}/trust-task.schema.json, or correct the ` +
+        `targetFrameworkVersion that names it. These documents were NOT validated`
+    );
   }
   console.log(`  validated ${checked} example documents against the framework envelope schema`);
 }
