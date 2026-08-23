@@ -322,6 +322,7 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1" => <crate::specs::vtc::members::personhood::challenge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/members/personhood/revoke/0.1" => <crate::specs::vtc::members::personhood::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/members/purge/0.1" => <crate::specs::vtc::members::purge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/vtc/members/removal-notice/0.1" => <crate::specs::vtc::members::removal_notice::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/members/removed/0.1" => <crate::specs::vtc::members::removed::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/members/renew/0.1" => <crate::specs::vtc::members::renew::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/members/request-vmc/0.1" => <crate::specs::vtc::members::request_vmc::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
