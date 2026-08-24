@@ -422,12 +422,26 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 ///      "type": "string",
 ///      "minLength": 1
 ///    },
+///    "roleVec": {
+///      "description": "The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role.",
+///      "type": [
+///        "object",
+///        "null"
+///      ]
+///    },
 ///    "status": {
 ///      "description": "The request's post-decision state; echoes the decision.",
 ///      "type": "string",
 ///      "enum": [
 ///        "approved",
 ///        "rejected"
+///      ]
+///    },
+///    "vmc": {
+///      "description": "\nThe membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.",
+///      "type": [
+///        "object",
+///        "null"
 ///      ]
 ///    }
 ///  },
@@ -443,8 +457,22 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "requestId")]
     pub request_id: ResponseRequestId,
+    ///The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role.
+    #[serde(
+        rename = "roleVec",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub role_vec:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The request's post-decision state; echoes the decision.
     pub status: ResponseStatus,
+    /**
+    The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.
+
+    Inline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.*/
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub vmc: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 ///`ResponseRequestId`
 ///
@@ -592,7 +620,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"The request's post-decision state; echoes the decision.\",\n          \"enum\": [\n            \"approved\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Decide — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/decide/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"decision\": {\n      \"description\": \"The operator's decision. `approved` admits the applicant as a member; `rejected` refuses them.\",\n      \"enum\": [\n        \"approved\",\n        \"rejected\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"The join request being decided.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Optional operator rationale, recorded in the audit trail alongside the decision. Most useful with `rejected`.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\",\n    \"decision\"\n  ],\n  \"title\": \"VTC Join-Requests Decide — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"roleVec\": {\n          \"description\": \"The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role.\",\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        },\n        \"status\": {\n          \"description\": \"The request's post-decision state; echoes the decision.\",\n          \"enum\": [\n            \"approved\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vmc\": {\n          \"description\": \"The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\\n\\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.\",\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Decide — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/decide/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"decision\": {\n      \"description\": \"The operator's decision. `approved` admits the applicant as a member; `rejected` refuses them.\",\n      \"enum\": [\n        \"approved\",\n        \"rejected\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"The join request being decided.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Optional operator rationale, recorded in the audit trail alongside the decision. Most useful with `rejected`.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\",\n    \"decision\"\n  ],\n  \"title\": \"VTC Join-Requests Decide — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -601,7 +629,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"The request's post-decision state; echoes the decision.\",\n          \"enum\": [\n            \"approved\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Decide — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"roleVec\": {\n          \"description\": \"The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role.\",\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        },\n        \"status\": {\n          \"description\": \"The request's post-decision state; echoes the decision.\",\n          \"enum\": [\n            \"approved\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vmc\": {\n          \"description\": \"The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\\n\\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.\",\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Decide — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 #[cfg(test)]

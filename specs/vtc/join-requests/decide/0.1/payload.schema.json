@@ -1,28 +1,77 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/decide/0.1",
-  "title": "VTC Join-Requests Decide — payload",
+  "title": "VTC Join-Requests Decide \u2014 payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "decision"],
+  "required": [
+    "id",
+    "decision"
+  ],
   "properties": {
-    "id": { "type": "string", "minLength": 1, "description": "The join request being decided." },
-    "decision": { "type": "string", "enum": ["approved", "rejected"], "description": "The operator's decision. `approved` admits the applicant as a member; `rejected` refuses them." },
-    "reason": { "type": "string", "maxLength": 1024, "description": "Optional operator rationale, recorded in the audit trail alongside the decision. Most useful with `rejected`." },
-    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The join request being decided."
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "rejected"
+      ],
+      "description": "The operator's decision. `approved` admits the applicant as a member; `rejected` refuses them."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Optional operator rationale, recorded in the audit trail alongside the decision. Most useful with `rejected`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
   },
   "$defs": {
     "Response": {
       "$anchor": "response",
-      "title": "VTC Join-Requests Decide — response payload",
+      "title": "VTC Join-Requests Decide \u2014 response payload",
       "description": "The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["requestId", "status"],
+      "required": [
+        "requestId",
+        "status"
+      ],
       "properties": {
-        "requestId": { "type": "string", "minLength": 1 },
-        "status": { "type": "string", "enum": ["approved", "rejected"], "description": "The request's post-decision state; echoes the decision." },
-        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "rejected"
+          ],
+          "description": "The request's post-decision state; echoes the decision."
+        },
+        "vmc": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately \u2014 a second round trip whose only purpose is to collect something the community already had in hand when it decided."
+        },
+        "roleVec": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }

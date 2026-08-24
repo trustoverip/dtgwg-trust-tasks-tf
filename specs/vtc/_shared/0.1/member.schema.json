@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/member",
-  "title": "VTC — shared member definitions",
+  "title": "VTC \u2014 shared member definitions",
   "description": "Shared types for the vtc/members/* spec family. MemberResponse is the community's view of one member, joined from the membership record and the ACL entry, returned by list/show/update.",
   "$defs": {
     "MemberResponse": {
@@ -10,7 +10,14 @@
       "description": "One community member as the maintainer sees it: the membership record joined with its ACL role.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["did", "role", "joinedAt", "publishConsent", "departurePreference", "extensions"],
+      "required": [
+        "did",
+        "role",
+        "joinedAt",
+        "publishConsent",
+        "departurePreference",
+        "extensions"
+      ],
       "properties": {
         "did": {
           "type": "string",
@@ -23,7 +30,10 @@
           "description": "The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`)."
         },
         "label": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Optional human-readable label."
         },
         "joinedAt": {
@@ -36,20 +46,65 @@
         },
         "departurePreference": {
           "type": "string",
-          "enum": ["purge", "tombstone", "historical", "policydefault"],
+          "enum": [
+            "purge",
+            "tombstone",
+            "historical",
+            "policydefault"
+          ],
           "description": "How the member's record is handled on departure."
         },
         "statusListIndex": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "description": "The member's slot on the community's membership status list, when allocated."
         },
         "currentVmcId": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Id of the member's current Verifiable Membership Credential, if issued."
         },
         "currentRoleVecId": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
+        },
+        "personhood": {
+          "type": "boolean",
+          "description": "Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational \u2014 a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision."
+        },
+        "personhoodAssertedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag."
+        },
+        "joinedViaInvitation": {
+          "type": "boolean",
+          "description": "Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart."
+        },
+        "memberVmcId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "`id` of the member-issued reciprocal membership credential \u2014 the member half of the pair \u2014 once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here."
+        },
+        "memberVmcReceivedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When that reciprocal credential was received. Paired with `memberVmcId`."
         },
         "extensions": {
           "type": "object",

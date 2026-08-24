@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/endorsement-type",
-  "title": "VTC — shared endorsement-type definitions",
+  "title": "VTC \u2014 shared endorsement-type definitions",
   "description": "Shared type for the vtc/endorsement-types/* family: one operator-registered endorsement type a community recognises.",
   "$defs": {
     "EndorsementType": {
@@ -9,12 +9,32 @@
       "title": "EndorsementType",
       "type": "object",
       "additionalProperties": false,
-      "required": ["typeUri"],
+      "required": [
+        "typeUri"
+      ],
       "properties": {
-        "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration." },
-        "description": { "type": "string", "maxLength": 1024 },
-        "claimSchema": { "type": "object", "description": "Optional JSON Schema the endorsement's claims must satisfy (opaque here)." },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "typeUri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "claimSchema": {
+          "type": "object",
+          "description": "Optional JSON Schema the endorsement's claims must satisfy (opaque here)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdByDid": {
+          "type": "string",
+          "description": "The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not."
+        }
       }
     }
   }

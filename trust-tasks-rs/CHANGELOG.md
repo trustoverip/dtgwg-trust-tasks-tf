@@ -29,6 +29,43 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.8] - 2026-08-24
+
+### Added
+
+- **`MemberResponse`** gains `personhood`, `personhoodAssertedAt`,
+  `joinedViaInvitation`, `memberVmcId` and `memberVmcReceivedAt` — member state
+  that consumers already receive and no schema described.
+
+  `personhood` is the load-bearing one: a community that recognises members of
+  another may gate on it, so a consumer that cannot read it cannot make that
+  decision. `memberVmcId` distinguishes a membership the community has
+  *asserted* from one the member has *acknowledged*, which is a real
+  difference and was invisible.
+
+  The component carries `additionalProperties: false`, so five absent
+  properties put `members/list` and `members/update` off their own schemas at
+  once.
+
+- **`EndorsementType.createdByDid`** — who registered a type. An endorsement
+  vocabulary is community-defined and shapes what every later endorsement can
+  claim, so its author is audit-relevant in a way its creation time alone is
+  not.
+
+- **`vtc/members/update/0.1` payload `label`** — an operator-facing display
+  name, editable unlike the DID it labels. `null` clears it.
+
+- **`vtc/join-requests/decide/0.1` response `vmc` and `roleVec`** — the
+  credentials an admitting decision issued, delivered inline. The alternative
+  is a round trip whose only purpose is to collect something the community
+  already held when it decided. Both absent on a refusal.
+
+  Worth recording how this hid: the **refusing** arm always conformed, so a
+  witness built from a rejection passed green over the whole divergence.
+
+  All additive to schemas that previously forbade these members, so any
+  document that validated before still validates.
+
 ## [0.11.7] - 2026-08-24
 
 ### Added

@@ -13,6 +13,10 @@ export interface VTCMembersUpdatePayload {
    */
   role?: string;
   /**
+   * Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.
+   */
+  label?: string | null;
+  /**
    * New directory-publish consent.
    */
   publishConsent?: boolean;
@@ -71,6 +75,26 @@ export interface MemberResponse {
    */
   currentRoleVecId?: string | null;
   /**
+   * Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.
+   */
+  personhood?: boolean;
+  /**
+   * When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.
+   */
+  personhoodAssertedAt?: string | null;
+  /**
+   * Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.
+   */
+  joinedViaInvitation?: boolean;
+  /**
+   * `id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.
+   */
+  memberVmcId?: string | null;
+  /**
+   * When that reciprocal credential was received. Paired with `memberVmcId`.
+   */
+  memberVmcReceivedAt?: string | null;
+  /**
    * Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).
    */
   extensions: {};
@@ -116,6 +140,13 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "description": "New role (wire form). MUST NOT be `admin` — promotion to admin is a separate, gated flow, not a metadata patch."
+    },
+    "label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged."
     },
     "publishConsent": {
       "type": "boolean",
@@ -237,6 +268,37 @@ export const PAYLOAD_SCHEMA = {
           ],
           "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
         },
+        "personhood": {
+          "type": "boolean",
+          "description": "Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision."
+        },
+        "personhoodAssertedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag."
+        },
+        "joinedViaInvitation": {
+          "type": "boolean",
+          "description": "Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart."
+        },
+        "memberVmcId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here."
+        },
+        "memberVmcReceivedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When that reciprocal credential was received. Paired with `memberVmcId`."
+        },
         "extensions": {
           "type": "object",
           "description": "Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation)."
@@ -348,6 +410,37 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "null"
           ],
           "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
+        },
+        "personhood": {
+          "type": "boolean",
+          "description": "Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision."
+        },
+        "personhoodAssertedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag."
+        },
+        "joinedViaInvitation": {
+          "type": "boolean",
+          "description": "Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart."
+        },
+        "memberVmcId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here."
+        },
+        "memberVmcReceivedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When that reciprocal credential was received. Paired with `memberVmcId`."
         },
         "extensions": {
           "type": "object",

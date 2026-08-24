@@ -30,6 +30,10 @@ export interface EndorsementType {
    */
   claimSchema?: {};
   createdAt?: string;
+  /**
+   * The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.
+   */
+  createdByDid?: string;
 }
 
 /** Trust Task type URI. */
@@ -135,6 +139,10 @@ export const PAYLOAD_SCHEMA = {
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "createdByDid": {
+          "type": "string",
+          "description": "The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not."
         }
       }
     }
@@ -208,6 +216,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "createdByDid": {
+          "type": "string",
+          "description": "The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not."
         }
       }
     }

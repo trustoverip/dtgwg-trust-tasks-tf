@@ -50,6 +50,12 @@ The **VTC Members — Update** Trust Task changes a member's role or non-credent
 
 It deliberately **cannot** promote a member to `admin`: that is a higher-trust operation with its own approval flow, not a metadata patch, so `role: admin` is refused here.
 
+
+`label` is an operator-facing display name for the member, editable unlike the
+DID it labels. That asymmetry is the point: an operator reviewing a roster of
+identifiers they cannot read needs a name they can, and the name is theirs to
+correct without touching the identity underneath. `null` clears it; omitting it
+leaves it unchanged.
 ## Conformance
 
 Producer: supply `did` and the fields to change. Carry a proof.
