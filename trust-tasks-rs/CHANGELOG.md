@@ -29,6 +29,37 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.6] - 2026-08-24
+
+### Added
+
+- **`JoinRequest.decision`** and **`JoinRequest.vpClaims`** — the applicant's
+  half of a refusal, and the policy projection of their presentation.
+
+  `decision` carries `code`, optional `reason` and `decidedAt`, and is distinct
+  from `policyDecision`: that one records the community's internal verdict,
+  while this one is written by **both** rejection paths — a policy auto-deny at
+  submit and an admin's later refusal — so a client reads one shape instead of
+  reconciling two.
+
+- **`vtc/join-requests/status/0.1` response `code`, `reason`, `decidedAt`** —
+  the same refusal detail on the poll an applicant actually makes, present only
+  when `status` is `rejected`. A consumer MUST NOT emit them beside any other
+  status: they assert that a decision was taken, and returning them with
+  `pending` would tell an applicant they had been refused when they had not.
+
+### Changed
+
+- **`vtc/join-requests/status/0.1` payload `requestId` is no longer required.**
+  An applicant whose first reply was lost never received an id, and a poll
+  resolved from their own authenticated DID is the only form available to them
+  — a refusal they cannot ask about is a refusal they cannot act on. A consumer
+  given the id MUST prefer it over inferring the request from the caller.
+
+  Relaxing a required member is additive for producers: every document that
+  validated before still validates. A consumer that assumed `requestId` was
+  always present now has a case to handle, which is the point.
+
 ## [0.11.5] - 2026-08-24
 
 ### Added
