@@ -5,9 +5,9 @@
 
 export interface VTCJoinRequestsStatusPayload {
   /**
-   * The applicant's join request to poll. The poller (proof signer) MUST be the applicant.
+   * The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.
    */
-  requestId: string;
+  requestId?: string;
   ext?: Ext;
 }
 /**
@@ -19,6 +19,18 @@ export interface Ext {
 export interface VTCJoinRequestsStatusResponsePayload {
   requestId: string;
   status: "pending" | "deferred" | "approved" | "rejected" | "withdrawn";
+  /**
+   * Stable refusal code, safe to branch on. Present only when `status` is `rejected`.
+   */
+  code?: string;
+  /**
+   * Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.
+   */
+  reason?: string | null;
+  /**
+   * When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.
+   */
+  decidedAt?: string;
   /**
    * When deferred, what the applicant must supply next.
    */
@@ -57,14 +69,11 @@ export const PAYLOAD_SCHEMA = {
   "title": "VTC Join-Requests Status — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "requestId"
-  ],
   "properties": {
     "requestId": {
       "type": "string",
       "minLength": 1,
-      "description": "The applicant's join request to poll. The poller (proof signer) MUST be the applicant."
+      "description": "The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller."
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -94,6 +103,22 @@ export const PAYLOAD_SCHEMA = {
             "rejected",
             "withdrawn"
           ]
+        },
+        "code": {
+          "type": "string",
+          "description": "Stable refusal code, safe to branch on. Present only when `status` is `rejected`."
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`."
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`."
         },
         "needs": {
           "type": "array",
@@ -152,6 +177,22 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "rejected",
             "withdrawn"
           ]
+        },
+        "code": {
+          "type": "string",
+          "description": "Stable refusal code, safe to branch on. Present only when `status` is `rejected`."
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`."
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`."
         },
         "needs": {
           "type": "array",

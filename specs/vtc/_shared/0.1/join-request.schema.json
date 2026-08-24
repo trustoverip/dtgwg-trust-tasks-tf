@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/join-request",
-  "title": "VTC — shared join-request definitions",
+  "title": "VTC \u2014 shared join-request definitions",
   "description": "Shared types for the vtc/join-requests/* spec family. JoinRequest is the community's view of one pending or decided application to join.",
   "$defs": {
     "JoinRequest": {
@@ -10,16 +10,91 @@
       "description": "One application to join a Verifiable Trust Community.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "applicantDid", "vp", "submittedAt", "status"],
+      "required": [
+        "id",
+        "applicantDid",
+        "vp",
+        "submittedAt",
+        "status"
+      ],
       "properties": {
-        "id": { "type": "string", "minLength": 1, "description": "Stable id of this join request (a UUID)." },
-        "applicantDid": { "type": "string", "minLength": 1, "description": "DID of the applicant." },
-        "vp": { "type": "object", "description": "The W3C Verifiable Presentation the applicant submitted (opaque here)." },
-        "submittedAt": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "withdrawn", "deferred"] },
-        "policyDecision": { "type": "object", "description": "The community policy verdict recorded for this request (opaque here); absent while pending." },
-        "registryConsent": { "type": "boolean", "description": "Whether the applicant consented to trust-registry publication." },
-        "extensions": { "type": "object", "description": "Opaque community-defined extension bag." }
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable id of this join request (a UUID)."
+        },
+        "applicantDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DID of the applicant."
+        },
+        "vp": {
+          "type": "object",
+          "description": "The W3C Verifiable Presentation the applicant submitted (opaque here)."
+        },
+        "vpClaims": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one."
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "withdrawn",
+            "deferred"
+          ]
+        },
+        "policyDecision": {
+          "type": "object",
+          "description": "The community policy verdict recorded for this request (opaque here); absent while pending."
+        },
+        "decision": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths \u2014 a policy auto-deny at submit and an admin's later refusal \u2014 write this one, so a client reads a single shape instead of reconciling two.",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Stable refusal code, safe to branch on."
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Elaboration in prose, when the decider gave one."
+            },
+            "decidedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the decision was taken \u2014 not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask."
+            }
+          },
+          "required": [
+            "code",
+            "decidedAt"
+          ],
+          "additionalProperties": false
+        },
+        "registryConsent": {
+          "type": "boolean",
+          "description": "Whether the applicant consented to trust-registry publication."
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Opaque community-defined extension bag."
+        }
       }
     }
   }

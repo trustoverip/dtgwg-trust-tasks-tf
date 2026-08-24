@@ -46,12 +46,35 @@ export interface JoinRequest {
    * The W3C Verifiable Presentation the applicant submitted (opaque here).
    */
   vp: {};
+  /**
+   * Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.
+   */
+  vpClaims?: {} | null;
   submittedAt: string;
   status: "pending" | "approved" | "rejected" | "withdrawn" | "deferred";
   /**
    * The community policy verdict recorded for this request (opaque here); absent while pending.
    */
   policyDecision?: {};
+  /**
+   * Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.
+   *
+   * Distinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.
+   */
+  decision?: {
+    /**
+     * Stable refusal code, safe to branch on.
+     */
+    code: string;
+    /**
+     * Elaboration in prose, when the decider gave one.
+     */
+    reason?: string | null;
+    /**
+     * When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.
+     */
+    decidedAt: string;
+  } | null;
   /**
    * Whether the applicant consented to trust-registry publication.
    */
@@ -186,6 +209,13 @@ export const PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "The W3C Verifiable Presentation the applicant submitted (opaque here)."
         },
+        "vpClaims": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one."
+        },
         "submittedAt": {
           "type": "string",
           "format": "date-time"
@@ -203,6 +233,36 @@ export const PAYLOAD_SCHEMA = {
         "policyDecision": {
           "type": "object",
           "description": "The community policy verdict recorded for this request (opaque here); absent while pending."
+        },
+        "decision": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Stable refusal code, safe to branch on."
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Elaboration in prose, when the decider gave one."
+            },
+            "decidedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask."
+            }
+          },
+          "required": [
+            "code",
+            "decidedAt"
+          ],
+          "additionalProperties": false
         },
         "registryConsent": {
           "type": "boolean",
@@ -292,6 +352,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "The W3C Verifiable Presentation the applicant submitted (opaque here)."
         },
+        "vpClaims": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one."
+        },
         "submittedAt": {
           "type": "string",
           "format": "date-time"
@@ -309,6 +376,36 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "policyDecision": {
           "type": "object",
           "description": "The community policy verdict recorded for this request (opaque here); absent while pending."
+        },
+        "decision": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Stable refusal code, safe to branch on."
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Elaboration in prose, when the decider gave one."
+            },
+            "decidedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask."
+            }
+          },
+          "required": [
+            "code",
+            "decidedAt"
+          ],
+          "additionalProperties": false
         },
         "registryConsent": {
           "type": "boolean",

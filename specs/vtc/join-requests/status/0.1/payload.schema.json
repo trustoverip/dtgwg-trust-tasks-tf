@@ -1,27 +1,74 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/status/0.1",
-  "title": "VTC Join-Requests Status — payload",
+  "title": "VTC Join-Requests Status \u2014 payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["requestId"],
   "properties": {
-    "requestId": { "type": "string", "minLength": 1, "description": "The applicant's join request to poll. The poller (proof signer) MUST be the applicant." },
-    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll \u2014 resolved from the authenticated applicant's own DID \u2014 is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
   },
   "$defs": {
     "Response": {
       "$anchor": "response",
-      "title": "VTC Join-Requests Status — response payload",
+      "title": "VTC Join-Requests Status \u2014 response payload",
       "type": "object",
       "additionalProperties": false,
-      "required": ["requestId", "status"],
+      "required": [
+        "requestId",
+        "status"
+      ],
       "properties": {
-        "requestId": { "type": "string", "minLength": 1 },
-        "status": { "type": "string", "enum": ["pending", "deferred", "approved", "rejected", "withdrawn"] },
-        "needs": { "type": "array", "items": { "type": "string" }, "description": "When deferred, what the applicant must supply next." },
-        "presentationDefinition": { "type": "object", "description": "When more evidence is needed, the presentation-definition to satisfy (opaque here)." },
-        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "deferred",
+            "approved",
+            "rejected",
+            "withdrawn"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "description": "Stable refusal code, safe to branch on. Present only when `status` is `rejected`."
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`."
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the refusal was decided \u2014 not when this poll was produced. Present only when `status` is `rejected`."
+        },
+        "needs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "When deferred, what the applicant must supply next."
+        },
+        "presentationDefinition": {
+          "type": "object",
+          "description": "When more evidence is needed, the presentation-definition to satisfy (opaque here)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }
