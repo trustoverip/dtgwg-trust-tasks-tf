@@ -29,6 +29,32 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.7] - 2026-08-24
+
+### Added
+
+- **`vtc/relationships/publish` `pop`** (both `0.1` and `0.2`) — proof that the
+  caller controls the key behind the VRC's `issuer`, when that is not the party
+  issuing the document.
+
+  An edge may be published under a relationship DID: an identifier scoped to
+  one counterparty, which names no member. The community still needs to know a
+  member published it, and the document's own `proof` says only that a member
+  sent it, not that they control the credential's issuing key. Without this,
+  any member ever handed a VRC could publish another party's edge.
+
+  Bound to the enclosing document's `id` (SPEC §4.3) and the credential's
+  digest, so an authorization cannot be replayed into another document or moved
+  to another credential. Omitted when the VRC's `issuer` is the document's
+  issuer, where the document's proof already establishes control.
+
+  Consumers MUST NOT retain it after verifying. It answers one question at one
+  moment, and storing it accumulates a durable link between the publishing
+  member and a relationship DID that names nobody — the correlation publishing
+  under a relationship DID exists to avoid.
+
+  Additive: an optional member on a payload that previously forbade it.
+
 ## [0.11.6] - 2026-08-24
 
 ### Added

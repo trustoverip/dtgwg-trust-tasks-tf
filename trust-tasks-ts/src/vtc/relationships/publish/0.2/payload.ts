@@ -4,15 +4,41 @@
  */
 
 /**
- * Digest over the RFC 8785 canonicalization of the stored VRC, for out-of-band integrity checks. The same value vtc/relationships/request reports on issuance and vtc/relationships/list reports per entry, so a member can tie the three together without re-hashing.
+ * Digest over the RFC 8785 canonicalization of the VRC this authorizes. Binds the authorization to one credential, so it cannot be moved to another.
  */
 export type DigestMultibase = string;
+/**
+ * Digest over the RFC 8785 canonicalization of the stored VRC, for out-of-band integrity checks. The same value vtc/relationships/request reports on issuance and vtc/relationships/list reports per entry, so a member can tie the three together without re-hashing.
+ */
+export type DigestMultibase1 = string;
 
 export interface VTCRelationshipsPublishPayload {
   /**
    * A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST equal the document proof signer; credentialSubject.id names the subject member; it carries its own DataIntegrityProof.
    */
   vrc: {};
+  /**
+   * Proof that the caller controls the key behind the VRC's `issuer`, when that is not the party issuing this document.
+   *
+   * A member publishes an edge under a relationship DID — an identifier scoped to one counterparty, which names nobody. The community still has to know a member published it, and the document's own `proof` says only that the member sent it, not that they control the credential's issuing key. Without this, any member handed a VRC could publish another party's edge.
+   *
+   * Omit it when the VRC's `issuer` is this document's issuer: the document's own proof already establishes control.
+   */
+  pop?: {
+    /**
+     * Guards against a signature the issuer made over some other object being replayed here as authorization to publish.
+     */
+    type: "VrcPublishAuthorization";
+    /**
+     * The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member. Every document carries a unique `id` (SPEC §4.3), which is why the binding needs no transport-specific notion of a session.
+     */
+    documentId: string;
+    vrcDigestMultibase: DigestMultibase;
+    /**
+     * Data-integrity proof over this object, by a verification method the VRC's `issuer` controls. This is the proof of possession; the members above only bound what it authorizes.
+     */
+    proof: {};
+  };
   ext?: Ext;
 }
 /**
@@ -28,7 +54,7 @@ export interface VTCRelationshipsPublishResponsePayload {
   id: string;
   issuerDid: string;
   subjectDid: string;
-  vrcDigestMultibase: DigestMultibase;
+  vrcDigestMultibase: DigestMultibase1;
   ext?: Ext;
 }
 
@@ -66,6 +92,35 @@ export const PAYLOAD_SCHEMA = {
     "vrc": {
       "type": "object",
       "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST equal the document proof signer; credentialSubject.id names the subject member; it carries its own DataIntegrityProof."
+    },
+    "pop": {
+      "type": "object",
+      "description": "Proof that the caller controls the key behind the VRC's `issuer`, when that is not the party issuing this document.\n\nA member publishes an edge under a relationship DID — an identifier scoped to one counterparty, which names nobody. The community still has to know a member published it, and the document's own `proof` says only that the member sent it, not that they control the credential's issuing key. Without this, any member handed a VRC could publish another party's edge.\n\nOmit it when the VRC's `issuer` is this document's issuer: the document's own proof already establishes control.",
+      "properties": {
+        "type": {
+          "const": "VrcPublishAuthorization",
+          "description": "Guards against a signature the issuer made over some other object being replayed here as authorization to publish."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member. Every document carries a unique `id` (SPEC §4.3), which is why the binding needs no transport-specific notion of a session."
+        },
+        "vrcDigestMultibase": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 canonicalization of the VRC this authorizes. Binds the authorization to one credential, so it cannot be moved to another."
+        },
+        "proof": {
+          "type": "object",
+          "description": "Data-integrity proof over this object, by a verification method the VRC's `issuer` controls. This is the proof of possession; the members above only bound what it authorizes."
+        }
+      },
+      "required": [
+        "type",
+        "documentId",
+        "vrcDigestMultibase",
+        "proof"
+      ],
+      "additionalProperties": false
     },
     "ext": {
       "$ref": "#/$defs/Ext"
