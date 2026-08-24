@@ -33,6 +33,16 @@ export interface VTCJoinRequestsDecideResponsePayload {
    * The request's post-decision state; echoes the decision.
    */
   status: "approved" | "rejected";
+  /**
+   * The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.
+   *
+   * Inline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.
+   */
+  vmc?: {} | null;
+  /**
+   * The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role.
+   */
+  roleVec?: {} | null;
   ext?: Ext;
 }
 
@@ -114,6 +124,20 @@ export const PAYLOAD_SCHEMA = {
           ],
           "description": "The request's post-decision state; echoes the decision."
         },
+        "vmc": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."
+        },
+        "roleVec": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role."
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -159,6 +183,20 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "rejected"
           ],
           "description": "The request's post-decision state; echoes the decision."
+        },
+        "vmc": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."
+        },
+        "roleVec": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
