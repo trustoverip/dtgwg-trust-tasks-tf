@@ -9,18 +9,12 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(
-            &self,
-            f: &mut ::std::fmt::Formatter<'_>,
-        ) -> Result<(), ::std::fmt::Error> {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -144,9 +138,8 @@ pub struct CommunityProfile {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub relationship_identifier_default: ::std::option::Option<
-        CommunityProfileRelationshipIdentifierDefault,
-    >,
+    pub relationship_identifier_default:
+        ::std::option::Option<CommunityProfileRelationshipIdentifierDefault>,
 }
 ///`CommunityProfileLanguage`
 ///
@@ -175,9 +168,7 @@ impl ::std::convert::From<CommunityProfileLanguage> for ::std::string::String {
 }
 impl ::std::str::FromStr for CommunityProfileLanguage {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -186,9 +177,7 @@ impl ::std::str::FromStr for CommunityProfileLanguage {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileLanguage {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -247,9 +236,7 @@ impl ::std::convert::From<CommunityProfileName> for ::std::string::String {
 }
 impl ::std::str::FromStr for CommunityProfileName {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -258,9 +245,7 @@ impl ::std::str::FromStr for CommunityProfileName {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileName {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -317,7 +302,7 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileName {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum CommunityProfileRegistryStatus {
     #[serde(rename = "active")]
@@ -335,9 +320,7 @@ impl ::std::fmt::Display for CommunityProfileRegistryStatus {
 }
 impl ::std::str::FromStr for CommunityProfileRegistryStatus {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "active" => Ok(Self::Active),
             "degraded" => Ok(Self::Degraded),
@@ -347,9 +330,7 @@ impl ::std::str::FromStr for CommunityProfileRegistryStatus {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileRegistryStatus {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -394,7 +375,7 @@ impl ::std::convert::TryFrom<::std::string::String> for CommunityProfileRegistry
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum CommunityProfileRelationshipIdentifierDefault {
     #[serde(rename = "attributed")]
@@ -412,9 +393,7 @@ impl ::std::fmt::Display for CommunityProfileRelationshipIdentifierDefault {
 }
 impl ::std::str::FromStr for CommunityProfileRelationshipIdentifierDefault {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "attributed" => Ok(Self::Attributed),
             "pairwise" => Ok(Self::Pairwise),
@@ -424,14 +403,13 @@ impl ::std::str::FromStr for CommunityProfileRelationshipIdentifierDefault {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileRelationshipIdentifierDefault {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
 impl ::std::convert::TryFrom<&::std::string::String>
-for CommunityProfileRelationshipIdentifierDefault {
+    for CommunityProfileRelationshipIdentifierDefault
+{
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -440,7 +418,8 @@ for CommunityProfileRelationshipIdentifierDefault {
     }
 }
 impl ::std::convert::TryFrom<::std::string::String>
-for CommunityProfileRelationshipIdentifierDefault {
+    for CommunityProfileRelationshipIdentifierDefault
+{
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -474,14 +453,12 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext>
-for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
-for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -513,24 +490,20 @@ impl ::std::convert::From<ExtKey> for ::std::string::String {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
-        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
-            );
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -659,9 +632,8 @@ pub struct Payload {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub relationship_identifier_default: ::std::option::Option<
-        PayloadRelationshipIdentifierDefault,
-    >,
+    pub relationship_identifier_default:
+        ::std::option::Option<PayloadRelationshipIdentifierDefault>,
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
@@ -705,9 +677,7 @@ impl ::std::convert::From<PayloadLanguage> for ::std::string::String {
 }
 impl ::std::str::FromStr for PayloadLanguage {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -716,9 +686,7 @@ impl ::std::str::FromStr for PayloadLanguage {
 }
 impl ::std::convert::TryFrom<&str> for PayloadLanguage {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -777,9 +745,7 @@ impl ::std::convert::From<PayloadName> for ::std::string::String {
 }
 impl ::std::str::FromStr for PayloadName {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -788,9 +754,7 @@ impl ::std::str::FromStr for PayloadName {
 }
 impl ::std::convert::TryFrom<&str> for PayloadName {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -847,7 +811,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd
+    PartialOrd,
 )]
 pub enum PayloadRelationshipIdentifierDefault {
     #[serde(rename = "attributed")]
@@ -865,9 +829,7 @@ impl ::std::fmt::Display for PayloadRelationshipIdentifierDefault {
 }
 impl ::std::str::FromStr for PayloadRelationshipIdentifierDefault {
     type Err = self::error::ConversionError;
-    fn from_str(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "attributed" => Ok(Self::Attributed),
             "pairwise" => Ok(Self::Pairwise),
@@ -877,14 +839,11 @@ impl ::std::str::FromStr for PayloadRelationshipIdentifierDefault {
 }
 impl ::std::convert::TryFrom<&str> for PayloadRelationshipIdentifierDefault {
     type Error = self::error::ConversionError;
-    fn try_from(
-        value: &str,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String>
-for PayloadRelationshipIdentifierDefault {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadRelationshipIdentifierDefault {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -892,8 +851,7 @@ for PayloadRelationshipIdentifierDefault {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String>
-for PayloadRelationshipIdentifierDefault {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadRelationshipIdentifierDefault {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -955,7 +913,8 @@ impl crate::Payload for Payload {
     );
 }
 impl crate::Payload for Response {
-    const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/community/profile/update/0.1#response";
+    const TYPE_URI: &'static str =
+        "https://trusttasks.org/spec/vtc/community/profile/update/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
@@ -991,14 +950,15 @@ mod conformance {
                 Ok(v) => v,
                 Err(_) => continue,
             };
-            let serde_ok = serde_json::from_value::<super::Payload>(value.clone())
-                .is_ok();
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
             let schema_ok = super::Payload::validate_value(&value).is_ok();
             assert!(
-                ! (serde_ok && schema_ok),
+                !(serde_ok && schema_ok),
                 "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
-                i + 1, note, raw
+                i + 1,
+                note,
+                raw
             );
         }
     }
