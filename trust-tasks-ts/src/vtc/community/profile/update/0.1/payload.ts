@@ -11,6 +11,10 @@ export interface VTCCommunityProfileUpdatePayload {
   contactEmail?: string | null;
   language?: string;
   /**
+   * Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged.
+   */
+  relationshipIdentifierDefault?: "attributed" | "pairwise";
+  /**
    * Opaque community-defined extension bag (maintainer-capped).
    */
   extensions?: {};
@@ -24,6 +28,10 @@ export interface Ext {
 }
 export interface VTCCommunityProfileUpdateResponsePayload {
   profile: CommunityProfile;
+  /**
+   * Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent.
+   */
+  fieldsChanged?: string[];
   ext?: Ext;
 }
 export interface CommunityProfile {
@@ -33,6 +41,10 @@ export interface CommunityProfile {
   publicUrl?: string | null;
   contactEmail?: string | null;
   language: string;
+  /**
+   * Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.
+   */
+  relationshipIdentifierDefault?: "attributed" | "pairwise";
   /**
    * Opaque community-defined extension bag.
    */
@@ -100,6 +112,14 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1
     },
+    "relationshipIdentifierDefault": {
+      "type": "string",
+      "enum": [
+        "attributed",
+        "pairwise"
+      ],
+      "description": "Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged."
+    },
     "extensions": {
       "type": "object",
       "description": "Opaque community-defined extension bag (maintainer-capped)."
@@ -120,6 +140,13 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "profile": {
           "$ref": "#/$defs/CommunityProfile"
+        },
+        "fieldsChanged": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -174,6 +201,14 @@ export const PAYLOAD_SCHEMA = {
         "language": {
           "type": "string",
           "minLength": 1
+        },
+        "relationshipIdentifierDefault": {
+          "type": "string",
+          "enum": [
+            "attributed",
+            "pairwise"
+          ],
+          "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."
         },
         "extensions": {
           "type": "object",
@@ -209,6 +244,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "profile": {
           "$ref": "#/$defs/CommunityProfile"
         },
+        "fieldsChanged": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent."
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -262,6 +304,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "language": {
           "type": "string",
           "minLength": 1
+        },
+        "relationshipIdentifierDefault": {
+          "type": "string",
+          "enum": [
+            "attributed",
+            "pairwise"
+          ],
+          "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."
         },
         "extensions": {
           "type": "object",

@@ -24,6 +24,10 @@ export interface CommunityProfile {
   contactEmail?: string | null;
   language: string;
   /**
+   * Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.
+   */
+  relationshipIdentifierDefault?: "attributed" | "pairwise";
+  /**
    * Opaque community-defined extension bag.
    */
   extensions?: {};
@@ -132,6 +136,14 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1
         },
+        "relationshipIdentifierDefault": {
+          "type": "string",
+          "enum": [
+            "attributed",
+            "pairwise"
+          ],
+          "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."
+        },
         "extensions": {
           "type": "object",
           "description": "Opaque community-defined extension bag."
@@ -219,6 +231,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "language": {
           "type": "string",
           "minLength": 1
+        },
+        "relationshipIdentifierDefault": {
+          "type": "string",
+          "enum": [
+            "attributed",
+            "pairwise"
+          ],
+          "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."
         },
         "extensions": {
           "type": "object",

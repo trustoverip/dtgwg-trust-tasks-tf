@@ -9,12 +9,18 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -90,6 +96,14 @@ Distinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-
 ///        "string",
 ///        "null"
 ///      ]
+///    },
+///    "relationshipIdentifierDefault": {
+///      "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.",
+///      "type": "string",
+///      "enum": [
+///        "attributed",
+///        "pairwise"
+///      ]
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -136,6 +150,15 @@ pub struct CommunityProfileSnapshot {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_url: ::std::option::Option<::std::string::String>,
+    ///The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
+    #[serde(
+        rename = "relationshipIdentifierDefault",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub relationship_identifier_default: ::std::option::Option<
+        CommunityProfileSnapshotRelationshipIdentifierDefault,
+    >,
 }
 ///DID of the community this document was taken from. Immutable, set at install.
 ///
@@ -158,14 +181,17 @@ impl ::std::ops::Deref for CommunityProfileSnapshotCommunityDid {
         &self.0
     }
 }
-impl ::std::convert::From<CommunityProfileSnapshotCommunityDid> for ::std::string::String {
+impl ::std::convert::From<CommunityProfileSnapshotCommunityDid>
+for ::std::string::String {
     fn from(value: CommunityProfileSnapshotCommunityDid) -> Self {
         value.0
     }
 }
 impl ::std::str::FromStr for CommunityProfileSnapshotCommunityDid {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -174,11 +200,14 @@ impl ::std::str::FromStr for CommunityProfileSnapshotCommunityDid {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileSnapshotCommunityDid {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for CommunityProfileSnapshotCommunityDid {
+impl ::std::convert::TryFrom<&::std::string::String>
+for CommunityProfileSnapshotCommunityDid {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -186,7 +215,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for CommunityProfileSnapsho
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for CommunityProfileSnapshotCommunityDid {
+impl ::std::convert::TryFrom<::std::string::String>
+for CommunityProfileSnapshotCommunityDid {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -234,7 +264,9 @@ impl ::std::convert::From<CommunityProfileSnapshotLanguage> for ::std::string::S
 }
 impl ::std::str::FromStr for CommunityProfileSnapshotLanguage {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -243,11 +275,14 @@ impl ::std::str::FromStr for CommunityProfileSnapshotLanguage {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileSnapshotLanguage {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for CommunityProfileSnapshotLanguage {
+impl ::std::convert::TryFrom<&::std::string::String>
+for CommunityProfileSnapshotLanguage {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -255,7 +290,8 @@ impl ::std::convert::TryFrom<&::std::string::String> for CommunityProfileSnapsho
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for CommunityProfileSnapshotLanguage {
+impl ::std::convert::TryFrom<::std::string::String>
+for CommunityProfileSnapshotLanguage {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -302,7 +338,9 @@ impl ::std::convert::From<CommunityProfileSnapshotName> for ::std::string::Strin
 }
 impl ::std::str::FromStr for CommunityProfileSnapshotName {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -311,7 +349,9 @@ impl ::std::str::FromStr for CommunityProfileSnapshotName {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileSnapshotName {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -341,6 +381,86 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotName {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+///The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.",
+///  "type": "string",
+///  "enum": [
+///    "attributed",
+///    "pairwise"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+pub enum CommunityProfileSnapshotRelationshipIdentifierDefault {
+    #[serde(rename = "attributed")]
+    Attributed,
+    #[serde(rename = "pairwise")]
+    Pairwise,
+}
+impl ::std::fmt::Display for CommunityProfileSnapshotRelationshipIdentifierDefault {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Attributed => f.write_str("attributed"),
+            Self::Pairwise => f.write_str("pairwise"),
+        }
+    }
+}
+impl ::std::str::FromStr for CommunityProfileSnapshotRelationshipIdentifierDefault {
+    type Err = self::error::ConversionError;
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "attributed" => Ok(Self::Attributed),
+            "pairwise" => Ok(Self::Pairwise),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str>
+for CommunityProfileSnapshotRelationshipIdentifierDefault {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String>
+for CommunityProfileSnapshotRelationshipIdentifierDefault {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String>
+for CommunityProfileSnapshotRelationshipIdentifierDefault {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 /**
@@ -437,12 +557,14 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext>
+for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
+for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -474,20 +596,24 @@ impl ::std::convert::From<ExtKey> for ::std::string::String {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+            return Err(
+                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -546,9 +672,7 @@ pub struct Payload {
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
-        Self {
-            ext: Default::default(),
-        }
+        Self { ext: Default::default() }
     }
 }
 ///`Response`
@@ -589,7 +713,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ConfigExportDocument\",\n          \"description\": \"The portable configuration document, ready to feed back to vtc/config/import.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTC Config Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/config/export/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Config Export — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ConfigExportDocument\",\n          \"description\": \"The portable configuration document, ready to feed back to vtc/config/import.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTC Config Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/config/export/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Config Export — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -597,7 +721,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ConfigExportDocument\",\n          \"description\": \"The portable configuration document, ready to feed back to vtc/config/import.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTC Config Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ConfigExportDocument\",\n          \"description\": \"The portable configuration document, ready to feed back to vtc/config/import.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTC Config Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 #[cfg(test)]
@@ -633,15 +757,14 @@ mod conformance {
                 Ok(v) => v,
                 Err(_) => continue,
             };
-            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone())
+                .is_ok();
             let schema_ok = super::Payload::validate_value(&value).is_ok();
             assert!(
-                !(serde_ok && schema_ok),
+                ! (serde_ok && schema_ok),
                 "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
-                i + 1,
-                note,
-                raw
+                i + 1, note, raw
             );
         }
     }

@@ -9,12 +9,18 @@ pub mod error {
     pub struct ConversionError(::std::borrow::Cow<'static, str>);
     impl ::std::error::Error for ConversionError {}
     impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Display::fmt(&self.0, f)
         }
     }
     impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
             ::std::fmt::Debug::fmt(&self.0, f)
         }
     }
@@ -82,6 +88,14 @@ pub mod error {
 ///        "active",
 ///        "degraded"
 ///      ]
+///    },
+///    "relationshipIdentifierDefault": {
+///      "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.",
+///      "type": "string",
+///      "enum": [
+///        "attributed",
+///        "pairwise"
+///      ]
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -124,6 +138,15 @@ pub struct CommunityProfile {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub registry_status: ::std::option::Option<CommunityProfileRegistryStatus>,
+    ///Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.
+    #[serde(
+        rename = "relationshipIdentifierDefault",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub relationship_identifier_default: ::std::option::Option<
+        CommunityProfileRelationshipIdentifierDefault,
+    >,
 }
 ///`CommunityProfileLanguage`
 ///
@@ -152,7 +175,9 @@ impl ::std::convert::From<CommunityProfileLanguage> for ::std::string::String {
 }
 impl ::std::str::FromStr for CommunityProfileLanguage {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -161,7 +186,9 @@ impl ::std::str::FromStr for CommunityProfileLanguage {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileLanguage {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -220,7 +247,9 @@ impl ::std::convert::From<CommunityProfileName> for ::std::string::String {
 }
 impl ::std::str::FromStr for CommunityProfileName {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -229,7 +258,9 @@ impl ::std::str::FromStr for CommunityProfileName {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileName {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -286,7 +317,7 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileName {
     Hash,
     Ord,
     PartialEq,
-    PartialOrd,
+    PartialOrd
 )]
 pub enum CommunityProfileRegistryStatus {
     #[serde(rename = "active")]
@@ -304,7 +335,9 @@ impl ::std::fmt::Display for CommunityProfileRegistryStatus {
 }
 impl ::std::str::FromStr for CommunityProfileRegistryStatus {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "active" => Ok(Self::Active),
             "degraded" => Ok(Self::Degraded),
@@ -314,7 +347,9 @@ impl ::std::str::FromStr for CommunityProfileRegistryStatus {
 }
 impl ::std::convert::TryFrom<&str> for CommunityProfileRegistryStatus {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -327,6 +362,85 @@ impl ::std::convert::TryFrom<&::std::string::String> for CommunityProfileRegistr
     }
 }
 impl ::std::convert::TryFrom<::std::string::String> for CommunityProfileRegistryStatus {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.",
+///  "type": "string",
+///  "enum": [
+///    "attributed",
+///    "pairwise"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+pub enum CommunityProfileRelationshipIdentifierDefault {
+    #[serde(rename = "attributed")]
+    Attributed,
+    #[serde(rename = "pairwise")]
+    Pairwise,
+}
+impl ::std::fmt::Display for CommunityProfileRelationshipIdentifierDefault {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Attributed => f.write_str("attributed"),
+            Self::Pairwise => f.write_str("pairwise"),
+        }
+    }
+}
+impl ::std::str::FromStr for CommunityProfileRelationshipIdentifierDefault {
+    type Err = self::error::ConversionError;
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "attributed" => Ok(Self::Attributed),
+            "pairwise" => Ok(Self::Pairwise),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for CommunityProfileRelationshipIdentifierDefault {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String>
+for CommunityProfileRelationshipIdentifierDefault {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String>
+for CommunityProfileRelationshipIdentifierDefault {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -360,12 +474,14 @@ impl ::std::ops::Deref for Ext {
         &self.0
     }
 }
-impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+impl ::std::convert::From<Ext>
+for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
     fn from(value: Ext) -> Self {
         value.0
     }
 }
-impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>>
+for Ext {
     fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
         Self(value)
     }
@@ -397,20 +513,24 @@ impl ::std::convert::From<ExtKey> for ::std::string::String {
 }
 impl ::std::str::FromStr for ExtKey {
     type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
-            });
+    fn from_str(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(||
+        { ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap() });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+            return Err(
+                "doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
 }
 impl ::std::convert::TryFrom<&str> for ExtKey {
     type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+    fn try_from(
+        value: &str,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
@@ -468,9 +588,7 @@ pub struct Payload {
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
-        Self {
-            ext: Default::default(),
-        }
+        Self { ext: Default::default() }
     }
 }
 ///`Response`
@@ -508,15 +626,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/community/profile/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/community/profile/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Community Profile Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/community/profile/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Community Profile Show — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
-    const TYPE_URI: &'static str =
-        "https://trusttasks.org/spec/vtc/community/profile/show/0.1#response";
+    const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/community/profile/show/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 #[cfg(test)]
@@ -533,24 +650,25 @@ mod conformance {
     #[test]
     fn rejects_invalid_examples() {
         use crate::validate::ValidatedPayload;
-        let fixtures: &[(&str, &str)] = &[(
-            "The request takes no parameters; a stray field is rejected.",
-            "{\n  \"x\": 1\n}",
-        )];
+        let fixtures: &[(&str, &str)] = &[
+            (
+                "The request takes no parameters; a stray field is rejected.",
+                "{\n  \"x\": 1\n}",
+            ),
+        ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {
             let value: serde_json::Value = match serde_json::from_str(raw) {
                 Ok(v) => v,
                 Err(_) => continue,
             };
-            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone())
+                .is_ok();
             let schema_ok = super::Payload::validate_value(&value).is_ok();
             assert!(
-                !(serde_ok && schema_ok),
+                ! (serde_ok && schema_ok),
                 "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
-                i + 1,
-                note,
-                raw
+                i + 1, note, raw
             );
         }
     }

@@ -53,6 +53,10 @@ export interface CommunityProfileSnapshot {
    */
   language: string;
   /**
+   * The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
+   */
+  relationshipIdentifierDefault?: "attributed" | "pairwise";
+  /**
    * Opaque community-defined extension bag.
    */
   extensions?: {};
@@ -363,6 +367,14 @@ export const PAYLOAD_SCHEMA = {
           "minLength": 1,
           "description": "BCP 47 language tag."
         },
+        "relationshipIdentifierDefault": {
+          "type": "string",
+          "enum": [
+            "attributed",
+            "pairwise"
+          ],
+          "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default."
+        },
         "extensions": {
           "type": "object",
           "description": "Opaque community-defined extension bag."
@@ -574,6 +586,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "description": "BCP 47 language tag."
+        },
+        "relationshipIdentifierDefault": {
+          "type": "string",
+          "enum": [
+            "attributed",
+            "pairwise"
+          ],
+          "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default."
         },
         "extensions": {
           "type": "object",

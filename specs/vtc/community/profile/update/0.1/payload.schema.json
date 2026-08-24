@@ -1,29 +1,78 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/community/profile/update/0.1",
-  "title": "VTC Community Profile Update — payload",
+  "title": "VTC Community Profile Update \u2014 payload",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "name": { "type": "string", "minLength": 1 },
-    "description": { "type": "string" },
-    "logoUrl": { "type": ["string", "null"] },
-    "publicUrl": { "type": ["string", "null"] },
-    "contactEmail": { "type": ["string", "null"] },
-    "language": { "type": "string", "minLength": 1 },
-    "extensions": { "type": "object", "description": "Opaque community-defined extension bag (maintainer-capped)." },
-    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "logoUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "publicUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contactEmail": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relationshipIdentifierDefault": {
+      "type": "string",
+      "enum": [
+        "attributed",
+        "pairwise"
+      ],
+      "description": "Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged."
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Opaque community-defined extension bag (maintainer-capped)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
   },
   "$defs": {
     "Response": {
       "$anchor": "response",
-      "title": "VTC Community Profile Update — response payload",
+      "title": "VTC Community Profile Update \u2014 response payload",
       "type": "object",
       "additionalProperties": false,
-      "required": ["profile"],
+      "required": [
+        "profile"
+      ],
       "properties": {
-        "profile": { "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/CommunityProfile" },
-        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+        "profile": {
+          "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/CommunityProfile"
+        },
+        "fieldsChanged": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }
