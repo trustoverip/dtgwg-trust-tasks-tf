@@ -1,4 +1,4 @@
 [
   { "note": "Unknown top-level member is rejected.", "payload": { "requestId": "r1", "__x__": true } },
-  { "note": "`requestId` is required.", "payload": {} }
+  { "note": "`requestId`, when supplied, must be a string — an applicant may omit it, but not send a number.", "payload": { "requestId": 1 } }
 ]

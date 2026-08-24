@@ -536,7 +536,10 @@ mod conformance {
                 "Unknown top-level member is rejected.",
                 "{\n  \"__x__\": true,\n  \"requestId\": \"r1\"\n}",
             ),
-            ("`requestId` is required.", "{}"),
+            (
+                "`requestId`, when supplied, must be a string — an applicant may omit it, but not send a number.",
+                "{\n  \"requestId\": 1\n}",
+            ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {
             let value: serde_json::Value = match serde_json::from_str(raw) {
