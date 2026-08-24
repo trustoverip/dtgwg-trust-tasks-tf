@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/community",
-  "title": "VTC — shared community definitions",
+  "title": "VTC \u2014 shared community definitions",
   "description": "Shared type for the vtc/community/* family: a community's public profile.",
   "$defs": {
     "CommunityProfile": {
@@ -9,16 +9,60 @@
       "title": "CommunityProfile",
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "language"],
+      "required": [
+        "name",
+        "language"
+      ],
       "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "logoUrl": { "type": ["string", "null"] },
-        "publicUrl": { "type": ["string", "null"] },
-        "contactEmail": { "type": ["string", "null"] },
-        "language": { "type": "string", "minLength": 1 },
-        "extensions": { "type": "object", "description": "Opaque community-defined extension bag." },
-        "registryStatus": { "type": "string", "enum": ["active", "degraded"], "description": "Trust-registry reachability. Populated on reads; not settable." }
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "logoUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publicUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relationshipIdentifierDefault": {
+          "type": "string",
+          "enum": [
+            "attributed",
+            "pairwise"
+          ],
+          "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Opaque community-defined extension bag."
+        },
+        "registryStatus": {
+          "type": "string",
+          "enum": [
+            "active",
+            "degraded"
+          ],
+          "description": "Trust-registry reachability. Populated on reads; not settable."
+        }
       }
     }
   }

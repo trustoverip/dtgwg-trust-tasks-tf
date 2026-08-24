@@ -29,6 +29,38 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.5] - 2026-08-24
+
+### Added
+
+- **`CommunityProfile.relationshipIdentifierDefault`** and
+  **`CommunityProfileSnapshot.relationshipIdentifierDefault`** — the identifier
+  form a community declares it expects members to issue relationship
+  credentials under: `attributed` (the member's membership DID, so an edge
+  names them) or `pairwise` (a relationship DID unique to each counterparty).
+
+  A declaration rather than an enforcement. The member still chooses per
+  relationship, and a community that wants to require one form does so in its
+  own policy. It exists so a client can read the community's expectation
+  *before* minting rather than discovering it from a rejection.
+
+  Both components carry `additionalProperties: false`, so a single absent
+  property put three tasks off their own schemas —
+  `vtc/community/profile/update`, `vtc/config/export`, and `vtc/config/import`,
+  the last because an import replays the document an export produced.
+
+- **`vtc/community/profile/update/0.1` response `fieldsChanged`** — the members
+  the patch actually changed, in their wire spelling; empty when the submitted
+  values matched what was stored. Lets a caller tell a no-op from an applied
+  change without diffing the returned profile against the one it sent.
+
+  Consumers MUST reject a `relationshipIdentifierDefault` outside the two
+  defined values rather than storing it: the value is published to clients, and
+  one they cannot interpret is worse than no declaration at all.
+
+  Additive to schemas that previously forbade these members, so any document
+  that validated before still validates.
+
 ## [0.11.4] - 2026-08-23
 
 ### Added

@@ -50,7 +50,21 @@ fields are left as-is. The nullable fields (`logoUrl`, `publicUrl`,
 
 `registryStatus` is **not** accepted in the request — it is live operational
 state, not a settable profile field. The response returns the full updated
-`CommunityProfile`, mirroring `vtc/community/profile/show`.
+`CommunityProfile`, mirroring `vtc/community/profile/show`, alongside
+`fieldsChanged`.
+
+`relationshipIdentifierDefault` declares which identifier form the community
+expects members to issue relationship credentials under — `attributed` (the
+member's membership DID, so an edge names them) or `pairwise` (a relationship
+DID unique to each counterparty). It is a **declaration, not an enforcement**:
+the member still chooses per relationship, and a community that wants to
+require one form does so in its own policy. A client reads it before minting so
+it can follow the community's expectation without being told twice.
+
+`fieldsChanged` names the members this update actually changed, in their wire
+spelling, and is empty when the submitted values all matched what was stored.
+It lets a caller tell a no-op from an applied change without diffing the
+returned profile against the one it sent.
 
 ## Conformance
 
@@ -59,7 +73,10 @@ nullable field; omit a field to leave it unchanged.
 
 Consumer: verify the community-admin capability. Validate supplied fields,
 apply the patch, and return the full updated `CommunityProfile` (with live
-`registryStatus`).
+`registryStatus`) together with `fieldsChanged`. Reject a
+`relationshipIdentifierDefault` outside the two defined values rather than
+storing it: the value is published to clients, and one they cannot interpret is
+worse than no declaration at all.
 
 ## Security & Privacy
 
