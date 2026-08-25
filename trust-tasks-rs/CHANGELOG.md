@@ -29,6 +29,67 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.10] - 2026-08-25
+
+### Added
+
+- **`CommunityProfileView`** — a community profile *as read*, carrying
+  `communityDid` and `createdAt` alongside every `CommunityProfile` member.
+
+  `CommunityProfile` is the update-facing view and omits `communityDid` on
+  purpose, so a patch cannot re-point a community's identity. That is right for
+  a payload and wrong for a response: a client holding a profile had no defined
+  way to learn which DID to verify that community's credentials against.
+  `community/profile/show` and `community/profile/update` now return the view;
+  the update payload keeps `CommunityProfile`, so the immutability is enforced
+  by absence rather than by prose.
+
+- **`CredentialReference`** — a pointer to an issued credential without the
+  credential itself: `credentialId`, `issuedAt`, `expiresAt`.
+
+  `Endorsement.issued` referenced `IssuedCredential`, whose own scope note says
+  it is "returned by the party that minted the credential". A listing is not an
+  issuance event, and requiring the signed credential in every row made a page
+  grow with the size of the credentials rather than the number of them — fifty
+  rows is megabytes. `Endorsement.issued` now references the pointer, and
+  `endorsements/issue` gains a required `credential` member, because that is
+  the one call whose caller has no other way to receive what was just minted.
+
+- **`registry/diagnostics` response** gains the messaging and transport half:
+  `syncerEnabled`, `syncerRunning`, `syncerRestarts`, `messagingStatus`,
+  `vtaDid`, `mediatorUrl`, `mediatorDid`, `registryTransport` and `transports`,
+  with new `TransportStatus` and `RegistryTransport` components.
+
+  `syncerEnabled && !syncerRunning` is "spawned but dead" and no queue count
+  reveals it; a rising `syncerRestarts` is the crash-loop signal that otherwise
+  looks like a healthy idle queue. `TransportStatus` keeps `advertised` and
+  `serviceable` separate because advertised-but-not-serviceable is the broken
+  state a single boolean hides.
+
+- **`CeremonyManifest.factsTemplate`** — the skeleton of the decision input a
+  ceremony evaluates, which is the difference between rendering a form and
+  simulating the decision it produces.
+
+- **`website/files/list` item `etag`** — an opaque content hash matching the
+  `ETag` a direct read returns, so a client can detect a change without
+  downloading the body.
+
+- **`website/generations/list` item `deployedAt` and `sizeBytes`** — a rollback
+  target is chosen by *when* far more often than by number, and size
+  distinguishes a real deployment from a truncated one.
+
+- **`install/claim/start` payload `claimSecret`** — the out-of-band second
+  factor on a claim. The install URL alone is deliberately insufficient, so a
+  stolen or forwarded link cannot claim the passkey by itself. Optional in the
+  schema, because a maintainer may issue tokens without one, but a maintainer
+  that issues one MUST require it.
+
+All additive on the wire, so a patch bump — but see *"A patch bump promises
+wire compatibility, not source compatibility"* in CONTRIBUTING-SPECS.md.
+`Endorsement.issued` changing type is the sharper edge here: consumers reading
+`issued.credential` on a listing must read `endorsements/issue`'s new
+`credential` member instead.
+
 ## [0.11.9] - 2026-08-25
 
 ### Added

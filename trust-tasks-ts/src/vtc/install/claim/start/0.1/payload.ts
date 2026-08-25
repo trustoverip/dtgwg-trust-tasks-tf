@@ -8,6 +8,14 @@ export interface VTCInstallClaimStartPayload {
    * The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
    */
   installToken: string;
+  /**
+   * A short code the operator receives **out of band**, alongside the install URL but through a separate channel.
+   *
+   * The second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.
+   *
+   * Optional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.
+   */
+  claimSecret?: string;
   ext?: Ext;
 }
 /**
@@ -67,6 +75,11 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "description": "The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup."
+    },
+    "claimSecret": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A short code the operator receives **out of band**, alongside the install URL but through a separate channel.\n\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\n\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control."
     },
     "ext": {
       "$ref": "#/$defs/Ext"

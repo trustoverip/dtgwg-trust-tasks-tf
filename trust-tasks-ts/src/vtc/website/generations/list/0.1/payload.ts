@@ -22,6 +22,14 @@ export interface VTCWebsiteGenerationsListResponsePayload {
      * True for the generation current resolves to.
      */
     current: boolean;
+    /**
+     * When this generation was deployed. A rollback target is chosen by *when* far more often than by number.
+     */
+    deployedAt?: string;
+    /**
+     * Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it.
+     */
+    sizeBytes?: number;
   }[];
   ext?: Ext;
 }
@@ -86,6 +94,16 @@ export const PAYLOAD_SCHEMA = {
               "current": {
                 "type": "boolean",
                 "description": "True for the generation current resolves to."
+              },
+              "deployedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this generation was deployed. A rollback target is chosen by *when* far more often than by number."
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it."
               }
             }
           }
@@ -140,6 +158,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "current": {
                 "type": "boolean",
                 "description": "True for the generation current resolves to."
+              },
+              "deployedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this generation was deployed. A rollback target is chosen by *when* far more often than by number."
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it."
               }
             }
           }

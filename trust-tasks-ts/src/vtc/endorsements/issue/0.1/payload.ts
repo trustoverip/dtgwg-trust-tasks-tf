@@ -35,6 +35,10 @@ export interface Ext {
 }
 export interface VTCEndorsementsIssueResponsePayload {
   endorsement: Endorsement;
+  /**
+   * The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
+   */
+  credential: {};
   ext?: Ext;
 }
 export interface Endorsement {
@@ -54,7 +58,7 @@ export interface Endorsement {
    * The attested claim body, validated against the endorsement type's claimSchema when it declares one.
    */
   claim?: {};
-  issued: IssuedCredential;
+  issued: CredentialReference;
   /**
    * The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.
    */
@@ -65,22 +69,18 @@ export interface Endorsement {
   revokedAt?: string | null;
 }
 /**
- * The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.
+ * A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
  */
-export interface IssuedCredential {
+export interface CredentialReference {
   credentialId: CredentialId;
-  /**
-   * The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
-   */
-  credential: {};
   /**
    * When the credential was minted.
    */
   issuedAt?: string;
   /**
-   * When the credential's validUntil falls due.
+   * When it lapses, or null when it does not.
    */
-  expiresAt: string;
+  expiresAt?: string | null;
 }
 
 /** Trust Task type URI. */
@@ -148,11 +148,16 @@ export const PAYLOAD_SCHEMA = {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "endorsement"
+        "endorsement",
+        "credential"
       ],
       "properties": {
         "endorsement": {
           "$ref": "#/$defs/Endorsement"
+        },
+        "credential": {
+          "type": "object",
+          "description": "The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -203,8 +208,8 @@ export const PAYLOAD_SCHEMA = {
           "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
         },
         "issued": {
-          "$ref": "#/$defs/IssuedCredential",
-          "description": "The registry-wide issuance receipt — credentialId, the signed VEC, and expiry."
+          "$ref": "#/$defs/CredentialReference",
+          "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
         },
         "statusListIndex": {
           "type": "integer",
@@ -221,24 +226,18 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "IssuedCredential": {
-      "$anchor": "issuedCredential",
-      "title": "IssuedCredential",
-      "description": "The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\n\nSCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.\n\n`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.",
+    "CredentialReference": {
+      "$anchor": "credentialReference",
+      "title": "CredentialReference",
       "type": "object",
       "additionalProperties": false,
+      "description": "A pointer to an issued credential, without the credential itself.\n\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\n\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.",
       "required": [
-        "credentialId",
-        "credential",
-        "expiresAt"
+        "credentialId"
       ],
       "properties": {
         "credentialId": {
           "$ref": "#/$defs/CredentialId"
-        },
-        "credential": {
-          "type": "object",
-          "description": "The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework."
         },
         "issuedAt": {
           "type": "string",
@@ -246,9 +245,12 @@ export const PAYLOAD_SCHEMA = {
           "description": "When the credential was minted."
         },
         "expiresAt": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time",
-          "description": "When the credential's validUntil falls due."
+          "description": "When it lapses, or null when it does not."
         }
       }
     },
@@ -273,11 +275,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "endorsement"
+        "endorsement",
+        "credential"
       ],
       "properties": {
         "endorsement": {
           "$ref": "#/$defs/Endorsement"
+        },
+        "credential": {
+          "type": "object",
+          "description": "The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -328,8 +335,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
         },
         "issued": {
-          "$ref": "#/$defs/IssuedCredential",
-          "description": "The registry-wide issuance receipt — credentialId, the signed VEC, and expiry."
+          "$ref": "#/$defs/CredentialReference",
+          "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
         },
         "statusListIndex": {
           "type": "integer",
@@ -346,24 +353,18 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "IssuedCredential": {
-      "$anchor": "issuedCredential",
-      "title": "IssuedCredential",
-      "description": "The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\n\nSCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.\n\n`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.",
+    "CredentialReference": {
+      "$anchor": "credentialReference",
+      "title": "CredentialReference",
       "type": "object",
       "additionalProperties": false,
+      "description": "A pointer to an issued credential, without the credential itself.\n\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\n\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.",
       "required": [
-        "credentialId",
-        "credential",
-        "expiresAt"
+        "credentialId"
       ],
       "properties": {
         "credentialId": {
           "$ref": "#/$defs/CredentialId"
-        },
-        "credential": {
-          "type": "object",
-          "description": "The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework."
         },
         "issuedAt": {
           "type": "string",
@@ -371,9 +372,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "When the credential was minted."
         },
         "expiresAt": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time",
-          "description": "When the credential's validUntil falls due."
+          "description": "When it lapses, or null when it does not."
         }
       }
     },

@@ -40,6 +40,89 @@ export interface VTCRegistryDiagnosticsResponsePayload {
    */
   lastError?: string | null;
   ext?: Ext;
+  /**
+   * Whether the membership syncer is configured to run at all — false when no trust registry is configured.
+   */
+  syncerEnabled?: boolean;
+  /**
+   * Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals.
+   */
+  syncerRunning?: boolean;
+  /**
+   * How many times the syncer has been restarted after a panic. A rising value is the "it keeps crashing" signal; queue depth alone looks identical to a healthy idle queue.
+   */
+  syncerRestarts?: number;
+  /**
+   * Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.
+   */
+  messagingStatus?: "connected" | "disconnected";
+  /**
+   * The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.
+   */
+  vtaDid?: string;
+  /**
+   * The mediator's endpoint, when one is configured.
+   */
+  mediatorUrl?: string | null;
+  /**
+   * The mediator's DID, when one is configured.
+   */
+  mediatorDid?: string | null;
+  registryTransport?: RegistryTransport;
+  /**
+   * Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.
+   *
+   * Reports all protocols rather than only the advertised ones, so a client can tell "not advertised" from "absent from an older response".
+   */
+  transports?: TransportStatus[];
+}
+/**
+ * How this maintainer reaches its trust registry, and which protocol the last attempt actually chose.
+ */
+export interface RegistryTransport {
+  /**
+   * The registry's DID, when addressed by one.
+   */
+  did?: string | null;
+  /**
+   * The registry's endpoint, when addressed by one.
+   */
+  url?: string | null;
+  /**
+   * Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.
+   */
+  advertised?: string[];
+  /**
+   * The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.
+   */
+  active?: string | null;
+  /**
+   * Why the last selection failed, if it did.
+   */
+  error?: string | null;
+}
+/**
+ * One protocol's advertised and serviceable state.
+ *
+ * The two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.
+ */
+export interface TransportStatus {
+  /**
+   * The protocol this row describes.
+   */
+  protocol: string;
+  /**
+   * Present in the DID document, so a resolving client will find it.
+   */
+  advertised: boolean;
+  /**
+   * This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.
+   */
+  serviceable: boolean;
+  /**
+   * The advertised endpoint, or null when not advertised — there is no endpoint to give.
+   */
+  endpoint?: string | null;
 }
 
 /** Trust Task type URI. */
@@ -140,6 +223,136 @@ export const PAYLOAD_SCHEMA = {
         },
         "ext": {
           "$ref": "#/$defs/Ext"
+        },
+        "syncerEnabled": {
+          "type": "boolean",
+          "description": "Whether the membership syncer is configured to run at all — false when no trust registry is configured."
+        },
+        "syncerRunning": {
+          "type": "boolean",
+          "description": "Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals."
+        },
+        "syncerRestarts": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many times the syncer has been restarted after a panic. A rising value is the \"it keeps crashing\" signal; queue depth alone looks identical to a healthy idle queue."
+        },
+        "messagingStatus": {
+          "type": "string",
+          "enum": [
+            "connected",
+            "disconnected"
+          ],
+          "description": "Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`."
+        },
+        "vtaDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle."
+        },
+        "mediatorUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The mediator's endpoint, when one is configured."
+        },
+        "mediatorDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The mediator's DID, when one is configured."
+        },
+        "registryTransport": {
+          "$ref": "#/$defs/RegistryTransport",
+          "description": "How this maintainer reaches its trust registry, and which protocol the last attempt actually chose."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TransportStatus"
+          },
+          "description": "Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\n\nReports all protocols rather than only the advertised ones, so a client can tell \"not advertised\" from \"absent from an older response\"."
+        }
+      }
+    },
+    "TransportStatus": {
+      "$anchor": "transportStatus",
+      "title": "TransportStatus",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One protocol's advertised and serviceable state.\n\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.",
+      "required": [
+        "protocol",
+        "advertised",
+        "serviceable"
+      ],
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The protocol this row describes."
+        },
+        "advertised": {
+          "type": "boolean",
+          "description": "Present in the DID document, so a resolving client will find it."
+        },
+        "serviceable": {
+          "type": "boolean",
+          "description": "This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live."
+        },
+        "endpoint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The advertised endpoint, or null when not advertised — there is no endpoint to give."
+        }
+      }
+    },
+    "RegistryTransport": {
+      "$anchor": "registryTransport",
+      "title": "RegistryTransport",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How a maintainer addresses its trust registry, and what the last selection chose.\n\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.",
+      "properties": {
+        "did": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The registry's DID, when addressed by one."
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The registry's endpoint, when addressed by one."
+        },
+        "advertised": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone."
+        },
+        "active": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The protocol the last selection chose. Null before the first call, or when selection failed — see `error`."
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Why the last selection failed, if it did."
         }
       }
     },
@@ -226,6 +439,136 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "ext": {
           "$ref": "#/$defs/Ext"
+        },
+        "syncerEnabled": {
+          "type": "boolean",
+          "description": "Whether the membership syncer is configured to run at all — false when no trust registry is configured."
+        },
+        "syncerRunning": {
+          "type": "boolean",
+          "description": "Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals."
+        },
+        "syncerRestarts": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many times the syncer has been restarted after a panic. A rising value is the \"it keeps crashing\" signal; queue depth alone looks identical to a healthy idle queue."
+        },
+        "messagingStatus": {
+          "type": "string",
+          "enum": [
+            "connected",
+            "disconnected"
+          ],
+          "description": "Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`."
+        },
+        "vtaDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle."
+        },
+        "mediatorUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The mediator's endpoint, when one is configured."
+        },
+        "mediatorDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The mediator's DID, when one is configured."
+        },
+        "registryTransport": {
+          "$ref": "#/$defs/RegistryTransport",
+          "description": "How this maintainer reaches its trust registry, and which protocol the last attempt actually chose."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TransportStatus"
+          },
+          "description": "Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\n\nReports all protocols rather than only the advertised ones, so a client can tell \"not advertised\" from \"absent from an older response\"."
+        }
+      }
+    },
+    "TransportStatus": {
+      "$anchor": "transportStatus",
+      "title": "TransportStatus",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One protocol's advertised and serviceable state.\n\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.",
+      "required": [
+        "protocol",
+        "advertised",
+        "serviceable"
+      ],
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The protocol this row describes."
+        },
+        "advertised": {
+          "type": "boolean",
+          "description": "Present in the DID document, so a resolving client will find it."
+        },
+        "serviceable": {
+          "type": "boolean",
+          "description": "This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live."
+        },
+        "endpoint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The advertised endpoint, or null when not advertised — there is no endpoint to give."
+        }
+      }
+    },
+    "RegistryTransport": {
+      "$anchor": "registryTransport",
+      "title": "RegistryTransport",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How a maintainer addresses its trust registry, and what the last selection chose.\n\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.",
+      "properties": {
+        "did": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The registry's DID, when addressed by one."
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The registry's endpoint, when addressed by one."
+        },
+        "advertised": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone."
+        },
+        "active": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The protocol the last selection chose. Null before the first call, or when selection failed — see `error`."
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Why the last selection failed, if it did."
         }
       }
     },
