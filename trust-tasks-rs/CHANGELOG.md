@@ -29,6 +29,60 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.12] - 2026-08-25
+
+### Added
+
+- **`vtc/auth/recognise/0.2`** — takes a holder-signed Verifiable Presentation
+  instead of a bare `{vec, vmc}` credential pair.
+
+  `0.1`'s payload was a **replayable impersonation token**. Both credentials
+  are bearer artifacts, so anyone who obtained the pair — a relayed join, an
+  audit log, a backup, a compromised device — held everything the payload
+  required, and the recognising community could not tell the subject from
+  someone holding a copy. No proof of key possession, no freshness, no
+  audience binding, so one captured pair worked at every community that
+  recognised the issuer, indefinitely.
+
+  `0.2` requires a presentation holder-signed with `proofPurpose:
+  authentication`, committing to the single-use nonce from
+  `vtc/auth/recognise/challenge` and naming the recognising community's DID as
+  `domain`. Three properties, none redundant: the holder signature proves
+  possession of the subject key, the nonce defeats replay, and `domain` stops
+  a presentation minted for one community being spent at another. Consumers
+  MUST also refuse unless the holder is the credentials' subject.
+
+- **`vtc/join-requests/submit/0.2`** — returns a `verdict` instead of
+  `status: "pending"`.
+
+  A submission has four outcomes; `0.1`'s `const: "pending"` could express
+  one. A policy that admitted outright, refused outright, or needed more
+  evidence had to be reported as pending or not at all.
+
+  The distinction that matters most is `refer` versus `requestMore`: both mean
+  "not decided", and they place the next action with different parties —
+  `refer` waits on the community, `requestMore` waits on the applicant and
+  names what it needs. An applicant told "pending" cannot tell whether to wait
+  or to act.
+
+- **`vtc/_shared/0.1/ceremony`** — new shared component defining `Verdict`,
+  `VerdictEffect` and `VerdictWith`, because the four outcomes are the same
+  wherever a policy decides something about an applicant.
+
+  `VerdictWith` is one flat object whose members are effect-dependent by prose
+  rather than by `if`/`then` per effect — a deliberate trade of schema
+  strictness for a generated type that does not need a discriminated union per
+  ceremony family. Consumers MUST branch on `effect`, not on which members
+  happen to be present.
+
+### Changed
+
+- **`vtc/auth/recognise/0.1`** and **`vtc/join-requests/submit/0.1`** are now
+  `retired`, declaring `supersededBy` their `0.2`.
+
+  Both breaking — a required member replaced — but released as MINOR
+  increments under SPEC §5.2, which permits that for `draft` artifacts.
+
 ## [0.11.11] - 2026-08-25
 
 ### Added

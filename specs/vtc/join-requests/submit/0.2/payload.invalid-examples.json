@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "vp": {}, "__x__": true } },
+  { "note": "`vp` is required.", "payload": { "registryConsent": true } }
+]

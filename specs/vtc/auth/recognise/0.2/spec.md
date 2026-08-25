@@ -1,10 +1,9 @@
 ---
 slug: vtc/auth/recognise
-version: "0.1"
+version: "0.2"
 title: VTC Auth — Recognise
 summary: Mint a scoped cross-community session by presenting a foreign community's endorsement + membership credentials; maps the foreign role to a local one via policy.
-status: retired
-supersededBy: vtc/auth/recognise/0.2
+status: draft
 targetFrameworkVersion: "0.2"
 category: governance
 keywords:
@@ -50,17 +49,41 @@ errorCodes:
 ## Abstract
 
 The **VTC Auth — Recognise** Trust Task lets a member of a *foreign* Verifiable
-Trust Community obtain a scoped session in *this* community by presenting two
-foreign-issued credentials:
+Trust Community obtain a scoped session in *this* community by presenting a
+**holder-signed Verifiable Presentation** embedding their foreign-issued
+membership and endorsement credentials.
 
-- **`vec`** — a Verifiable Endorsement Credential carrying the role grant, and
-- **`vmc`** — a Verifiable Membership Credential proving membership (optionally
-  with `credentialStatus` for live revocation).
+The community's `cross_community_roles` policy decides whether the foreign
+issuer is recognised and which **local** role the foreign role maps to.
 
-Both are opaque W3C credentials here, each self-authenticating via its own
-`eddsa-jcs-2022` proof. The community's `cross_community_roles` policy decides
-whether the foreign issuer is recognised and which **local** role the foreign
-role maps to.
+### Changes from 0.1
+
+`0.1` took the two credentials directly, as `{vec, vmc}`. **That made the pair
+a replayable impersonation token.**
+
+Both are bearer artifacts. Anyone who obtained them — from a relayed join, an
+audit log, a backup, a compromised member device — held everything the payload
+required, and a community minting a session off them had no way to tell the
+subject from someone holding a copy. There was no proof the caller controlled
+the subject's key, no freshness, and no audience binding, so the same pair
+worked at every community that recognised the issuer, indefinitely.
+
+`0.2` requires a presentation instead, holder-signed with `proofPurpose:
+authentication`, committing to the single-use `nonce` from
+[`vtc/auth/recognise/challenge`](../challenge/0.1/) and naming the
+recognising community's DID as `domain`. Each embedded credential still
+carries its own issuer proof.
+
+That is three separate properties, and dropping any one restores the attack:
+the holder signature proves possession of the subject key, the nonce defeats
+replay, and `domain` stops a presentation minted for one community being spent
+at another. A consumer MUST also refuse unless the presentation's holder is
+the credentials' subject — otherwise one party is admitted on another's
+evidence.
+
+A captured credential pair is inert under `0.2`: an attacker cannot produce the
+holder signature over a fresh challenge, and a replayed presentation finds its
+nonce already consumed.
 
 The response returns a `sessionId` prefixed `xc-` (cross-community, distinct
 from a local-member session) and a short-lived `accessToken` whose expiry is
@@ -69,10 +92,15 @@ clamped to the earliest of the community default and the credentials'
 
 ## Conformance
 
-Producer: present a `vec` and a `vmc` issued by a foreign community.
+Producer: obtain a `nonce` from `vtc/auth/recognise/challenge`, then present a
+`presentation` embedding the foreign `vmc` and `vec`, holder-signed with
+`proofPurpose: authentication`, committing to that `nonce` and naming the
+recognising community's DID as `domain`.
 
-Consumer: verify both credential proofs; reject on invalid/expired/revoked
-(`credentialInvalid`). Resolve the foreign issuer against
+Consumer: verify the holder proof and each embedded credential's issuer proof;
+consume the nonce; refuse unless the holder is the credentials' subject. Reject
+on invalid/expired/revoked (`credentialInvalid`). Resolve the foreign issuer
+against
 `cross_community_roles` (`issuerNotRecognised` if absent). Map the foreign role
 to a local role (`roleNotMapped` if unmapped). Mint an `xc-` session with the
 **mapped local role** — never the raw foreign role — and an expiry clamped to
