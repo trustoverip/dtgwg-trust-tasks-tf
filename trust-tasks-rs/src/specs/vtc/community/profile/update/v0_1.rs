@@ -69,6 +69,10 @@ pub mod error {
 ///      "type": "string",
 ///      "minLength": 1
 ///    },
+///    "personhood": {
+///      "description": "What this community's governance asserts about the personhood of its members.",
+///      "$ref": "#/definitions/PersonhoodGovernance"
+///    },
 ///    "publicUrl": {
 ///      "type": [
 ///        "string",
@@ -119,6 +123,9 @@ pub struct CommunityProfile {
     )]
     pub logo_url: ::std::option::Option<::std::string::String>,
     pub name: CommunityProfileName,
+    ///What this community's governance asserts about the personhood of its members.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub personhood: ::std::option::Option<PersonhoodGovernance>,
     #[serde(
         rename = "publicUrl",
         default,
@@ -575,6 +582,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "type": "string",
 ///      "minLength": 1
 ///    },
+///    "personhood": {
+///      "description": "Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged.",
+///      "$ref": "#/definitions/PersonhoodGovernance"
+///    },
 ///    "publicUrl": {
 ///      "type": [
 ///        "string",
@@ -620,6 +631,9 @@ pub struct Payload {
     pub logo_url: ::std::option::Option<::std::string::String>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub name: ::std::option::Option<PayloadName>,
+    ///Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub personhood: ::std::option::Option<PersonhoodGovernance>,
     #[serde(
         rename = "publicUrl",
         default,
@@ -645,6 +659,7 @@ impl ::std::default::Default for Payload {
             language: Default::default(),
             logo_url: Default::default(),
             name: Default::default(),
+            personhood: Default::default(),
             public_url: Default::default(),
             relationship_identifier_default: Default::default(),
         }
@@ -859,6 +874,160 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadRelationshipIdent
         value.parse()
     }
 }
+/**
+A community's published position on personhood.
+
+DTG Credentials §Personhood Credentials places PHC status here rather than in the credential — "PHC status is determined by governance and trust registries, not by credential structure" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.
+
+Every member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "PersonhoodGovernance",
+///  "description": "\nA community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
+///  "type": "object",
+///  "properties": {
+///    "acceptedIdvps": {
+///      "description": "DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.",
+///      "type": "array",
+///      "items": {
+///        "type": "string",
+///        "minLength": 1
+///      }
+///    },
+///    "governanceFrameworkUrl": {
+///      "description": "Where the governance framework these assertions refer to can be read.",
+///      "type": [
+///        "string",
+///        "null"
+///      ]
+///    },
+///    "realHuman": {
+///      "description": "Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.",
+///      "type": "boolean"
+///    },
+///    "singleMembership": {
+///      "description": "Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \"exactly one membership in that VTC\" — so a single community can satisfy it without any network above it.",
+///      "type": "boolean"
+///    }
+///  },
+///  "additionalProperties": false,
+///  "$anchor": "personhoodGovernance"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct PersonhoodGovernance {
+    ///DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
+    #[serde(
+        rename = "acceptedIdvps",
+        default,
+        skip_serializing_if = "::std::vec::Vec::is_empty"
+    )]
+    pub accepted_idvps: ::std::vec::Vec<PersonhoodGovernanceAcceptedIdvpsItem>,
+    ///Where the governance framework these assertions refer to can be read.
+    #[serde(
+        rename = "governanceFrameworkUrl",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub governance_framework_url: ::std::option::Option<::std::string::String>,
+    ///Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
+    #[serde(
+        rename = "realHuman",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub real_human: ::std::option::Option<bool>,
+    ///Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says "exactly one membership in that VTC" — so a single community can satisfy it without any network above it.
+    #[serde(
+        rename = "singleMembership",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub single_membership: ::std::option::Option<bool>,
+}
+impl ::std::default::Default for PersonhoodGovernance {
+    fn default() -> Self {
+        Self {
+            accepted_idvps: Default::default(),
+            governance_framework_url: Default::default(),
+            real_human: Default::default(),
+            single_membership: Default::default(),
+        }
+    }
+}
+///`PersonhoodGovernanceAcceptedIdvpsItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PersonhoodGovernanceAcceptedIdvpsItem(::std::string::String);
+impl ::std::ops::Deref for PersonhoodGovernanceAcceptedIdvpsItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PersonhoodGovernanceAcceptedIdvpsItem> for ::std::string::String {
+    fn from(value: PersonhoodGovernanceAcceptedIdvpsItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PersonhoodGovernanceAcceptedIdvpsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PersonhoodGovernanceAcceptedIdvpsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PersonhoodGovernanceAcceptedIdvpsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PersonhoodGovernanceAcceptedIdvpsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PersonhoodGovernanceAcceptedIdvpsItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///`Response`
 ///
 /// <details><summary>JSON schema</summary>
@@ -909,7 +1078,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fieldsChanged\": {\n          \"description\": \"Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/community/profile/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"contactEmail\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"description\": {\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extensions\": {\n      \"description\": \"Opaque community-defined extension bag (maintainer-capped).\",\n      \"type\": \"object\"\n    },\n    \"language\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"logoUrl\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"name\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"publicUrl\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"relationshipIdentifierDefault\": {\n      \"description\": \"Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged.\",\n      \"enum\": [\n        \"attributed\",\n        \"pairwise\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Community Profile Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personhood\": {\n          \"$ref\": \"#/$defs/PersonhoodGovernance\",\n          \"description\": \"What this community's governance asserts about the personhood of its members.\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonhoodGovernance\": {\n      \"$anchor\": \"personhoodGovernance\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\n      \"properties\": {\n        \"acceptedIdvps\": {\n          \"description\": \"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the governance framework these assertions refer to can be read.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"realHuman\": {\n          \"description\": \"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\n          \"type\": \"boolean\"\n        },\n        \"singleMembership\": {\n          \"description\": \"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"PersonhoodGovernance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fieldsChanged\": {\n          \"description\": \"Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/community/profile/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"contactEmail\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"description\": {\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extensions\": {\n      \"description\": \"Opaque community-defined extension bag (maintainer-capped).\",\n      \"type\": \"object\"\n    },\n    \"language\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"logoUrl\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"name\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"personhood\": {\n      \"$ref\": \"#/$defs/PersonhoodGovernance\",\n      \"description\": \"Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged.\"\n    },\n    \"publicUrl\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"relationshipIdentifierDefault\": {\n      \"description\": \"Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged.\",\n      \"enum\": [\n        \"attributed\",\n        \"pairwise\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Community Profile Update — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -918,7 +1087,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fieldsChanged\": {\n          \"description\": \"Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CommunityProfile\": {\n      \"$anchor\": \"communityProfile\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personhood\": {\n          \"$ref\": \"#/$defs/PersonhoodGovernance\",\n          \"description\": \"What this community's governance asserts about the personhood of its members.\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfile\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonhoodGovernance\": {\n      \"$anchor\": \"personhoodGovernance\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\n      \"properties\": {\n        \"acceptedIdvps\": {\n          \"description\": \"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the governance framework these assertions refer to can be read.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"realHuman\": {\n          \"description\": \"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\n          \"type\": \"boolean\"\n        },\n        \"singleMembership\": {\n          \"description\": \"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"PersonhoodGovernance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fieldsChanged\": {\n          \"description\": \"Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfile\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 #[cfg(test)]

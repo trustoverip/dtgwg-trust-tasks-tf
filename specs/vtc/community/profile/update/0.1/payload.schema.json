@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/community/profile/update/0.1",
-  "title": "VTC Community Profile Update \u2014 payload",
+  "title": "VTC Community Profile Update — payload",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -42,6 +42,10 @@
       ],
       "description": "Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged."
     },
+    "personhood": {
+      "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/PersonhoodGovernance",
+      "description": "Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged."
+    },
     "extensions": {
       "type": "object",
       "description": "Opaque community-defined extension bag (maintainer-capped)."
@@ -53,7 +57,7 @@
   "$defs": {
     "Response": {
       "$anchor": "response",
-      "title": "VTC Community Profile Update \u2014 response payload",
+      "title": "VTC Community Profile Update — response payload",
       "type": "object",
       "additionalProperties": false,
       "required": [

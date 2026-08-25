@@ -29,6 +29,45 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.9] - 2026-08-25
+
+### Added
+
+- **`CommunityProfile.personhood`** and the matching
+  `vtc/community/profile/update/0.1` payload member — what a community's
+  governance asserts about the personhood of its members.
+
+  DTG Credentials §Personhood Credentials puts PHC status in governance rather
+  than in the credential — *"PHC status is determined by governance and trust
+  registries, not by credential structure"* — so a verifier deciding whether a
+  membership credential carries personhood weight is told to read the
+  community's published position. Until now there was nowhere to publish it:
+  the profile that a `show` returns and an `update` sets had no member for the
+  one thing the credential spec says not to read off the credential.
+
+  The new `PersonhoodGovernance` component carries `realHuman`,
+  `singleMembership`, `acceptedIdvps` and `governanceFrameworkUrl`. Every
+  member is a declaration rather than an enforcement; absent means no position
+  has been published, which is not the same as asserting the negative. The
+  update payload replaces the whole object rather than merging, because a
+  partial update would leave a verifier unable to tell an unset member from a
+  cleared one.
+
+- **`CommunityProfileSnapshot.personhood`** — the same position, carried
+  through a portable config export so a restore does not silently drop it.
+  Governance state, unlike `registryStatus`, which stays absent from the
+  snapshot because reachability belongs to a running maintainer rather than to
+  exported state.
+
+  Both components are `additionalProperties: false`, so one absent property put
+  four tasks off their own schemas at once: `community/profile/show`,
+  `community/profile/update`, `config/export` and `config/import`.
+
+  Additive on the wire, so a patch bump — but see *"A patch bump promises wire
+  compatibility, not source compatibility"* in CONTRIBUTING-SPECS.md: consumers
+  building `CommunityProfile` or `CommunityProfileSnapshot` with struct-literal
+  syntax will need one line each.
+
 ## [0.11.8] - 2026-08-24
 
 ### Added
