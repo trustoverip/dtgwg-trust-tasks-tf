@@ -357,7 +357,9 @@ export * as VtcEndorsementsList_v0_1 from "./vtc/endorsements/list/0.1/payload.j
 export * as VtcEndorsementsRevoke_v0_1 from "./vtc/endorsements/revoke/0.1/payload.js";
 export * as VtcEndorsementsShow_v0_1 from "./vtc/endorsements/show/0.1/payload.js";
 export * as VtcInstallClaimFinish_v0_1 from "./vtc/install/claim/finish/0.1/payload.js";
+export * as VtcInstallClaimFinish_v0_2 from "./vtc/install/claim/finish/0.2/payload.js";
 export * as VtcInstallClaimStart_v0_1 from "./vtc/install/claim/start/0.1/payload.js";
+export * as VtcInstallClaimStart_v0_2 from "./vtc/install/claim/start/0.2/payload.js";
 export * as VtcInvitationsIssue_v0_1 from "./vtc/invitations/issue/0.1/payload.js";
 export * as VtcInvitationsList_v0_1 from "./vtc/invitations/list/0.1/payload.js";
 export * as VtcInvitationsRevoke_v0_1 from "./vtc/invitations/revoke/0.1/payload.js";

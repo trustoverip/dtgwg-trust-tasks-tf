@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "installToken": "e",
+      "registrationId": "r",
+      "webauthnResponse": {},
+      "__x__": true
+    }
+  },
+  {
+    "note": "A 0.1-shaped document is rejected: `didBindingSignature` was removed in 0.2 and is now an unknown member. Pins that the two versions are distinguishable rather than silently interchangeable.",
+    "payload": {
+      "installToken": "e",
+      "registrationId": "r",
+      "webauthnResponse": {},
+      "didBindingSignature": "s"
+    }
+  },
+  {
+    "note": "`webauthnResponse` is required — it is the attestation that carries the whole proof of control in 0.2.",
+    "payload": {
+      "installToken": "e",
+      "registrationId": "r"
+    }
+  }
+]
