@@ -29,6 +29,44 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.14] - 2026-08-26
+
+### Added
+
+- **`vtc/relationships/graph/0.2`** — an edge is a **pair**, not a credential.
+
+  `0.1` called each credential an edge, which made a DTG edge inexpressible:
+  the two directed halves between the same pair of identifiers are one
+  relationship, and a flat list left every consumer to re-derive that — sort
+  the DIDs, group by pair, decide for itself what "complete" means. Two
+  implementations doing that independently disagree at the margins, which is
+  the reasoning a schema exists to settle once.
+
+  `endpoints` carries the two DIDs sorted, `halves` every credential between
+  them, and `complete` whether both parties have asserted. An edge asserted by
+  one party is a claim; an edge asserted by both is a relationship, and only
+  the model can say which. `GraphHalf.personaDid` makes deliberate correlation
+  readable: two pairwise halves carrying the same persona are the same party,
+  said so by that party.
+
+- **`vtc/relationships/list/0.2`** — `vrcSha256` becomes
+  `vrcDigestMultibase`.
+
+  A bare hex digest names neither its hash function nor its encoding, so two
+  parties comparing one must agree on both out of band — and the member name
+  was the only record of the function, which stops being true the moment
+  anything but SHA-256 is wanted. `relationships/publish/0.2` already takes a
+  multibase digest on the way in; `0.1` read back a different encoding from
+  the one its sibling accepts.
+
+### Changed
+
+- **`vtc/relationships/graph/0.1`** and **`list/0.1`** are now `retired`,
+  declaring `supersededBy` their `0.2`.
+
+  Both breaking, both `draft`, so released as MINOR increments under
+  SPEC §5.2.
+
 ## [0.11.13] - 2026-08-25
 
 ### Added

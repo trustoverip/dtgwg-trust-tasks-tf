@@ -1,10 +1,9 @@
 ---
 slug: vtc/relationships/graph
-version: "0.1"
+version: "0.2"
 title: VTC Relationships — Graph
 summary: Return a Verifiable Trust Community's published relationship credentials as a node-and-edge graph of who has vouched for whom.
-status: retired
-supersededBy: vtc/relationships/graph/0.2
+status: draft
 targetFrameworkVersion: "0.2"
 category: reputation
 keywords:
@@ -40,6 +39,29 @@ errorCodes:
 ## Abstract
 
 The **VTC Relationships — Graph** Trust Task projects the community's live Verifiable Relationship Credentials into a graph: `nodes` are the DIDs involved, `edges` are the relationships, each directed from `issuerDid` to `subjectDid`.
+
+### Changes from 0.1
+
+`0.1` called each credential an edge. That made a DTG edge inexpressible.
+
+Two directed halves between the same pair of identifiers are **one
+relationship**, and a flat list of credentials leaves every consumer to
+re-derive that: sort the DIDs, group by pair, and decide for itself what
+"complete" means. Two implementations doing that independently will disagree
+at the margins — which is the reasoning a schema exists to settle once.
+
+`0.2` makes an edge a pair. `endpoints` carries the two DIDs, sorted so the
+pair has one identity whichever half was published first; `halves` carries
+every credential between them; and `complete` states whether both parties have
+asserted. That last distinction is the one worth having in the model rather
+than in each client: **an edge asserted by one party is a claim, and an edge
+asserted by both is a relationship.**
+
+`GraphHalf` also carries `personaDid` — the persona an issuer has asserted on
+that half. It is the one place deliberate correlation becomes visible: two
+pairwise halves carrying the same persona are the same party, said so by that
+party. A consumer that cannot read it cannot honour a correlation its subject
+chose to publish.
 
 It is the whole-community view of what [`vtc/relationships/list`](../../list/0.1/) returns per relationship, shaped for rendering rather than pagination.
 

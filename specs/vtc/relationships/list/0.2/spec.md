@@ -43,6 +43,22 @@ errorCodes:
 
 The **VTC Relationships — List** Trust Task returns the Verifiable Relationship Credentials recorded for a member `did` — each with its `id`, `issuerDid`/`subjectDid`, the `vrcJsonld` body, a `vrcDigestMultibase`, and `createdAt`. Paged by `cursor`/`limit`.
 
+### Changes from 0.1
+
+`vrcSha256` becomes `vrcDigestMultibase`.
+
+A bare hex digest names neither its hash function nor its encoding, so two
+parties comparing one must agree on both out of band — and the member name is
+the only place the function was recorded, which stops being true the moment
+anything but SHA-256 is wanted. A multihash says which function produced the
+bytes and multibase says how the string is written, so the value carries its
+own interpretation and a mismatch is a mismatch rather than a guess.
+
+This is the form DTG Credentials specifies for credential digests and the one
+`_framework`'s `DigestMultibase` already describes; `relationships/publish/0.2`
+takes the same form on the way in. `0.1` left this task reading back a
+different encoding from the one its sibling accepts.
+
 ## Changes from 0.1
 
 `0.1` carried the credential digest as **`vrcSha256`**, a bare lowercase-hex

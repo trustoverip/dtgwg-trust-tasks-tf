@@ -3,7 +3,8 @@ slug: vtc/relationships/list
 version: "0.1"
 title: VTC Relationships — List
 summary: List the Verifiable Relationship Credentials published about a community member.
-status: draft
+status: retired
+supersededBy: vtc/relationships/list/0.2
 targetFrameworkVersion: "0.2"
 category: governance
 keywords:

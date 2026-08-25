@@ -663,6 +663,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1#response" => <crate::specs::vtc::registry::diagnostics::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/relationships/graph/0.1" => <crate::specs::vtc::relationships::graph::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/relationships/graph/0.1#response" => <crate::specs::vtc::relationships::graph::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/vtc/relationships/graph/0.2" => <crate::specs::vtc::relationships::graph::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/vtc/relationships/graph/0.2#response" => <crate::specs::vtc::relationships::graph::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/relationships/list/0.1" => <crate::specs::vtc::relationships::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/relationships/list/0.1#response" => <crate::specs::vtc::relationships::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/vtc/relationships/list/0.2" => <crate::specs::vtc::relationships::list::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
