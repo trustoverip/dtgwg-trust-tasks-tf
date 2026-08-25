@@ -29,6 +29,24 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.13] - 2026-08-25
+
+### Added
+
+- **`schema_index::schema_for` now indexes response schemas**, under the same
+  Type URI suffixed `#response` — 332 of them.
+
+  The index answered only for requests, so a consumer could validate what it
+  *received* and not what it *sent back*. A producer's own output is the half
+  it can actually fix, and leaving it unindexed meant every implementation
+  that wanted to check its emissions had to hand-write a match arm per task —
+  which this function's own documentation already identifies as "validate
+  whatever somebody remembered, which is not validation".
+
+  `#response` is not a convention invented for the index: it is what each
+  generated `Response` type already declares as its `TYPE_URI`. A task with no
+  response side has no `#response` entry, and `None` remains a real answer.
+
 ## [0.11.12] - 2026-08-25
 
 ### Added
