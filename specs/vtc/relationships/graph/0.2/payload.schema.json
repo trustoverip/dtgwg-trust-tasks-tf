@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/relationships/graph/0.2",
+  "title": "VTC Relationships Graph — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships Graph — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GraphNode"
+          },
+          "description": "One per distinct DID appearing in a live edge. No isolated nodes."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GraphEdge"
+          },
+          "description": "One per **pair** of identifiers with at least one live credential between them, not one per credential."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "GraphNode": {
+      "$anchor": "graphNode",
+      "title": "GraphNode",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A DID participating in at least one live relationship."
+        }
+      }
+    },
+    "GraphEdge": {
+      "$anchor": "graphEdge",
+      "title": "GraphEdge",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoints",
+        "halves",
+        "complete"
+      ],
+      "properties": {
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^did:"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "The two endpoints, DID-sorted. Sorting gives the pair one identity whichever half was published first. Both entries are equal only for a self-issued credential."
+        },
+        "halves": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GraphHalf"
+          },
+          "minItems": 1,
+          "description": "Every credential published between the endpoints, oldest first. One for a half-edge, two for the ordinary reciprocated edge, more where a party has re-issued."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "True when both endpoints have asserted about each other. The distinction a flat list cannot make: an edge asserted by one party is a claim, and an edge asserted by both is a relationship."
+        }
+      },
+      "description": "One edge between a **pair** of identifiers, carrying every half published between them.\n\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once."
+    },
+    "GraphHalf": {
+      "$anchor": "graphHalf",
+      "title": "GraphHalf",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\n\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.",
+      "required": [
+        "id",
+        "issuerDid",
+        "subjectDid",
+        "createdAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issuerDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The asserting party."
+        },
+        "subjectDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The party asserted about."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "personaDid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^did:|^$",
+          "description": "The persona this issuer has asserted on this half, when they have.\n\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish."
+        }
+      }
+    }
+  }
+}
