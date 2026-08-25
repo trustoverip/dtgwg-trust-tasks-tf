@@ -48,6 +48,12 @@ export interface CeremonyManifest {
    * Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.
    */
   fields?: {}[];
+  /**
+   * A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.
+   *
+   * Without it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one.
+   */
+  factsTemplate?: {};
 }
 
 /** Trust Task type URI. */
@@ -150,6 +156,10 @@ export const PAYLOAD_SCHEMA = {
             "type": "object"
           },
           "description": "Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped."
+        },
+        "factsTemplate": {
+          "type": "object",
+          "description": "A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\n\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one."
         }
       }
     },
@@ -238,6 +248,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "type": "object"
           },
           "description": "Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped."
+        },
+        "factsTemplate": {
+          "type": "object",
+          "description": "A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\n\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one."
         }
       }
     },

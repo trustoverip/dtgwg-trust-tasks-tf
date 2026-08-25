@@ -65,7 +65,8 @@
       ],
       "properties": {
         "profile": {
-          "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/CommunityProfile"
+          "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/CommunityProfileView",
+          "description": "The community's profile as read, including the immutable `communityDid` an update cannot set."
         },
         "fieldsChanged": {
           "type": "array",

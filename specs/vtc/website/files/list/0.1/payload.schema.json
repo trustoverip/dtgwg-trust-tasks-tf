@@ -5,9 +5,19 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "cursor": { "type": "string", "description": "Opaque continuation token from a prior page." },
-    "limit": { "type": "integer", "minimum": 1, "maximum": 1000, "description": "Page size." },
-    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a prior page."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Page size."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
   },
   "$defs": {
     "Response": {
@@ -15,24 +25,52 @@
       "title": "VTC Website Files List — response payload",
       "type": "object",
       "additionalProperties": false,
-      "required": ["items"],
+      "required": [
+        "items"
+      ],
       "properties": {
         "items": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["path", "size"],
+            "required": [
+              "path",
+              "size"
+            ],
             "properties": {
-              "path": { "type": "string", "minLength": 1, "description": "Path relative to the site root." },
-              "size": { "type": "integer", "minimum": 0, "description": "File size in bytes." },
-              "modifiedAt": { "type": "string", "format": "date-time" }
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Path relative to the site root."
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "File size in bytes."
+              },
+              "etag": {
+                "type": "string",
+                "minLength": 1,
+                "description": "An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare."
+              },
+              "modifiedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
             }
           },
           "description": "Files under the site root, excluding hidden files and blocklisted extensions."
         },
-        "nextCursor": { "type": ["string", "null"] },
-        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+        "nextCursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }

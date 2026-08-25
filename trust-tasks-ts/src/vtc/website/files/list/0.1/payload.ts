@@ -33,6 +33,10 @@ export interface VTCWebsiteFilesListResponsePayload {
      * File size in bytes.
      */
     size: number;
+    /**
+     * An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.
+     */
+    etag?: string;
     modifiedAt?: string;
   }[];
   nextCursor?: string | null;
@@ -111,6 +115,11 @@ export const PAYLOAD_SCHEMA = {
                 "minimum": 0,
                 "description": "File size in bytes."
               },
+              "etag": {
+                "type": "string",
+                "minLength": 1,
+                "description": "An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare."
+              },
               "modifiedAt": {
                 "type": "string",
                 "format": "date-time"
@@ -176,6 +185,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "type": "integer",
                 "minimum": 0,
                 "description": "File size in bytes."
+              },
+              "etag": {
+                "type": "string",
+                "minLength": 1,
+                "description": "An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare."
               },
               "modifiedAt": {
                 "type": "string",

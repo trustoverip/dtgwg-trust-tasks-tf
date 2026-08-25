@@ -4,17 +4,28 @@
   "title": "VTC Community Profile Show — payload",
   "type": "object",
   "additionalProperties": false,
-  "properties": { "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" } },
+  "properties": {
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
   "$defs": {
     "Response": {
       "$anchor": "response",
       "title": "VTC Community Profile Show — response payload",
       "type": "object",
       "additionalProperties": false,
-      "required": ["profile"],
+      "required": [
+        "profile"
+      ],
       "properties": {
-        "profile": { "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/CommunityProfile" },
-        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+        "profile": {
+          "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/CommunityProfileView",
+          "description": "The community's profile as read, including the immutable `communityDid` an update cannot set."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }

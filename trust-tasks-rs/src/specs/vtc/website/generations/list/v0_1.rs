@@ -196,10 +196,20 @@ impl ::std::default::Default for Payload {
 ///            "description": "True for the generation current resolves to.",
 ///            "type": "boolean"
 ///          },
+///          "deployedAt": {
+///            "description": "When this generation was deployed. A rollback target is chosen by *when* far more often than by number.",
+///            "type": "string",
+///            "format": "date-time"
+///          },
 ///          "generation": {
 ///            "description": "Generation label (e.g. gen-5).",
 ///            "type": "string",
 ///            "minLength": 1
+///          },
+///          "sizeBytes": {
+///            "description": "Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it.",
+///            "type": "integer",
+///            "minimum": 0.0
 ///          }
 ///        },
 ///        "additionalProperties": false
@@ -234,10 +244,20 @@ pub struct Response {
 ///      "description": "True for the generation current resolves to.",
 ///      "type": "boolean"
 ///    },
+///    "deployedAt": {
+///      "description": "When this generation was deployed. A rollback target is chosen by *when* far more often than by number.",
+///      "type": "string",
+///      "format": "date-time"
+///    },
 ///    "generation": {
 ///      "description": "Generation label (e.g. gen-5).",
 ///      "type": "string",
 ///      "minLength": 1
+///    },
+///    "sizeBytes": {
+///      "description": "Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it.",
+///      "type": "integer",
+///      "minimum": 0.0
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -249,8 +269,22 @@ pub struct Response {
 pub struct ResponseGenerationsItem {
     ///True for the generation current resolves to.
     pub current: bool,
+    ///When this generation was deployed. A rollback target is chosen by *when* far more often than by number.
+    #[serde(
+        rename = "deployedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub deployed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Generation label (e.g. gen-5).
     pub generation: ResponseGenerationsItemGeneration,
+    ///Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it.
+    #[serde(
+        rename = "sizeBytes",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub size_bytes: ::std::option::Option<u64>,
 }
 ///Generation label (e.g. gen-5).
 ///
@@ -325,7 +359,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/website/generations/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"generations\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"current\": {\n                \"description\": \"True for the generation current resolves to.\",\n                \"type\": \"boolean\"\n              },\n              \"generation\": {\n                \"description\": \"Generation label (e.g. gen-5).\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"generation\",\n              \"current\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"generations\"\n      ],\n      \"title\": \"VTC Website Generations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/website/generations/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Website Generations List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"generations\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"current\": {\n                \"description\": \"True for the generation current resolves to.\",\n                \"type\": \"boolean\"\n              },\n              \"deployedAt\": {\n                \"description\": \"When this generation was deployed. A rollback target is chosen by *when* far more often than by number.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"generation\": {\n                \"description\": \"Generation label (e.g. gen-5).\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"sizeBytes\": {\n                \"description\": \"Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it.\",\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"generation\",\n              \"current\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"generations\"\n      ],\n      \"title\": \"VTC Website Generations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/website/generations/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Website Generations List — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -333,7 +367,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/website/generations/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"generations\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"current\": {\n                \"description\": \"True for the generation current resolves to.\",\n                \"type\": \"boolean\"\n              },\n              \"generation\": {\n                \"description\": \"Generation label (e.g. gen-5).\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"generation\",\n              \"current\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"generations\"\n      ],\n      \"title\": \"VTC Website Generations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"generations\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"current\": {\n                \"description\": \"True for the generation current resolves to.\",\n                \"type\": \"boolean\"\n              },\n              \"deployedAt\": {\n                \"description\": \"When this generation was deployed. A rollback target is chosen by *when* far more often than by number.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"generation\": {\n                \"description\": \"Generation label (e.g. gen-5).\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"sizeBytes\": {\n                \"description\": \"Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it.\",\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"generation\",\n              \"current\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"generations\"\n      ],\n      \"title\": \"VTC Website Generations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 #[cfg(test)]

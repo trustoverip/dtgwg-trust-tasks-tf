@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/ceremonies/list/0.1",
-  "title": "VTC Ceremonies List \u2014 payload",
+  "title": "VTC Ceremonies List — payload",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -12,7 +12,7 @@
   "$defs": {
     "Response": {
       "$anchor": "response",
-      "title": "VTC Ceremonies List \u2014 response payload",
+      "title": "VTC Ceremonies List — response payload",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -77,6 +77,10 @@
             "type": "object"
           },
           "description": "Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped."
+        },
+        "factsTemplate": {
+          "type": "object",
+          "description": "A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\n\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one."
         }
       }
     }

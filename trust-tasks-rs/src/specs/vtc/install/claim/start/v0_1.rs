@@ -150,6 +150,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "installToken"
 ///  ],
 ///  "properties": {
+///    "claimSecret": {
+///      "description": "\nA short code the operator receives **out of band**, alongside the install URL but through a separate channel.\n\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\n\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.",
+///      "type": "string",
+///      "minLength": 1
+///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
@@ -166,11 +171,97 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Payload {
+    /**
+    A short code the operator receives **out of band**, alongside the install URL but through a separate channel.
+
+    The second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.
+
+    Optional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.*/
+    #[serde(
+        rename = "claimSecret",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub claim_secret: ::std::option::Option<PayloadClaimSecret>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
     #[serde(rename = "installToken")]
     pub install_token: PayloadInstallToken,
+}
+/**
+A short code the operator receives **out of band**, alongside the install URL but through a separate channel.
+
+The second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.
+
+Optional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "\nA short code the operator receives **out of band**, alongside the install URL but through a separate channel.\n\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\n\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.",
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadClaimSecret(::std::string::String);
+impl ::std::ops::Deref for PayloadClaimSecret {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadClaimSecret> for ::std::string::String {
+    fn from(value: PayloadClaimSecret) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadClaimSecret {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadClaimSecret {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadClaimSecret {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadClaimSecret {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadClaimSecret {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
 }
 ///The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
 ///
@@ -434,7 +525,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/install/claim/start/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"didBindingChallenge\": {\n          \"description\": \"Base64url-no-pad 32 random bytes the candidate did:key must sign.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"options\": {\n          \"description\": \"WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}].\",\n          \"type\": \"object\"\n        },\n        \"registrationId\": {\n          \"description\": \"Echoes the install token's jti (a UUID); pass it back to claim/finish.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registrationId\",\n        \"options\",\n        \"didBindingChallenge\"\n      ],\n      \"title\": \"VTC Install Claim Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/install/claim/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"installToken\": {\n      \"description\": \"The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"installToken\"\n  ],\n  \"title\": \"VTC Install Claim Start — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"didBindingChallenge\": {\n          \"description\": \"Base64url-no-pad 32 random bytes the candidate did:key must sign.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"options\": {\n          \"description\": \"WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}].\",\n          \"type\": \"object\"\n        },\n        \"registrationId\": {\n          \"description\": \"Echoes the install token's jti (a UUID); pass it back to claim/finish.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registrationId\",\n        \"options\",\n        \"didBindingChallenge\"\n      ],\n      \"title\": \"VTC Install Claim Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/install/claim/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claimSecret\": {\n      \"description\": \"A short code the operator receives **out of band**, alongside the install URL but through a separate channel.\\n\\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\\n\\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"installToken\": {\n      \"description\": \"The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"installToken\"\n  ],\n  \"title\": \"VTC Install Claim Start — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

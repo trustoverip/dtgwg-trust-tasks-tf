@@ -49,14 +49,25 @@ export interface Ext {
   [k: string]: unknown | undefined;
 }
 export interface VTCCommunityProfileUpdateResponsePayload {
-  profile: CommunityProfile;
+  profile: CommunityProfileView;
   /**
    * Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent.
    */
   fieldsChanged?: string[];
   ext?: Ext;
 }
-export interface CommunityProfile {
+/**
+ * The community's profile as read, including the immutable `communityDid` an update cannot set.
+ */
+export interface CommunityProfileView {
+  /**
+   * The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update.
+   */
+  communityDid: string;
+  /**
+   * When the community was created. Immutable, like `communityDid`.
+   */
+  createdAt?: string;
   name: string;
   description?: string;
   logoUrl?: string | null;
@@ -187,7 +198,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "profile": {
-          "$ref": "#/$defs/CommunityProfile"
+          "$ref": "#/$defs/CommunityProfileView",
+          "description": "The community's profile as read, including the immutable `communityDid` an update cannot set."
         },
         "fieldsChanged": {
           "type": "array",
@@ -211,16 +223,28 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "CommunityProfile": {
-      "$anchor": "communityProfile",
-      "title": "CommunityProfile",
+    "CommunityProfileView": {
+      "$anchor": "communityProfileView",
+      "title": "CommunityProfileView",
       "type": "object",
       "additionalProperties": false,
+      "description": "A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\n\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community's identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community's credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\n\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.",
       "required": [
+        "communityDid",
         "name",
         "language"
       ],
       "properties": {
+        "communityDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community was created. Immutable, like `communityDid`."
+        },
         "name": {
           "type": "string",
           "minLength": 1
@@ -326,7 +350,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "profile": {
-          "$ref": "#/$defs/CommunityProfile"
+          "$ref": "#/$defs/CommunityProfileView",
+          "description": "The community's profile as read, including the immutable `communityDid` an update cannot set."
         },
         "fieldsChanged": {
           "type": "array",
@@ -350,16 +375,28 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "CommunityProfile": {
-      "$anchor": "communityProfile",
-      "title": "CommunityProfile",
+    "CommunityProfileView": {
+      "$anchor": "communityProfileView",
+      "title": "CommunityProfileView",
       "type": "object",
       "additionalProperties": false,
+      "description": "A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\n\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community's identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community's credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\n\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.",
       "required": [
+        "communityDid",
         "name",
         "language"
       ],
       "properties": {
+        "communityDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community was created. Immutable, like `communityDid`."
+        },
         "name": {
           "type": "string",
           "minLength": 1

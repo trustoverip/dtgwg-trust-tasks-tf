@@ -4,7 +4,7 @@
  */
 
 /**
- * Shared type for the vtc/endorsements/* family: one issued Verifiable Endorsement Credential (VEC) row. Embeds the registry-wide credentials/_shared IssuedCredential receipt and adds the VTC-specific parts — the registered endorsement type and the shared status-list slot that makes the endorsement third-party revocation-checkable.
+ * Shared type for the vtc/endorsements/* family: one issued Verifiable Endorsement Credential (VEC) row. Embeds the registry-wide credentials/_shared CredentialReference and adds the VTC-specific parts — the registered endorsement type and the shared status-list slot that makes the endorsement third-party revocation-checkable.
  */
 export interface VTCSharedEndorsementDefinitions {
   [k: string]: unknown | undefined;

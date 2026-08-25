@@ -100,6 +100,66 @@ impl<'de> ::serde::Deserialize<'de> for CredentialId {
             })
     }
 }
+/**
+A pointer to an issued credential, without the credential itself.
+
+The counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.
+
+The holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "CredentialReference",
+///  "description": "\nA pointer to an issued credential, without the credential itself.\n\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\n\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.",
+///  "type": "object",
+///  "required": [
+///    "credentialId"
+///  ],
+///  "properties": {
+///    "credentialId": {
+///      "$ref": "#/definitions/CredentialId"
+///    },
+///    "expiresAt": {
+///      "description": "When it lapses, or null when it does not.",
+///      "type": [
+///        "string",
+///        "null"
+///      ],
+///      "format": "date-time"
+///    },
+///    "issuedAt": {
+///      "description": "When the credential was minted.",
+///      "type": "string",
+///      "format": "date-time"
+///    }
+///  },
+///  "additionalProperties": false,
+///  "$anchor": "credentialReference"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct CredentialReference {
+    #[serde(rename = "credentialId")]
+    pub credential_id: CredentialId,
+    ///When it lapses, or null when it does not.
+    #[serde(
+        rename = "expiresAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///When the credential was minted.
+    #[serde(
+        rename = "issuedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+}
 ///`Endorsement`
 ///
 /// <details><summary>JSON schema</summary>
@@ -126,8 +186,8 @@ impl<'de> ::serde::Deserialize<'de> for CredentialId {
 ///      "minLength": 1
 ///    },
 ///    "issued": {
-///      "description": "The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.",
-///      "$ref": "#/definitions/IssuedCredential"
+///      "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.",
+///      "$ref": "#/definitions/CredentialReference"
 ///    },
 ///    "revokedAt": {
 ///      "description": "When the endorsement was revoked, or null while live.",
@@ -168,8 +228,8 @@ pub struct Endorsement {
     ///Community-scoped identifier for this endorsement row.
     #[serde(rename = "endorsementId")]
     pub endorsement_id: EndorsementEndorsementId,
-    ///The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.
-    pub issued: IssuedCredential,
+    ///A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
+    pub issued: CredentialReference,
     ///When the endorsement was revoked, or null while live.
     #[serde(
         rename = "revokedAt",
@@ -508,67 +568,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
-/**
-The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.
-
-SCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.
-
-`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.*/
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "IssuedCredential",
-///  "description": "\nThe receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\n\nSCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.\n\n`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.",
-///  "type": "object",
-///  "required": [
-///    "credential",
-///    "credentialId",
-///    "expiresAt"
-///  ],
-///  "properties": {
-///    "credential": {
-///      "description": "The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.",
-///      "type": "object"
-///    },
-///    "credentialId": {
-///      "$ref": "#/definitions/CredentialId"
-///    },
-///    "expiresAt": {
-///      "description": "When the credential's validUntil falls due.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "issuedAt": {
-///      "description": "When the credential was minted.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "issuedCredential"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct IssuedCredential {
-    ///The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
-    pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(rename = "credentialId")]
-    pub credential_id: CredentialId,
-    ///When the credential's validUntil falls due.
-    #[serde(rename = "expiresAt")]
-    pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///When the credential was minted.
-    #[serde(
-        rename = "issuedAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-}
 ///`Payload`
 ///
 /// <details><summary>JSON schema</summary>
@@ -867,14 +866,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/endorsements/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/IssuedCredential\",\n          \"description\": \"The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"IssuedCredential\": {\n      \"$anchor\": \"issuedCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\\n\\nSCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.\\n\\n`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"IssuedCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Endorsement\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page, or null when this is the last.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"description\": \"Approximate total matching endorsements, when the maintainer can cheaply estimate it.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Endorsements List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous page's nextCursor.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"includeRevoked\": {\n      \"description\": \"Include revoked rows. Defaults to true — both live and revoked rows surface; consumers filter on revokedAt.\",\n      \"type\": \"boolean\"\n    },\n    \"limit\": {\n      \"description\": \"Page size; the maintainer clamps to 1..=200 (default 50).\",\n      \"maximum\": 200,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"subjectDid\": {\n      \"description\": \"Filter to endorsements about this subject.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"typeUri\": {\n      \"description\": \"Filter to endorsements of this registered type.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Endorsements List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"CredentialReference\": {\n      \"$anchor\": \"credentialReference\",\n      \"additionalProperties\": false,\n      \"description\": \"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When it lapses, or null when it does not.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"CredentialReference\",\n      \"type\": \"object\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/CredentialReference\",\n          \"description\": \"A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Endorsement\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page, or null when this is the last.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"description\": \"Approximate total matching endorsements, when the maintainer can cheaply estimate it.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Endorsements List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous page's nextCursor.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"includeRevoked\": {\n      \"description\": \"Include revoked rows. Defaults to true — both live and revoked rows surface; consumers filter on revokedAt.\",\n      \"type\": \"boolean\"\n    },\n    \"limit\": {\n      \"description\": \"Page size; the maintainer clamps to 1..=200 (default 50).\",\n      \"maximum\": 200,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"subjectDid\": {\n      \"description\": \"Filter to endorsements about this subject.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"typeUri\": {\n      \"description\": \"Filter to endorsements of this registered type.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Endorsements List — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/endorsements/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/IssuedCredential\",\n          \"description\": \"The registry-wide issuance receipt — credentialId, the signed VEC, and expiry.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"IssuedCredential\": {\n      \"$anchor\": \"issuedCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successfully-minted Verifiable Credential: a stable handle for revocation and audit, the signed credential itself, and when it lapses.\\n\\nSCOPE — this is an *issuance* receipt, returned by the party that minted the credential. It is not the shape for a *delivery* receipt, where a holder hands an already-issued credential to a party that stores it: such a task returns a receipt naming what was stored (see vtc/members/vmc and vtc/join-requests/accept) and MUST NOT echo the credential back to the party that just sent it. Reaching for this definition on a delivery task is the mistake this paragraph exists to prevent.\\n\\n`additionalProperties` is false, so a specification needing extra members cannot compose this by `$ref` — `allOf` evaluates each subschema against the whole object and this one would reject them. vta/credentials/issue is that case: its response is this shape plus `supersedes` and `ext`, and it therefore states the members inline while `$ref`-ing the shared CredentialId. That is deliberate, not drift.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"IssuedCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Endorsement\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page, or null when this is the last.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"description\": \"Approximate total matching endorsements, when the maintainer can cheaply estimate it.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Endorsements List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"CredentialReference\": {\n      \"$anchor\": \"credentialReference\",\n      \"additionalProperties\": false,\n      \"description\": \"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When it lapses, or null when it does not.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"CredentialReference\",\n      \"type\": \"object\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/CredentialReference\",\n          \"description\": \"A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Endorsement\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page, or null when this is the last.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"description\": \"Approximate total matching endorsements, when the maintainer can cheaply estimate it.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Endorsements List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 #[cfg(test)]
