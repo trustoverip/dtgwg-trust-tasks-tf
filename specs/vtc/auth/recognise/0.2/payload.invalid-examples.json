@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "presentation": {},
+      "__x__": true
+    }
+  },
+  {
+    "note": "`presentation` is required.",
+    "payload": {}
+  },
+  {
+    "note": "A 0.1-shaped body is rejected: `vec` and `vmc` were replaced by a holder-signed presentation in 0.2, and are now unknown members. Pins that a bare credential pair — the replayable form — cannot reach a 0.2 consumer.",
+    "payload": {
+      "vec": {},
+      "vmc": {}
+    }
+  }
+]

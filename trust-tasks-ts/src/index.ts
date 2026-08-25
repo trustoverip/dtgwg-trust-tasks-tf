@@ -326,6 +326,7 @@ export * as VtaWebvhServersRegister_v1_0 from "./vta/webvh/servers/register/1.0/
 export * as VtaWebvhServersRemove_v1_0 from "./vta/webvh/servers/remove/1.0/payload.js";
 export * as VtaWebvhServersRetireOrphan_v0_1 from "./vta/webvh/servers/retire-orphan/0.1/payload.js";
 export * as BackupShared_v0_1 from "./vtc/_shared/0.1/backup.js";
+export * as CeremonyShared_v0_1 from "./vtc/_shared/0.1/ceremony.js";
 export * as CommunityShared_v0_1 from "./vtc/_shared/0.1/community.js";
 export * as ConfigPortabilityShared_v0_1 from "./vtc/_shared/0.1/config-portability.js";
 export * as EndorsementTypeShared_v0_1 from "./vtc/_shared/0.1/endorsement-type.js";
@@ -340,6 +341,7 @@ export * as VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.
 export * as VtcAdminInvitesRevoke_v0_1 from "./vtc/admin/invites/revoke/0.1/payload.js";
 export * as VtcAuthAdminSession_v0_1 from "./vtc/auth/admin-session/0.1/payload.js";
 export * as VtcAuthRecognise_v0_1 from "./vtc/auth/recognise/0.1/payload.js";
+export * as VtcAuthRecognise_v0_2 from "./vtc/auth/recognise/0.2/payload.js";
 export * as VtcAuthRecogniseChallenge_v0_1 from "./vtc/auth/recognise/challenge/0.1/payload.js";
 export * as VtcBackupExport_v0_1 from "./vtc/backup/export/0.1/payload.js";
 export * as VtcBackupImport_v0_1 from "./vtc/backup/import/0.1/payload.js";
@@ -373,6 +375,7 @@ export * as VtcJoinRequestsShow_v0_1 from "./vtc/join-requests/show/0.1/payload.
 export * as VtcJoinRequestsStatus_v0_1 from "./vtc/join-requests/status/0.1/payload.js";
 export * as VtcJoinRequestsSubmitReceipt_v0_1 from "./vtc/join-requests/submit-receipt/0.1/payload.js";
 export * as VtcJoinRequestsSubmit_v0_1 from "./vtc/join-requests/submit/0.1/payload.js";
+export * as VtcJoinRequestsSubmit_v0_2 from "./vtc/join-requests/submit/0.2/payload.js";
 export * as VtcMembersAdminRemove_v0_1 from "./vtc/members/admin-remove/0.1/payload.js";
 export * as VtcMembersList_v0_1 from "./vtc/members/list/0.1/payload.js";
 export * as VtcMembersPersonhoodAssert_v0_1 from "./vtc/members/personhood/assert/0.1/payload.js";

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/auth/recognise/0.2",
+  "title": "VTC Auth Recognise — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "presentation"
+  ],
+  "properties": {
+    "presentation": {
+      "type": "object",
+      "description": "A holder-signed W3C Verifiable Presentation embedding the foreign membership and endorsement credentials in `verifiableCredential`.\n\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Auth Recognise — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "data"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "pattern": "^xc-",
+          "description": "A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions."
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "accessToken",
+            "accessExpiresAt",
+            "foreignIssuerDid",
+            "mappedRole"
+          ],
+          "properties": {
+            "accessToken": {
+              "type": "string"
+            },
+            "accessExpiresAt": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix-seconds expiry, clamped to min(local default, earliest of the vec/vmc validUntil)."
+            },
+            "foreignIssuerDid": {
+              "type": "string"
+            },
+            "mappedRole": {
+              "type": "string",
+              "description": "The LOCAL role from cross_community_roles policy — not the foreign role."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

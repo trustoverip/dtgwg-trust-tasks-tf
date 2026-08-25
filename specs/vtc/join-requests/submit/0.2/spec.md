@@ -1,10 +1,9 @@
 ---
 slug: vtc/join-requests/submit
-version: "0.1"
+version: "0.2"
 title: VTC Join-Requests — Submit
 summary: An applicant submits a request to join a Verifiable Trust Community, presenting the credentials the community's join policy requires.
-status: retired
-supersededBy: vtc/join-requests/submit/0.2
+status: draft
 targetFrameworkVersion: "0.2"
 category: governance
 keywords:
@@ -44,13 +43,21 @@ errorCodes:
 
 The **VTC Join-Requests — Submit** Trust Task opens an application to join a community. The applicant presents a W3C Verifiable Presentation (`vp`) whose credentials satisfy the community's join policy, and optionally consents to trust-registry publication. On acceptance the community records a **pending** request and returns its `requestId`, which the applicant polls with [`vtc/join-requests/status`](../../status/0.1/).
 
+### Changes from 0.1
+
+`0.1` returned `status`, a `const: "pending"`. A submission has four outcomes, not one: the policy may admit outright, refuse outright, park the request for a human or quorum decision, or ask the applicant for more evidence. A constant can express one of them, so the other three had to be reported as `pending` or not reported at all — and an applicant told "pending" cannot tell whether to wait or to act.
+
+`0.2` returns a `verdict` — `effect` plus its effect-dependent detail — from the new shared `vtc/_shared/0.1/ceremony` component. `pending` maps onto `refer`, which is the outcome it actually described: parked, waiting on the community.
+
+The distinction that matters most is between `refer` and `requestMore`. Both mean "not decided", and they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant and names what it needs. Collapsing them is what makes a join flow feel like a black box.
+
 The applicant identity is the **document proof's signer** — there is no `applicantDid` or `signature` field. This is the transport-agnostic form: over DIDComm the authcrypt sender is the signer, over REST/TSP the framework proof is, and the payload is identical on every transport.
 
 ## Conformance
 
 Producer: supply `vp` (its holder MUST equal the proof signer); optionally `registryConsent` and `extensions`. Carry a proof.
 
-Consumer: verify the proof and the presentation; if the VP fails verification or the holder mismatches the signer, return `presentationInvalid`; if it does not satisfy the active join policy, return `policyUnsatisfied`. Otherwise create a pending request bound to the applicant DID and return `{ requestId, status: pending }`.
+Consumer: verify the proof and the presentation; if the VP fails verification or the holder mismatches the signer, return `presentationInvalid`; if it does not satisfy the active join policy, return `policyUnsatisfied`. Otherwise evaluate the join policy and return `{ requestId, verdict }`, where the verdict carries what the policy decided and the detail that decision implies.
 
 ## Authorization
 
