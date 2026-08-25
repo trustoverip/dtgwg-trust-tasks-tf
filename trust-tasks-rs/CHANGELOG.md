@@ -29,6 +29,37 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.11] - 2026-08-25
+
+### Added
+
+- **`vtc/install/claim/start/0.2`** and **`vtc/install/claim/finish/0.2`** —
+  the first-admin enrolment pair without the DID-binding challenge and
+  signature.
+
+  `0.1` required the installer to sign a 32-byte server challenge with the
+  candidate `did:key` and submit the signature at `finish`. Two things are
+  wrong with that. The admin DID is *derived from* the passkey's public key,
+  so a signature by that key proves nothing the WebAuthn attestation has not
+  already proven — it is one key asserting control of itself, twice. And it
+  cannot be produced: WebAuthn never exposes the credential private key to
+  the page, so the only way to satisfy `0.1` is to reach into a software
+  authenticator for private-key material, which is what a hardware
+  authenticator exists to prevent.
+
+  Proof of control in `0.2` is the attestation, and the DID follows from the
+  key it attests. The `bindingInvalid` error code is kept and now refers to
+  the attestation alone.
+
+  Breaking — two required members removed — but released as a MINOR increment
+  under SPEC §5.2, which permits that for `draft` artifacts.
+
+### Changed
+
+- **`vtc/install/claim/start/0.1`** and **`finish/0.1`** are now `retired`,
+  declaring `supersededBy` the `0.2` pair. A draft that cannot be implemented
+  should not stay open for new adoption.
+
 ## [0.11.10] - 2026-08-25
 
 ### Added
