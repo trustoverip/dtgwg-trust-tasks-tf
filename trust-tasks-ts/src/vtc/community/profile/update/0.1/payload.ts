@@ -14,11 +14,33 @@ export interface VTCCommunityProfileUpdatePayload {
    * Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged.
    */
   relationshipIdentifierDefault?: "attributed" | "pairwise";
+  personhood?: PersonhoodGovernance;
   /**
    * Opaque community-defined extension bag (maintainer-capped).
    */
   extensions?: {};
   ext?: Ext;
+}
+/**
+ * Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged.
+ */
+export interface PersonhoodGovernance {
+  /**
+   * Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
+   */
+  realHuman?: boolean;
+  /**
+   * Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says "exactly one membership in that VTC" — so a single community can satisfy it without any network above it.
+   */
+  singleMembership?: boolean;
+  /**
+   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
+   */
+  acceptedIdvps?: string[];
+  /**
+   * Where the governance framework these assertions refer to can be read.
+   */
+  governanceFrameworkUrl?: string | null;
 }
 /**
  * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
@@ -53,6 +75,28 @@ export interface CommunityProfile {
    * Trust-registry reachability. Populated on reads; not settable.
    */
   registryStatus?: "active" | "degraded";
+  personhood?: PersonhoodGovernance1;
+}
+/**
+ * What this community's governance asserts about the personhood of its members.
+ */
+export interface PersonhoodGovernance1 {
+  /**
+   * Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
+   */
+  realHuman?: boolean;
+  /**
+   * Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says "exactly one membership in that VTC" — so a single community can satisfy it without any network above it.
+   */
+  singleMembership?: boolean;
+  /**
+   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
+   */
+  acceptedIdvps?: string[];
+  /**
+   * Where the governance framework these assertions refer to can be read.
+   */
+  governanceFrameworkUrl?: string | null;
 }
 
 /** Trust Task type URI. */
@@ -119,6 +163,10 @@ export const PAYLOAD_SCHEMA = {
         "pairwise"
       ],
       "description": "Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged."
+    },
+    "personhood": {
+      "$ref": "#/$defs/PersonhoodGovernance",
+      "description": "Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged."
     },
     "extensions": {
       "type": "object",
@@ -221,6 +269,42 @@ export const PAYLOAD_SCHEMA = {
             "degraded"
           ],
           "description": "Trust-registry reachability. Populated on reads; not settable."
+        },
+        "personhood": {
+          "$ref": "#/$defs/PersonhoodGovernance",
+          "description": "What this community's governance asserts about the personhood of its members."
+        }
+      }
+    },
+    "PersonhoodGovernance": {
+      "$anchor": "personhoodGovernance",
+      "title": "PersonhoodGovernance",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
+      "properties": {
+        "realHuman": {
+          "type": "boolean",
+          "description": "Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on."
+        },
+        "singleMembership": {
+          "type": "boolean",
+          "description": "Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \"exactly one membership in that VTC\" — so a single community can satisfy it without any network above it."
+        },
+        "acceptedIdvps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted."
+        },
+        "governanceFrameworkUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Where the governance framework these assertions refer to can be read."
         }
       }
     }
@@ -324,6 +408,42 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "degraded"
           ],
           "description": "Trust-registry reachability. Populated on reads; not settable."
+        },
+        "personhood": {
+          "$ref": "#/$defs/PersonhoodGovernance",
+          "description": "What this community's governance asserts about the personhood of its members."
+        }
+      }
+    },
+    "PersonhoodGovernance": {
+      "$anchor": "personhoodGovernance",
+      "title": "PersonhoodGovernance",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
+      "properties": {
+        "realHuman": {
+          "type": "boolean",
+          "description": "Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on."
+        },
+        "singleMembership": {
+          "type": "boolean",
+          "description": "Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \"exactly one membership in that VTC\" — so a single community can satisfy it without any network above it."
+        },
+        "acceptedIdvps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted."
+        },
+        "governanceFrameworkUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Where the governance framework these assertions refer to can be read."
         }
       }
     }
