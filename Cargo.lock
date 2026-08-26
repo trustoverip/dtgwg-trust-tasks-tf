@@ -6452,6 +6452,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "trust-tasks"
+version = "0.1.0"
+dependencies = [
+ "affinidi-secrets-resolver",
+ "chrono",
+ "tokio",
+ "trust-tasks-capability-client",
+ "trust-tasks-ceremony",
+ "trust-tasks-didcomm",
+ "trust-tasks-didcomm-v1",
+ "trust-tasks-https",
+ "trust-tasks-proof",
+ "trust-tasks-rs",
+ "trust-tasks-tsp",
+ "uuid",
+]
+
+[[package]]
 name = "trust-tasks-capability-client"
 version = "0.14.0"
 dependencies = [
