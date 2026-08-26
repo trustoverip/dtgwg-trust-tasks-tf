@@ -29,6 +29,7 @@ import {
   writeAllowlist
 } from './lib/security-privacy.mjs';
 import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
+import { createErrorCodeCasingLint } from './lib/error-code-casing.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -1183,6 +1184,7 @@ function main() {
     console.warn('No specs found under specs/<slug>/<version>/.');
   }
   checkSecurityPrivacySections(entries, { warn, fail, log: console.log });
+  const errorCodeCasing = createErrorCodeCasingLint({ fail, log: console.log });
 
   // Discover shared/framework/method-extension schemas first so we can
   // resolve $refs from payload schemas against them when building tasks.
@@ -1225,6 +1227,7 @@ function main() {
       warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
     checkErrorCodeNamespaces(meta, rel);
+    errorCodeCasing.check(meta, rel);
     checkIdentifierScopeJustification(meta, body, rel);
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
@@ -1264,6 +1267,7 @@ function main() {
       `while returning released material` +
       `${disclosureFloorOffenders ? ' (warning — set TT_STRICT_DISCLOSURE=1 to fail the build)' : ''}`
   );
+  errorCodeCasing.report();
 
   // wireCompatibleWith referential integrity: the named predecessor must be a
   // real, strictly-earlier version of the SAME slug. The field's whole value is
