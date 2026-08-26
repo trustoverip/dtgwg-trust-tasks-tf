@@ -1014,10 +1014,10 @@ Under `identityMismatch` a *consumer* **SHOULD** omit `inResponseTo.id`: per [§
 |---|---|---|---|
 | `code` | **MUST** | string | A short identifier for the failure category. **MUST** be one of the codes in [§8.3](#83-standard-error-codes) or an extended code as defined in [§8.5](#85-extension-by-individual-trust-task-specifications). |
 | `inResponseTo` | **SHOULD** | object | Identifies the *Trust Task document* this error reports on: `typeUri` (its `type`, including any fragment) and `id` (its *document identifier*). See below. |
-| `message` | **SHOULD** | string | A human-readable description of the error. Non-normative; intended for logs and operator UI. |
+| `message` | **SHOULD** | string | A human-readable description of the error, subject to the disclosure rule of [§8.2.1](#821-what-a-message-may-not-say). Non-normative as to the cause of the failure; intended for logs and operator UI. |
 | `retryable` | **MUST** | boolean | `true` if the *producer* of the original document **MAY** retry the task; `false` if retrying with the same document or credentials is not expected to succeed. |
 | `retryAfter` | **MAY** | string (date-time) | An [[RFC3339]] timestamp before which the *producer* **SHOULD NOT** retry. Meaningful only when `retryable` is `true`. |
-| `details` | **MAY** | object | Task-specific extension data; see [§8.5](#85-extension-by-individual-trust-task-specifications). |
+| `details` | **MAY** | object | Task-specific extension data; see [§8.5](#85-extension-by-individual-trust-task-specifications). Bounded per [§8.2.2](#822-bounding-details). The framework itself defines the shape carried under the `cancelled` code; see [§8.3.1](#831-effects-reported-with-cancelled). |
 
 > **Example 5 — An error response** *(non-normative)*
 >
@@ -1045,6 +1045,28 @@ Under `identityMismatch` a *consumer* **SHOULD** omit `inResponseTo.id`: per [§
 > }
 > ```
 
+#### 8.2.1 What a `message` may not say
+
+The `message` member is a **wire-exposed value**, and it is exposed under the least favourable conditions the framework has: an *error response* is emitted to a party the *consumer* has, by construction, just failed to validate; it is frequently emitted before any authorization decision has been reached ([§7.2](#72-consumer-requirements) item 10); and it is retainable by whoever receives it.
+
+A *consumer* emitting an *error response* **MUST NOT** place in `message`:
+
+1. **Consumer-internal state** — an internal identifier, a queue or worker name, a policy or rule name, a host name, a file or database path, a stack frame, or a software version.
+2. **The contested value of a mismatched party** — the in-band value the *consumer* rejected, or the transport-authenticated identity it expected instead. This is the rule already stated for `identityMismatch` in [§8.1](#81-the-trust-task-error-specification); it is restated here because it is not peculiar to that code.
+3. **Resolver, verifier, or key-status internals** — the URL the *consumer* dereferenced, a resolver's own error text, the verification method it tried, the status list it consulted, or the reason a signature failed beyond the fact that it did.
+
+A `message` **MUST** instead be derived from the `code` identifier and from the *Trust Task specification*'s public vocabulary — the same material the receiving party could have read for itself.
+
+This applies to **every** code in [§8.3](#83-standard-error-codes) and to every extended code, not only to `identityMismatch`. The rule was written for that code first because the leak is most obvious there, not because that is where it applies. Every other rejection is emitted on the same path, to the same possibly-unauthenticated party, and any consumer-internal fact placed in the message makes the *error response* an oracle: a sender that can vary one member of a document and read the message back can enumerate which identities the *consumer* recognizes, which identifiers it can resolve, and which of its dependencies are currently reachable — an identity- and reachability-probing instrument the *consumer* pays for and operates on the sender's behalf. The *consumer*'s own logs are the correct place for everything this rule excludes; nothing here bars recording it locally, only sending it.
+
+#### 8.2.2 Bounding `details`
+
+`details` is the one member of the error payload whose size the framework does not otherwise constrain, and it travels in the direction no bound reaches: a *producer* that bounded its request bounded nothing about the reply. It is also emitted on a failure path — the path least exercised in testing and most readily reached by an unauthenticated party.
+
+Accordingly, a *Trust Task specification* that defines a `details` shape for a code **MUST** declare a bound for it: a maximum serialized size, a maximum number of members, or both, alongside the JSON Schema fragment required by [§8.5](#85-extension-by-individual-trust-task-specifications). Where no bound is declared for the code being emitted, a *consumer* **MUST NOT** emit a `details` object exceeding **4096 bytes** of [[RFC8785]]-canonicalized UTF-8 or **16** immediate members.
+
+A party receiving a `details` object that exceeds either bound **MUST NOT** reject the *error response* on that account — the response is already a failure report, and discarding it loses the `code` the party needs — but **MUST** ignore the contents of `details` and **MUST** still honor `code`, `retryable`, and `retryAfter`, on the same terms as the fallback for an unrecognized extended code. Any free-text member inside `details` is subject to [§7.3](#73-specification-requirements) item 19 and to the disclosure rule of [§8.2.1](#821-what-a-message-may-not-say); `details` is not a route around either.
+
 ### 8.3 Standard error codes
 
 The framework defines the error codes listed below. A *conforming consumer* **MUST** recognize each of these codes and **MUST** apply the corresponding semantics.
@@ -1067,6 +1089,27 @@ The framework defines the error codes listed below. A *conforming consumer* **MU
 | `internalError` | The *recipient party* encountered an unexpected internal failure. | `true` |
 
 The "Default `retryable`" column gives the value an emitter of an error response **SHOULD** use unless task-specific knowledge dictates otherwise. The actual `retryable` value carried in a given *error response* is authoritative.
+
+#### 8.3.1 Effects reported with `cancelled`
+
+A *consumer* emitting `cancelled` has stopped work it had accepted, and [§7.2](#72-consumer-requirements) item 12 already obliges it to distinguish **partial execution** from a task that was never begun — because a *producer* that cannot tell the two apart cannot decide whether to reissue, and because [§12.4](#124-control-does-not-roll-back) makes clear that nothing is undone by stopping. What that obligation lacked was a shape: the same fact, reported to the same *producer*, is machine-readable when the *producer* asked for the stop and prose when the *consumer* decided on it.
+
+The framework therefore defines the `details` shape for the `cancelled` code as a single member, `effects`, whose value is an array of effect objects:
+
+| Member | Required | Type | Description |
+|---|---|---|---|
+| `description` | **MUST** | string | Human-readable statement of the effect that occurred. |
+| `ref` | **MAY** | string | An identifier for the effect where one exists — a credential identifier, a record identifier, a transaction reference — so that a compensating task can name it. |
+| `reversible` | **MAY** | boolean | Whether the *consumer* believes this effect can be compensated by a further *Trust Task*. Advisory. Absent means unknown, which a *producer* **SHOULD** treat as no weaker than `false`. |
+
+This is deliberately the **same** array-of-effects shape the `trust-task-control` specification defines for the response to a *producer*-requested cancellation. The two report the identical fact — what had already landed when the stop took hold — and differ only in which party decided, which is a distinction the framework keeps precisely so that neither party has to infer it ([§12](#12-task-control)). A *producer* deciding whether to invoke a compensating task should not have to parse that decision out of prose in one direction and read it from an array in the other.
+
+The rules:
+
+1. A *consumer* emitting `cancelled` after one or more irreversible or externally visible effects have occurred **MUST** populate `effects` with one entry per effect.
+2. An `effects` value of `[]` means **nothing landed**. An **absent** `effects` member means the *consumer* did not report, and a *producer* **MUST NOT** read its absence as "nothing landed" — the general rule of [§4.12](#412-document-lifecycle) applies to an omitted member as it does to an absent reply.
+3. `description` is free text and is bound by [§7.3](#73-specification-requirements) item 19 and by [§8.2.1](#821-what-a-message-may-not-say). It names the effect on the *recipient party*'s own state, which is what the *producer* needs; it **MUST NOT** name the internal mechanism that produced it.
+4. `effects` counts toward the bound of [§8.2.2](#822-bounding-details). A *consumer* whose effect list would exceed it reports the effects that are consequential for the *producer* and says so in the last `description`, rather than truncating silently.
 
 ### 8.4 Retry semantics
 
@@ -1127,14 +1170,20 @@ The framework reserves the following additional response-type *Trust Task specif
 
 | Slug | Purpose |
 |---|---|
-| `trust-task-ok` | A courtesy acknowledgement — confirming that a task defining no success response of its own was received and performed, and optionally surfacing opaque references the *consumer* chose to share. Never relied upon. |
+| `trust-task-ok` | **Deprecated at framework version 0.5.** A courtesy acknowledgement — confirming that a task defining no success response of its own was received and performed, and optionally surfacing opaque references the *consumer* chose to share. Never relied upon. Superseded by the empty `#response` of [§4.4.2](#442-acknowledging-a-fire-and-forget-task). |
 | `trust-task-next-step` | A recipient-suggested continuation — indicating that the original task was understood but cannot complete in isolation, together with the next *Trust Task* the *recipient party* expects in order to proceed. |
 
 `trust-task-next-step` is published; its registry entry at `https://trusttasks.org/spec/trust-task-next-step/0.1` defines the normative `payload` shape and conformance requirements, in the same relationship to this section that the `trust-task-discovery` entry has to [§11](#11-discovery-and-capability-negotiation). A *next step* is a **third** disposition alongside the success response and the *error response* of this section: it reports that the originating task was understood and is **blocked**, leaving the exchange open where the other two close it. A *consumer* **MUST NOT** report a blocked task as an *error response*, nor a refusal as a *next step*; the three replies are not interchangeable. A *next step* confers no authorization — the *Type URI* it names is a suggestion the receiving party evaluates under its own policy, on the same advisory footing as a discovery response ([§11.4](#114-status-of-the-response)).
 
-`trust-task-ok` is published; its registry entry at `https://trusttasks.org/spec/trust-task-ok/0.1` defines the normative `payload` shape. It is a **courtesy acknowledgement**: a *consumer* **MAY** return one to confirm that it received and performed a *Trust Task* whose specification defines no success-response document of its own, and **MUST NOT** send one in place of a response a specification does define — two success dispositions for one task leave a *producer* unable to tell which is authoritative.
+`trust-task-ok` is published at `https://trusttasks.org/spec/trust-task-ok/0.1`, and is **deprecated as of framework version 0.5** in favour of the empty `#response` acknowledgement defined in [§4.4.2](#442-acknowledging-a-fire-and-forget-task). It remains a **courtesy acknowledgement** with the meaning it has always had: a *consumer* **MAY** return one to confirm that it received and performed a *Trust Task* whose specification defines no success-response document of its own, and **MUST NOT** send one in place of a response a specification does define — two success dispositions for one task leave a *producer* unable to tell which is authoritative.
 
-Its weakness is deliberate. A *producer* **MUST NOT** rely on receiving an acknowledgement, and **the absence of one carries no information**: a *consumer* may not implement the specification, may implement it and not send one, or the document may be lost. A *producer* that reads absence as failure and reissues a *consequential Trust Task* causes exactly the duplicate effect [§7.2](#72-consumer-requirements) item 11 exists to prevent. Accordingly an acknowledgement that genuinely matters — one a third party will rely on, audit, or dispute — is **not** this document: such a task declares its own success response, or a dedicated receipt task with its own proof requirement.
+Its weakness is deliberate, and is also why it is deprecated. A *producer* **MUST NOT** rely on receiving an acknowledgement, and **the absence of one carries no information**: a *consumer* may not implement the specification, may implement it and not send one, or the document may be lost. A *producer* that reads absence as failure and reissues a *consequential Trust Task* causes exactly the duplicate effect [§7.2](#72-consumer-requirements) item 11 exists to prevent. A whole *Trust Task specification* — a registry entry, a schema, a generated type in each supported language, a `type` a *producer* must learn to recognize that bears no relation to the one it sent — to carry a fact that may not be relied upon is more machinery than the fact is worth, and the reply the *producer* already awaits can carry it instead. An acknowledgement that genuinely matters is **not** either form: such a task declares its own success response, or a dedicated receipt task with its own proof requirement.
+
+The consequences of deprecation are deliberately small, because the slug's own weakness makes them small:
+
+* A *consumer* **SHOULD NOT** emit a `trust-task-ok` document from this version onward, and **SHOULD** emit the empty `#response` instead.
+* A *producer* **MUST** continue to accept a `trust-task-ok` document, on the terms above, for as long as the specification is served. It never conveyed anything a *producer* was entitled to act on, so accepting it costs nothing.
+* The slug and its *Type URI* remain **RESERVED** under [§6.1](#61-type-uri) permanently, whatever becomes of the specification published under it. Retirement of the registry entry itself follows [§5.3](#53-maturity-levels) and is a matter for the registry, not for this document.
 
 Implementations encountering a *Trust Task document* of a reserved type whose specification is not yet published **MAY** ignore the document or **MAY** return an `unsupportedVersion` *error response*.
 
@@ -1233,7 +1282,7 @@ This consideration does **not** apply when the schema is embedded with the *cons
 
 ### 10.4 Error-response identity leakage
 
-A *consumer* emitting an *error response* under [§8](#8-error-responses) **MUST** treat the error response's `payload.message` as a wire-exposed value. Free-text messages that reveal the *consumer*'s expected transport-authenticated identity, the contested in-band value of a mismatched party, or other consumer-internal state convert each error response into an identity-probing oracle for an unauthenticated *producer*. The rule for `identityMismatch` is stated in [§8.1](#81-the-trust-task-error-specification); the same principle applies to every standard code: error messages **SHOULD** be derived from the code identifier and the *Trust Task specification*'s public vocabulary, not from consumer-side authentication context.
+A *consumer* emitting an *error response* under [§8](#8-error-responses) treats the error response's `payload.message` as a wire-exposed value. Free-text messages that reveal the *consumer*'s expected transport-authenticated identity, the contested in-band value of a mismatched party, or other consumer-internal state convert each error response into an identity- and reachability-probing oracle for an unauthenticated *producer*. This was guidance in earlier revisions and is now normative for every code, extended codes included: the enumerated prohibitions and the reasoning are in [§8.2.1](#821-what-a-message-may-not-say), and the corresponding bound on `details` is in [§8.2.2](#822-bounding-details). The code-specific rule for `identityMismatch` — which also governs who the response is addressed to — remains in [§8.1](#81-the-trust-task-error-specification).
 
 ## 11. Discovery and capability negotiation
 
