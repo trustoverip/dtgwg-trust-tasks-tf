@@ -104,43 +104,61 @@ front-matter → policy derivation rather than importing the generator's. Do not
 DRY it up: sharing the helper would make it assert that the generator agrees
 with itself, which is the property that already held while both defects shipped.
 
-## ⚠️ Changing a spec or payload schema — bump and republish the libraries
+## ⚠️ Changing a spec or payload schema — regenerate the libraries
 
 The Rust and TS client libraries are generated from the specs. When you add or
 change anything under `specs/` (a new task, a schema edit, a new category used by a
-task), you MUST regenerate the bindings and bump the library versions. Both must be
-done together. Drift CI now guards **both** sides — `rust.yml` has `codegen-drift`
-and `ts.yml` has `bindings-drift` (added after PR #85 → #86, where only Rust was
-regenerated) — but nothing checks that you bumped the versions, so that part is
-still easy to forget.
-
-**Publishing itself is automated.** `.github/workflows/publish.yml` runs on every
-push to `main` and publishes each library to its registry — the four `publish = true`
-crates to crates.io (`trust-tasks-rs`, then the `-https` / `-didcomm` / `-proof`
-bindings, in that dependency order) and `@openvtc/trust-tasks` to npm — but **only
-when the manifest version is newer than what's already published**. So your job is
-just to bump the versions in the PR; the merge to `main` releases them. A push whose
-versions are unchanged is a no-op. Both registries use **OIDC trusted publishing**
-(no long-lived tokens; each crate needs its own Trusted Publisher configured on
-crates.io), and the Rust side additionally respects each crate's `publish` flag —
-`trust-tasks-codegen` is `publish = false` and is never released.
-
-Per the established release housekeeping (#82, #86 precedent):
+task), you MUST regenerate **both** sides in the same PR. Drift CI guards both —
+`rust.yml` has `codegen-drift` and `ts.yml` has `bindings-drift` (added after PR
+#85 → #86, where only Rust was regenerated).
 
 1. **Regenerate Rust bindings:** `cargo run -p trust-tasks-codegen && cargo fmt --all`
    (commit the diff — CI fails on drift).
 2. **Regenerate TS bindings:** `npm run build-ts-bindings`
    (updates `trust-tasks-ts/src/<slug>/...` + `src/index.ts` exports).
-3. **Bump `trust-tasks-rs`:** version in `trust-tasks-rs/Cargo.toml` + a
-   `trust-tasks-rs/CHANGELOG.md` entry, then refresh `Cargo.lock`.
-4. **Bump `@openvtc/trust-tasks`:** version in `trust-tasks-ts/package.json`.
-5. Keep the two library versions in step with each other (both went 0.2.1 → 0.2.2
-   for the chat change).
-6. **Don't publish by hand** — merging the version bump to `main` triggers
-   `publish.yml`, which releases to crates.io and npm automatically (see above).
+
+**Do NOT bump a version or write a CHANGELOG entry.** That changed — see below.
 
 Additive spec changes are a patch/minor bump; breaking schema changes require a new
 spec **version** folder (per SPEC §5), not an in-place edit.
+
+## ⚠️ Merging is not releasing — read RELEASING.md before touching a version
+
+**This is the part of this file that most recently changed. If you have a
+recollection that "your job is just to bump the versions in the PR; the merge to
+`main` releases them" — that is the OLD flow and it is gone.**
+
+`.github/workflows/publish.yml` no longer publishes whatever version is newer
+than the registry. It runs [release-plz](https://release-plz.dev), which keeps a
+single **Release PR** up to date with the version bumps and changelog entries the
+merged commits imply; merging *that* PR is the release. A companion job does the
+same for `@openvtc/trust-tasks` via `scripts/release-ts-pr.sh`, because
+release-plz is Rust-only and cannot bump a `package.json`.
+
+Consequences for anything you do in this repo:
+
+- **Never edit a `version = ` in a `Cargo.toml`, or `"version"` in
+  `trust-tasks-ts/package.json`.** They are assigned by the Release PR. A version
+  in a feature PR collides with every other open PR touching that package.
+- **Never hand-write a `CHANGELOG.md` entry.** They are generated from
+  conventional commits by `cliff.toml`. The commit body is included verbatim.
+- **The PR title is load-bearing.** PRs squash-merge, so the title becomes the
+  commit subject, which is both the published changelog entry and the signal that
+  sizes the bump. `.github/workflows/commit-lint.yml` enforces the format.
+  `spec(...)` is allowed but is **not** a standard type, so release-plz scores it
+  as a patch — use `feat(<slug>):` when you add a spec family.
+- **The per-PR version-bump gates are gone** from `rust.yml` and `ts.yml`. `main`
+  is legitimately ahead of both registries between releases; those jobs would now
+  fail every ordinary PR.
+- `trust-tasks-codegen` is still `publish = false` and is never released.
+
+Both registries use **OIDC trusted publishing** (no long-lived tokens). Every
+crate's Trusted Publisher is registered against the workflow **filename**
+`publish.yml` — renaming that file breaks the OIDC exchange before any release
+logic runs.
+
+Full details, including the one-time tag seeding the first release depends on:
+**`RELEASING.md`**.
 
 ### ⚠️ Library versions are semver over the *library's* API, not the framework's
 
@@ -159,8 +177,8 @@ whether a `.json` file changed.
 `-didcomm-v1` — **six** crates — each declare
 `trust-tasks-rs = { path = "…", version = "<leading>" }`. Moving the leading
 component means updating all six requirements and releasing those crates too,
-in the dependency order `publish.yml` uses. `cargo check` fails immediately if
-you miss one, so the trap is discovering it mid-release rather than planning
+and release-plz will release those crates too. `cargo check` fails immediately
+if you miss one, so the trap is discovering it mid-review rather than planning
 for it. (`trust-tasks-ceremony` does not depend on `trust-tasks-rs` and is not
 part of the set.) Don't hard-code the current numbers here — read them from the
 manifests; this note has already been stale once, claiming five crates at
@@ -220,8 +238,9 @@ The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push 
 `website/specs/`, `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.
 
-The libraries publish via `.github/workflows/publish.yml` on push to `main`, version-
-gated so only a bumped manifest releases (see the bump-and-republish callout above).
+The libraries publish via `.github/workflows/publish.yml`, but **not on merge** —
+that workflow keeps a Release PR up to date, and merging the Release PR is the
+release. See `RELEASING.md` and the callout above.
 
 ## PR conventions
 
