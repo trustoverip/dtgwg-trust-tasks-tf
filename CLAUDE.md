@@ -118,9 +118,12 @@ task), you MUST regenerate **both** sides in the same PR. Drift CI guards both �
    (updates `trust-tasks-ts/src/<slug>/...` + `src/index.ts` exports).
 
 **Do NOT bump a version or write a CHANGELOG entry.** That changed — see below.
+What you owe the release instead is a conventional-commit PR title: `feat(<slug>):`
+when you ADD a spec family (additive API surface in both libraries), `spec(<slug>):`
+for an edit inside one, and a trailing `!` when it breaks a consumer.
 
-Additive spec changes are a patch/minor bump; breaking schema changes require a new
-spec **version** folder (per SPEC §5), not an in-place edit.
+Breaking schema changes require a new spec **version** folder (per SPEC §5), not an
+in-place edit.
 
 ## ⚠️ Merging is not releasing — read RELEASING.md before touching a version
 
