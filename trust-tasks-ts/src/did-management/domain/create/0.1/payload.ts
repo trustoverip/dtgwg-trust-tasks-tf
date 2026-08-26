@@ -56,7 +56,8 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 256
     },
     "setAsDefault": {
       "type": "boolean",

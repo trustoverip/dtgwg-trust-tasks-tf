@@ -141,6 +141,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "label": {
       "type": "string",
+      "maxLength": 256,
       "description": "Operator-facing audit label."
     },
     "expectedVersionId": {

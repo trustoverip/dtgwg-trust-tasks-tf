@@ -117,6 +117,7 @@ export const PAYLOAD_SCHEMA = {
     "reason": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 500,
       "description": "Human-readable explanation of WHY the relying party is asking (e.g. \"confirm transfer of 1000 USD to bob.example\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently."
     },
     "targetAcr": {
@@ -170,6 +171,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "reason": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Required when status is `refused`."
         },
         "ext": {
@@ -287,6 +289,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "reason": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Required when status is `refused`."
         },
         "ext": {

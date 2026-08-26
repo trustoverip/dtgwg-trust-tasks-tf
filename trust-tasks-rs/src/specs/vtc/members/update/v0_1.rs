@@ -201,7 +201,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "type": [
 ///        "string",
 ///        "null"
-///      ]
+///      ],
+///      "maxLength": 256
 ///    },
 ///    "memberVmcId": {
 ///      "description": "`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.",
@@ -288,7 +289,7 @@ pub struct MemberResponse {
     pub joined_via_invitation: ::std::option::Option<bool>,
     ///Optional human-readable label.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<::std::string::String>,
+    pub label: ::std::option::Option<MemberResponseLabel>,
     ///`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.
     #[serde(
         rename = "memberVmcId",
@@ -484,6 +485,75 @@ impl<'de> ::serde::Deserialize<'de> for MemberResponseDid {
             })
     }
 }
+///Optional human-readable label.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable label.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct MemberResponseLabel(::std::string::String);
+impl ::std::ops::Deref for MemberResponseLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<MemberResponseLabel> for ::std::string::String {
+    fn from(value: MemberResponseLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for MemberResponseLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for MemberResponseLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for MemberResponseLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for MemberResponseLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for MemberResponseLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).
 ///
 /// <details><summary>JSON schema</summary>
@@ -592,7 +662,8 @@ impl<'de> ::serde::Deserialize<'de> for MemberResponseRole {
 ///      "type": [
 ///        "string",
 ///        "null"
-///      ]
+///      ],
+///      "maxLength": 256
 ///    },
 ///    "publishConsent": {
 ///      "description": "New directory-publish consent.",
@@ -627,7 +698,7 @@ pub struct Payload {
     pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<::std::string::String>,
+    pub label: ::std::option::Option<PayloadLabel>,
     ///New directory-publish consent.
     #[serde(
         rename = "publishConsent",
@@ -796,6 +867,75 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
             })
     }
 }
+///Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadLabel(::std::string::String);
+impl ::std::ops::Deref for PayloadLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadLabel> for ::std::string::String {
+    fn from(value: PayloadLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///New role (wire form). MUST NOT be `admin` — promotion to admin is a separate, gated flow, not a metadata patch.
 ///
 /// <details><summary>JSON schema</summary>
@@ -926,7 +1066,7 @@ pub mod builder {
         joined_via_invitation:
             ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::MemberResponseLabel>,
             ::std::string::String,
         >,
         member_vmc_id: ::std::result::Result<
@@ -1042,7 +1182,7 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::MemberResponseLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -1183,7 +1323,7 @@ pub mod builder {
             ::std::string::String,
         >,
         label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadLabel>,
             ::std::string::String,
         >,
         publish_consent: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -1248,7 +1388,7 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -1362,7 +1502,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberResponse\": {\n      \"$anchor\": \"memberResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"One community member as the maintainer sees it: the membership record joined with its ACL role.\",\n      \"properties\": {\n        \"currentRoleVecId\": {\n          \"description\": \"Id of the member's current role Verifiable Endorsement Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"currentVmcId\": {\n          \"description\": \"Id of the member's current Verifiable Membership Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"departurePreference\": {\n          \"description\": \"How the member's record is handled on departure.\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\",\n            \"policydefault\"\n          ],\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The member's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).\",\n          \"type\": \"object\"\n        },\n        \"joinedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"joinedViaInvitation\": {\n          \"description\": \"Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.\",\n          \"type\": \"boolean\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcId\": {\n          \"description\": \"`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcReceivedAt\": {\n          \"description\": \"When that reciprocal credential was received. Paired with `memberVmcId`.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"personhood\": {\n          \"description\": \"Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.\",\n          \"type\": \"boolean\"\n        },\n        \"personhoodAssertedAt\": {\n          \"description\": \"When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"publishConsent\": {\n          \"description\": \"Whether the member consented to being published in the community directory.\",\n          \"type\": \"boolean\"\n        },\n        \"role\": {\n          \"description\": \"The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The member's slot on the community's membership status list, when allocated.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"role\",\n        \"joinedAt\",\n        \"publishConsent\",\n        \"departurePreference\",\n        \"extensions\"\n      ],\n      \"title\": \"MemberResponse\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/MemberResponse\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Members Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"departurePreference\": {\n      \"enum\": [\n        \"purge\",\n        \"tombstone\",\n        \"historical\",\n        \"policydefault\"\n      ],\n      \"type\": \"string\"\n    },\n    \"did\": {\n      \"description\": \"The member to update.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extensions\": {\n      \"description\": \"Replacement extension bag (maintainer-capped, 16 KiB in the reference implementation).\",\n      \"type\": \"object\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.\",\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"publishConsent\": {\n      \"description\": \"New directory-publish consent.\",\n      \"type\": \"boolean\"\n    },\n    \"role\": {\n      \"description\": \"New role (wire form). MUST NOT be `admin` — promotion to admin is a separate, gated flow, not a metadata patch.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Members Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberResponse\": {\n      \"$anchor\": \"memberResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"One community member as the maintainer sees it: the membership record joined with its ACL role.\",\n      \"properties\": {\n        \"currentRoleVecId\": {\n          \"description\": \"Id of the member's current role Verifiable Endorsement Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"currentVmcId\": {\n          \"description\": \"Id of the member's current Verifiable Membership Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"departurePreference\": {\n          \"description\": \"How the member's record is handled on departure.\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\",\n            \"policydefault\"\n          ],\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The member's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).\",\n          \"type\": \"object\"\n        },\n        \"joinedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"joinedViaInvitation\": {\n          \"description\": \"Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.\",\n          \"type\": \"boolean\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"maxLength\": 256,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcId\": {\n          \"description\": \"`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcReceivedAt\": {\n          \"description\": \"When that reciprocal credential was received. Paired with `memberVmcId`.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"personhood\": {\n          \"description\": \"Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.\",\n          \"type\": \"boolean\"\n        },\n        \"personhoodAssertedAt\": {\n          \"description\": \"When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"publishConsent\": {\n          \"description\": \"Whether the member consented to being published in the community directory.\",\n          \"type\": \"boolean\"\n        },\n        \"role\": {\n          \"description\": \"The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The member's slot on the community's membership status list, when allocated.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"role\",\n        \"joinedAt\",\n        \"publishConsent\",\n        \"departurePreference\",\n        \"extensions\"\n      ],\n      \"title\": \"MemberResponse\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/MemberResponse\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Members Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"departurePreference\": {\n      \"enum\": [\n        \"purge\",\n        \"tombstone\",\n        \"historical\",\n        \"policydefault\"\n      ],\n      \"type\": \"string\"\n    },\n    \"did\": {\n      \"description\": \"The member to update.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extensions\": {\n      \"description\": \"Replacement extension bag (maintainer-capped, 16 KiB in the reference implementation).\",\n      \"type\": \"object\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged.\",\n      \"maxLength\": 256,\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"publishConsent\": {\n      \"description\": \"New directory-publish consent.\",\n      \"type\": \"boolean\"\n    },\n    \"role\": {\n      \"description\": \"New role (wire form). MUST NOT be `admin` — promotion to admin is a separate, gated flow, not a metadata patch.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Members Update — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1370,7 +1510,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberResponse\": {\n      \"$anchor\": \"memberResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"One community member as the maintainer sees it: the membership record joined with its ACL role.\",\n      \"properties\": {\n        \"currentRoleVecId\": {\n          \"description\": \"Id of the member's current role Verifiable Endorsement Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"currentVmcId\": {\n          \"description\": \"Id of the member's current Verifiable Membership Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"departurePreference\": {\n          \"description\": \"How the member's record is handled on departure.\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\",\n            \"policydefault\"\n          ],\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The member's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).\",\n          \"type\": \"object\"\n        },\n        \"joinedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"joinedViaInvitation\": {\n          \"description\": \"Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.\",\n          \"type\": \"boolean\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcId\": {\n          \"description\": \"`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcReceivedAt\": {\n          \"description\": \"When that reciprocal credential was received. Paired with `memberVmcId`.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"personhood\": {\n          \"description\": \"Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.\",\n          \"type\": \"boolean\"\n        },\n        \"personhoodAssertedAt\": {\n          \"description\": \"When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"publishConsent\": {\n          \"description\": \"Whether the member consented to being published in the community directory.\",\n          \"type\": \"boolean\"\n        },\n        \"role\": {\n          \"description\": \"The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The member's slot on the community's membership status list, when allocated.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"role\",\n        \"joinedAt\",\n        \"publishConsent\",\n        \"departurePreference\",\n        \"extensions\"\n      ],\n      \"title\": \"MemberResponse\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/MemberResponse\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Members Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberResponse\": {\n      \"$anchor\": \"memberResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"One community member as the maintainer sees it: the membership record joined with its ACL role.\",\n      \"properties\": {\n        \"currentRoleVecId\": {\n          \"description\": \"Id of the member's current role Verifiable Endorsement Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"currentVmcId\": {\n          \"description\": \"Id of the member's current Verifiable Membership Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"departurePreference\": {\n          \"description\": \"How the member's record is handled on departure.\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\",\n            \"policydefault\"\n          ],\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The member's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).\",\n          \"type\": \"object\"\n        },\n        \"joinedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"joinedViaInvitation\": {\n          \"description\": \"Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.\",\n          \"type\": \"boolean\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"maxLength\": 256,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcId\": {\n          \"description\": \"`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcReceivedAt\": {\n          \"description\": \"When that reciprocal credential was received. Paired with `memberVmcId`.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"personhood\": {\n          \"description\": \"Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.\",\n          \"type\": \"boolean\"\n        },\n        \"personhoodAssertedAt\": {\n          \"description\": \"When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"publishConsent\": {\n          \"description\": \"Whether the member consented to being published in the community directory.\",\n          \"type\": \"boolean\"\n        },\n        \"role\": {\n          \"description\": \"The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The member's slot on the community's membership status list, when allocated.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"role\",\n        \"joinedAt\",\n        \"publishConsent\",\n        \"departurePreference\",\n        \"extensions\"\n      ],\n      \"title\": \"MemberResponse\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/MemberResponse\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Members Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

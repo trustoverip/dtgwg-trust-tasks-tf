@@ -93,6 +93,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "description": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Free-form description."
         },
         "parent": {
@@ -171,6 +172,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "description": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Free-form description."
         },
         "parent": {

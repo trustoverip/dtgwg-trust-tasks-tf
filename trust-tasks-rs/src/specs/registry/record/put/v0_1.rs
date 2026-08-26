@@ -283,7 +283,8 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 ///    },
 ///    "message": {
 ///      "description": "Optional human-readable detail.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "ok": {
 ///      "description": "Whether the record was stored.",
@@ -305,13 +306,82 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable detail.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub message: ::std::option::Option<::std::string::String>,
+    pub message: ::std::option::Option<ResponseMessage>,
     ///Whether the record was stored.
     pub ok: bool,
 }
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
+    }
+}
+///Optional human-readable detail.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable detail.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseMessage(::std::string::String);
+impl ::std::ops::Deref for ResponseMessage {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseMessage> for ::std::string::String {
+    fn from(value: ResponseMessage) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseMessage {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseMessage {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`TrustRecord`
@@ -461,7 +531,7 @@ pub mod builder {
         created: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         message: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::ResponseMessage>,
             ::std::string::String,
         >,
         ok: ::std::result::Result<bool, ::std::string::String>,
@@ -499,7 +569,7 @@ pub mod builder {
         }
         pub fn message<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseMessage>>,
             T::Error: ::std::fmt::Display,
         {
             self.message = value
@@ -688,7 +758,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"created\": {\n          \"description\": \"True when the put created a new record, false when it replaced an existing one.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was stored.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\",\n        \"created\"\n      ],\n      \"title\": \"Registry Record Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"record_type\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"record_type\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/record/put/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.\",\n  \"properties\": {\n    \"expectedExisting\": {\n      \"description\": \"Optional existence assertion. When true, the registry MUST reject with `registry/record/put:notFound` if no record exists at the key (strict update). When false, the registry MUST reject with `registry/record/put:alreadyExists` if one does (strict create). Omitted: pure create-or-update.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"record\": {\n      \"$ref\": \"#/$defs/TrustRecord\"\n    }\n  },\n  \"required\": [\n    \"record\"\n  ],\n  \"title\": \"Registry Record Put — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"created\": {\n          \"description\": \"True when the put created a new record, false when it replaced an existing one.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was stored.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\",\n        \"created\"\n      ],\n      \"title\": \"Registry Record Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"record_type\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"record_type\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/record/put/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.\",\n  \"properties\": {\n    \"expectedExisting\": {\n      \"description\": \"Optional existence assertion. When true, the registry MUST reject with `registry/record/put:notFound` if no record exists at the key (strict update). When false, the registry MUST reject with `registry/record/put:alreadyExists` if one does (strict create). Omitted: pure create-or-update.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"record\": {\n      \"$ref\": \"#/$defs/TrustRecord\"\n    }\n  },\n  \"required\": [\n    \"record\"\n  ],\n  \"title\": \"Registry Record Put — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -696,7 +766,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"created\": {\n          \"description\": \"True when the put created a new record, false when it replaced an existing one.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was stored.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\",\n        \"created\"\n      ],\n      \"title\": \"Registry Record Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"record_type\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"record_type\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"created\": {\n          \"description\": \"True when the put created a new record, false when it replaced an existing one.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was stored.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\",\n        \"created\"\n      ],\n      \"title\": \"Registry Record Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"record_type\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"record_type\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

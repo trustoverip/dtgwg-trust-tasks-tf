@@ -102,6 +102,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "message": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Human-readable description of the error. Non-normative; intended for logs and operator UI."
     },
     "retryable": {

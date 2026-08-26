@@ -48,6 +48,7 @@
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`."
         },
         "decidedAt": {

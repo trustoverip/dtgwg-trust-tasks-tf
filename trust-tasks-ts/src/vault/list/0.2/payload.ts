@@ -297,7 +297,8 @@ export const PAYLOAD_SCHEMA = {
         "label": {
           "type": "string",
           "minLength": 1,
-          "description": "Human-readable display name (e.g. \"Work GitHub\", \"Personal bank — checking\"). Maintainers MAY enforce a maximum length; the wire spec does not."
+          "maxLength": 256,
+          "description": "Human-readable display name (e.g. \"Work GitHub\", \"Personal bank — checking\"). Bounded on the wire at 256 characters; a maintainer MAY enforce a shorter limit."
         },
         "secretKind": {
           "$ref": "#/$defs/SecretKind",
@@ -648,7 +649,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "label": {
           "type": "string",
           "minLength": 1,
-          "description": "Human-readable display name (e.g. \"Work GitHub\", \"Personal bank — checking\"). Maintainers MAY enforce a maximum length; the wire spec does not."
+          "maxLength": 256,
+          "description": "Human-readable display name (e.g. \"Work GitHub\", \"Personal bank — checking\"). Bounded on the wire at 256 characters; a maintainer MAY enforce a shorter limit."
         },
         "secretKind": {
           "$ref": "#/$defs/SecretKind",

@@ -180,7 +180,8 @@ This specification declares no response anchor: a producer answers a next step b
 ///          },
 ///          "reason": {
 ///            "description": "Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.",
-///            "type": "string"
+///            "type": "string",
+///            "maxLength": 1024
 ///          },
 ///          "typeUri": {
 ///            "description": "The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section).",
@@ -219,7 +220,8 @@ This specification declares no response anchor: a producer answers a next step b
 ///    },
 ///    "message": {
 ///      "description": "Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -245,7 +247,7 @@ pub struct Payload {
     pub in_response_to: ::std::option::Option<PayloadInResponseTo>,
     ///Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub message: ::std::option::Option<::std::string::String>,
+    pub message: ::std::option::Option<PayloadMessage>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -349,7 +351,8 @@ impl ::std::default::Default for PayloadContinuation {
 ///    },
 ///    "reason": {
 ///      "description": "Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "typeUri": {
 ///      "description": "The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section).",
@@ -371,7 +374,7 @@ pub struct PayloadExpectsItem {
     pub hint: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<::std::string::String>,
+    pub reason: ::std::option::Option<PayloadExpectsItemReason>,
     ///The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section).
     #[serde(rename = "typeUri")]
     pub type_uri: ::std::string::String,
@@ -379,6 +382,75 @@ pub struct PayloadExpectsItem {
 impl PayloadExpectsItem {
     pub fn builder() -> builder::PayloadExpectsItem {
         Default::default()
+    }
+}
+///Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadExpectsItemReason(::std::string::String);
+impl ::std::ops::Deref for PayloadExpectsItemReason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadExpectsItemReason> for ::std::string::String {
+    fn from(value: PayloadExpectsItemReason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadExpectsItemReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadExpectsItemReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadExpectsItemReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadExpectsItemReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadExpectsItemReason {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Identifies the Trust Task document this next step answers. SHOULD be populated, for the reason SPEC §8.2 gives for the identical member on an error response: threadId correlates the exchange only for a party that already saw the request, so a retained next step otherwise names neither the task it interrupted nor the instance.
@@ -494,6 +566,75 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInResponseToId {
             })
     }
 }
+///Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadMessage(::std::string::String);
+impl ::std::ops::Deref for PayloadMessage {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadMessage> for ::std::string::String {
+    fn from(value: PayloadMessage) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadMessage {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadMessage {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
@@ -509,7 +650,7 @@ pub mod builder {
             ::std::string::String,
         >,
         message: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadMessage>,
             ::std::string::String,
         >,
     }
@@ -567,7 +708,7 @@ pub mod builder {
         }
         pub fn message<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadMessage>>,
             T::Error: ::std::fmt::Display,
         {
             self.message = value
@@ -606,7 +747,7 @@ pub mod builder {
             ::std::string::String,
         >,
         reason: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadExpectsItemReason>,
             ::std::string::String,
         >,
         type_uri: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -635,7 +776,7 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadExpectsItemReason>>,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -743,7 +884,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/trust-task-next-step/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/trust-task-next-step/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.\\n\\nA next step is neither a success response nor a failure. The originating task is left open — a consumer that means 'no' returns a trust-task-error instead, and one that means 'done' returns the originating specification's #response variant.\\n\\nThis specification declares no response anchor: a producer answers a next step by issuing a document of the expected type, not by responding to this one.\",\n  \"properties\": {\n    \"continuation\": {\n      \"$comment\": \"Two values rather than a boolean, because 'resubmit: false' reads as a negation of something the reader has to reconstruct.\",\n      \"default\": \"resubmit\",\n      \"description\": \"What happens once an expected task completes. `resubmit` (the default) means the expected task is a PREREQUISITE and the producer re-issues the originating request to continue — a new document with a fresh id and the same threadId, which SPEC §8.4 distinguishes from a retry, since a retry is bit-for-bit identical and is not what happens here; this matches the established pattern of task-consent/granted, where the requester re-submits once approval lands. `proceed` means the expected task IS the continuation and the originating request is not re-issued, as in an offer answered by a request.\",\n      \"enum\": [\n        \"resubmit\",\n        \"proceed\"\n      ]\n    },\n    \"expects\": {\n      \"description\": \"The continuations the recipient will accept, in the producer's order of preference where the recipient has one. More than one entry means ALTERNATIVES — satisfying any single entry unblocks the exchange, never all of them. A recipient that needs several things done first names the one it wants next and issues a further next step afterwards; expressing a conjunction here would be a flow definition, which belongs to a ceremony rather than to a single response.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"hint\": {\n            \"description\": \"Optional structured data the producer MAY use when composing the expected document — a challenge to echo, an identifier to quote, a presentation definition to satisfy. Its shape is governed by the specification named in typeUri, not by this one. A producer MUST NOT treat a hint as authoritative for any value it can determine itself.\",\n            \"type\": \"object\"\n          },\n          \"reason\": {\n            \"description\": \"Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.\",\n            \"type\": \"string\"\n          },\n          \"typeUri\": {\n            \"description\": \"The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section).\",\n            \"format\": \"uri\",\n            \"minLength\": 1,\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"typeUri\"\n        ],\n        \"type\": \"object\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"inResponseTo\": {\n      \"additionalProperties\": false,\n      \"description\": \"Identifies the Trust Task document this next step answers. SHOULD be populated, for the reason SPEC §8.2 gives for the identical member on an error response: threadId correlates the exchange only for a party that already saw the request, so a retained next step otherwise names neither the task it interrupted nor the instance.\",\n      \"properties\": {\n        \"id\": {\n          \"description\": \"The id of the specific document being answered (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The Type URI of the document being answered, including any fragment it carried.\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"type\": \"object\"\n    },\n    \"message\": {\n      \"description\": \"Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"expects\"\n  ],\n  \"title\": \"Trust Task Next Step — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/trust-task-next-step/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.\\n\\nA next step is neither a success response nor a failure. The originating task is left open — a consumer that means 'no' returns a trust-task-error instead, and one that means 'done' returns the originating specification's #response variant.\\n\\nThis specification declares no response anchor: a producer answers a next step by issuing a document of the expected type, not by responding to this one.\",\n  \"properties\": {\n    \"continuation\": {\n      \"$comment\": \"Two values rather than a boolean, because 'resubmit: false' reads as a negation of something the reader has to reconstruct.\",\n      \"default\": \"resubmit\",\n      \"description\": \"What happens once an expected task completes. `resubmit` (the default) means the expected task is a PREREQUISITE and the producer re-issues the originating request to continue — a new document with a fresh id and the same threadId, which SPEC §8.4 distinguishes from a retry, since a retry is bit-for-bit identical and is not what happens here; this matches the established pattern of task-consent/granted, where the requester re-submits once approval lands. `proceed` means the expected task IS the continuation and the originating request is not re-issued, as in an offer answered by a request.\",\n      \"enum\": [\n        \"resubmit\",\n        \"proceed\"\n      ]\n    },\n    \"expects\": {\n      \"description\": \"The continuations the recipient will accept, in the producer's order of preference where the recipient has one. More than one entry means ALTERNATIVES — satisfying any single entry unblocks the exchange, never all of them. A recipient that needs several things done first names the one it wants next and issues a further next step afterwards; expressing a conjunction here would be a flow definition, which belongs to a ceremony rather than to a single response.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"hint\": {\n            \"description\": \"Optional structured data the producer MAY use when composing the expected document — a challenge to echo, an identifier to quote, a presentation definition to satisfy. Its shape is governed by the specification named in typeUri, not by this one. A producer MUST NOT treat a hint as authoritative for any value it can determine itself.\",\n            \"type\": \"object\"\n          },\n          \"reason\": {\n            \"description\": \"Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.\",\n            \"maxLength\": 1024,\n            \"type\": \"string\"\n          },\n          \"typeUri\": {\n            \"description\": \"The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section).\",\n            \"format\": \"uri\",\n            \"minLength\": 1,\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"typeUri\"\n        ],\n        \"type\": \"object\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"inResponseTo\": {\n      \"additionalProperties\": false,\n      \"description\": \"Identifies the Trust Task document this next step answers. SHOULD be populated, for the reason SPEC §8.2 gives for the identical member on an error response: threadId correlates the exchange only for a party that already saw the request, so a retained next step otherwise names neither the task it interrupted nor the instance.\",\n      \"properties\": {\n        \"id\": {\n          \"description\": \"The id of the specific document being answered (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The Type URI of the document being answered, including any fragment it carried.\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"type\": \"object\"\n    },\n    \"message\": {\n      \"description\": \"Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"expects\"\n  ],\n  \"title\": \"Trust Task Next Step — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 #[cfg(test)]

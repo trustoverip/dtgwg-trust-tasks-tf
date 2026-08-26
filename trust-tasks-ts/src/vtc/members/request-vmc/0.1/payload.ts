@@ -67,6 +67,7 @@ export const PAYLOAD_SCHEMA = {
     "reason": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 500,
       "description": "Operator-supplied context surfaced to the member."
     },
     "ext": {

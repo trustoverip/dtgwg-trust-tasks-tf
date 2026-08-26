@@ -115,6 +115,7 @@ export const PAYLOAD_SCHEMA = {
         "string",
         "null"
       ],
+      "maxLength": 256,
       "description": "Replacement human-readable label. Explicit `null` clears it. Omitted leaves it unchanged."
     },
     "scopes": {
@@ -188,6 +189,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Optional human-readable rationale, recorded with the change."
     },
     "ext": {
@@ -259,6 +261,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "label": {
           "type": "string",
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "createdAt": {
@@ -398,6 +401,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "label": {
           "type": "string",
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "createdAt": {

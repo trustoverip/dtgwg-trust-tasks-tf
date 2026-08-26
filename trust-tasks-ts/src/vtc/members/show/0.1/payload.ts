@@ -119,6 +119,7 @@ export const PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "joinedAt": {
@@ -262,6 +263,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "joinedAt": {

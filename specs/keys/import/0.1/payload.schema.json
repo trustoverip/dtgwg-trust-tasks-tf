@@ -30,6 +30,7 @@
     },
     "label": {
       "type": "string",
+      "maxLength": 256,
       "description": "Optional human-readable label for the resulting record."
     },
     "contextId": {

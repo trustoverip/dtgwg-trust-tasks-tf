@@ -63,6 +63,7 @@ export const PAYLOAD_SCHEMA = {
   "properties": {
     "message": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content."
     },
     "refs": {

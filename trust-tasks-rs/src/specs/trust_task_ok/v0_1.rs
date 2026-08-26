@@ -53,7 +53,8 @@ This specification declares no response anchor. An acknowledgement is not answer
 ///    },
 ///    "message": {
 ///      "description": "Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "refs": {
 ///      "description": "\nOpaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.\n\nA consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.",
@@ -92,7 +93,7 @@ pub struct Payload {
     pub ext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub message: ::std::option::Option<::std::string::String>,
+    pub message: ::std::option::Option<PayloadMessage>,
     /**
     Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.
 
@@ -112,6 +113,75 @@ impl ::std::default::Default for Payload {
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+///Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadMessage(::std::string::String);
+impl ::std::ops::Deref for PayloadMessage {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadMessage> for ::std::string::String {
+    fn from(value: PayloadMessage) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadMessage {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadMessage {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`PayloadRefsItem`
@@ -232,7 +302,7 @@ pub mod builder {
             ::std::string::String,
         >,
         message: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadMessage>,
             ::std::string::String,
         >,
         refs: ::std::result::Result<::std::vec::Vec<super::PayloadRefsItem>, ::std::string::String>,
@@ -261,7 +331,7 @@ pub mod builder {
         }
         pub fn message<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadMessage>>,
             T::Error: ::std::fmt::Display,
         {
             self.message = value
@@ -358,6 +428,6 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/trust-task-ok/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$id\": \"https://trusttasks.org/spec/trust-task-ok/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The courtesy acknowledgement reserved at SPEC.md §8.6: a consumer confirming that it received and performed a task which defines no success-response document of its own.\\n\\nIt is deliberately weak. A producer MUST NOT rely on receiving one, and the absence of one carries no information — a consumer may not implement this specification, and the document may be lost. Anything a task's contract depends on belongs in that task's own #response, not here.\\n\\nEvery member is optional: an empty payload is the ordinary case, and means exactly 'received and performed'.\\n\\nThis specification declares no response anchor. An acknowledgement is not answered.\",\n  \"properties\": {\n    \"ext\": {\n      \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer of this document controls.\",\n      \"type\": \"object\"\n    },\n    \"message\": {\n      \"description\": \"Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.\",\n      \"type\": \"string\"\n    },\n    \"refs\": {\n      \"description\": \"Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.\\n\\nA consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"name\": {\n            \"description\": \"What this reference is, in the consumer's own vocabulary. Not drawn from any registry, and not interoperable — a producer that does not recognize a name ignores it.\",\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"description\": \"The reference itself, opaque to this framework.\",\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ],\n        \"type\": \"object\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"title\": \"Trust Task OK — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$id\": \"https://trusttasks.org/spec/trust-task-ok/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The courtesy acknowledgement reserved at SPEC.md §8.6: a consumer confirming that it received and performed a task which defines no success-response document of its own.\\n\\nIt is deliberately weak. A producer MUST NOT rely on receiving one, and the absence of one carries no information — a consumer may not implement this specification, and the document may be lost. Anything a task's contract depends on belongs in that task's own #response, not here.\\n\\nEvery member is optional: an empty payload is the ordinary case, and means exactly 'received and performed'.\\n\\nThis specification declares no response anchor. An acknowledgement is not answered.\",\n  \"properties\": {\n    \"ext\": {\n      \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer of this document controls.\",\n      \"type\": \"object\"\n    },\n    \"message\": {\n      \"description\": \"Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"refs\": {\n      \"description\": \"Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.\\n\\nA consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"name\": {\n            \"description\": \"What this reference is, in the consumer's own vocabulary. Not drawn from any registry, and not interoperable — a producer that does not recognize a name ignores it.\",\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"description\": \"The reference itself, opaque to this framework.\",\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ],\n        \"type\": \"object\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"title\": \"Trust Task OK — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }

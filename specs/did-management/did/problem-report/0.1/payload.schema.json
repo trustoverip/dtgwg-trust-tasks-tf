@@ -8,7 +8,7 @@
   "properties": {
     "mnemonic": { "type": "string", "minLength": 1 },
     "code": { "type": "string", "minLength": 1 },
-    "message": { "type": "string", "minLength": 1 },
+    "message": { "type": "string", "minLength": 1, "maxLength": 1024 },
     "domain": { "type": "string" },
     "ctx": {
       "type": "object",

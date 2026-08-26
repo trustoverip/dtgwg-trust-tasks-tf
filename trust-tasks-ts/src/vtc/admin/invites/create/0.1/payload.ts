@@ -93,6 +93,7 @@ export const PAYLOAD_SCHEMA = {
     "label": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 256,
       "description": "Operator-facing note recorded against the invite."
     },
     "ext": {

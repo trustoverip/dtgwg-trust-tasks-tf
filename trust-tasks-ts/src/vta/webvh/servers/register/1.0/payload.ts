@@ -63,7 +63,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "The server's DID, used to authenticate it. Absent where the VTA resolves it during registration."
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 256
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -97,7 +98,8 @@ export const PAYLOAD_SCHEMA = {
           "description": "The server's own DID, used to authenticate it."
         },
         "label": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 256
         },
         "createdAt": {
           "type": "string",
@@ -157,7 +159,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The server's own DID, used to authenticate it."
         },
         "label": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 256
         },
         "createdAt": {
           "type": "string",

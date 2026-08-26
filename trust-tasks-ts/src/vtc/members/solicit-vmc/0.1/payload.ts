@@ -75,6 +75,7 @@ export const PAYLOAD_SCHEMA = {
     "reason": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 500,
       "description": "Operator note relayed verbatim to the member, e.g. \"renewal\", \"audit\"."
     },
     "ext": {

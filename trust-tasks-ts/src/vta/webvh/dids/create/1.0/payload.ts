@@ -198,7 +198,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Hosting domain to publish under, when the server serves more than one."
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 256
     },
     "portable": {
       "type": "boolean",

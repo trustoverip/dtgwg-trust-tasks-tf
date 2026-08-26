@@ -143,7 +143,8 @@ export const PAYLOAD_SCHEMA = {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "maxLength": 1024
         },
         "methods": {
           "type": "array",
@@ -312,7 +313,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "maxLength": 1024
         },
         "methods": {
           "type": "array",

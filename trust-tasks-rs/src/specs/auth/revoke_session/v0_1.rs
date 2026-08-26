@@ -180,7 +180,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    },
 ///    "reason": {
 ///      "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"key-rotation\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "sessionId": {
 ///      "description": "The session to revoke. Mutually exclusive with `all`.",
@@ -202,7 +203,7 @@ pub enum Payload {
         ext: ::std::option::Option<Ext>,
         ///Optional human-readable rationale (e.g. "logout", "device-lost", "key-rotation"). Surfaced in audit logs; the framework imposes no vocabulary.
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        reason: ::std::option::Option<::std::string::String>,
+        reason: ::std::option::Option<PayloadVariant0Reason>,
         ///The session to revoke. Mutually exclusive with `all`.
         #[serde(rename = "sessionId")]
         session_id: PayloadVariant0SessionId,
@@ -215,8 +216,77 @@ pub enum Payload {
         ext: ::std::option::Option<Ext>,
         ///Optional human-readable rationale (e.g. "logout", "device-lost", "key-rotation"). Surfaced in audit logs; the framework imposes no vocabulary.
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        reason: ::std::option::Option<::std::string::String>,
+        reason: ::std::option::Option<PayloadVariant1Reason>,
     },
+}
+///Optional human-readable rationale (e.g. "logout", "device-lost", "key-rotation"). Surfaced in audit logs; the framework imposes no vocabulary.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"key-rotation\"). Surfaced in audit logs; the framework imposes no vocabulary.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadVariant0Reason(::std::string::String);
+impl ::std::ops::Deref for PayloadVariant0Reason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadVariant0Reason> for ::std::string::String {
+    fn from(value: PayloadVariant0Reason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadVariant0Reason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadVariant0Reason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Reason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Reason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Reason {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
 }
 ///The session to revoke. Mutually exclusive with `all`.
 ///
@@ -276,6 +346,75 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0SessionId
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadVariant0SessionId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Optional human-readable rationale (e.g. "logout", "device-lost", "key-rotation"). Surfaced in audit logs; the framework imposes no vocabulary.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"key-rotation\"). Surfaced in audit logs; the framework imposes no vocabulary.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadVariant1Reason(::std::string::String);
+impl ::std::ops::Deref for PayloadVariant1Reason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadVariant1Reason> for ::std::string::String {
+    fn from(value: PayloadVariant1Reason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadVariant1Reason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadVariant1Reason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1Reason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1Reason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Reason {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -391,7 +530,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedCount\": {\n          \"description\": \"Number of sessions invalidated by this call. Zero is a valid outcome (e.g. the named sessionId was already revoked).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"revokedCount\"\n      ],\n      \"title\": \"Auth Revoke Session — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/revoke-session/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Invalidate one or all sessions for the producer. The auth service drops the named session(s); any future use of their access or refresh tokens MUST fail.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"required\": [\n          \"all\"\n        ]\n      },\n      \"required\": [\n        \"sessionId\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"sessionId\"\n        ]\n      },\n      \"required\": [\n        \"all\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"all\": {\n      \"description\": \"When true, revoke every active session the consumer holds for the producer's subject. Mutually exclusive with `sessionId`.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale (e.g. \\\"logout\\\", \\\"device-lost\\\", \\\"key-rotation\\\"). Surfaced in audit logs; the framework imposes no vocabulary.\",\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"The session to revoke. Mutually exclusive with `all`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Auth — Revoke Session\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedCount\": {\n          \"description\": \"Number of sessions invalidated by this call. Zero is a valid outcome (e.g. the named sessionId was already revoked).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"revokedCount\"\n      ],\n      \"title\": \"Auth Revoke Session — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/revoke-session/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Invalidate one or all sessions for the producer. The auth service drops the named session(s); any future use of their access or refresh tokens MUST fail.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"required\": [\n          \"all\"\n        ]\n      },\n      \"required\": [\n        \"sessionId\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"sessionId\"\n        ]\n      },\n      \"required\": [\n        \"all\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"all\": {\n      \"description\": \"When true, revoke every active session the consumer holds for the producer's subject. Mutually exclusive with `sessionId`.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale (e.g. \\\"logout\\\", \\\"device-lost\\\", \\\"key-rotation\\\"). Surfaced in audit logs; the framework imposes no vocabulary.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"The session to revoke. Mutually exclusive with `all`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Auth — Revoke Session\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

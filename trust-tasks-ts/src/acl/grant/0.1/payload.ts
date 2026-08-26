@@ -74,6 +74,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Optional human-readable rationale."
     },
     "ext": {
@@ -148,6 +149,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "label": {
           "type": "string",
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "createdAt": {
@@ -289,6 +291,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "label": {
           "type": "string",
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "createdAt": {

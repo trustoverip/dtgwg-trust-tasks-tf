@@ -211,6 +211,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "reason": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Present when status is `rejected` (e.g. \"challenge expired\", \"session not found\", \"acr ceiling exceeded\")."
         },
         "ext": {
@@ -409,6 +410,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "reason": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Present when status is `rejected` (e.g. \"challenge expired\", \"session not found\", \"acr ceiling exceeded\")."
         },
         "ext": {

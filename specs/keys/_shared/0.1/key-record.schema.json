@@ -53,6 +53,7 @@
         "origin": { "$ref": "#/$defs/KeyOrigin" },
         "label": {
           "type": "string",
+          "maxLength": 256,
           "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
         },
         "contextId": {

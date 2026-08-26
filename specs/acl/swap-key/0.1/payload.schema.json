@@ -23,6 +23,7 @@
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Optional human-readable rationale (e.g. \"key-rotation\", \"hardware-token-replacement\", \"account-recovery\")."
     },
     "ext": {

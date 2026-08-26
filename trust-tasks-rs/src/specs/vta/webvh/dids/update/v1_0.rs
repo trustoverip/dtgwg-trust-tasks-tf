@@ -170,7 +170,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    },
 ///    "label": {
 ///      "description": "Operator-facing audit label.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "preRotationCount": {
 ///      "description": "Number of pre-rotation commitments to publish. Omit to keep the current count; `0` disables pre-rotation going forward.",
@@ -217,7 +218,7 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing audit label.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<::std::string::String>,
+    pub label: ::std::option::Option<PayloadLabel>,
     ///Number of pre-rotation commitments to publish. Omit to keep the current count; `0` disables pre-rotation going forward.
     #[serde(
         rename = "preRotationCount",
@@ -378,6 +379,75 @@ impl<'de> ::serde::Deserialize<'de> for PayloadExpectedVersionId {
             })
     }
 }
+///Operator-facing audit label.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Operator-facing audit label.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadLabel(::std::string::String);
+impl ::std::ops::Deref for PayloadLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadLabel> for ::std::string::String {
+    fn from(value: PayloadLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.
 ///
 /// <details><summary>JSON schema</summary>
@@ -490,7 +560,7 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadLabel>,
             ::std::string::String,
         >,
         pre_rotation_count:
@@ -563,7 +633,7 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -792,7 +862,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newLogEntry\": {\n          \"description\": \"The appended log entry, as JSON text.\",\n          \"type\": \"string\"\n        },\n        \"newScid\": {\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`.\",\n          \"type\": \"string\"\n        },\n        \"preRotationKeyCount\": {\n          \"description\": \"Pre-rotation commitments published by this entry.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverless\": {\n          \"description\": \"True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`.\",\n          \"type\": \"boolean\"\n        },\n        \"updateKeysCount\": {\n          \"description\": \"Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newVersionId\"\n      ],\n      \"title\": \"WebVH DID Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/dids/update/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the update key for. The agent decides whether to do so; the caller proposes.\",\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The did:webvh being updated. The agent MUST verify it speaks for this subject.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"document\": {\n      \"description\": \"The new DID document. Omit to leave it unchanged. Supplying this ROTATES the DID's update key and refreshes its pre-rotation commitments, as a parallel consequence of the change — a consequence not visible anywhere in this payload, because it lives in the executing handler's semantics. A consent surface MUST therefore render effects the executor computed, and MUST NOT derive them from this document.\",\n      \"type\": \"object\"\n    },\n    \"expectedVersionId\": {\n      \"description\": \"Optimistic-concurrency precondition: the versionId the caller based this edit on. The agent MUST refuse the update if the DID's latest entry no longer matches. Without it a `get -> edit -> save` cycle silently overwrites a concurrent edit with a chain that is structurally valid, verifies perfectly, and is based on a stale read. Where a human approves the update the window is minutes wide, so this is a routine race rather than an exotic one. OPTIONAL because a scripted caller with no concurrent writers has nothing to protect against; not optional for anything a person looked at.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing audit label.\",\n      \"type\": \"string\"\n    },\n    \"preRotationCount\": {\n      \"description\": \"Number of pre-rotation commitments to publish. Omit to keep the current count; `0` disables pre-rotation going forward.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"ttl\": {\n      \"description\": \"New TTL in seconds. Omit to keep the current value.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"watchers\": {\n      \"description\": \"New watcher URLs. Omit to keep the current set; an empty array removes them.\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"witnesses\": {\n      \"description\": \"New witness configuration. Omit to keep the current one.\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"WebVH DID Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newLogEntry\": {\n          \"description\": \"The appended log entry, as JSON text.\",\n          \"type\": \"string\"\n        },\n        \"newScid\": {\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`.\",\n          \"type\": \"string\"\n        },\n        \"preRotationKeyCount\": {\n          \"description\": \"Pre-rotation commitments published by this entry.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverless\": {\n          \"description\": \"True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`.\",\n          \"type\": \"boolean\"\n        },\n        \"updateKeysCount\": {\n          \"description\": \"Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newVersionId\"\n      ],\n      \"title\": \"WebVH DID Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/dids/update/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the update key for. The agent decides whether to do so; the caller proposes.\",\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The did:webvh being updated. The agent MUST verify it speaks for this subject.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"document\": {\n      \"description\": \"The new DID document. Omit to leave it unchanged. Supplying this ROTATES the DID's update key and refreshes its pre-rotation commitments, as a parallel consequence of the change — a consequence not visible anywhere in this payload, because it lives in the executing handler's semantics. A consent surface MUST therefore render effects the executor computed, and MUST NOT derive them from this document.\",\n      \"type\": \"object\"\n    },\n    \"expectedVersionId\": {\n      \"description\": \"Optimistic-concurrency precondition: the versionId the caller based this edit on. The agent MUST refuse the update if the DID's latest entry no longer matches. Without it a `get -> edit -> save` cycle silently overwrites a concurrent edit with a chain that is structurally valid, verifies perfectly, and is based on a stale read. Where a human approves the update the window is minutes wide, so this is a routine race rather than an exotic one. OPTIONAL because a scripted caller with no concurrent writers has nothing to protect against; not optional for anything a person looked at.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing audit label.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"preRotationCount\": {\n      \"description\": \"Number of pre-rotation commitments to publish. Omit to keep the current count; `0` disables pre-rotation going forward.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"ttl\": {\n      \"description\": \"New TTL in seconds. Omit to keep the current value.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"watchers\": {\n      \"description\": \"New watcher URLs. Omit to keep the current set; an empty array removes them.\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"witnesses\": {\n      \"description\": \"New witness configuration. Omit to keep the current one.\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"WebVH DID Update — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

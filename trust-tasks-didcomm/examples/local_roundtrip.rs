@@ -38,14 +38,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. Alice composes an acl/grant request and packs it. Generated
     //    payload types are `#[non_exhaustive]`, so construction goes through
     //    the builder — only the members this request carries are named.
+    //    Free-text members carry a `maxLength` (SPEC §7.3), so each is a
+    //    validating newtype rather than a bare `String`: the bound is checked
+    //    here, at construction, and not left to the far end of the wire.
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
-        .label("Carol — content moderation".to_string())
+        .label(grant::AclEntryLabel::try_from(
+            "Carol — content moderation",
+        )?)
         .try_into()?;
     let payload: grant::Payload = grant::Payload::builder()
         .entry(entry)
-        .reason("onboarding".to_string())
+        .reason(grant::PayloadReason::try_from("onboarding")?)
         .try_into()?;
 
     let mut request = TrustTask::for_payload(format!("urn:uuid:{}", uuid::Uuid::new_v4()), payload);
