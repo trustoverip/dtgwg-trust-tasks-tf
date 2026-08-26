@@ -92,8 +92,26 @@ next=$(LEVEL="$level" CURRENT="$last" node -e '
 echo "::notice::$name $last -> $next ($level)"
 
 # ── Build the release commit ─────────────────────────────────────────────────
-git config user.name "github-actions[bot]"
-git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+# Author as the identity behind RELEASE_PLZ_TOKEN, not as the bot.
+#
+# EasyCLA authorises the commit *author*, and `github-actions[bot]` has signed
+# no CLA — so a bot-authored release commit fails EasyCLA however well it is
+# signed off. release-plz already authors its release commit this way (that is
+# what setting RELEASE_PLZ_TOKEN changed), and this is the same fix for the npm
+# side, so both Release PRs are authored by a signatory and signed off.
+#
+# Resolved from the token rather than hard-coded: whoever the token belongs to
+# is who the release is attributable to, and hard-coding a person here would
+# quietly misattribute it the moment the token changed hands.
+if ! author_json=$(gh api user 2>/dev/null); then
+  echo "::error::Could not resolve the token owner via \`gh api user\`. A GitHub App token has no user, so this needs an explicit identity — do NOT fall back to github-actions[bot], which fails EasyCLA silently."
+  exit 1
+fi
+author_login=$(jq -r '.login' <<<"$author_json")
+author_id=$(jq -r '.id' <<<"$author_json")
+author_name=$(jq -r '.name // .login' <<<"$author_json")
+git config user.name "$author_name"
+git config user.email "${author_id}+${author_login}@users.noreply.github.com"
 
 # Always rebuild the branch from the current main. The branch is a derived
 # artefact; nothing on it is worth preserving across runs.
