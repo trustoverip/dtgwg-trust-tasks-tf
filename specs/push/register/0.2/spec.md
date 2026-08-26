@@ -70,7 +70,7 @@ A conforming **consumer** (the push gateway) **MUST**:
 
 ## Authorization
 
-*Stated in anticipation of [SPEC.md §7.3](../../../../SPEC.md#73-specification-requirements)
+*Stated in anticipation of [SPEC.md §7.3](/SPEC.md#73-specification-requirements)
 item 15, which binds specifications targeting framework 0.4; this specification
 targets 0.2, where the declaration is not yet required.*
 
@@ -90,7 +90,7 @@ The `controllerVtaDid` carried here is authorization evidence for a **different
 task**: the gateway records it as the only DID permitted to provision this
 handle's allowlist under `push/provision`. Naming it in this document does not
 authorize this document — the producer asserts it, and per
-[SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 an
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10 an
 assertion by the party that benefits from it is not evidence of entitlement.
 It is stored as the gate for a later exchange, and that exchange is where it is
 checked.

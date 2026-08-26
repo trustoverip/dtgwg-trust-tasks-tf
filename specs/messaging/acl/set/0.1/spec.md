@@ -60,7 +60,7 @@ The mediator's internal capability representation (a packed flag set) is opaque 
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../../account/update/0.1/spec.md), which accepts this task's exact payload — send `{ did, acl }` with the same partial-update semantics (a capability present is set, a capability omitted is unchanged) and the same `selfChangeDenied` self-management guard. The successor returns the full realized `Account` rather than `{ did, acl }`; the applied capability set is its `account.acl` member.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../../account/update/0.1/spec.md), which accepts this task's exact payload — send `{ did, acl }` with the same partial-update semantics (a capability present is set, a capability omitted is unchanged) and the same `selfChangeDenied` self-management guard. The successor returns the full realized `Account` rather than `{ did, acl }`; the applied capability set is its `account.acl` member.
 
 ## Conformance
 
@@ -70,11 +70,11 @@ A conforming **producer** (the administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/acl/set/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID and `payload.acl` with the capability members to apply.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Where the target DID has no account, respond with `messaging/acl/set:unknownAccount`.
 3. Where the requester is not an administrator and is changing a capability it is not permitted to self-manage, respond with `messaging/acl/set:selfChangeDenied` listing the denied capabilities, or with the framework's `permissionDenied` where the requester has no standing at all.
 4. Apply the present capability members as a partial update, leave omitted members unchanged, and return the full realized [`MediatorAcl`](../../../_shared/0.1/messaging.schema.json#/$defs/MediatorAcl) in the response.
@@ -146,7 +146,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -154,4 +154,4 @@ A set-ACL document is an administrative mutation: the **REQUIRED** `proof` makes
 
 The `tspEnabled` / `didcommEnabled` flags govern which transport a recipient is served over; disabling a protocol an account still relies on will silently strip its delivery, so a mediator **SHOULD** reflect the realized flags in the response for the administrator to confirm.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

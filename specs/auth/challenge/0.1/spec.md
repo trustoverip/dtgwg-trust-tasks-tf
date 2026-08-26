@@ -58,7 +58,7 @@ This task only buys a nonce. No credentials are minted, no sessions are recorded
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -72,7 +72,7 @@ A conforming **producer** (the subject, or the subject's user agent) **MUST**:
 
 A conforming **consumer** (the auth service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements). The proof field MAY be absent; if present it is verified per [SPEC.md §4.7](../../../../SPEC.md#47-proof) but its absence is not an error.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). The proof field MAY be absent; if present it is verified per [SPEC.md §4.7](/SPEC.md#47-proof) but its absence is not an error.
 2. Generate a `challenge` value with at least 128 bits of cryptographically random entropy.
 3. Bind the challenge server-side to:
    - The `subject` named in the request, when present. A successful subsequent authenticate MUST be rejected if its `issuer` does not equal this `subject`.
@@ -98,7 +98,7 @@ A consumer **MAY** issue a *subject-agnostic* challenge when `payload.subject` i
 
 `payload.purpose` — optional free-text intent the producer declares (e.g. `"login"`, `"step-up"`, `"sign-out"`). Ecosystems define their own vocabulary; the framework imposes no syntax.
 
-`payload.ext` — optional extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member). Every immediate child key MUST be reverse-DNS namespaced.
+`payload.ext` — optional extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member). Every immediate child key MUST be reverse-DNS namespaced.
 
 The full JSON Schema is in [`payload.schema.json`](payload.schema.json).
 
@@ -143,7 +143,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/ch
 
 The response payload is `{ challenge, sessionId, expiresAt }`. The subject MUST treat all three as opaque (no field-level structure is implied) and echo `challenge` + `sessionId` verbatim into the authenticate document.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful challenge
 
@@ -194,4 +194,4 @@ The challenge document itself carries no evidentiary value — it does NOT prove
 
 **Rate limiting.** Unauthenticated challenge issuance is the cheapest attack surface in the auth family. Consumers SHOULD apply per-IP AND per-subject limits; a single-axis limiter is bypassable by either rotating IPs or rotating attempted subjects.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) is part of the producer's signed surface when a proof is included; producers MUST NOT place data in `ext` they would not be comfortable signing.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is part of the producer's signed surface when a proof is included; producers MUST NOT place data in `ext` they would not be comfortable signing.

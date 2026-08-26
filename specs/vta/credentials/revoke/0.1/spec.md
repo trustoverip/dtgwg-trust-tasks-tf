@@ -64,7 +64,7 @@ Two paths revoke a profile credential, and they differ on purpose. **Supersessio
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -74,7 +74,7 @@ A conforming **producer** (the issuing authority) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/credentials/revoke/0.1`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.credentialId` with the id returned by the original issuance.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
@@ -84,13 +84,13 @@ A conforming **consumer** (the VTA) **MUST**:
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the producer's standing as the **issuing authority for the credential named by `payload.credentialId`** — in the ordinary case, the party that issued it. The VTA establishes that from the authenticated producer identity and its own issuance record.
 
 Neither error code Conformance names is that check. `not_found` and `already_revoked` are both statements about the credential's state, and a consumer that returns them without first establishing standing has told an unauthorized caller whether a credential exists and whether it is live. Where the producer lacks standing the VTA refuses with `permissionDenied`, and **SHOULD** do so without distinguishing an unknown credential from one the caller may not revoke.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Definitions
 

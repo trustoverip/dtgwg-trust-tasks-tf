@@ -63,7 +63,7 @@ Filters are AND-combined. Pagination is opaque-cursor based. The maintainer choo
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -78,7 +78,7 @@ A conforming **producer** (the vault consumer) **MUST**:
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements). When a `proof` is present, verify it.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). When a `proof` is present, verify it.
 2. Authenticate and authorise the requesting consumer against its ACL. If the consumer lacks `VaultRead` for the requested scope → `vault/list:permission_denied`.
 3. If `contextId` is supplied and unknown → `vault/list:context_not_found`. (The maintainer SHOULD NOT silently degrade to "all contexts" when a `contextId` is supplied — explicit feedback prevents the consumer from believing it queried a narrower scope than it actually did.)
 4. If `usedSince` and `neverUsed` are both present → `vault/list:filter_conflict` with `details.reason = "used_since_with_never_used"`.
@@ -125,7 +125,7 @@ A conforming consumer **SHOULD** order returned entries by `lastUsedAt` descendi
 
 `payload.cursor` (optional, opaque) — continuation from a prior response.
 
-`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 The full JSON Schema is in [`payload.schema.json`](payload.schema.json).
 

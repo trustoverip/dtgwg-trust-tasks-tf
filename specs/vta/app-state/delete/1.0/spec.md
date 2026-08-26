@@ -86,7 +86,7 @@ tombstone and changes nothing further.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -96,15 +96,15 @@ A conforming **producer** (the application) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/app-state/delete/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId`, `payload.namespace` and `payload.key`.
-3. Include a `proof` per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 4. **MUST NOT** supply `expectedVersion: 0`.
 
 A conforming producer deleting on the strength of something it read **SHOULD** supply `expectedVersion`, so the delete cannot discard an edit made between the read and the delete.
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Refuse `expectedVersion: 0` with `vta/app-state/delete:versionConflict` and `reason: "createOnlyNotApplicable"` — a create-only precondition on a delete is never satisfiable and never intended.
 4. Evaluate a positive `expectedVersion` against the live record, refusing with `reason: "versionMismatch"` when it differs and `reason: "recordAbsent"` when no live record exists, and populating `currentVersion` / `currentValue` / `currentDeleted` in the details so the caller sees what it was about to discard.
 5. Replace a live record with a tombstone taking the namespace's next counter value, discard the value, and return `existed: true` with the tombstone's `version` and `deletedAt`.
@@ -131,7 +131,7 @@ The required `proof` establishes *who authored the deletion*, so it can be
 attributed in the audit record. It is not the authorization — a correctly
 signed request from a caller without write access is refused, and the access
 check happens after the signature is settled
-([SPEC §7.2 item 10](../../../../../SPEC.md#72-consumer-requirements)).
+([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)).
 
 ## Request
 

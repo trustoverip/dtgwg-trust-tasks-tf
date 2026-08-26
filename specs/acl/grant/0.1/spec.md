@@ -59,7 +59,7 @@ The `role` vocabulary and the `scopes` semantics are opaque to the framework —
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -69,12 +69,12 @@ A conforming **producer** (the granting authority) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/acl/grant/0.1`, with itself as `issuer` and the ACL maintainer as `recipient`.
 2. Populate `payload.entry` with the *AclEntry* the maintainer should hold for the subject.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the role string is not recognized, respond with `acl/grant:role_not_recognized`. Where the granting authority is not permitted to assign the requested role, respond with the framework's `permission_denied` (see [SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the role string is not recognized, respond with `acl/grant:role_not_recognized`. Where the granting authority is not permitted to assign the requested role, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where the subject already exists in the ACL with a different role, respond with `permission_denied` and `details.reason` indicating that role changes use [`acl/change-role`](../../change-role/0.1/spec.md).
 4. On acceptance, persist the document as the evidentiary record of the change.
 
@@ -142,7 +142,7 @@ The maintainer fills in `createdAt`/`createdBy` and returns the resulting entry 
 }
 ```
 
-`proof` is omitted because this example assumes a transport that conveys producer identity end-to-end (per [SPEC.md §4.7.1](../../../../SPEC.md#471-when-to-include-a-proof)). A maintainer retaining the document for audit **SHOULD** require a proof.
+`proof` is omitted because this example assumes a transport that conveys producer identity end-to-end (per [SPEC.md §4.7.1](/SPEC.md#471-when-to-include-a-proof)). A maintainer retaining the document for audit **SHOULD** require a proof.
 
 ## Response
 
@@ -150,7 +150,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/acl/gra
 
 The response payload is `{ entry: AclEntry }`, where `entry` is the canonical AclEntry the maintainer now holds for the subject. The granting authority **SHOULD** treat the maintainer's `entry` as the authoritative post-state, since the maintainer applies its own clock and may normalize fields.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful grant
 
@@ -192,4 +192,4 @@ Where the subject is a natural person or the role vocabulary is sensitive (for e
 
 `allowedKeys` exists so that least privilege is *expressible* where the split is meaningful: a granting authority that needs a consumer to sign with exactly one key out of a shared scope can say so, rather than being forced to hand over the whole scope or contort the scope topology into per-key compartments. Because the member only ever intersects with `scopes`, a maintainer that ignores it grants **more** than the producer intended — so a maintainer that operates a signing oracle SHOULD enforce it, and one that cannot SHOULD reject a grant that carries it rather than silently widening. The empty-vs-absent rule is load-bearing: an implementation that reads an empty `allowedKeys` as "unrestricted" has turned the narrowest possible grant into the widest one.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing. The `ext` slot is available at both the payload level and on the `AclEntry` itself — the same namespacing and ignore-unknown rules apply at both levels.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing. The `ext` slot is available at both the payload level and on the `AclEntry` itself — the same namespacing and ignore-unknown rules apply at both levels.

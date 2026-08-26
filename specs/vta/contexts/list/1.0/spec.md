@@ -52,7 +52,7 @@ rest of the VTA.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 This specification documents a task already deployed at this version. It is
 being written down after the fact, and where the wire and this document differ
@@ -83,7 +83,7 @@ parent chain. There is no separate list capability: a caller that may act in a
 context may see it, and no other caller learns it exists.
 
 Verifying the producer's VID or `proof` establishes *who is asking*, never
-*what they may see* ([SPEC §7.2 item 10](../../../../../SPEC.md#72-consumer-requirements)). The scope
+*what they may see* ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). The scope
 resolution is the authorization, and it happens after identity is settled.
 
 ## Request

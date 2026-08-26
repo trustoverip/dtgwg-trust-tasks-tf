@@ -44,7 +44,7 @@ What does change is **which requests reach it**. `keyId` is what [`keys/sign`](.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -54,19 +54,19 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Establish the producer's authority over the key, refusing with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) otherwise.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Establish the producer's authority over the key, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. Refuse with `not_found` where no record carries `keyId`.
 4. Refuse with `already_exists` where a record already carries `newKeyId`. A rename **MUST NOT** overwrite another key's record — doing so would silently repoint every signing request naming that identifier at different material.
 5. Leave the key material, `publicKey`, `createdAt` and `origin` unchanged, and return the new identifier with the time of the change.
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the producer's **authority over the named key**, established by the custodian exactly as for any other operation on that key. Renaming changes no key material and produces no signature, but the label is how every other task addresses the key, so a caller that may not use a key may not relabel it either.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Definitions
 
@@ -110,7 +110,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/re
 }
 ```
 
-Failures (`permission_denied`, `not_found`, `already_exists`) use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permission_denied`, `not_found`, `already_exists`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

@@ -76,7 +76,7 @@ The population this addresses is also finite and historical. Agents that hold an
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -86,7 +86,7 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 
 A conforming **consumer** (the agent) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Refuse with `notFound` where it holds no registration under `serverId`.
 3. Determine for itself whether the slot is orphaned, by the same comparison [`reconcile`](../../reconcile/0.1) performs — the host's listing **scoped to the agent as owner**, against its own records naming that server. It **MUST NOT** treat the producer's request as evidence of orphanhood.
 4. Refuse with `vta/webvh/servers/retire-orphan:notOrphaned` where it holds any record for the slot, whatever that record's state. A record that is disabled, archived, or superseded is still a record; the ordinary delete path exists for those, and it is the path that carries the right authorization.
@@ -129,7 +129,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/webvh/server
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. Failures use `trust-task-error` ([SPEC.md §8](../../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+A success *response* document carries `type: https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Retired
 
@@ -200,7 +200,7 @@ The slot has been published to since the producer read it. The producer named wh
 }
 ```
 
-`inResponseTo` is populated on these deliberately. [SPEC.md §8.2](../../../../../../SPEC.md#82-error-payload) makes it **MUST** where the error will be relied upon beyond the original producer, and a refusal to destroy something is exactly the kind of record an operator keeps.
+`inResponseTo` is populated on these deliberately. [SPEC.md §8.2](/SPEC.md#82-error-payload) makes it **MUST** where the error will be relied upon beyond the original producer, and a refusal to destroy something is exactly the kind of record an operator keeps.
 
 ## Security & Privacy
 

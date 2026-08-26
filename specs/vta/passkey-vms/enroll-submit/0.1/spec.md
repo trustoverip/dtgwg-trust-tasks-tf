@@ -78,7 +78,7 @@ This task is **not idempotent**: it consumes a single-use ceremony. A retry of t
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -89,12 +89,12 @@ A conforming **producer** (the DID administrator) **MUST**:
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1`, with itself as `issuer` and the VTA as `recipient`.
 2. Echo the `ceremonyId` from [`enroll-challenge`](../../enroll-challenge/0.1/spec.md) unchanged, and set `payload.did` to the same DID used at challenge time.
 3. Populate the WebAuthn registration result: `credentialId`, `publicKeyMultibase`, `coseAlgorithm`, `attestationObject`, `clientDataJson`, `authenticatorData`. All byte-valued members are base64url-encoded with no padding.
-4. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+4. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer does not hold the admin role on the target DID's context, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer does not hold the admin role on the target DID's context, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where the `ceremonyId` is unknown, expired, or already consumed, respond with `vta/passkey-vms/enroll-submit:unknownCeremony`.
 4. Where `payload.did` does not match the DID bound to the ceremony, respond with `vta/passkey-vms/enroll-submit:ceremonyDidMismatch`.
 5. Verify the WebAuthn registration against the ceremony `challenge`. On a parse failure, verification failure, or unsupported credential algorithm, respond with `vta/passkey-vms/enroll-submit:invalidAttestation` and set `details.reason`.
@@ -152,7 +152,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/vta/pas
 
 The response payload is `{ verificationMethod, webvhVersion }`. The `verificationMethod` is the entry exactly as it now appears in the DID document — its `publicKeyMultibase` is the server-re-derived (authoritative) key. The producer **SHOULD** treat this as the source of truth, since the VTA may have rejected or corrected the browser-supplied value.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful enrolment
 
@@ -191,4 +191,4 @@ Response to the request example:
 
 **Published key is public.** The verificationMethod is written into the DID document and is therefore public. It carries no secret. `webauthnCredentialId` and `label` are likewise public; producers **SHOULD NOT** place sensitive information in `label`.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.

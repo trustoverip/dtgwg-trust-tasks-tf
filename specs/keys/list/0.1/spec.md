@@ -45,7 +45,7 @@ The response carries `total` alongside the page. That member is not decoration: 
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -55,7 +55,7 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Return only records this producer is permitted to see. Filtering by policy is **not** an error — the producer receives a smaller set, and `total` reflects that filtered set, not the custodian's full inventory.
 3. Populate `total`, `offset` and `limit` on every response, and set `total` to the number of records matching the request's filters *after* policy filtering.
 4. **Not** include private key material.

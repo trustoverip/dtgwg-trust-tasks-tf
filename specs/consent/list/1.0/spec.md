@@ -52,7 +52,7 @@ for a single conversation.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -72,7 +72,7 @@ optional `cursor` for incremental follow-up.
 `payload.platform` (OPTIONAL) — restrict to this platform tag.
 `payload.subject` (OPTIONAL) — a full [`ConsentSubject`](../../_shared/0.1/consent.schema.json) for a point-check.
 `payload.since` (OPTIONAL) — opaque cursor; return only grants changed after it.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

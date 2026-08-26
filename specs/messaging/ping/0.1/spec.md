@@ -45,7 +45,7 @@ The task is **side-effect-free**: a ping changes no responder state and is safe 
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -58,9 +58,9 @@ A conforming **producer** (the requester) **MUST**:
 
 A conforming **consumer** (the responder) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Respond with a `#response`-variant document whose `payload` carries `serverTime` and `status`, echoing the request `nonce` when one was supplied.
-3. Report `status: "ok"` only when it is able to accept and process messages; report `status: "degraded"` when it is reachable but operating with reduced function (for example a backend in a circuit-broken state); and decline with the framework's `unavailable` error ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) when it cannot serve at all.
+3. Report `status: "ok"` only when it is able to accept and process messages; report `status: "degraded"` when it is reachable but operating with reduced function (for example a backend in a circuit-broken state); and decline with the framework's `unavailable` error ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) when it cannot serve at all.
 4. Populate `protocols` with the transport protocols it is currently prepared to accept, so the requester can select a transport.
 
 A ping **MUST NOT** require the requester to hold any capability beyond reachability; a responder **MAY**, however, answer an unauthenticated ping with a reduced response (status and time only, omitting `protocols`) where exposing its capability surface to anonymous callers is undesirable.
@@ -88,7 +88,7 @@ A *request* document carries `type: https://trusttasks.org/spec/messaging/ping/0
 }
 ```
 
-`proof` is omitted here because the example assumes a transport that conveys producer identity end-to-end (per [SPEC.md §4.7.1](../../../../SPEC.md#471-when-to-include-a-proof)).
+`proof` is omitted here because the example assumes a transport that conveys producer identity end-to-end (per [SPEC.md §4.7.1](/SPEC.md#471-when-to-include-a-proof)).
 
 ## Response
 
@@ -111,7 +111,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)); a responder that cannot serve responds with `unavailable` (retryable), not a `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)); a responder that cannot serve responds with `unavailable` (retryable), not a `#response` variant.
 
 ## Security & Privacy
 
@@ -119,4 +119,4 @@ A ping is side-effect-free and carries no personal data. The principal privacy c
 
 `serverTime` lets a requester estimate clock skew against the responder but is not a trusted time source; a requester **MUST NOT** treat it as authoritative for any security decision. Where a requester needs a retainable, transport-independent attestation that a responder was live at a given time, it **SHOULD** require an in-band `proof` per the spec's `RECOMMENDED` proof policy.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) is available on both the request and response payloads under the usual namespacing and ignore-unknown rules.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is available on both the request and response payloads under the usual namespacing and ignore-unknown rules.

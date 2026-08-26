@@ -9,7 +9,7 @@ spec, **that spec's own front matter and payload schema are authoritative.**
 ## 1. Shared schema components
 
 Vault payloads reference these `vault/_shared/` components rather than
-re-declaring common shapes (see [SPEC.md §6.6](../../../../SPEC.md#66-shared-schema-components)):
+re-declaring common shapes (see [SPEC.md §6.6](/SPEC.md#66-shared-schema-components)):
 
 | Component | `$defs` | Used for |
 |---|---|---|
@@ -24,7 +24,7 @@ re-declaring common shapes (see [SPEC.md §6.6](../../../../SPEC.md#66-shared-sc
 Every `vault/` task is addressed to the **vault maintainer** — the party tagged
 `member: recipient` in each spec's front matter, declared `REQUIRED`. The
 producer is the requesting *vault consumer* (or a device acting as one). Per
-[SPEC.md §7.2 item 5](../../../../SPEC.md#72-consumer-requirements), the
+[SPEC.md §7.2 item 5](/SPEC.md#72-consumer-requirements), the
 `recipient` is therefore enforced in-band.
 
 ## 3. Proof convention
@@ -33,7 +33,7 @@ Across the category, tasks that **mutate state or release secret material**
 declare `proofRequirement: REQUIRED` (`vault/delete`, `vault/upsert`,
 `vault/release`, `vault/proxy-login`, `vault/sign-trust-task`); read-only tasks
 declare `RECOMMENDED` (`vault/get`, `vault/list`, `vault/sync`, `vault/usage`).
-This mirrors the threat model in [SPEC.md §4.7.1](../../../../SPEC.md#471-when-to-include-a-proof):
+This mirrors the threat model in [SPEC.md §4.7.1](/SPEC.md#471-when-to-include-a-proof):
 a released secret is retained and relied upon after delivery, so it needs a
 transport-independent integrity guarantee. The per-spec declaration is
 authoritative.
@@ -44,4 +44,4 @@ Tasks whose authorization depends on the policy engine carry a
 `ConsumerContext` and, where the policy demands re-authentication, a
 `StepUpProof` (both from `consumer-context.schema.json`). Step-up evidence
 kinds (`webauthnUv`, `pushApproval`, …) are spec-defined enumerated values and
-follow the lowerCamelCase rule of [SPEC.md §4.10](../../../../SPEC.md#410-naming-conventions).
+follow the lowerCamelCase rule of [SPEC.md §4.10](/SPEC.md#410-naming-conventions).

@@ -56,7 +56,7 @@ When the action being confirmed IS an AAL elevation, use the step-up pair. For e
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels), superseded by [`task-consent/request/0.1`](../../../task-consent/request/0.1/spec.md).
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels), superseded by [`task-consent/request/0.1`](../../../task-consent/request/0.1/spec.md).
 
 A confirm is a task-consent request with empty `effects`, `minApprovals: 1`, and a requester-authored `reason` — everything this task can express, task-consent can. The trust models differ, and task-consent's is the survivor: this specification required the wallet to display the requester-authored `payload.reason` verbatim as the basis of consent, while task-consent requires the prose a human reads to be authored by the **executor** (by dry-running the real handler) precisely because the requester is the least trusted party in the system. The one legitimate confirm use — a human-readable requester note — is absorbed by task-consent/request's explicitly-untrusted `note` field, which is rendered attributed and never as a statement of effects. New implementations MUST use the task-consent family; no new deployments of this task should be created.
 

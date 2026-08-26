@@ -76,7 +76,7 @@ round-trip to a path whose failure mode is already benign.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -102,7 +102,7 @@ A conforming **consumer** (the requester) **MUST**:
 `payload.status` (REQUIRED) — always `granted`.
 `payload.payloadDigest` (REQUIRED) — the salted wire digest of the approved task, for correlation.
 `payload.taskType` (REQUIRED) — Type URI of the approved task, for correlation and display.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

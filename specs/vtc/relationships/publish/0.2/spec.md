@@ -72,10 +72,10 @@ credential and neither would be wrong. `0.2` states [RFC 8785](https://www.rfc-e
 (JCS) explicitly.
 
 This is a breaking change to the wire format, released as a `MINOR` increment
-under [SPEC.md §5.2](../../../../../SPEC.md#52-compatibility-rules)'s `draft`
+under [SPEC.md §5.2](/SPEC.md#52-compatibility-rules)'s `draft`
 allowance. `0.1` remains published and unchanged; migrate with the
 expand-then-contract sequence of
-[§5.4](../../../../../SPEC.md#54-migrating-between-versions), and note that a
+[§5.4](/SPEC.md#54-migrating-between-versions), and note that a
 consumer at `0.2` **MUST** still accept `0.1` documents — which carry
 `vrcSha256`, a member `0.2`'s schema rejects — so the two are distinguished by
 the *Type URI*'s version, not by sniffing the payload.

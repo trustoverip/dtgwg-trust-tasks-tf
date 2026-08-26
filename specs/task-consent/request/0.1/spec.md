@@ -123,7 +123,7 @@ The quarantine rules keep the exception from swallowing the design:
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -153,7 +153,7 @@ A conforming **consumer** (the approver device) **MUST**:
 
 A conforming consumer **SHOULD**, for a `sideEffects: destructive` task, require the human to **match** a prefix of `payloadDigest` against the same prefix displayed by the requesting surface, rather than to tap "approve". Only a comparison across two independent screens survives a compromised consent surface; a tap is a reflex, and a reflex is what habituation destroys first.
 
-> **Note (non-normative).** The reference ecosystem signs this document with the `eddsa-jcs-2022` Data Integrity cryptosuite and `proofPurpose: assertionMethod`, as the examples show. This is an implementation profile, not a requirement of this specification: [SPEC.md §4.7](../../../../SPEC.md#47-proof) leaves the choice of cryptosuite open, and any registered suite whose `verificationMethod` resolves to material controlled by the `issuer` satisfies the `proof` requirement.
+> **Note (non-normative).** The reference ecosystem signs this document with the `eddsa-jcs-2022` Data Integrity cryptosuite and `proofPurpose: assertionMethod`, as the examples show. This is an implementation profile, not a requirement of this specification: [SPEC.md §4.7](/SPEC.md#47-proof) leaves the choice of cryptosuite open, and any registered suite whose `verificationMethod` resolves to material controlled by the `issuer` satisfies the `proof` requirement.
 
 ## Binding — what the human approved is what executes
 
@@ -195,7 +195,7 @@ already does this for the data; nothing else does it for the authorization.
 `payload.minApprovals` (REQUIRED) — approvals required.
 `payload.excludeRequester` (REQUIRED) — whether the requester may self-approve.
 `payload.expiresAt` (REQUIRED) — when the pending request lapses.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

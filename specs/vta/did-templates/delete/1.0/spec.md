@@ -53,7 +53,7 @@ Deletion is permanent and affects every context: once removed, no caller can ren
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/delete/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/delete/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 
@@ -63,12 +63,12 @@ A conforming **producer** (the super-administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/did-templates/delete/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Set `payload.name` to the name of the global template to remove.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer does not hold the super-administrator role, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer does not hold the super-administrator role, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where no global template with `payload.name` exists, respond with `vta/did-templates/delete:notFound`.
 4. On success, remove the template from the global scope and return the confirmation [response](#response) with `deleted: true`.
 
@@ -109,7 +109,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/did-template
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/delete/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response echoes the deleted template's `name` and sets `deleted: true`.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/delete:notFound` case.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/delete:notFound` case.
 
 ### Deletion confirmed
 
@@ -134,4 +134,4 @@ Response to the request example:
 
 **Privileged write, audited.** Removing a template changes what the VTA can mint for future integrations, so the task is restricted to super-administrators and the VTA records the deleter DID. The **REQUIRED** `proof` binds the change to a specific operator for the audit trail and prevents a captured request being attributed to the wrong party. The response echoes the deleted `name` so downstream audit pipelines can record exactly which resource was removed without re-deriving it from the request.
 
-**Deletion is irreversible.** There is no soft-delete or trash; once removed, a name can only be reinstated via [`vta/did-templates/create`](../../create/1.0/spec.md). Any data in the optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Deletion is irreversible.** There is no soft-delete or trash; once removed, a name can only be reinstated via [`vta/did-templates/create`](../../create/1.0/spec.md). Any data in the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

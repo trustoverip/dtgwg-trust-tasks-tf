@@ -53,7 +53,7 @@ Version 2.0 merges the 1.0 pair [`vta/did-templates/list/1.0`](../1.0/spec.md) a
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -64,12 +64,12 @@ A conforming **producer** (the authenticated caller) **MUST**:
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/did-templates/list/2.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId` with the target context to list that context's templates, or omit it to list the global templates.
 
-A conforming producer **SHOULD** include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof) so the read is attributable independent of transport.
+A conforming producer **SHOULD** include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof) so the read is attributable independent of transport.
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof` when present.
-2. Where the producer is not an authenticated caller — or, when `payload.contextId` is present, lacks access to that context — respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof` when present.
+2. Where the producer is not an authenticated caller — or, when `payload.contextId` is present, lacks access to that context — respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. On success, return every stored template in the selected scope as `payload.templates` — an empty array when none exist.
 
 ## Definitions
@@ -122,7 +122,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/did-template
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/list/2.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload carries the `templates` array of persisted **DidTemplateRecord** values for the selected scope.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant. Listing has no task-specific errors.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant. Listing has no task-specific errors.
 
 ### The stored templates
 
@@ -181,4 +181,4 @@ Response to the global request example. Each record's resolved `scope` names whe
 
 **Attributed read, proportionate proof.** Listing templates discloses only non-secret provisioning metadata, so the producer `proof` is **RECOMMENDED** rather than REQUIRED: the transport session already authorizes the read, and the proof's value here is a transport-independent identity for the VTA's audit trail. Deployments that require attributable reads SHOULD reject unproven requests as a matter of local policy.
 
-**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload when a proof is present, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload when a proof is present, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

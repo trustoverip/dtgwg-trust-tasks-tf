@@ -112,7 +112,7 @@ each write, and each believe it won.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -122,15 +122,15 @@ A conforming **producer** (the application) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/app-state/put/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId`, `payload.namespace`, `payload.key`, and **exactly one** of `payload.value` or `payload.mergePatch`.
-3. Include a `proof` per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 4. **MUST NOT** place secret material in `value` or `mergePatch` — see [Security & Privacy](#security--privacy).
 
 A conforming producer that intends a read-modify-write **SHOULD** supply `expectedVersion` from the read, and **SHOULD** treat a `versionConflict` as data rather than as a reason to re-read: the details already carry the maintainer's current version and value.
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Enforce a **documented** per-record cap on the stored value and refuse an oversized write with `vta/app-state/put:valueTooLarge`, carrying both `limitBytes` and `actualBytes`. A maintainer **MUST NOT** silently truncate or drop an oversized write — refusing loudly at a knowable cap is the whole requirement, and a limit that drops a write silently has already cost a real deployment a lost join. The RECOMMENDED cap is **65536 bytes** measured over the UTF-8 encoding of the [[RFC8785]](https://www.rfc-editor.org/rfc/rfc8785) canonicalization of the value.
 4. Evaluate `expectedVersion` before writing:
    - absent → unconditional upsert;
@@ -160,7 +160,7 @@ The required `proof` establishes *who authored the write*, so the resulting
 record and its audit entry can be attributed to an application key. It is not
 the authorization — a correctly signed request from a caller without write
 access is refused, and the access check happens after the signature is settled
-([SPEC §7.2 item 10](../../../../../SPEC.md#72-consumer-requirements)).
+([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)).
 
 ## Request
 

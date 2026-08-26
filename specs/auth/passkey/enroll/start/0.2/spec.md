@@ -72,7 +72,7 @@ The framework `proof` is REQUIRED. The auth service binds the issued `enrollment
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -111,7 +111,7 @@ A conforming consumer **MUST NOT** return `uvOptions` for a subject with no enro
 
 `payload.deviceLabel` — optional human-readable credential name.
 
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

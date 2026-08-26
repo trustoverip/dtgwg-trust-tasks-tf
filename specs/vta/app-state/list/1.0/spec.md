@@ -105,7 +105,7 @@ reason.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -128,8 +128,8 @@ until it has drained the final page of the feed.
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements). Where a `proof` is present, verify it.
-2. Refuse a caller that lacks read access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)), and **MUST NOT** degrade an unreachable context to an empty result. A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). Where a `proof` is present, verify it.
+2. Refuse a caller that lacks read access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)), and **MUST NOT** degrade an unreachable context to an empty result. A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 4. Refuse with `vta/app-state/list:filterConflict` and `reason: "sinceVersionRequiresNamespace"` when `sinceVersion` is present and `namespace` is not; and with `reason: "changeFeedCannotExcludeDeleted"` when `sinceVersion` is present and `includeDeleted` is false.
 5. In **snapshot** mode, return live records matching `namespace` and `prefix`, in ascending `key` order, and include tombstones still inside the retention window when `includeDeleted` is true.
 6. In **change-feed** mode, return every record in the namespace — live and tombstoned — whose `version` is strictly greater than `sinceVersion`, filtered by `prefix` where supplied, in **ascending `version` order**, so that a consumer applying them in order reaches the same state the maintainer holds.

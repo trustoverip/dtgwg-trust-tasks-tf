@@ -54,7 +54,7 @@ matching `alsoKnownAs` entry, so **DID → name is the authoritative direction**
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. It documents a task already deployed at this version, written down after the fact.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. It documents a task already deployed at this version, written down after the fact.
 
 ## Conformance
 
@@ -73,7 +73,7 @@ The binding this task records is one half of a claim. It becomes authoritative
 only when the DID document claims the name back through `alsoKnownAs`; a
 consumer **MUST NOT** treat a name recorded here as proof of the binding.
 
-Verifying the producer's VID or `proof` establishes *who is asking*, never *what they may do* ([SPEC §7.2 item 10](../../../../../../SPEC.md#72-consumer-requirements)). The role check follows, and is the authorization.
+Verifying the producer's VID or `proof` establishes *who is asking*, never *what they may do* ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). The role check follows, and is the authorization.
 
 ## Request
 

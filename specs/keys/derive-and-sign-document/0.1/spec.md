@@ -46,7 +46,7 @@ It differs from [`keys/derive-and-sign`](../../derive-and-sign/0.1/spec.md) in *
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -60,21 +60,21 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Decide whether this producer may derive and sign at this path, refusing with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) otherwise.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Decide whether this producer may derive and sign at this path, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. **Strip any existing `proof` member before canonicalizing.** Signing over a document that still carries a previous proof produces a proof over a signature rather than over content, which no verifier will reproduce and which quietly makes the second signature meaningless.
 4. Canonicalize and construct the proof, recording `proofPurpose` (defaulting to `assertionMethod`) and a verification method that resolves under the derived `did:key`.
 5. Return `signerDid` and the proofed `document`, and **not** the derived private key.
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the consumer's own decision, made per request, that **this producer may derive and sign at this path** — the same policy question `keys/derive-and-sign` asks, applied to a document rather than to raw bytes.
 
 A derivation path is not a stored record, so there is no per-key ACL to consult and the policy has to be expressed over paths. `exposure.actsAsSubject` is `true` here: the signature is produced under the subject's own authority, so an over-broad path policy does not merely leak, it lets a producer act as someone else.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Definitions
 
@@ -139,7 +139,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/de
 }
 ```
 
-Failures (`permission_denied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permission_denied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

@@ -64,7 +64,7 @@ This task does not change the session's *AAL* — refresh preserves whatever `am
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -78,7 +78,7 @@ A conforming **producer** (the subject) **MUST**:
 
 A conforming **consumer** (the auth service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements). If a `proof` is present it is verified; if absent it is not an error.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). If a `proof` is present it is verified; if absent it is not an error.
 2. Look up the session associated with `payload.refreshToken`. Unknown → `auth/refresh:token_not_found`. Expired → `auth/refresh:token_expired`. Revoked → `auth/refresh:token_revoked`.
 3. Issue a fresh access token. The consumer's policy decides whether to also rotate the refresh token: rotation is RECOMMENDED for tokens older than 24 h or after any suspicious-activity signal.
 4. Preserve `session.amr` and `session.acr` across the refresh — refresh does not elevate or downgrade AAL.
@@ -86,7 +86,7 @@ A conforming **consumer** (the auth service) **MUST**:
 
 ## Authorization
 
-*Stated in anticipation of [SPEC.md §7.3](../../../../SPEC.md#73-specification-requirements)
+*Stated in anticipation of [SPEC.md §7.3](/SPEC.md#73-specification-requirements)
 item 15, which binds specifications targeting framework 0.4; this specification
 targets 0.1, where the declaration is not yet required.*
 
@@ -98,7 +98,7 @@ scope. There is no separate check of who is asking.
 
 This is the reason `proof` is not required here and its absence is not an
 error. Where a `proof` is present it attributes the request to a signer, but
-per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 that
+per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10 that
 attribution is neither necessary nor sufficient for the refresh — the token is
 what carries the authority, and a valid proof over a stolen token authorizes
 nothing extra, just as a missing proof over a legitimate token withholds
@@ -122,7 +122,7 @@ token is the only signal of theft available.
 
 `payload.scope` (optional) — narrower scope request; MUST NOT broaden.
 
-`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

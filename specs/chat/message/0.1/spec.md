@@ -98,7 +98,7 @@ A conforming **consumer** (the counterparty) **MUST**:
 
 ## Authorization
 
-*Stated in anticipation of [SPEC.md §7.3](../../../../SPEC.md#73-specification-requirements)
+*Stated in anticipation of [SPEC.md §7.3](/SPEC.md#73-specification-requirements)
 item 15, which binds specifications targeting framework 0.4; this specification
 targets 0.2, where the declaration is not yet required.*
 
@@ -112,7 +112,7 @@ it, however well its document verifies.
 
 `proof` is REQUIRED here, and verifying it is what makes that comparison
 possible — but per
-[SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 it is not
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10 it is not
 itself the authorization. A validly signed message from a DID that is not this
 conversation's expected author for its direction has established its author and
 earned no entitlement.

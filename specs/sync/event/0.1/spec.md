@@ -58,13 +58,13 @@ A conforming **consumer** **MUST**:
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the **maintainer's own authority over the resources it reports**, exercised in the opposite direction from most tasks in this registry: the maintainer is the producer here, and the consumer is the party being told about its own data.
 
 Two consequences the consumer relies on. The maintainer filters by ACL before sending, so an event names only resources this consumer may read — an authorization decision taken at composition time rather than at receipt. And the consumer verifies the `proof` before acting on an event, which is what stops a mediator injecting one; that check establishes the event came from the maintainer, not that the maintainer was entitled to send it.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Payload
 

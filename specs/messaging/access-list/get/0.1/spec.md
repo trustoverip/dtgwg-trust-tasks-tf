@@ -50,7 +50,7 @@ Use this task to check a known set of candidates without paging the whole list (
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/list`](../../list/0.1/spec.md) with its `entries` membership filter — send `{ did, entries }`; this task's `present` set is the filtered response's `entries`, and its `absent` set is the remainder of the supplied DIDs.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/list`](../../list/0.1/spec.md) with its `entries` membership filter — send `{ did, entries }`; this task's `present` set is the filtered response's `entries`, and its `absent` set is the remainder of the supplied DIDs.
 
 ## Conformance
 
@@ -60,11 +60,11 @@ A conforming **producer** (the requester) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/access-list/get/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID and `payload.entries` with at least one DID to test.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof) where the ecosystem relies on the response (**RECOMMENDED**).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof) where the ecosystem relies on the response (**RECOMMENDED**).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
 2. Where the target DID has no account, respond with `messaging/access-list/get:unknownAccount`.
 3. Apply its own read-authorization policy, responding with the framework's `permissionDenied` where the requester has no standing to inspect the account's access list.
 4. Otherwise partition the supplied entries into those present in the access list and those absent, and return both sets.
@@ -124,7 +124,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -132,4 +132,4 @@ A membership check is read-only and mutates nothing; `proof` is **RECOMMENDED** 
 
 An access list reveals who an account communicates with, and a membership check leaks that relationship one probe at a time. A mediator **MUST** enforce its own read-authorization policy independent of the document, and **SHOULD** disclose membership only to the account's controller or an administrator. The response reports membership only; it does not interpret presence against `accessListMode`, so a requester **MUST NOT** infer send permission from a `present`/`absent` result without also knowing the account's mode.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

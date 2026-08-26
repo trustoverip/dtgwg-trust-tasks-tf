@@ -51,11 +51,11 @@ related:
 
 A **Trust Ceremony Receipt** is evidence that one *enactment* of a *Trust Ceremony* completed: which steps it comprised, in what order, and that nothing was dropped between them. It is issued by a **recorder** — a role the *ceremony definition* names — and is itself a *Trust Task document*, so one validation, signing and transport pipeline serves it as serves every other.
 
-This specification is the registry publication of the receipt referenced by [SPEC.md §4.11](../../../SPEC.md#411-the-ceremony-member) and [§6.7](../../../SPEC.md#67-ceremony-namespace).
+This specification is the registry publication of the receipt referenced by [SPEC.md §4.11](/SPEC.md#411-the-ceremony-member) and [§6.7](/SPEC.md#67-ceremony-namespace).
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## What the recorder does and does not attest
 
@@ -98,7 +98,7 @@ where:
 
 * `document` is the complete step *Trust Task document* **including its `proof`**. The digest names *the bytes a party received*, not a re-derivable signing input; excluding `proof` would let one issuer produce two equally valid documents sharing a digest.
 
-    This is deliberately **not** the *task digest* of [SPEC.md §4.9.3](../../../SPEC.md#493-binding-a-citation-to-the-document-it-names), which excludes the top-level `proof`. The two answer different questions. A task digest binds a citation made from outside the framework to *what a document says*, where the same statement legitimately exists in signed and unsigned form and must yield one value either way. A step digest is chain-of-custody within one enactment: the recorder is attesting the artifacts it actually held, this specification already requires each step to carry its own `proof` and a verifier to check it, and here two documents differing only in signature genuinely are two different steps. That is the same sense of document identity [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 11 keys on, and the opposite of what a citation needs.
+    This is deliberately **not** the *task digest* of [SPEC.md §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names), which excludes the top-level `proof`. The two answer different questions. A task digest binds a citation made from outside the framework to *what a document says*, where the same statement legitimately exists in signed and unsigned form and must yield one value either way. A step digest is chain-of-custody within one enactment: the recorder is attesting the artifacts it actually held, this specification already requires each step to carry its own `proof` and a verifier to check it, and here two documents differing only in signature genuinely are two different steps. That is the same sense of document identity [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 11 keys on, and the opposite of what a citation needs.
 * `JCS` is the [[RFC8785]] canonicalization, as used elsewhere in this registry.
 * `salt` is the enactment salt, decoded from its multibase form.
 * `H` is any hash function expressible in multihash; the multihash prefix declares which, so the algorithm is not fixed by this specification.
@@ -121,7 +121,7 @@ A conforming **recorder** **MUST**:
 
 A conforming **verifier** **MUST**:
 
-1. Apply the [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) pipeline, including verifying the receipt's own `proof` against its `issuer`.
+1. Apply the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline, including verifying the receipt's own `proof` against its `issuer`.
 2. Resolve the definition and check that its digest equals `payload.definitionDigest`. A mismatch, or an unresolvable definition, means the receipt cannot be verified — **not** that it is invalid.
 3. Confirm the recorder is one the definition names.
 4. Evaluate the definition's completion rule over `payload.steps` **itself**, and **MUST NOT** rely on `payload.complete`.
@@ -133,15 +133,15 @@ A verifier **MAY** hold none of the step documents. It then verifies the recorde
 
 ## Bearer
 
-This is a **bearer specification** ([SPEC.md §4.8.3](../../../SPEC.md#483-bearer-specifications)): a receipt asserts that an enactment occurred, and that assertion is meaningful to any party able to verify the recorder's identity. Audience-binding it would defeat the point — a receipt addressed to one verifier is one that [§7.2](../../../SPEC.md#72-consumer-requirements) item 5 requires every *other* verifier to reject, and evidence that only its first recipient may act on is not evidence.
+This is a **bearer specification** ([SPEC.md §4.8.3](/SPEC.md#483-bearer-specifications)): a receipt asserts that an enactment occurred, and that assertion is meaningful to any party able to verify the recorder's identity. Audience-binding it would defeat the point — a receipt addressed to one verifier is one that [§7.2](/SPEC.md#72-consumer-requirements) item 5 requires every *other* verifier to reject, and evidence that only its first recipient may act on is not evidence.
 
-No member of the payload depends on the receiving party's identity, as [§4.8.3](../../../SPEC.md#483-bearer-specifications) requires of a bearer specification.
+No member of the payload depends on the receiving party's identity, as [§4.8.3](/SPEC.md#483-bearer-specifications) requires of a bearer specification.
 
 Bearer governs **audience**, not **distribution**. That any holder may rely on a receipt does not oblige anyone to hand it out; the recorder decides who receives one, and a ceremony whose participation must not be linkable declares `enactmentPrivacy: blinded` rather than relying on the receipt staying private.
 
 ## Security & Privacy
 
-**A receipt is not an authorization.** It reports that a flow completed. It grants nothing, and [SPEC.md §4.11.4](../../../SPEC.md#4114-membership-is-a-claim-not-a-permission) applies to it as to the envelope member: a *consumer* **MUST NOT** grant authority on the strength of a receipt alone.
+**A receipt is not an authorization.** It reports that a flow completed. It grants nothing, and [SPEC.md §4.11.4](/SPEC.md#4114-membership-is-a-claim-not-a-permission) applies to it as to the envelope member: a *consumer* **MUST NOT** grant authority on the strength of a receipt alone.
 
 **An unresolvable definition is not a failure of the receipt.** A verifier that cannot fetch the definition cannot check completeness, and **MUST** report that it could not verify rather than that verification failed. The distinction matters where the definition was inlined for a closed deployment, or where the registry is simply unreachable.
 

@@ -58,7 +58,7 @@ This task is **idempotent in effect** but not in outcome: revoking a fragment th
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -68,12 +68,12 @@ A conforming **producer** (the DID administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.did` and `payload.fragment`. `fragment` is the verificationMethod id with the leading `#` removed.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer does not hold the admin role on the target DID's context, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer does not hold the admin role on the target DID's context, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where the target DID is not managed by this VTA, respond with `vta/passkey-vms/revoke:didNotFound`.
 4. Where no verificationMethod with the given `fragment` exists on the DID, respond with `vta/passkey-vms/revoke:fragmentNotFound`.
 5. On success, remove the verificationMethod via a WebVH log entry and return the empty success body.
@@ -118,7 +118,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/vta/pas
 
 The response payload is an **empty object** (`{}`). It is modelled as an object — rather than no payload — so that future additive fields (for example, the resulting WebVH version) can be introduced as a backwards-compatible `MINOR` change.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful revocation
 
@@ -144,4 +144,4 @@ Response to the request example:
 
 **Distinguish "not found" from "removed".** A revoke against an absent fragment returns `vta/passkey-vms/revoke:fragmentNotFound` rather than a silent success, so an operator cannot mistake a typo'd fragment for a successful revocation.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.

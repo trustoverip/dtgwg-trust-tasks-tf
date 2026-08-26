@@ -64,7 +64,7 @@ Within the hosted-method scope, each operation declares the target method explic
 }
 ```
 
-This keeps the core wire shape stable across methods. A consumer that doesn't recognise the method's `ext` namespace MUST ignore it (per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member)) — the operation still proceeds against the common fields, and the method-specific consumer (e.g. a webvh-aware hosting service) reads the extension to validate its own invariants.
+This keeps the core wire shape stable across methods. A consumer that doesn't recognise the method's `ext` namespace MUST ignore it (per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) — the operation still proceeds against the common fields, and the method-specific consumer (e.g. a webvh-aware hosting service) reads the extension to validate its own invariants.
 
 A method-specific extension shape MAY be published as a separate Trust Task spec or, more commonly, as a schema file under `did-management/_shared/0.1/did-method-extensions/<method>.schema.json` referenced by the spec's `ext` description. Both forms are conformant; the schema-file form keeps the published Trust Task catalogue compact.
 

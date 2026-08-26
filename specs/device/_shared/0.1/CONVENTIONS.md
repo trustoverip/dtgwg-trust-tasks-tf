@@ -9,7 +9,7 @@ payload schema are authoritative.**
 ## 1. Shared schema component
 
 Device (and push) payloads reference one shared component
-([SPEC.md §6.6](../../../../SPEC.md#66-shared-schema-components)):
+([SPEC.md §6.6](/SPEC.md#66-shared-schema-components)):
 
 [`device-binding.schema.json`](device-binding.schema.json) — `$defs`:
 `DeviceBinding`, `Capability`, `ConsumerKind`, `DeviceAttestation`,
@@ -25,7 +25,7 @@ Most `device/` tasks are addressed to the **vault maintainer** (the party tagged
 `member: recipient`, declared `REQUIRED`): a device is registered and managed by
 the maintainer. The exception is `device/wipe`, whose `recipient` is the
 **device** itself — the maintainer issues the wipe *to* the device. Per
-[SPEC.md §7.2 item 5](../../../../SPEC.md#72-consumer-requirements) the
+[SPEC.md §7.2 item 5](/SPEC.md#72-consumer-requirements) the
 `recipient` is enforced in-band.
 
 ## 3. Proof convention
@@ -49,6 +49,6 @@ device-supplied.
 
 `DeviceAttestation` kinds (`appleAppAttest`, `playIntegrity`, `nitroEnclave`,
 …) and `Capability` values (`vaultRead`, `proxyLogin`, …) are spec-defined
-enumerated values in lowerCamelCase ([SPEC.md §4.10](../../../../SPEC.md#410-naming-conventions)).
+enumerated values in lowerCamelCase ([SPEC.md §4.10](/SPEC.md#410-naming-conventions)).
 Externally-owned tokens that appear in the same schema (push-provider names such
 as `apns`/`fcm`/`webpush`) are carried verbatim per the same section.

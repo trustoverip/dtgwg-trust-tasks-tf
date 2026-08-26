@@ -54,7 +54,7 @@ Context-scoped templates are visible and renderable within a single context. Thi
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/render/2.0`](../../../../did-templates/render/2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/render/2.0`](../../../../did-templates/render/2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 
@@ -65,12 +65,12 @@ A conforming **producer** (the context member) **MUST**:
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId` with the context the template is scoped to, and `payload.name` with the resource id of the template to render.
 3. Supply the template's declared `requiredVars` in `payload.vars`; MUST NOT supply reserved ambient names (the VTA injects those server-side).
-4. Include a `proof` member per [SPEC.md §4.7](../../../../../../SPEC.md#47-proof).
+4. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer lacks access to `payload.contextId`, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer lacks access to `payload.contextId`, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where no template with `payload.name` exists in `payload.contextId`, respond with `vta/contexts/did-templates/render:notFound`.
 4. Where `payload.vars` omits a declared `requiredVar`, includes an undeclared variable, or attempts to set a reserved ambient name, respond with `malformedRequest`.
 5. On success, inject the ambient variables, fill every `{TOKEN}` placeholder, and return the rendered DID document in the [response](#response).
@@ -117,7 +117,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/contexts/did
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload is the rendered DID document.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/contexts/did-templates/render:notFound` error.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/contexts/did-templates/render:notFound` error.
 
 ### The rendered document
 
@@ -160,4 +160,4 @@ Response to the request example. The VTA has minted the signing key and filled t
 
 **Ambient variables are server-controlled.** The VTA injects `VTA_DID`, `VTA_URL`, `NOW`, `CONTEXT_ID`, and `CONTEXT_DID` itself and rejects any attempt by the caller to set them, so a caller cannot spoof the VTA's identity, the context binding, or the render timestamp through `payload.vars`.
 
-**Render output is a shape, not a secret.** The rendered document contains only public DID-document structure — the VTA mints all key material at render time and never emits private keys in the response. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Render output is a shape, not a secret.** The rendered document contains only public DID-document structure — the VTA mints all key material at render time and never emits private keys in the response. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

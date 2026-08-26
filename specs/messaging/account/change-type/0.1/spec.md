@@ -53,7 +53,7 @@ Changing a role is a privilege grant. The mediator applies its own authorization
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../update/0.1/spec.md), which accepts this task's exact payload — send `{ did, accountType }`; the rootAdmin guard is preserved verbatim as `messaging/account/update:rootAdminRequired`, and the proof requirement remains REQUIRED.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../update/0.1/spec.md), which accepts this task's exact payload — send `{ did, accountType }`; the rootAdmin guard is preserved verbatim as `messaging/account/update:rootAdminRequired`, and the proof requirement remains REQUIRED.
 
 ## Conformance
 
@@ -63,11 +63,11 @@ A conforming **producer** (the administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/account/change-type/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID and `payload.accountType` with the role to assign.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Enforce its own authorization policy and respond with the framework's `permissionDenied` where the requester may not administer the target account.
 3. Where the target DID has no account, respond with `messaging/account/change-type:unknownAccount`.
 4. Where the request would assign the `rootAdmin` role, or would change an account that is currently `rootAdmin`, and the requester is not a `rootAdmin`, respond with `messaging/account/change-type:rootAdminRequired`.
@@ -129,7 +129,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -137,4 +137,4 @@ Changing an account's role is a privilege-granting administrative mutation: the 
 
 The `rootAdmin` role is the mediator's highest privilege; a mediator **MUST** restrict both assigning it and modifying an account that already holds it to a `rootAdmin` requester, so an `admin` cannot escalate itself or others to `rootAdmin` nor demote the standing root. The mediator **SHOULD** return the full realized [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) so the administrator can confirm the new role.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

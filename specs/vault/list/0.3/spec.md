@@ -64,7 +64,7 @@ Filters are AND-combined. Pagination is opaque-cursor based. The maintainer choo
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Changes from 0.2
 
@@ -84,11 +84,11 @@ defect is being fixed here. This is the encoding argument alone.
 
 The change arrives through the shared component: this version re-pins its
 `$ref`s from `vault/_shared/0.2` to `vault/_shared/0.3`, which is why it is a new
-version at all ([SPEC.md §5.4](../../../../SPEC.md#54-migrating-between-versions)
+version at all ([SPEC.md §5.4](/SPEC.md#54-migrating-between-versions)
 couples the two). Nothing else in the payload moves.
 
 Breaking on the wire, released as a `MINOR` increment under
-[§5.2](../../../../SPEC.md#52-compatibility-rules)'s `draft` allowance. `0.2`
+[§5.2](/SPEC.md#52-compatibility-rules)'s `draft` allowance. `0.2`
 remains published and pinned to `vault/_shared/0.2`; `vault/proxy-login` and
 `vault/release` stay on `0.2` deliberately, since they reference only
 `SiteTarget` and `SecretKind` and never expose an attachment digest.
@@ -106,7 +106,7 @@ A conforming **producer** (the vault consumer) **MUST**:
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements). When a `proof` is present, verify it.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). When a `proof` is present, verify it.
 2. Authenticate and authorise the requesting consumer against its ACL. If the consumer lacks `VaultRead` for the requested scope → `vault/list:permissionDenied`.
 3. If `contextId` is supplied and unknown → `vault/list:contextNotFound`. (The maintainer SHOULD NOT silently degrade to "all contexts" when a `contextId` is supplied — explicit feedback prevents the consumer from believing it queried a narrower scope than it actually did.)
 4. If `usedSince` and `neverUsed` are both present → `vault/list:filterConflict` with `details.reason = "used_since_with_never_used"`.
@@ -153,7 +153,7 @@ A conforming consumer **SHOULD** order returned entries by `lastUsedAt` descendi
 
 `payload.cursor` (optional, opaque) — continuation from a prior response.
 
-`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 The full JSON Schema is in [`payload.schema.json`](payload.schema.json).
 
