@@ -22,15 +22,29 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: OPTIONAL
-  rationale: A read returns no durable state change; the transport's authenticated sender is sufficient. A proof MAY be included where the response is retained for audit.
+  request: OPTIONAL
+  response: REQUIRED
+  rationale: >-
+    The request changes no durable state, so the transport's authenticated sender
+    is sufficient for it. The response is not equivalent: it hands the caller the
+    entire contents of a context's memory, and the SPEC §7.3 item 8 floor for a
+    `discloses: secret` response applies — what was released has to stay
+    attributable to the VTA that released it, on any transport, including one that
+    authenticates only hop by hop.
 sideEffects:
   level: none
   rationale: "Read-only recall of a context's memory items."
 subjectPath: /contextId
 exposure:
-  discloses: metadata
+  discloses: secret
   actsAsSubject: false
+  rationale: >-
+    The response returns every `items[].value` in the context — free-text agent
+    memory written by the producer, which routinely holds counterparty contact
+    details, notes about people, and whatever else the agent chose to remember.
+    That is the stored content itself rather than descriptive data about it, and
+    the caller keeps it, so the bulk read is a secret disclosure and not an
+    enumeration.
 errorCodes:
   - code: vta/memory/list:context_forbidden
     meaning: The caller is not permitted to read memory in the named context.

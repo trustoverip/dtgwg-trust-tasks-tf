@@ -30,8 +30,14 @@ sideEffects:
   rationale: "Sets a wake handle's trigger allowlist on the gateway; reconfigurable."
 subjectPath: /handle
 exposure:
-  discloses: none
+  discloses: metadata
   actsAsSubject: false
+  rationale: >-
+    The response returns `policy.allowedTriggers` — the effective allowlist of
+    DIDs the gateway recorded as permitted to wake this handle. `handle` is
+    echoed from the request and discloses nothing the caller did not already
+    supply; the allowlist is descriptive infrastructure data about the device, so
+    `metadata`.
 errorCodes:
   - code: push/provision:unknownHandle
     meaning: No such handle at this gateway.

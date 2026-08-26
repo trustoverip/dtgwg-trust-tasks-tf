@@ -27,8 +27,15 @@ sideEffects:
   level: none
   rationale: "Periodic check-in refreshing server-managed lastSeenAt; no user-visible state change."
 exposure:
-  discloses: none
+  discloses: metadata
   actsAsSubject: false
+  rationale: >-
+    `queuedOperations` returns the full Trust Task documents the maintainer
+    parked while the device was offline — including a `device/wipe`, whose
+    payload carries the operator's human-readable `reason` for wiping —
+    alongside `syncHint` and the authoritative `serverTime`. Operational data
+    about the device and its maintainer, so `metadata` rather than the `none`
+    an acknowledgement-only response would carry.
 errorCodes:
   - code: device/heartbeat:notRegistered
     meaning: The issuer's DID has no DeviceBinding. The consumer SHOULD complete device/register.

@@ -29,8 +29,15 @@ sideEffects:
   level: mutating
   rationale: "Claims a device record on the maintainer; revocable via disable/wipe."
 exposure:
-  discloses: none
+  discloses: metadata
   actsAsSubject: false
+  rationale: >-
+    The response is not an acknowledgement: it returns the whole
+    `DeviceBinding` — the maintainer-assigned `deviceId`, the `consumerDid`
+    the device authenticates with, its display name and platform string, the
+    attestation, the key-custody tier, and the capability set the maintainer
+    granted it. Descriptive data about one device rather than released credential
+    material, which is what separates `metadata` from `secret` here.
 errorCodes:
   - code: device/register:noPendingEnrolment
     meaning: The producer's DID is not the result of a recent provision-integration + acl/swap-key flow. Registration cannot proceed without first being granted via the maintainer's normal enrolment path.

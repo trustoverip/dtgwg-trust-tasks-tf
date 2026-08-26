@@ -32,8 +32,15 @@ consequences:
   - "Permanently consumes one slot on the community's shared Revocation status list."
 subjectPath: /subjectDid
 exposure:
-  discloses: none
+  discloses: secret
   actsAsSubject: false
+  rationale: >-
+    The response carries `credential` — the signed Verifiable Endorsement
+    Credential just minted, returned here and nowhere else, since reads carry only
+    the `endorsement.issued` reference. The endorsed party retains it and
+    presents it to relying parties, which is the same disclosure
+    `vtc/invitations/issue` already declares `secret` for the Invitation
+    Credential it returns.
 errorCodes:
   - code: vtc/endorsements/issue:permissionDenied
     meaning: The consumer holds neither the community-admin nor the issuer capability.

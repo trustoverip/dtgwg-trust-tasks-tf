@@ -21,14 +21,36 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: OPTIONAL
-  rationale: A discovery exchange is non-authoritative metadata exchange between parties that have already authenticated through the transport. The responder's list is advisory — the discoverer still validates each subsequent task per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). A `proof` adds little beyond what the transport binding already provides and may be omitted.
+  requirement: RECOMMENDED
+  rationale: >-
+    A discovery response steers everything the discoverer does next — which task
+    it issues, to which party, and which `ext` namespaces it attaches — so an
+    unattributable one is a redirection surface in the same sense
+    [trust-task-next-step](../../trust-task-next-step/0.1/spec.md) describes. The
+    transport does not close that on its own, and the earlier claim that the
+    parties "have already authenticated through the transport" is not true of
+    every binding: the HTTPS binding's own security profile records that it gives
+    no end-to-end integrity and that re-origination by any TLS-terminating
+    intermediary is possible and undetectable, so a response arriving over it may
+    have been rewritten between responder and discoverer. RECOMMENDED rather than
+    REQUIRED because the exchange is consumed immediately and retained by nobody,
+    so the [SPEC.md §4.7.1](/SPEC.md#471-when-to-include-a-proof) condition that
+    makes a proof mandatory does not arise — and because the Conformance rules
+    below forbid acting on a response whose origin is authenticated neither
+    in-band nor by the transport, which is what a discoverer over such a binding
+    is otherwise left holding.
 sideEffects:
   level: none
   rationale: "Read-only query for the task types a party supports."
 exposure:
-  discloses: none
+  discloses: metadata
   actsAsSubject: false
+  rationale: >-
+    The response enumerates `supportedTypes` — every Trust Task specification
+    the responder implements, optionally with the `ext` namespaces it enforces
+    and the framework version it targets. Privacy considerations below already
+    calls that "useful for an attacker fingerprinting deployments"; a capability
+    enumeration is exactly what `metadata` names, and `none` under-stated it.
 errorCodes: []
 related: []
 ---
@@ -57,7 +79,7 @@ A *conforming responder* **MUST**:
 Each `supportedTypes` entry **MAY** be either:
 
 * **Shorthand** — a bare *Type URI* string. Semantically equivalent to an expanded form with no capability annotations.
-* **Expanded** — an object with `type` (the bare *Type URI*) and optional capability annotations. The 0.1 schema reserves one annotation, `requiredExt`, for declaring `ext` namespaces the responder requires on inbound documents per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member) and [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). A *responder* that enforces `ext` policy **SHOULD** advertise it here so *producers* can satisfy the policy before issuing the task.
+* **Expanded** — an object with `type` (the bare *Type URI*) and optional capability annotations. The 0.1 schema reserves one annotation, `requiredExt`, for declaring `ext` namespaces the responder requires on inbound documents per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member) and [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). A *responder* that enforces `ext` policy **SHOULD** advertise it here so *producers* can satisfy the policy before issuing the task. Advertising it asks for nothing: `requiredExt` is a claim about the responder's own policy and confers no entitlement to the data, so a discoverer that cannot already populate the named namespace under its own policy declines rather than gathers (see the discoverer rules below).
 
 A *conforming responder* **SHOULD**:
 
@@ -69,6 +91,8 @@ A *conforming responder* **SHOULD**:
 A *conforming discoverer* **MUST**:
 
 * Treat the response as advisory: a Type URI's presence is a hint that the responder will accept a *Trust Task document* of that type, not a binding promise. The full [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline still applies to every subsequent exchange.
+* **MUST NOT** act on a discovery response whose origin it can authenticate neither in-band (via `proof`) nor from the transport. This mirrors [trust-task-next-step](../../trust-task-next-step/0.1/spec.md) consumer rule 3, and for the same reason: an unauthenticated response that *narrows* what the discoverer will send next is indistinguishable from an injected one, and a discoverer that acts on it has had its whole subsequent behaviour chosen for it. Acting on it means letting the response influence what is issued next — reading it and discarding it is not acting on it.
+* Treat `requiredExt` as **untrusted input**. It is a responder's assertion about its own local policy, carried on a document that may be unproven, and a discoverer **MUST NOT** let it cause a producer to populate an `ext` namespace with data it would not otherwise have sent. A `requiredExt` naming a namespace the producer does not already populate under its own policy is a reason to decline the exchange, never a reason to gather and attach the data.
 
 A *conforming discoverer* **MAY**:
 
@@ -87,6 +111,8 @@ A pattern is a string. The matching rules are:
 A pattern in any other shape is treated as an exact slug match (no wildcards). Wildcards anywhere other than as the trailing segment of a `<prefix>/*` pattern are **not** interpreted; they are matched literally — so a pattern like `acl/*-handoff` matches no slug at all (since slugs cannot contain `*`).
 
 Multiple patterns in the request `patterns` array are combined with **OR** semantics: a slug matches the query if it matches at least one pattern.
+
+The array is bounded at **16** entries. The bound is not a capability limit — a single `*` already returns everything the responder will admit to — it is parser hardening in the manner of [SPEC.md §10.2](/SPEC.md#102-parser-hardening): an unbounded array of patterns, each matched against every published slug, is work a responder performs on an unauthenticated request. A discoverer that genuinely wants more than sixteen namespaces asks for `*` and filters locally.
 
 ## Privacy considerations
 

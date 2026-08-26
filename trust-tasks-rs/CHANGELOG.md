@@ -29,6 +29,26 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.13.0] - 2026-08-26
+
+### Changed
+
+- **`vta/memory/list/0.1` now requires a `proof` on its response.** Correcting
+  that task's `exposure.discloses` from `metadata` to `secret` — its response
+  returns every free-text memory `value` in a context — engages the registry's
+  proof floor, which obliges a secret-disclosing response to be attributable.
+  The generated `Response` impl's `IS_PROOF_REQUIRED` therefore flips to `true`,
+  and a consumer now rejects an unproofed response it previously accepted.
+
+  Behaviour changed against an unchanged wire format, which under the rules at
+  the top of this file the library version has to say so. Ten other `exposure`
+  corrections in the same change move no constant.
+
+- **`trust-task-discovery/0.1` bounds `patterns` at 16 items** and raises its
+  proof requirement to RECOMMENDED. Neither moves a generated constant
+  (`IS_PROOF_REQUIRED` flips only on REQUIRED); the schema bound is reflected in
+  the regenerated modules.
+
 ## [0.12.1] - 2026-08-26
 
 ### Added

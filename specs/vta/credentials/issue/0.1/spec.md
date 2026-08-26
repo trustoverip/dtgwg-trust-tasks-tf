@@ -34,9 +34,14 @@ sideEffects:
 consequences:
   - "Issues a credential attributable to the context authority; valid until expiry or revocation."
 exposure:
-  discloses: none
+  discloses: secret
   actsAsSubject: true
-  rationale: "Issues a verifiable credential attributable to the context authority."
+  rationale: >-
+    The response carries `credential` — the signed Verifiable Credential itself,
+    which the response schema makes REQUIRED — and the caller retains it and can
+    present it to any verifier until it expires or is revoked. `actsAsSubject`
+    because the credential is minted under the issuing context's own key and
+    asserts claims in its name.
 errorCodes:
   - code: vta/credentials/issue:holder_invalid
     meaning: The holder identifier is not a resolvable DID.

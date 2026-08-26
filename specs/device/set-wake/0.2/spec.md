@@ -29,8 +29,14 @@ sideEffects:
   level: mutating
   rationale: "Sets the device's opaque WakeHandle on the VTA; idempotent config write."
 exposure:
-  discloses: none
+  discloses: metadata
   actsAsSubject: false
+  rationale: >-
+    The response returns `triggerPolicy.allowedTriggers` — the DIDs the VTA
+    computed and provisioned as permitted to wake this device, typically its
+    mediator and the VTA itself — plus whether a usable wake channel now exists.
+    That names part of the device's infrastructure to the caller; it is
+    descriptive rather than a bearer secret, so `metadata`.
 related:
   - device/register
   - device/heartbeat

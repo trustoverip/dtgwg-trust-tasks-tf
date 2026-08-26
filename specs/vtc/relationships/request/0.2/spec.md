@@ -35,8 +35,14 @@ sideEffects:
   level: mutating
   rationale: "Successful execution mints a VRC at the issuing member; reversible via relationships/revoke."
 exposure:
-  discloses: none
+  discloses: secret
   actsAsSubject: false
+  rationale: >-
+    The response carries `vrc` — the signed Verifiable Relationship Credential
+    the issuing member just minted, which the response schema makes REQUIRED. The
+    requester retains it and typically publishes it later, as "The response is
+    retained" under Security & Privacy already states; a decline is an error
+    document, so a successful response always releases the credential.
 errorCodes:
   - code: vtc/relationships/request:declined
     meaning: The issuing member declined to issue a VRC. Replaces the bespoke `vrc/1.0/rejected` message of the legacy exchange; the human-readable reason travels in the error payload's `message`.
