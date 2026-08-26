@@ -38,9 +38,6 @@ errorCodes:
   - code: vault/sign-trust-task:notFound
     meaning: No entry with this id exists in the consumer's scope.
     retryable: false
-  - code: vault/sign-trust-task:permissionDenied
-    meaning: The consumer lacks `SignTrustTask` capability for this entry.
-    retryable: false
   - code: vault/sign-trust-task:notSignable
     meaning: The entry's `secretKind` has no DID-based signing identity (`password`, `passkey`, `oauthTokens`, `bearerToken`, `sshKey`, `custom`). Only `didSelfIssued` and `didcommPeer` entries can sign Trust Tasks.
     retryable: false

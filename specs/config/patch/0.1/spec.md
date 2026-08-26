@@ -30,10 +30,7 @@ consequences:
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: config/patch:permissionDenied
-    meaning: The consumer lacks the configuration-admin capability.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

@@ -31,7 +31,10 @@ exposure:
   discloses: none
   actsAsSubject: true
   rationale: The custodian exercises the private half of the key derived at the requested path, producing a signature attributable to that derived identity — an identity the response names, since nothing was stored for the caller to look it up afterwards.
-errorCodes: []
+errorCodes:
+  - code: keys:invalidArgument
+    meaning: A payload member is well-formed against the schema but unusable for this request. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
 related:
   - keys/sign
   - keys/derive-and-sign-document
@@ -63,7 +66,7 @@ A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Decide, from its own policy, whether this producer may derive and sign **at this path**, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise. A path is not a stored record, so there is no per-key ACL to fall back on — the policy has to be expressed over paths.
-3. Refuse an `algorithm` the derived key type cannot perform, with `invalid_argument`.
+3. Refuse an `algorithm` the derived key type cannot perform, with `keys:invalidArgument`.
 4. Sign the decoded bytes verbatim.
 5. Return the derived `publicKey` alongside the signature, and **not** the derived private key.
 6. **Not** create a stored key record as a side effect. A producer expecting a durable key uses [`keys/create`](../../create/0.1/spec.md).
@@ -124,7 +127,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/de
 }
 ```
 
-Failures (`permissionDenied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `keys:invalidArgument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

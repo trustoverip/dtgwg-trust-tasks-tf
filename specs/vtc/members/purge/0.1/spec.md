@@ -37,9 +37,6 @@ errorCodes:
   - code: vtc/members/purge:lastAdministrator
     meaning: Purging would leave the community with no administrator.
     retryable: false
-  - code: vtc/members/purge:permissionDenied
-    meaning: The consumer lacks the community super-admin capability.
-    retryable: false
 ---
 
 ## Abstract

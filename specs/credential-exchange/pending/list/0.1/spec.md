@@ -31,10 +31,7 @@ exposure:
   discloses: metadata
   actsAsSubject: true
   rationale: The caller is the holder asking about its own wallet, so nothing leaves the holder's control. What is returned is nonetheless sensitive — which credentials are held and who has asked for them — which is why the caller is authenticated rather than this being an open read.
-errorCodes:
-  - code: credential-exchange/pending/list:permissionDenied
-    meaning: The caller is not authorized to see this agent's deferral backlog.
-    retryable: false
+errorCodes: []
 related:
   - credential-exchange/pending/approve
   - credential-exchange/pending/deny

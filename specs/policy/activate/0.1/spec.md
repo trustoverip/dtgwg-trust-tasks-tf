@@ -34,9 +34,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: policy/activate:permissionDenied
-    meaning: The consumer lacks PolicyAdmin capability.
-    retryable: false
   - code: policy/activate:notFound
     meaning: No policy module with the supplied `id` exists.
     retryable: false

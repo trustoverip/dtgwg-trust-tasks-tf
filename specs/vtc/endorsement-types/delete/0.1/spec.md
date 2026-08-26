@@ -27,9 +27,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/endorsement-types/delete:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/endorsement-types/delete:notFound
     meaning: No endorsement type with the supplied typeUri is registered.
     retryable: false

@@ -35,9 +35,6 @@ errorCodes:
   - code: vtc/admin/invites/create:ttlTooLong
     meaning: The requested `ttlSeconds` exceeds the 24-hour maximum.
     retryable: false
-  - code: vtc/admin/invites/create:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
 ---
 
 ## Abstract

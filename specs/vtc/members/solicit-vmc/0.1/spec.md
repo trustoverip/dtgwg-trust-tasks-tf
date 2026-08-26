@@ -34,9 +34,6 @@ errorCodes:
   - code: vtc/members/solicit-vmc:notFound
     meaning: No active member with that DID. Removed members have no membership edge to reciprocate.
     retryable: false
-  - code: vtc/members/solicit-vmc:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
 ---
 
 ## Abstract

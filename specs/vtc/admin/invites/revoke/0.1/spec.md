@@ -36,9 +36,6 @@ errorCodes:
   - code: vtc/admin/invites/revoke:alreadyConsumed
     meaning: The invite was already redeemed; consumed rows are immutable audit history.
     retryable: false
-  - code: vtc/admin/invites/revoke:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
 ---
 
 ## Abstract

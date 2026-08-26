@@ -33,9 +33,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/endorsements/revoke:permissionDenied
-    meaning: The consumer holds neither the community-admin nor the issuer capability.
-    retryable: false
   - code: vtc/endorsements/revoke:notFound
     meaning: No endorsement with the supplied `endorsementId` exists in this community.
     retryable: false

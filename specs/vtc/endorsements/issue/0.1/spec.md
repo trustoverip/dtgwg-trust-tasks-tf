@@ -42,9 +42,6 @@ exposure:
     `vtc/invitations/issue` already declares `secret` for the Invitation
     Credential it returns.
 errorCodes:
-  - code: vtc/endorsements/issue:permissionDenied
-    meaning: The consumer holds neither the community-admin nor the issuer capability.
-    retryable: false
   - code: vtc/endorsements/issue:typeNotRegistered
     meaning: "`typeUri` is not registered in this community's endorsement-type registry."
     retryable: false

@@ -28,10 +28,7 @@ sideEffects:
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: config/show:permissionDenied
-    meaning: The consumer lacks the configuration-admin capability.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract
