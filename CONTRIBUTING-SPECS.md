@@ -90,7 +90,7 @@ Notes:
 
 - **`proofRequirement.requirement` is runtime-enforceable, not advisory.** The three values map to consumer behaviour through `Payload::IS_PROOF_REQUIRED` (codegen-emitted): `REQUIRED` sets the const to `true` and causes every conforming consumer pipeline to reject a proofless document with `proofRequired` ([SPEC §7.2 item 7](SPEC.md#72-consumer-requirements)); `RECOMMENDED` and `OPTIONAL` leave the const at its trait default (`false`) and the pipeline accepts proofless documents (subject to the consumer's chosen `ProofPolicy`). Picking `REQUIRED` therefore commits every conforming consumer — including bindings without an in-band verifier — to reject proofless requests, which is the right outcome for evidentiary specs like `acl/grant` but makes the spec unreachable on bindings whose integrity guarantees are out-of-band until those bindings grow a verifier. **Pick `REQUIRED` only when the threat model genuinely needs transport-independent integrity** (audit replay, downstream corroboration, dispute resolution after the original transport has closed). For everyday request/response interactions whose integrity is already guaranteed by the transport, `RECOMMENDED` is the right default.
 
-After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
+After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, and [Security & Privacy](#the--security--privacy-section) (**required**, and linted — see below), plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
 - **Tag the party that fills each framework member** with `member: issuer` or `member: recipient`. A party named only in the `payload` (neither the document issuer nor recipient) omits `member`. This is what makes `requirement: REQUIRED` enforceable: the codegen emits `Payload::IS_RECIPIENT_REQUIRED` from the `member: recipient` party, and every conforming consumer then rejects a document with no in-band `recipient` ([SPEC §7.2 item 5](SPEC.md#72-consumer-requirements)). For a request the `recipient` is the `member: recipient` party; a response swaps parties, so its `recipient` requirement follows the `member: issuer` party.
 
@@ -139,6 +139,57 @@ Item 15 binds specifications whose `targetFrameworkVersion` is `0.4` or later. A
 | [`vrc/relationships/issue/0.1`](specs/vrc/relationships/issue/0.1/spec.md) | Authority comes from a prior accepted proposal; two proofs are on the exchange and neither is the authorization |
 | [`auth/refresh/0.1`](specs/auth/refresh/0.1/spec.md) | Bearer possession as the entire authority — and how saying so explains why `proof` is optional and why rotation is the only theft signal available |
 | [`push/register/0.2`](specs/push/register/0.2/spec.md) | The no-evidence case, and how to write it without leaving a reader guessing |
+
+## The `## Security & Privacy` section
+
+Every specification **MUST** carry a `## Security & Privacy` section with four `###` sub-headings, in this order:
+
+```markdown
+## Security & Privacy
+
+### Data carried
+
+What the request and the response actually move. Name the personal or sensitive
+members explicitly, and say what a producer **MUST NOT** put in the free-form
+ones (`ext`, notes, labels). This is where data minimisation is written down:
+state the smallest payload that still answers the task, and why anything larger
+is the producer's choice rather than the spec's requirement.
+
+### Correlation
+
+What an observer, an intermediary, or the recipient can join across documents —
+subject identifiers, `threadId`, stable handles, request timing, response size.
+Say which of those are unavoidable given the task and which a producer can vary.
+
+### Retention
+
+How long a recipient needs to keep what it receives, and what the document's
+evidentiary value implies about deleting it. A signed document retained as
+evidence and a request retained as a log line have different answers; say which
+this is.
+
+### Consent/purpose
+
+The purpose the data is collected for, and the limit on reusing it for anything
+else. **Descriptive only** — per [SPEC §7.3 item 13](SPEC.md#73-specification-requirements)
+a specification **MUST NOT** declare that consent, human approval, or an
+authentication step-up is required; that policy belongs to the consumer. Say
+what the data is *for*, and let the consumer decide what gate that warrants.
+```
+
+Write prose under each; one substantive paragraph beats four one-liners. Where a heading genuinely has nothing to say for your task, say so and say why — "this task carries no subject identifier, so there is nothing to correlate on beyond transport metadata" is an answer; an empty heading is not.
+
+**The build lints this.** `checkSecurityPrivacySections()` in `scripts/build-registry.mjs` checks for the section and the four sub-headings on every spec and prints a summary count. It is currently a **warning**, because every spec published before the lint landed fails it; those are enumerated in `scripts/lib/security-privacy-allowlist.json`, which may only shrink. A spec that is **not** on that list and fails the lint warns by name on every build, so new specs get the rule immediately. Two follow-on behaviours keep the count honest: an allowlisted spec that starts conforming is reported as a stale entry to delete, and an allowlist entry naming a spec that no longer exists is reported too.
+
+To hold a harder line — on a branch, in a job, or permanently once the backlog is cleared — set:
+
+```sh
+TT_STRICT_SECURITY_PRIVACY=1 npm run build
+```
+
+which fails the build on every non-conforming spec, allowlist or not. When the allowlist reaches zero, delete it, make strict the default in `scripts/lib/security-privacy.mjs`, and drop the variable.
+
+Rewriting an allowlisted spec's section is a welcome PR on its own: remove the entry in the same commit.
 
 ## Naming conventions (per SPEC §4.10)
 

@@ -23,6 +23,11 @@ import YAML from 'yaml';
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { discoverSpecs as discoverSpecsShared } from './lib/specs.mjs';
+import {
+  assessSecurityPrivacy,
+  checkSecurityPrivacySections,
+  writeAllowlist
+} from './lib/security-privacy.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -34,6 +39,12 @@ const DATA_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'data.js');
 const BINDINGS_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'bindings.js');
 
 const validateOnly = process.argv.includes('--validate-only');
+// Maintenance affordance for the Security & Privacy backlog: rewrite the
+// allowlist from what is currently non-conforming and exit. Deliberately not a
+// documented everyday flag — running it after regressing a spec would launder
+// the regression into accepted debt, which is why the list is committed and
+// reviewed rather than derived at build time.
+const updateSpAllowlist = process.argv.includes('--update-security-privacy-allowlist');
 
 const errors = [];
 const warn = (msg) => console.warn(`  warn: ${msg}`);
@@ -990,6 +1001,15 @@ function checkBindingRegistry() {
 
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
+
+  if (updateSpAllowlist) {
+    const failing = discoverSpecs()
+      .filter((e) => !assessSecurityPrivacy(fs.readFileSync(e.specPath, 'utf8')).conforms)
+      .map((e) => e.rel);
+    console.log(`  wrote scripts/lib/security-privacy-allowlist.json (${writeAllowlist(failing)} spec(s))`);
+    return;
+  }
+
   const validate = loadMetaValidator();
   checkCategoryTaxonomy();
   checkBindingRegistry();
@@ -998,6 +1018,7 @@ function main() {
   if (entries.length === 0) {
     console.warn('No specs found under specs/<slug>/<version>/.');
   }
+  checkSecurityPrivacySections(entries, { warn, fail, log: console.log });
 
   // Discover shared/framework/method-extension schemas first so we can
   // resolve $refs from payload schemas against them when building tasks.
