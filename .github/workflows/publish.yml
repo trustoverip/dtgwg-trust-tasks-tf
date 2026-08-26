@@ -1,268 +1,180 @@
-name: Publish packages
+name: Release
 
-# Publishes the Rust crate (trust-tasks-rs) to crates.io and the TypeScript
-# package (@openvtc/trust-tasks) to npm when an approved PR lands on main.
+# THE FILENAME OF THIS FILE IS LOAD-BEARING. Do not rename it.
 #
-# Each package publishes ONLY when its manifest version is newer than what is
-# already on the registry, so unrelated pushes to main (docs, specs, website)
-# are no-ops. Bump the version in the manifest (and changelog) to release —
-# see CLAUDE.md "Changing a spec or payload schema — bump and republish".
+# crates.io Trusted Publishing is configured per crate against a specific
+# repository + workflow FILENAME, and all nine published crates here are
+# registered against `publish.yml`. Renaming this file to `release-plz.yml`
+# in a sibling repo made the OIDC exchange fail before any release logic ran:
+#
+#   Failed to retrieve token from Cargo registry. Status: 400.
+#   The Trusted Publishing config ... does not match the workflow filename
+#   `release-plz.yml` in the JWT. Expected workflow filenames: `publish.yml`
+#
+# To rename it you must first update the Trusted Publisher config of every
+# published crate on crates.io. Not worth it — the name is ours to choose, the
+# registry's expectation is not. The npm Trusted Publisher for
+# `@openvtc/trust-tasks` is pinned to this filename too.
+#
+# ── What changed, and why ────────────────────────────────────────────────────
+#
+# This file used to publish on every push to `main` whatever version was newer
+# than the registry. Combined with the CI gates that REQUIRED a version bump on
+# every changed publishable crate, that made a version bump the release trigger
+# and therefore made every feature PR a release decision, taken before it
+# merged. Seven releases went out in a single day as a direct consequence.
+#
+# Now: merge PRs to `main` freely. `release-plz-pr` keeps ONE Release PR up to
+# date with the version bumps and changelog entries those merges imply, and
+# `release-ts-pr` does the same for the npm package. Merging a Release PR is
+# the release — `release-plz-release` tags and publishes the crates, and
+# `publish-npm` publishes the package. An ordinary feature merge runs every job
+# here and all of them are no-ops. See RELEASING.md.
+#
+# WHICH crates publish is decided in the manifests (`publish = false` on
+# `trust-tasks-codegen`), not here.
+
 on:
   push:
     branches: [main]
-    # Watch every crate this workflow publishes (see the `CRATES` list below).
-    # The binding crates were previously omitted, so a binding-only change (e.g. a
-    # bump to `trust-tasks-tsp` with no `trust-tasks-rs`/spec change) merged to main
-    # without triggering a publish, stranding the new version on the registry.
-    paths:
-      - "trust-tasks-rs/**"
-      - "trust-tasks-https/**"
-      - "trust-tasks-didcomm/**"
-      - "trust-tasks-didcomm-v1/**"
-      - "trust-tasks-proof/**"
-      - "trust-tasks-ceremony/**"
-      - "trust-tasks-tsp/**"
-      - "trust-tasks-capability-client/**"
-      - "trust-tasks/**"
-      - "trust-tasks-ts/**"
-      - "specs/**"
-      - ".github/workflows/publish.yml"
-  # Manual escape hatch to re-run a publish (e.g. after fixing the trigger) without
-  # needing a fresh commit to a watched path.
+  # Manual escape hatch: re-run a release after fixing something, without
+  # needing a fresh commit.
   workflow_dispatch:
 
-# Never let two runs publish the same ref at once.
-concurrency:
-  group: publish-${{ github.ref }}
-  cancel-in-progress: false
+permissions:
+  contents: read
 
 jobs:
-  publish-rust:
-    name: Publish Rust crates to crates.io
+  # ── Rust ─────────────────────────────────────────────────────────────────
+  release-plz-release:
+    # Runs on every push to main, but only *does* anything when a crate's
+    # version is not yet on crates.io — which in practice means immediately
+    # after the Release PR merges. An ordinary feature merge is a no-op.
+    name: Release-plz release (crates.io)
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
-      contents: read
-      id-token: write # required for crates.io trusted publishing (OIDC)
-    # Publish order matters: trust-tasks-rs must land before the sibling
-    # bindings, which depend on it by `version`. The siblings don't depend on
-    # each other, so any order among them is fine. trust-tasks-codegen is
-    # publish=false (internal generator) and deliberately absent here. The
-    # `trust-tasks` facade goes LAST: it depends on every other crate, so its
-    # `cargo publish` can only resolve once they are all in the index.
-    #
-    # NOTE: `trust-tasks` has never been published. Trusted Publishing cannot
-    # create a crate that does not exist yet, so the first release is a manual
-    # `cargo publish -p trust-tasks` — the `decide` step below detects the 404
-    # and reports it as a warning + job summary rather than failing mid-run.
-    # After that first publish, add its Trusted Publisher on crates.io and this
-    # workflow takes over. Each crate must have its own Trusted Publisher
-    # configured on crates.io for this repo + publish.yml, or its
-    # `cargo publish` will fail auth.
-    env:
-      # Publication order is a topological sort of the intra-workspace
-      # dependency graph, and it includes DEV-dependencies: `cargo publish`
-      # resolves them to package, so `trust-tasks-https` (whose demo
-      # dev-depends on `trust-tasks-proof` since #284) cannot go first.
-      # The `order` step below re-derives this from `cargo metadata` and
-      # fails if this list drifts — do not hand-edit it without running it.
-      CRATES: "trust-tasks-rs trust-tasks-ceremony trust-tasks-proof trust-tasks-https trust-tasks-didcomm trust-tasks-didcomm-v1 trust-tasks-tsp trust-tasks-capability-client trust-tasks"
+      contents: write
+      pull-requests: read
+      # OIDC token exchange with crates.io. Trusted Publishing means no
+      # long-lived registry token is stored in this repo; crates.io mints a
+      # short-lived one per run after verifying the workflow's identity.
+      id-token: write
     steps:
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+        with:
+          # Full history + tags. release-plz decides WHETHER a crate changed by
+          # comparing its packaged files against the tarball on crates.io — it
+          # downloads each published crate to do so — but it decides WHAT the
+          # changelog says from the commits since that crate's `<crate>-v*` tag.
+          # Shallow history therefore produces a correct bump with an empty
+          # changelog, which is the failure mode to recognise.
+          fetch-depth: 0
+          persist-credentials: false
 
-      # The sibling bindings pull in Affinidi's TDK (keyring / secret-storage),
-      # whose build scripts probe for libdbus-1 via pkg-config — same as the
-      # `test`/`package` jobs in rust.yml.
+      # The binding crates pull in Affinidi's TDK (keyring / secret-storage),
+      # whose build scripts probe for libdbus-1 via pkg-config. `cargo publish`
+      # compiles the packaged tarball, so the release job needs them too — same
+      # as the `test` / `package` jobs in rust.yml.
       - name: Install libdbus-1-dev
         run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
 
-      # CRATES is hand-maintained, and CLAUDE.md records three separate
-      # incidents of a hand-maintained list drifting from the tree. This
-      # re-derives the publication order from `cargo metadata` — including
-      # dev-dependencies, which is what #287's release tripped over — and
-      # fails if CRATES is not a valid topological order or has drifted
-      # from the set of publishable crates.
-      - name: Verify CRATES is a valid publication order
-        run: |
-          python3 - "$CRATES" <<'PY'
-          import json, subprocess, sys
-          listed = sys.argv[1].split()
-          meta = json.loads(subprocess.run(
-              ["cargo", "metadata", "--no-deps", "--format-version", "1"],
-              capture_output=True, text=True, check=True).stdout)
-          # publish = [] means publish=false; anything else is publishable.
-          pkgs = {p["name"]: p for p in meta["packages"] if p.get("publish") != []}
-          names = set(pkgs)
-          missing = names - set(listed)
-          extra = set(listed) - names
-          if missing or extra:
-              if missing: print(f"::error::CRATES is missing publishable crate(s): {' '.join(sorted(missing))}")
-              if extra: print(f"::error::CRATES lists non-publishable or unknown crate(s): {' '.join(sorted(extra))}")
-              sys.exit(1)
-          pos = {c: i for i, c in enumerate(listed)}
-          bad = False
-          for name, p in pkgs.items():
-              # Every dependency kind counts: `cargo publish` resolves
-              # dev-dependencies to package, so they constrain order too.
-              for d in p["dependencies"]:
-                  if d["name"] in pos and pos[d["name"]] > pos[name]:
-                      kind = d.get("kind") or "normal"
-                      print(f"::error::{name} is published before its {kind} dependency {d['name']}; "
-                            f"cargo publish will fail to resolve it. Move {d['name']} earlier in CRATES.")
-                      bad = True
-          sys.exit(1 if bad else 0)
-          PY
-          echo "CRATES is a valid topological publication order"
+      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Decide which crates to publish
-        id: decide
-        run: |
-          set -euo pipefail
-          to_publish=""
-          needs_manual=""
-          already=""
-          for crate in $CRATES; do
-            meta=$(cargo metadata --no-deps --format-version 1 \
-              --manifest-path "$crate/Cargo.toml")
-            version=$(echo "$meta" | jq -r --arg c "$crate" '.packages[] | select(.name==$c) | .version')
-
-            # Respect the manifest `publish` flag. `publish = false` => cargo
-            # metadata reports `publish: []`; `true` / unset / an explicit
-            # registry list are all publishable. Mirrors cargo's own gate.
-            publishable=$(echo "$meta" | jq -r --arg c "$crate" '.packages[] | select(.name==$c) | if .publish == [] then "false" else "true" end')
-            if [ "$publishable" != "true" ]; then
-              echo "::notice::$crate has publish=false — skipping."
-              continue
-            fi
-
-            # Skip if this exact version is already on crates.io. The crates.io
-            # API rejects requests without a User-Agent (403), so set one. A
-            # brand-new crate name returns 404 — that is "never published, so
-            # publish it", NOT an error (the old `curl -f` aborted the whole
-            # step on it). Distinguish 404 (new) from a real lookup failure.
-            http_code=$(curl -sSL -o crate.json -w '%{http_code}' \
-              -H "User-Agent: trust-tasks-ci (github-actions)" \
-              "https://crates.io/api/v1/crates/$crate" || echo "000")
-            if [ "$http_code" = "404" ]; then
-              # A crate that does not exist yet CANNOT be published from here.
-              # crates.io rejects it with "Trusted Publishing tokens do not
-              # support creating new crates" — by design, since there is no
-              # crate for a Trusted Publisher to be attached to. Collect these
-              # and report them together at the end rather than letting the
-              # publish step die on a mid-run 403 with no summary.
-              echo "::warning::$crate is not on crates.io yet — needs a manual first publish."
-              needs_manual="$needs_manual $crate"
-            elif [ "$http_code" = "200" ]; then
-              existing=$(jq -r --arg v "$version" '[.versions[]?.num] | index($v) // "no"' crate.json)
-              if [ "$existing" != "no" ]; then
-                echo "::notice::$crate $version already on crates.io — skipping."
-                already="$already $crate@$version"
-              else
-                echo "::notice::$crate $version is new — will publish."
-                to_publish="$to_publish $crate"
-              fi
-            else
-              echo "::error::crates.io lookup for $crate failed (HTTP $http_code)"
-              exit 1
-            fi
-          done
-          to_publish="$(echo "$to_publish" | xargs || true)"
-          needs_manual="$(echo "$needs_manual" | xargs || true)"
-          already="$(echo "$already" | xargs || true)"
-          echo "to_publish=$to_publish" >> "$GITHUB_OUTPUT"
-          echo "needs_manual=$needs_manual" >> "$GITHUB_OUTPUT"
-          echo "already=$already" >> "$GITHUB_OUTPUT"
-
-          {
-            echo "### crates.io"
-            echo
-            if [ -n "$to_publish" ]; then
-              echo "**To publish:** $to_publish"
-            else
-              echo "**To publish:** nothing — every version is already on crates.io."
-            fi
-            [ -n "$already" ] && echo && echo "**Already current:** $already"
-            if [ -n "$needs_manual" ]; then
-              echo
-              echo "**⚠ Needs a manual first publish:** $needs_manual"
-              echo
-              echo 'Trusted Publishing cannot create a crate that does not exist yet. For each:'
-              echo
-              echo '```sh'
-              for c in $needs_manual; do echo "cargo publish -p $c"; done
-              echo '```'
-              echo
-              echo 'Then add a Trusted Publisher for it on crates.io (this repo + publish.yml)'
-              echo 'so the next release goes through CI.'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # Mint a short-lived crates.io token via OIDC (trusted publishing). No
-      # long-lived CRATES_API_KEY secret needed. The token is scoped to the
-      # crates whose Trusted Publisher matches this repo + workflow, so a
-      # single auth covers all of them.
-      - name: Authenticate to crates.io
-        id: auth
-        if: steps.decide.outputs.to_publish != ''
+      - name: Authenticate to crates.io (Trusted Publishing)
         uses: rust-lang/crates-io-auth-action@v1
+        id: auth
 
-      - name: cargo publish
-        if: steps.decide.outputs.to_publish != ''
+      - name: Run release-plz
+        # Pinned to a full version: release-plz/action does NOT publish a
+        # moving major tag, so `@v0` resolves to nothing and the job fails at
+        # "Set up job" before running a step. (actions/checkout@v6 works
+        # because that repo does publish v6 — the convention is not universal.)
+        uses: release-plz/action@v0.5.131
+        with:
+          command: release
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-        # Publish in $CRATES order so trust-tasks-rs precedes its dependents.
-        # `cargo publish` waits for each new version to appear in the index
-        # before returning, so a dependent published next resolves cleanly.
-        run: |
-          set -uo pipefail
-          published=""
-          failed=""
-          for crate in ${{ steps.decide.outputs.to_publish }}; do
-            echo "::group::cargo publish -p $crate"
-            if cargo publish -p "$crate"; then
-              published="$published $crate"
-            else
-              # Stop at the first failure: the crates are ordered by dependency,
-              # so continuing risks publishing a dependent against a version of
-              # trust-tasks-rs that never landed. Record what did publish so the
-              # partial state is stated rather than inferred from the log.
-              failed="$crate"
-              echo "::endgroup::"
-              break
-            fi
-            echo "::endgroup::"
-          done
 
-          {
-            echo
-            echo "**Published:** ${published:-none}"
-            if [ -n "$failed" ]; then
-              echo
-              echo "**Failed:** $failed"
-              remaining=$(echo "${{ steps.decide.outputs.to_publish }}" \
-                | tr ' ' '\n' | sed -n "/^$failed\$/,\$p" | tail -n +2 | xargs || true)
-              [ -n "$remaining" ] && echo && echo "**Not attempted:** $remaining"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+  release-plz-pr:
+    name: Release-plz PR (crates.io)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      # Deliberately only on this job. Serialising the release job could skip a
+      # release; serialising PR updates just coalesces them.
+      group: release-plz-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-          [ -z "$failed" ] || exit 1
+      - name: Install libdbus-1-dev
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
 
-      - name: Report crates needing a manual first publish
-        if: steps.decide.outputs.needs_manual != ''
-        run: |
-          echo "::error::These crates are not on crates.io and cannot be created by Trusted Publishing: ${{ steps.decide.outputs.needs_manual }}"
-          echo "Publish each manually once, then add its Trusted Publisher. See the job summary."
-          exit 1
+      - uses: dtolnay/rust-toolchain@stable
 
+      # release-plz compares each crate's public API against its published
+      # version and forces a compatibility-breaking bump when it actually
+      # broke. Without this binary present release-plz logs "cargo-semver-checks
+      # not installed, skipping semver check" and silently falls back to
+      # guessing from commit messages — which is the failure this exists to
+      # prevent, and it is only a warning, so nothing goes red.
+      - name: Install cargo-semver-checks
+        uses: taiki-e/install-action@cargo-semver-checks
+
+      - name: Run release-plz
+        uses: release-plz/action@v0.5.131
+        with:
+          command: release-pr
+        env:
+          # A PAT or GitHub App token, falling back to the default token.
+          #
+          # THE FALLBACK SHIPS A RELEASE NOBODY TESTED. GitHub suppresses
+          # workflow runs for events authored by GITHUB_TOKEN, so with the
+          # default token the Release PR opens with no CI on it — meaning the
+          # one commit that publishes to crates.io would be the one commit CI
+          # never built.
+          #
+          # Set RELEASE_PLZ_TOKEN to a PAT (contents + pull-requests write) or
+          # a GitHub App token. Until then, close-and-reopen the Release PR to
+          # trigger CI before merging it. See RELEASING.md.
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+
+  # ── npm ──────────────────────────────────────────────────────────────────
+  #
+  # release-plz is Rust-only: it has no hooks and cannot touch a non-Rust
+  # manifest, so `@openvtc/trust-tasks` cannot ride in the crates Release PR.
+  # It gets its own Release PR instead, computed the same way (conventional
+  # commits since the package's last release tag) and merged the same way.
+  # See scripts/release-ts-pr.sh and RELEASING.md.
   publish-npm:
     name: Publish @openvtc/trust-tasks to npm
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
-      contents: read
+      # `contents: write` so the tag can be pushed after a successful publish —
+      # `trust-tasks-ts-v<version>` is what the next Release PR measures from,
+      # the npm mirror of the `<crate>-v<version>` tags release-plz writes.
+      contents: write
       id-token: write # required for npm trusted publishing (OIDC) + provenance
+    outputs:
+      published: ${{ steps.decide.outputs.should_publish }}
+    concurrency:
+      # Two pushes landing close together would both see the version as absent
+      # from npm and both try to publish it; the loser fails on a duplicate.
+      group: publish-npm-${{ github.ref }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           # npm@latest (v12+, installed below for OIDC trusted publishing)
@@ -281,6 +193,7 @@ jobs:
           set -euo pipefail
           name=$(node -p "require('./package.json').name")
           version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           if npm view "$name@$version" version >/dev/null 2>&1; then
             echo "::notice::$name@$version already on npm — skipping."
             echo "should_publish=false" >> "$GITHUB_OUTPUT"
@@ -302,3 +215,63 @@ jobs:
         if: steps.decide.outputs.should_publish == 'true'
         working-directory: trust-tasks-ts
         run: npm publish --access public
+
+      # The tag is the anchor for the NEXT Release PR: release-ts-pr reads
+      # commits since `trust-tasks-ts-v<version>` to decide the bump and to
+      # generate the changelog section. Without it the package would be
+      # measured from nothing and every run would propose the whole history.
+      - name: Tag the npm release
+        if: steps.decide.outputs.should_publish == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="trust-tasks-ts-v$VERSION"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::notice::$tag already exists"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "@openvtc/trust-tasks $VERSION"
+          git push origin "$tag"
+
+  release-ts-pr:
+    name: Release PR (@openvtc/trust-tasks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # MUST run after publish-npm, not beside it. Both jobs fire on the same
+    # push, and the tag that this job measures from is written by publish-npm.
+    # Running them in parallel means the run that merges a TS release computes
+    # its next bump against the PREVIOUS tag and immediately reopens a Release
+    # PR for a release that just went out.
+    needs: publish-npm
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: release-ts-pr-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          # Same token `gh` uses below, so the branch push and the PR come from
+          # one identity. With a PAT in RELEASE_PLZ_TOKEN that also means CI
+          # actually runs on the Release PR — GitHub suppresses workflow runs
+          # for events authored by the default GITHUB_TOKEN.
+          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      # Generates the changelog section for the package from the same
+      # cliff.toml release-plz uses for the crates, so both sides of the
+      # release read identically.
+      - name: Install git-cliff
+        uses: taiki-e/install-action@git-cliff
+
+      - name: Open or update the @openvtc/trust-tasks Release PR
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+        run: ./scripts/release-ts-pr.sh

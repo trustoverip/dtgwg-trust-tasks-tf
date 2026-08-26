@@ -1,0 +1,75 @@
+name: Commit lint
+
+# PRs here squash-merge, so the PR TITLE becomes the commit subject on `main`.
+# Since the release-plz cut-over that subject does two jobs it did not do
+# before:
+#
+#   1. it is the changelog entry every consumer of these packages reads, and
+#   2. its conventional-commit TYPE decides how far the version moves — `feat`
+#      and `!`/`BREAKING CHANGE` are what release-plz reads to size the bump.
+#
+# An unparseable title used to be untidy. Now it silently under-reports a
+# release. This check is small on purpose: it lints the title, not the body.
+#
+# `spec` is in the allowed list although it is not a standard conventional
+# type — it is this repo's most common one, for a change to a specification
+# under `specs/`. cliff.toml gives it its own changelog group. Note that
+# release-plz scores an unrecognised type as a PATCH, so use `feat(...)` when
+# you add a spec family (additive API surface) and `spec(...)` for edits within
+# an existing one.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  title:
+    name: PR title is a conventional commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the title
+        # The title is passed through the environment, never interpolated into
+        # the script body: `${{ }}` inside `run:` splices attacker-controlled
+        # text straight into the shell.
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          types='feat|fix|docs|test|ci|build|perf|refactor|chore|security|spec|site|revert'
+          # The scope allows commas and spaces because this repo really does
+          # write `feat(rs, proof):` and `feat(didcomm,didcomm-v1,tsp):`.
+          # git-cliff's conventional parser treats a multi-scope as
+          # unconventional and files it under "Other", so prefer one scope —
+          # but a title that reads correctly is not worth failing a PR over.
+          if printf '%s' "$TITLE" | grep -qE "^($types)(\([a-z0-9._/, -]+\))?!?: .+"; then
+            echo "ok: $TITLE"
+            exit 0
+          fi
+          # `<<'EOF'` (quoted delimiter) so NOTHING in the block is expanded.
+          # An unquoted heredoc would run command substitution on a PR title
+          # containing backticks or $(...) — attacker-controlled text executing
+          # in the runner.
+          printf '::error::PR title is not a conventional commit: %s\n' "$TITLE"
+          cat <<'EOF'
+          The title becomes the squashed commit subject on main, which is both the
+          changelog entry consumers read and the signal release-plz uses to size the
+          version bump. Format:
+
+            <type>(<scope>)!: <summary>
+
+          type   feat fix docs test ci build perf refactor chore security spec site revert
+          scope  optional, e.g. (rs) (https) (vault) (ts-bindings); one is best
+          !      optional, marks a breaking change
+
+          Examples:
+            feat(rs): add a trust-tasks facade crate
+            fix(https): send the response payload the spec pairs with the request
+            spec(vault): tighten the secretKind enum
+            feat(rs)!: generated types are #[non_exhaustive]
+
+          See RELEASING.md.
+          EOF
+          exit 1
