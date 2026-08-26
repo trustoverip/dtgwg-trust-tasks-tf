@@ -29,7 +29,12 @@ sideEffects:
   rationale: "Generates and stores a new key record."
 exposure:
   discloses: none
+  ingests: secret
   actsAsSubject: false
+  rationale: "Ordinarily the request carries only naming and scoping data and the custodian generates the material itself. The `mnemonic` member breaks that: a BIP-39 phrase reconstitutes the key anywhere, so a request supplying one hands the custodian externally-generated seed material and is an import wearing create's clothes. `label` and `contextId` are additionally operator-authored free text. Nothing is disclosed back — the response carries only the public half."
+retention:
+  class: durable
+  rationale: The custodian holds the resulting KeyRecord for the key's whole lifetime and beyond it — `keys/revoke` sets `status` to `revoked` rather than deleting, precisely so signatures the key already made stay attributable. A custodian that deleted revoked records would leave historic signatures unverifiable against any known key, which is the loss this class is recording.
 errorCodes:
   - code: keys:alreadyExists
     meaning: A key record already carries the target identifier; the custodian refuses rather than overwrite it. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
@@ -135,6 +140,85 @@ Failures (`permissionDenied`, `keys:alreadyExists`, `keys:invalidArgument`) use 
 
 ## Security & Privacy
 
-Creating a key is granting future signing capacity: whoever may later name this key in [`keys/sign`](../../sign/0.1/spec.md) can sign with it. Custodians **SHOULD** therefore treat "who may create keys, and in which scope" as an authorization decision of the same weight as the signing decision itself.
+### Data carried
 
-`contextId` is the scoping member, and its absence means *unscoped*, not *all scopes*. A consumer that reads an absent context as a wildcard would make every unscoped key reachable by every caller — the inverse of the intended reading.
+For an ordinary create the request is thin by design: `keyType`, and optionally a
+`derivationPath`, a `keyId`, a `label`, and a `contextId`. None of that is secret,
+and the whole point of the task is that the secret — the private half — is
+generated inside the custodian and never travels. The response returns a
+`KeyRecord` carrying `publicKey` and nothing more; no `keys/*` response ever
+carries private material.
+
+`mnemonic` is the exception that changes the task's character, and a producer
+should understand what supplying it does. A BIP-39 phrase reconstitutes the key
+anywhere, forever, from twelve or twenty-four words — so a create carrying a
+`mnemonic` is not a create at all but an import of externally-generated seed
+material, and the confidentiality rules of [`keys/import`](../../import/0.1/spec.md)
+apply to it unchanged. A custodian **MUST** refuse it on a transport that is not
+end-to-end confidential, and **MUST NOT** log or echo it. Worse than a private
+key, a seed phrase may derive an entire tree of keys, so a phrase that leaks
+compromises material this custodian never saw and cannot revoke.
+
+`label` and `contextId` are the free-text members and the ones a deployment fills
+without thinking. `label` is documented as operator-facing and carries no
+authorization meaning, which makes it exactly the field into which a person's
+name, an account number, or a customer identifier gets typed for convenience.
+The smallest conforming request is `keyType` alone; everything else is the
+producer's choice, and a producer **SHOULD** name a key after what it is *for*
+rather than after whom it belongs to.
+
+### Correlation
+
+The custodian-side joins are the ones that matter, and they exist by
+construction. `derivationPath` and `seedId` on the returned record group every
+derived key under the seed it came from: a custodian holding a key's path knows
+which other keys share its ancestry, whether or not it was asked. `contextId`
+groups keys by scope, and `label` — being human-authored and habitually
+descriptive — will in practice group them by whatever the operator was actually
+thinking about. An `internal: true` key is the only one that joins to nothing:
+generated from a CSPRNG, derived from no seed, reproducible from nothing, it has
+no `derivationPath` and no `seedId` to align on. Producers wanting a key that
+cannot be placed in a family have exactly that lever, and `origin` on the
+returned record is the only reliable confirmation the custodian honoured it.
+
+Externally, the joinable artefact is not the request but everything the key later
+signs, since `publicKey` is by nature public and links every signature made under
+it. A producer that wants unlinkable signing surfaces creates separate keys; a
+custodian cannot manufacture that separation after the fact.
+
+`contextId` is the scoping member, and its absence means *unscoped*, not *all
+scopes*. A consumer that reads an absent context as a wildcard would make every
+unscoped key reachable by every caller — the inverse of the intended reading, and
+a correlation failure as much as an authorization one.
+
+### Retention
+
+Durable, and longer-lived than the key itself. The custodian keeps the
+`KeyRecord` for the key's operating life and then keeps it after revocation:
+[`keys/revoke`](../../revoke/0.1/spec.md) moves `status` to `revoked` rather than
+deleting the row, and the record **MUST NOT** be reactivated. That is deliberate —
+a signature made last year is only attributable if the key that made it is still
+known — but it means the descriptive members travel with it. A `label` naming a
+person outlives the key's usefulness by design, and there is no member in this
+payload that expires it.
+
+The `mnemonic`, uniquely, must not be retained at all: it is a transport carrier
+for material the custodian converts into a stored key, and a custodian that
+retained the phrase would hold a recovery capability the producer never asked it
+to keep.
+
+### Consent/purpose
+
+Creating a key is granting future signing capacity: whoever may later name this
+key in [`keys/sign`](../../sign/0.1/spec.md) can sign with it, and the custodian
+signs the bytes it is handed without inspecting them. Custodians **SHOULD**
+therefore treat "who may create keys, and in which scope" as an authorization
+decision of the same weight as the signing decision itself — the purpose a key
+was created for is not recorded anywhere in this payload, so the scope it was
+created in is the only durable expression of it.
+
+The corollary is a minimisation rule rather than a gate: a producer creating one
+key for two unrelated purposes has, as [`keys/sign`](../../sign/0.1/spec.md)
+explains, made either purpose's authorization sufficient for the other. Separate
+keys per purpose is the only boundary a custodian can actually enforce, because
+it is the only one it can see.
