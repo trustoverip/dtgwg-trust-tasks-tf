@@ -4,7 +4,7 @@ version: "0.1"
 title: Push wake-up transport binding
 summary: A contentless wake-up notification (APNs / FCM / Web Push) sent by a push gateway on behalf of a trigger — the device's mediator or its VTA — telling a backgrounded consumer to connect to its mediator and drain queued DIDComm-carried Trust Task documents.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 bindingURI: https://trusttasks.org/binding/push/0.1
 authors:
   - Glenn Gore (https://github.com/stormer78)
