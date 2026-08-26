@@ -28,6 +28,7 @@ import {
   checkSecurityPrivacySections,
   writeAllowlist
 } from './lib/security-privacy.mjs';
+import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -1192,6 +1193,7 @@ function main() {
 
   const tasks = [];
   const seen = new Set();
+  let disclosureFloorOffenders = 0;
 
   for (const entry of entries) {
     const { slug, version, specPath, dir } = entry;
@@ -1234,6 +1236,12 @@ function main() {
     if (!schema) continue;
     checkProofFloor(meta, rel, Boolean(schema.$defs?.Response));
     const payloadSchemaPath = path.join(dir, 'payload.schema.json');
+    // The machine-checkable half of the same question checkProofFloor asks:
+    // checkProofFloor trusts `exposure.discloses` and derives the proof floor
+    // from it; this asks whether the declaration matches the schema it describes.
+    if (checkDisclosureFloor(meta, schema, payloadSchemaPath, rel, { warn, fail })) {
+      disclosureFloorOffenders++;
+    }
     const { uses: refUses, unresolved } = computeUses(schema, payloadSchemaPath, sharedByPath);
     for (const u of unresolved) {
       warn(`${slug}/${version}/payload.schema.json: $ref '${u}' did not resolve to a discovered shared schema`);
@@ -1250,6 +1258,12 @@ function main() {
     }
     tasks.push(buildTask(entry, { ...meta, errorCodes: details.errorCodes }, schema, uses));
   }
+
+  console.log(
+    `  Exposure floor: ${disclosureFloorOffenders} spec(s) declare exposure.discloses: none ` +
+      `while returning released material` +
+      `${disclosureFloorOffenders ? ' (warning — set TT_STRICT_DISCLOSURE=1 to fail the build)' : ''}`
+  );
 
   // wireCompatibleWith referential integrity: the named predecessor must be a
   // real, strictly-earlier version of the SAME slug. The field's whole value is
