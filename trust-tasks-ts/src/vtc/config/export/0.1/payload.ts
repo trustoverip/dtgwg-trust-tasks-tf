@@ -143,7 +143,8 @@ export const PAYLOAD_SCHEMA = {
           "minLength": 1
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 1024
         },
         "logoUrl": {
           "type": [
@@ -317,7 +318,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minLength": 1
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 1024
         },
         "logoUrl": {
           "type": [

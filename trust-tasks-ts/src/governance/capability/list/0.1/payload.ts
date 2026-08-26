@@ -157,6 +157,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "description": {
           "type": "string",
+          "maxLength": 1024,
           "description": "One-paragraph description for management surfaces."
         },
         "specs": {
@@ -336,6 +337,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "description": {
           "type": "string",
+          "maxLength": 1024,
           "description": "One-paragraph description for management surfaces."
         },
         "specs": {

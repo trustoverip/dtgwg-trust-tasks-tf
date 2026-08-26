@@ -133,6 +133,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "message": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Human-readable summary for the operator."
         },
         "ext": {
@@ -317,6 +318,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "message": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Human-readable summary for the operator."
         },
         "ext": {

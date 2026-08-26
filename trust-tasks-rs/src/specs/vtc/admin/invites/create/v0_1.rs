@@ -161,6 +161,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "label": {
 ///      "description": "Operator-facing note recorded against the invite.",
 ///      "type": "string",
+///      "maxLength": 256,
 ///      "minLength": 1
 ///    },
 ///    "ttlSeconds": {
@@ -275,6 +276,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 ///{
 ///  "description": "Operator-facing note recorded against the invite.",
 ///  "type": "string",
+///  "maxLength": 256,
 ///  "minLength": 1
 ///}
 /// ```
@@ -296,6 +298,9 @@ impl ::std::convert::From<PayloadLabel> for ::std::string::String {
 impl ::std::str::FromStr for PayloadLabel {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -821,7 +826,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"aclEntryCreated\": {\n          \"description\": \"True when the target DID had no ACL entry and one was created.\",\n          \"type\": \"boolean\"\n        },\n        \"claimCode\": {\n          \"description\": \"Secret that authorises the enrolment. Returned once.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the invite lapses.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"installUrl\": {\n          \"description\": \"One-shot enrolment URL. Returned once and never retrievable again.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"jti\": {\n          \"description\": \"Invite identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jti\",\n        \"installUrl\",\n        \"claimCode\",\n        \"expiresAt\",\n        \"aclEntryCreated\"\n      ],\n      \"title\": \"VTC Admin Invites Create — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/admin/invites/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"Admin DID the install URL grants a passkey for.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing note recorded against the invite.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ttlSeconds\": {\n      \"description\": \"Invite lifetime. Capped at 24 hours.\",\n      \"maximum\": 86400,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Admin Invites Create — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"aclEntryCreated\": {\n          \"description\": \"True when the target DID had no ACL entry and one was created.\",\n          \"type\": \"boolean\"\n        },\n        \"claimCode\": {\n          \"description\": \"Secret that authorises the enrolment. Returned once.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the invite lapses.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"installUrl\": {\n          \"description\": \"One-shot enrolment URL. Returned once and never retrievable again.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"jti\": {\n          \"description\": \"Invite identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jti\",\n        \"installUrl\",\n        \"claimCode\",\n        \"expiresAt\",\n        \"aclEntryCreated\"\n      ],\n      \"title\": \"VTC Admin Invites Create — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/admin/invites/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"Admin DID the install URL grants a passkey for.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing note recorded against the invite.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ttlSeconds\": {\n      \"description\": \"Invite lifetime. Capped at 24 hours.\",\n      \"maximum\": 86400,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Admin Invites Create — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

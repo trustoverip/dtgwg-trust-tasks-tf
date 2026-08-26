@@ -169,6 +169,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    },
 ///    "message": {
 ///      "type": "string",
+///      "maxLength": 1024,
 ///      "minLength": 1
 ///    },
 ///    "mnemonic": {
@@ -275,6 +276,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCode {
 /// ```json
 ///{
 ///  "type": "string",
+///  "maxLength": 1024,
 ///  "minLength": 1
 ///}
 /// ```
@@ -296,6 +298,9 @@ impl ::std::convert::From<PayloadMessage> for ::std::string::String {
 impl ::std::str::FromStr for PayloadMessage {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -528,7 +533,7 @@ impl crate::Payload for Payload {
         "https://trusttasks.org/spec/did-management/did/problem-report/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/did/problem-report/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"code\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ctx\": {\n      \"additionalProperties\": true,\n      \"description\": \"Free-form structured context. Hosts SHOULD avoid leaking other tenants' data here.\",\n      \"type\": \"object\"\n    },\n    \"domain\": {\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"message\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"mnemonic\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"mnemonic\",\n    \"code\",\n    \"message\"\n  ],\n  \"title\": \"DID Management Problem Report — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/did/problem-report/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"code\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ctx\": {\n      \"additionalProperties\": true,\n      \"description\": \"Free-form structured context. Hosts SHOULD avoid leaking other tenants' data here.\",\n      \"type\": \"object\"\n    },\n    \"domain\": {\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"message\": {\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"mnemonic\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"mnemonic\",\n    \"code\",\n    \"message\"\n  ],\n  \"title\": \"DID Management Problem Report — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 #[cfg(test)]

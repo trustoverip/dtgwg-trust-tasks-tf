@@ -142,6 +142,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "reason": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Required when status is `refused`."
         },
         "ext": {
@@ -249,6 +250,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "reason": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Required when status is `refused`."
         },
         "ext": {

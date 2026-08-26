@@ -57,7 +57,8 @@ pub mod error {
 ///    },
 ///    "description": {
 ///      "description": "Free-form description.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "did": {
 ///      "description": "DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.",
@@ -102,7 +103,7 @@ pub struct ContextRecord {
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Free-form description.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub description: ::std::option::Option<::std::string::String>,
+    pub description: ::std::option::Option<ContextRecordDescription>,
     ///DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub did: ::std::option::Option<::std::string::String>,
@@ -122,6 +123,75 @@ pub struct ContextRecord {
 impl ContextRecord {
     pub fn builder() -> builder::ContextRecord {
         Default::default()
+    }
+}
+///Free-form description.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Free-form description.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ContextRecordDescription(::std::string::String);
+impl ::std::ops::Deref for ContextRecordDescription {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ContextRecordDescription> for ::std::string::String {
+    fn from(value: ContextRecordDescription) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ContextRecordDescription {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ContextRecordDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ContextRecordDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ContextRecordDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ContextRecordDescription {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.
@@ -596,7 +666,7 @@ pub mod builder {
         created_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         description: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::ContextRecordDescription>,
             ::std::string::String,
         >,
         did: ::std::result::Result<
@@ -651,7 +721,7 @@ pub mod builder {
         }
         pub fn description<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ContextRecordDescription>>,
             T::Error: ::std::fmt::Display,
         {
             self.description = value
@@ -825,7 +895,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ContextRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A context as the VTA holds it.\",\n      \"properties\": {\n        \"basePath\": {\n          \"description\": \"Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Free-form description.\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"parent\": {\n          \"description\": \"Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"basePath\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ContextRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/ContextRecord\",\n      \"description\": \"Success response to vta/contexts/update-did: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update-did/1.0#response.\",\n      \"title\": \"VTA Contexts Update-DID — response payload\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/contexts/update-did/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The DID this context acts as from now on. Anything that authenticated or signed as the previous DID keeps referring to it; this task does not migrate those references, and a consumer MUST NOT imply that it does.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"Context whose DID is being set.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\",\n    \"did\"\n  ],\n  \"title\": \"VTA Contexts Update-DID — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ContextRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A context as the VTA holds it.\",\n      \"properties\": {\n        \"basePath\": {\n          \"description\": \"Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Free-form description.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"parent\": {\n          \"description\": \"Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"basePath\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ContextRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/ContextRecord\",\n      \"description\": \"Success response to vta/contexts/update-did: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update-did/1.0#response.\",\n      \"title\": \"VTA Contexts Update-DID — response payload\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/contexts/update-did/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The DID this context acts as from now on. Anything that authenticated or signed as the previous DID keeps referring to it; this task does not migrate those references, and a consumer MUST NOT imply that it does.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"Context whose DID is being set.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\",\n    \"did\"\n  ],\n  \"title\": \"VTA Contexts Update-DID — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -834,7 +904,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ContextRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A context as the VTA holds it.\",\n      \"properties\": {\n        \"basePath\": {\n          \"description\": \"Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Free-form description.\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"parent\": {\n          \"description\": \"Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"basePath\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ContextRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/ContextRecord\",\n      \"description\": \"Success response to vta/contexts/update-did: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update-did/1.0#response.\",\n      \"title\": \"VTA Contexts Update-DID — response payload\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ContextRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A context as the VTA holds it.\",\n      \"properties\": {\n        \"basePath\": {\n          \"description\": \"Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Free-form description.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"parent\": {\n          \"description\": \"Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"basePath\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ContextRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/ContextRecord\",\n      \"description\": \"Success response to vta/contexts/update-did: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update-did/1.0#response.\",\n      \"title\": \"VTA Contexts Update-DID — response payload\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

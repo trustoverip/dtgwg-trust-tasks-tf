@@ -265,7 +265,8 @@ impl ::std::default::Default for KeyOrigin {
 ///    },
 ///    "label": {
 ///      "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "origin": {
 ///      "$ref": "#/definitions/KeyOrigin"
@@ -323,7 +324,7 @@ pub struct KeyRecord {
     pub key_type: KeyType,
     ///Optional human-readable label. Operator-facing only; carries no authorization meaning.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<::std::string::String>,
+    pub label: ::std::option::Option<KeyRecordLabel>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub origin: ::std::option::Option<KeyOrigin>,
     ///The public half, multibase-encoded. The private half is never carried by any keys/* response.
@@ -408,6 +409,75 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyRecordKeyId {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for KeyRecordKeyId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Optional human-readable label. Operator-facing only; carries no authorization meaning.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct KeyRecordLabel(::std::string::String);
+impl ::std::ops::Deref for KeyRecordLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<KeyRecordLabel> for ::std::string::String {
+    fn from(value: KeyRecordLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for KeyRecordLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyRecordLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyRecordLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyRecordLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for KeyRecordLabel {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -688,7 +758,8 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 ///    },
 ///    "label": {
 ///      "description": "Optional human-readable label for the resulting record.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "privateKeyJwe": {
 ///      "description": "The private key as a JWE compact serialization, encrypted to the custodian. Equivalent in intent to `privateKeySealed`; retained for producers that already speak JOSE.",
@@ -727,7 +798,7 @@ pub enum Payload {
         key_type: KeyType,
         ///Optional human-readable label for the resulting record.
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        label: ::std::option::Option<::std::string::String>,
+        label: ::std::option::Option<PayloadVariant0Label>,
         ///The private key inside an armored sealed-transfer bundle, encrypted to the custodian's own public key. The only carrier that keeps the key confidential from every intermediary, including a transport terminator, so it is the one to prefer.
         #[serde(rename = "privateKeySealed")]
         private_key_sealed: ::std::string::String,
@@ -748,7 +819,7 @@ pub enum Payload {
         key_type: KeyType,
         ///Optional human-readable label for the resulting record.
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        label: ::std::option::Option<::std::string::String>,
+        label: ::std::option::Option<PayloadVariant1Label>,
         ///The private key as a JWE compact serialization, encrypted to the custodian. Equivalent in intent to `privateKeySealed`; retained for producers that already speak JOSE.
         #[serde(rename = "privateKeyJwe")]
         private_key_jwe: ::std::string::String,
@@ -769,11 +840,218 @@ pub enum Payload {
         key_type: KeyType,
         ///Optional human-readable label for the resulting record.
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        label: ::std::option::Option<::std::string::String>,
+        label: ::std::option::Option<PayloadVariant2Label>,
         ///The raw private key, multibase-encoded and NOT encrypted to the custodian. Admissible **only** where the transport itself provides end-to-end confidentiality between producer and custodian. A custodian reachable over a transport that terminates anywhere in between (TLS at a load balancer, for instance) MUST refuse this member — see the specification's Security section.
         #[serde(rename = "privateKeyMultibase")]
         private_key_multibase: ::std::string::String,
     },
+}
+///Optional human-readable label for the resulting record.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable label for the resulting record.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadVariant0Label(::std::string::String);
+impl ::std::ops::Deref for PayloadVariant0Label {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadVariant0Label> for ::std::string::String {
+    fn from(value: PayloadVariant0Label) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadVariant0Label {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadVariant0Label {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Label {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Label {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Label {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Optional human-readable label for the resulting record.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable label for the resulting record.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadVariant1Label(::std::string::String);
+impl ::std::ops::Deref for PayloadVariant1Label {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadVariant1Label> for ::std::string::String {
+    fn from(value: PayloadVariant1Label) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadVariant1Label {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadVariant1Label {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1Label {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1Label {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Label {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Optional human-readable label for the resulting record.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable label for the resulting record.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadVariant2Label(::std::string::String);
+impl ::std::ops::Deref for PayloadVariant2Label {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadVariant2Label> for ::std::string::String {
+    fn from(value: PayloadVariant2Label) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadVariant2Label {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadVariant2Label {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant2Label {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant2Label {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadVariant2Label {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
 }
 ///The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.
 ///
@@ -833,7 +1111,7 @@ pub mod builder {
         key_id: ::std::result::Result<super::KeyRecordKeyId, ::std::string::String>,
         key_type: ::std::result::Result<super::KeyType, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::KeyRecordLabel>,
             ::std::string::String,
         >,
         origin:
@@ -927,7 +1205,7 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyRecordLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -1085,7 +1363,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339 timestamp at which the key was created or imported.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"derivationPath\": {\n          \"description\": \"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        },\n        \"publicKey\": {\n          \"description\": \"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"seedId\": {\n          \"description\": \"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"status\",\n        \"publicKey\",\n        \"createdAt\"\n      ],\n      \"title\": \"KeyRecord\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/KeyRecord\",\n          \"description\": \"The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Keys Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/import/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Hand an externally-created private key to a custodian. Exactly one carrier member MUST be present; the choice of carrier is a confidentiality decision, not a formatting one.\",\n  \"oneOf\": [\n    {\n      \"required\": [\n        \"privateKeySealed\"\n      ]\n    },\n    {\n      \"required\": [\n        \"privateKeyJwe\"\n      ]\n    },\n    {\n      \"required\": [\n        \"privateKeyMultibase\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"Scope to file the imported key under. Absence is the most restrictive reading, not a wildcard — see KeyRecord.contextId.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"keyType\": {\n      \"$ref\": \"#/$defs/KeyType\",\n      \"description\": \"Algorithm of the key being imported. The custodian MUST verify the supplied material is of this type rather than trusting the claim.\"\n    },\n    \"label\": {\n      \"description\": \"Optional human-readable label for the resulting record.\",\n      \"type\": \"string\"\n    },\n    \"privateKeyJwe\": {\n      \"description\": \"The private key as a JWE compact serialization, encrypted to the custodian. Equivalent in intent to `privateKeySealed`; retained for producers that already speak JOSE.\",\n      \"type\": \"string\"\n    },\n    \"privateKeyMultibase\": {\n      \"description\": \"The raw private key, multibase-encoded and NOT encrypted to the custodian. Admissible **only** where the transport itself provides end-to-end confidentiality between producer and custodian. A custodian reachable over a transport that terminates anywhere in between (TLS at a load balancer, for instance) MUST refuse this member — see the specification's Security section.\",\n      \"type\": \"string\"\n    },\n    \"privateKeySealed\": {\n      \"description\": \"The private key inside an armored sealed-transfer bundle, encrypted to the custodian's own public key. The only carrier that keeps the key confidential from every intermediary, including a transport terminator, so it is the one to prefer.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyType\"\n  ],\n  \"title\": \"Keys Import — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339 timestamp at which the key was created or imported.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"derivationPath\": {\n          \"description\": \"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        },\n        \"publicKey\": {\n          \"description\": \"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"seedId\": {\n          \"description\": \"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"status\",\n        \"publicKey\",\n        \"createdAt\"\n      ],\n      \"title\": \"KeyRecord\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/KeyRecord\",\n          \"description\": \"The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Keys Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/import/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Hand an externally-created private key to a custodian. Exactly one carrier member MUST be present; the choice of carrier is a confidentiality decision, not a formatting one.\",\n  \"oneOf\": [\n    {\n      \"required\": [\n        \"privateKeySealed\"\n      ]\n    },\n    {\n      \"required\": [\n        \"privateKeyJwe\"\n      ]\n    },\n    {\n      \"required\": [\n        \"privateKeyMultibase\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"Scope to file the imported key under. Absence is the most restrictive reading, not a wildcard — see KeyRecord.contextId.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"keyType\": {\n      \"$ref\": \"#/$defs/KeyType\",\n      \"description\": \"Algorithm of the key being imported. The custodian MUST verify the supplied material is of this type rather than trusting the claim.\"\n    },\n    \"label\": {\n      \"description\": \"Optional human-readable label for the resulting record.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"privateKeyJwe\": {\n      \"description\": \"The private key as a JWE compact serialization, encrypted to the custodian. Equivalent in intent to `privateKeySealed`; retained for producers that already speak JOSE.\",\n      \"type\": \"string\"\n    },\n    \"privateKeyMultibase\": {\n      \"description\": \"The raw private key, multibase-encoded and NOT encrypted to the custodian. Admissible **only** where the transport itself provides end-to-end confidentiality between producer and custodian. A custodian reachable over a transport that terminates anywhere in between (TLS at a load balancer, for instance) MUST refuse this member — see the specification's Security section.\",\n      \"type\": \"string\"\n    },\n    \"privateKeySealed\": {\n      \"description\": \"The private key inside an armored sealed-transfer bundle, encrypted to the custodian's own public key. The only carrier that keeps the key confidential from every intermediary, including a transport terminator, so it is the one to prefer.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyType\"\n  ],\n  \"title\": \"Keys Import — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1093,7 +1371,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339 timestamp at which the key was created or imported.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"derivationPath\": {\n          \"description\": \"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        },\n        \"publicKey\": {\n          \"description\": \"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"seedId\": {\n          \"description\": \"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"status\",\n        \"publicKey\",\n        \"createdAt\"\n      ],\n      \"title\": \"KeyRecord\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/KeyRecord\",\n          \"description\": \"The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Keys Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339 timestamp at which the key was created or imported.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"derivationPath\": {\n          \"description\": \"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        },\n        \"publicKey\": {\n          \"description\": \"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"seedId\": {\n          \"description\": \"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"status\",\n        \"publicKey\",\n        \"createdAt\"\n      ],\n      \"title\": \"KeyRecord\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/KeyRecord\",\n          \"description\": \"The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Keys Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

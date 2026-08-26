@@ -84,6 +84,7 @@ export const PAYLOAD_SCHEMA = {
         "string",
         "null"
       ],
+      "maxLength": 256,
       "description": "Operator-facing display label for this member. Editable, unlike the DID it labels — which is the point: an operator needs a name they can read on a roster of identifiers they cannot. `null` clears it; omit to leave it unchanged."
     },
     "publishConsent": {
@@ -165,6 +166,7 @@ export const PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "joinedAt": {
@@ -308,6 +310,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 256,
           "description": "Optional human-readable label."
         },
         "joinedAt": {

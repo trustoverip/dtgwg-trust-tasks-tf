@@ -30,8 +30,10 @@ fn acl_grant_request_round_trips() {
     let doc: TrustTask<grant::Payload> = serde_json::from_str(json).unwrap();
     assert_eq!(doc.payload.entry.subject, "did:web:alice.example");
     assert_eq!(&*doc.payload.entry.role, "admin");
+    // `label` declares a `maxLength` (SPEC §7.3), so it deserializes into a
+    // validating newtype over `String` rather than a bare `String`.
     assert_eq!(
-        doc.payload.entry.label.as_deref(),
+        doc.payload.entry.label.as_deref().map(String::as_str),
         Some("Alice — primary admin")
     );
 

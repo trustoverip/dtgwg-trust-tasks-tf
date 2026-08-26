@@ -297,7 +297,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
 ///      "type": [
 ///        "string",
 ///        "null"
-///      ]
+///      ],
+///      "maxLength": 1024
 ///    },
 ///    "requestId": {
 ///      "type": "string",
@@ -347,7 +348,7 @@ pub struct Response {
     pub presentation_definition: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<::std::string::String>,
+    pub reason: ::std::option::Option<ResponseReason>,
     #[serde(rename = "requestId")]
     pub request_id: ResponseRequestId,
     pub status: ResponseStatus,
@@ -355,6 +356,75 @@ pub struct Response {
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
+    }
+}
+///Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseReason(::std::string::String);
+impl ::std::ops::Deref for ResponseReason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseReason> for ::std::string::String {
+    fn from(value: ResponseReason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseReason {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`ResponseRequestId`
@@ -587,7 +657,7 @@ pub mod builder {
             ::std::string::String,
         >,
         reason: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::ResponseReason>,
             ::std::string::String,
         >,
         request_id: ::std::result::Result<super::ResponseRequestId, ::std::string::String>,
@@ -664,7 +734,7 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseReason>>,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -728,7 +798,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\n          \"type\": \"string\"\n        },\n        \"decidedAt\": {\n          \"description\": \"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needs\": {\n          \"description\": \"When deferred, what the applicant must supply next.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"deferred\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/status/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"requestId\": {\n      \"description\": \"The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Join-Requests Status — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\n          \"type\": \"string\"\n        },\n        \"decidedAt\": {\n          \"description\": \"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needs\": {\n          \"description\": \"When deferred, what the applicant must supply next.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"deferred\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/status/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"requestId\": {\n      \"description\": \"The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Join-Requests Status — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -737,7 +807,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\n          \"type\": \"string\"\n        },\n        \"decidedAt\": {\n          \"description\": \"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needs\": {\n          \"description\": \"When deferred, what the applicant must supply next.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"deferred\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\n          \"type\": \"string\"\n        },\n        \"decidedAt\": {\n          \"description\": \"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needs\": {\n          \"description\": \"When deferred, what the applicant must supply next.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"deferred\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
