@@ -39,6 +39,21 @@
 //! job on the wire; the **consumer always opens the innermost Direct message**, which
 //! [`unpack_trust_task`] handles regardless of how it was carried.
 //!
+//! ## The guarded inbound path
+//!
+//! [`unpack_trust_task`] opens the seal and stops there. The consumer
+//! obligations of SPEC §7.2 still have to run over the document it returns,
+//! and two of them are stateful: item 11's duplicate-execution record and the
+//! freshness bound that lets that record be dropped.
+//!
+//! [`TspConsumer`] is that path with both wired, **on by default**. Binding §7
+//! records that TSP data messages "do not inherently prevent replay", and
+//! under §5's routed and nested carriage an intermediary may re-send the
+//! sealed inner message — so an ordinary re-forward, with no attacker
+//! involved, executes a consequential task twice unless the consumer keeps the
+//! record. The record is keyed on the document `id` and never on the envelope,
+//! which is resealed with fresh material on every send.
+//!
 //! ## Sketch
 //!
 //! ```rust,ignore
@@ -60,10 +75,12 @@
 
 mod error;
 mod handler;
+pub mod inbound;
 mod pack;
 
 pub use error::TspError;
 pub use handler::{TspHandler, BINDING_URI};
+pub use inbound::TspConsumer;
 pub use pack::{
     pack_trust_task, pack_trust_task_nested, pack_trust_task_routed, unpack_trust_task,
     ENVELOPE_TYPE,

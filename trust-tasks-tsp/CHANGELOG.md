@@ -4,6 +4,56 @@ All notable changes to `trust-tasks-tsp` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.12.0] - 2026-08-26
+
+The duplicate-execution defence of SPEC §7.2 item 11, wired onto this
+binding's inbound path and **on by default**. 0.11.0 said a `ReplayGuard`
+"remains to be wired"; this release wires it, because a defence every
+deployment has to remember to switch on is not a defence.
+
+### Added
+
+- **`TspConsumer` — the guarded inbound path.** `receive` opens a TSP-sealed
+  message under every rule `unpack_trust_task` applies (HPKE authenticated
+  decryption, signature verification, the `Direct`-carriage check, the
+  cleartext-sender cross-check, the envelope `type` check) and then runs
+  `consume_inbound` over the document with a `ReplayGuard` and a
+  `FreshnessPolicy` already in place; `consume` applies the same pipeline to a
+  document another TSP stack unsealed. Every verdict of §7.2's *Disposition of
+  a duplicate* is applied: a duplicate returns the prior response and does not
+  re-dispatch, an in-flight duplicate reports the running execution rather than
+  starting another, a differing document under a reused `id` is `idConflict`,
+  and a guard that cannot answer fails closed as `unavailable` with
+  `retryable = true` — never by executing.
+
+  **The record is keyed on the document `id`, never on the TSP envelope.** SPEC
+  §7.2 forbids substituting a transport identifier, and on this transport the
+  point is stark: sealing the same document again yields an envelope sharing no
+  bytes with the first, because TSP derives fresh ephemeral material per
+  message. There is nothing about the envelope a record *could* key on and
+  still absorb a re-send — which binding §5.2's routed and nested carriage
+  makes an ordinary event, since each intermediary may hold and re-forward the
+  sealed inner message.
+
+### Changed
+
+- **BREAKING — the duplicate-execution record defaults ON.** `TspConsumer`
+  keeps an in-process `InMemoryReplayGuard` and applies
+  `FreshnessPolicy::consequential` (`issuedAt` REQUIRED, five-minute acceptance
+  window). A consumer that previously accepted an undated document, or the same
+  document twice, no longer does — a change to what a consumer observes, so the
+  leading component moves.
+
+  `with_replay_guard` takes a store shared across replicas;
+  `without_replay_record` is the explicit opt-out, documented with what it
+  re-opens; `with_freshness` widens the acceptance window — and with it the
+  record's retention, because §7.2 makes them one bound. There is no second
+  TTL.
+
+- `chrono` is now a direct dependency (the pipeline takes a `now`), and
+  `tokio` / `async-trait` are dev-dependencies (the tests drive an async
+  pipeline and implement a failing guard).
+
 ## [0.11.0] - 2026-08-26
 
 ### Changed

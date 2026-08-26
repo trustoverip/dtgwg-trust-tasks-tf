@@ -3,6 +3,58 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.12.0] - 2026-08-26
+
+The duplicate-execution defence of SPEC §7.2 item 11, wired onto this
+binding's inbound path and **on by default**. 0.11.0 said a `ReplayGuard`
+"remains to be wired"; this release wires it, because a defence every
+deployment has to remember to switch on is not a defence — and on v1 there is
+nothing else: binding §6 records the transport's freshness guarantee as
+"**None**".
+
+### Added
+
+- **`DidcommV1Consumer` — the guarded inbound path.** `receive` takes an
+  `UnpackResult`, applies the authenticated-sender gate, the §2/§2.3 carriage
+  gate, the attachment lookup and the `~thread` cross-check exactly as
+  `unpack_trust_task` does, then runs `consume_inbound` over the document with
+  a `ReplayGuard` and a `FreshnessPolicy` already in place. `consume` applies
+  the same pipeline to a document an Aries framework's own delivery loop
+  extracted. Every verdict of §7.2's *Disposition of a duplicate* is applied:
+  a duplicate returns the prior response and does not re-dispatch, an in-flight
+  duplicate reports the running execution rather than starting another, a
+  differing document under a reused `id` is `idConflict`, and a guard that
+  cannot answer fails closed as `unavailable` with `retryable = true` — never
+  by executing.
+
+  **The record is keyed on the document `id`, never on the v1 message `@id` or
+  the `~thread` decorator.** SPEC §7.2 forbids the substitution, and
+  `MessageV1`'s own documentation makes the same point: the `@id` is the
+  *transport* identifier, with a different lifetime. A mediator redelivery is a
+  new v1 message — `MessageV1::new` mints a fresh UUID `@id` — carrying the
+  same document, so a record keyed on `@id` would admit it and grant twice.
+  `tests/replay.rs` asserts the two messages' `@id`s differ before feeding both
+  through the path and asserting the handler ran once.
+
+### Changed
+
+- **BREAKING — the duplicate-execution record defaults ON.**
+  `DidcommV1Consumer` keeps an in-process `InMemoryReplayGuard` and applies
+  `FreshnessPolicy::consequential` (`issuedAt` REQUIRED, five-minute acceptance
+  window). A consumer that previously accepted an undated document, or the same
+  document twice, no longer does — a change to what a consumer observes, so the
+  leading component moves.
+
+  `with_replay_guard` takes a store shared across replicas;
+  `without_replay_record` is the explicit opt-out, documented with what it
+  re-opens; `with_freshness` widens the acceptance window — and with it the
+  record's retention, because §7.2 makes them one bound. There is no second
+  TTL.
+
+- `chrono` is now a direct dependency (the pipeline takes a `now`), and the
+  crate has dev-dependencies for the first time (`tokio`, `async-trait`) so the
+  inbound path can be tested at all.
+
 ## [0.11.0] - 2026-08-26
 
 ### Changed
