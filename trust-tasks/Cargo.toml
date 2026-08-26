@@ -5,7 +5,7 @@ name = "trust-tasks"
 # number chased eight independently-versioned crates would be a worse front
 # door than the eight numbers it exists to hide. The versions it pins live in
 # `[dependencies]` below.
-version = "0.2.0"
+version = "0.2.1"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -67,7 +67,7 @@ capability-client = ["dep:trust-tasks-capability-client"]
 [dependencies]
 # Core is unconditional: there is no useful configuration of this crate that
 # does not include it, and gating it would just be a feature everyone turns on.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.14", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.15", default-features = false }
 
 trust-tasks-https = { path = "../trust-tasks-https", version = "0.16", optional = true }
 trust-tasks-didcomm = { path = "../trust-tasks-didcomm", version = "0.15", optional = true }
