@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Assign
 summary: An administrator binds a hosting domain to a registered server instance — the bound server commits to serving DIDs on that domain.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, assign, admin]
 authors:

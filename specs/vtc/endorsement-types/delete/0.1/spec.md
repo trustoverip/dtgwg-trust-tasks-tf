@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsement-Types — Delete
 summary: Remove an endorsement type from a community's registry; refused while live endorsements of the type exist.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, endorsements, endorsement-types, delete]
 authors:

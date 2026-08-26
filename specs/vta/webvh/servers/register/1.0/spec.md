@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Servers — Register"
 summary: "A super-administrator registers a did:webvh hosting server with the VTA."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

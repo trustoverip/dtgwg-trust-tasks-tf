@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Auth — Passkey Login (finish)
 summary: A party submits the WebAuthn assertion completing a passkey login or step-up; the auth service verifies the assertion and either issues a fresh session (login) or elevates an existing session's AAL (step-up).
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

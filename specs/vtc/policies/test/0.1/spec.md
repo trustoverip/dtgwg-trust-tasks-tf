@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Policies — Test
 summary: Evaluate a stored policy module against caller-supplied input without activating it, returning the raw result of the queried rule.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

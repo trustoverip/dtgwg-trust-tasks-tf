@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Get Account
 summary: A requester fetches the mediator's view of one served account — its role, access-control capabilities, queue limits, and current queue state.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

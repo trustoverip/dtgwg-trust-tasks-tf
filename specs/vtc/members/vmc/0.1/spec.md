@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Deliver VMC
 summary: A member delivers their issued Membership Credential to the community, which stores it and returns a receipt naming the stored credential.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

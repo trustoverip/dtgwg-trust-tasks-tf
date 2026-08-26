@@ -4,7 +4,7 @@ version: "0.2"
 title: DIDComm v2.1 transport binding
 summary: Carries Trust Task documents inside DIDComm v2.1 authcrypt envelopes; the verified sender_kid maps to the framework's transport-authenticated party identity, and the DIDComm thread headers map to the framework's threadId and parentThreadId.
 status: draft
-targetFrameworkVersion: "0.3"
+targetFrameworkVersion: "0.5"
 bindingURI: https://trusttasks.org/binding/didcomm/0.2
 envelopeType: https://trusttasks.org/binding/didcomm/0.1/envelope
 authors:

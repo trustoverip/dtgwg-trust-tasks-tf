@@ -4,7 +4,7 @@ version: "0.1"
 title: Trust Spanning Protocol (TSP) transport binding
 summary: Carries Trust Task documents inside ToIP Trust Spanning Protocol messages; the authenticated sender VID maps to the framework's transport-authenticated party identity, with direct, nested, and routed carriage defined.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 bindingURI: https://trusttasks.org/binding/tsp/0.1
 envelopeType: https://trusttasks.org/binding/tsp/0.1/envelope
 authors:

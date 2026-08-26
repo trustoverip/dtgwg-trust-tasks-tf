@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Application State — List
 summary: An application enumerates its state records in a VTA context — a prefix-scoped snapshot, or an incremental change feed since a watermark that includes tombstones so a consumer's local copy converges.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - vta

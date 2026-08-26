@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Remove Account
 summary: An administrator removes a served account from the mediator, refusing to remove protected mediator or rootAdmin accounts.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

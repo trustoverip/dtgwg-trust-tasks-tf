@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Invitations — Issue
 summary: Issue a single-use Invitation Credential (VIC) admitting a named DID to a Verifiable Trust Community, optionally granting a role and bounded by an expiry.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Update
 summary: Update a community member's role or non-credential metadata (consent, departure preference, extensions); refuses promotion to admin.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

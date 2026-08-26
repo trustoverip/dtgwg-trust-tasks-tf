@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — Create"
 summary: "An administrator mints a did:webvh in a context: the VTA generates the keys, writes the log's first entry, and publishes it through a hosting server or hands it back to be served."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

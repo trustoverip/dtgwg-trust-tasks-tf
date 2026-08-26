@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — List
 summary: List a Verifiable Trust Community's members, newest paged, each joined with its ACL role, optionally filtered by role.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

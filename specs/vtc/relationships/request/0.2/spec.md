@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Relationships — Request
 summary: A member asks another member to issue them a Verifiable Relationship Credential, and receives the signed VRC in the response.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

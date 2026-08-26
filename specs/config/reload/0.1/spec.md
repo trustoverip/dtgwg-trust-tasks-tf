@@ -4,7 +4,7 @@ version: "0.1"
 title: Config — Reload
 summary: Re-apply hot-reloadable configuration to the running maintainer without a restart, reporting which keys changed live.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - config

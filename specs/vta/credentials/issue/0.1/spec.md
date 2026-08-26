@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Credentials — Issue
 summary: A context authority issues a scoped, time-boxed Verifiable Credential to a holder after operator step-up approval — the basis for an explicit, revocable cross-context share.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credentials

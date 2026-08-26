@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Website — Files List
 summary: List the files served by a community's website, paged, excluding hidden and blocklisted files.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, website, files, list]
 authors:

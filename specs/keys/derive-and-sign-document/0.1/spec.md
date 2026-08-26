@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Derive and Sign Document
 summary: A producer hands a custodian a JSON document; the custodian derives a key at a path, canonicalizes the document and returns it with a Data Integrity proof attached.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys

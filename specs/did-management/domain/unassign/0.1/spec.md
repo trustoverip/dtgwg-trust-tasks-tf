@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Unassign
 summary: An administrator removes the binding between a hosting domain and a server instance — the instance stops serving DIDs on that domain after the ack round-trip.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, unassign, admin]
 authors:

@@ -4,7 +4,7 @@ version: "0.1"
 title: Task Consent — Decision
 summary: An enrolled approver authorizes or refuses one pending privileged task, bound to the exact payload they were shown. The proof on the decision — not the session that carried it — is the authorization.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

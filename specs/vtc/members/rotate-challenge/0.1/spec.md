@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Rotate Challenge
 summary: Open a DID-rotation ceremony for the calling member and return the challenge bytes to sign with the old and new keys.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

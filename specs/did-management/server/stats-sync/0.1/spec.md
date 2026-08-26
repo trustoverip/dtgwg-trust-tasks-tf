@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Server Stats Sync
 summary: A hosting server pushes a delta of its resolve/update counters to the control plane since the last sync.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, server, stats, sync]
 authors:

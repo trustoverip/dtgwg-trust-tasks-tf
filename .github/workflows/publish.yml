@@ -129,7 +129,17 @@ jobs:
       - name: Install cargo-semver-checks
         uses: taiki-e/install-action@cargo-semver-checks
 
+      # DCO requires a `Signed-off-by` trailer on every commit, and the
+      # release commit is no exception — the Release PR is the one commit that
+      # publishes, so it is the last place to be sloppy about provenance.
+      # `format.signOff` covers release-plz if it shells out to `git commit`;
+      # the verification step below covers it if it does not. Belt and braces
+      # because the failure is silent — a Release PR that simply sits red.
+      - name: Sign off release commits by default
+        run: git config --global format.signOff true
+
       - name: Run release-plz
+        id: release_pr
         uses: release-plz/action@v0.5.131
         with:
           command: release-pr
@@ -146,6 +156,39 @@ jobs:
           # a GitHub App token. Until then, close-and-reopen the Release PR to
           # trigger CI before merging it. See RELEASING.md.
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+
+      # `format.signOff` only reaches release-plz if it commits through the git
+      # CLI. It may not, so verify rather than assume: if the branch tip has no
+      # trailer, add one and force-push. Amending is safe here — the branch is
+      # release-plz's own, it force-pushes over it on every run, and nobody
+      # branches from it.
+      - name: Ensure the release commit is signed off
+        if: steps.release_pr.outputs.prs_created == 'true'
+        env:
+          # The action exposes `pr` (JSON of the opened PR), not a bare branch
+          # name — verified against action.yml, whose outputs are exactly
+          # pr / prs / prs_created / releases / releases_created.
+          PR_JSON: ${{ steps.release_pr.outputs.pr }}
+        run: |
+          BRANCH=$(jq -r '.head_branch // empty' <<<"$PR_JSON")
+          if [ -z "$BRANCH" ]; then
+            echo "::error::release-plz reported a PR but no head_branch: $PR_JSON"
+            exit 1
+          fi
+          git fetch origin "$BRANCH" --depth=1
+          if git log -1 --format='%(trailers:key=Signed-off-by)' "origin/$BRANCH" | grep -q .; then
+            echo "::notice::$BRANCH is already signed off"
+            exit 0
+          fi
+          author_name=$(git log -1 --format='%an' "origin/$BRANCH")
+          author_email=$(git log -1 --format='%ae' "origin/$BRANCH")
+          echo "::warning::$BRANCH was not signed off; amending as $author_name <$author_email>"
+          git checkout -q -B "$BRANCH" "origin/$BRANCH"
+          # Preserve the original author; the trailer names them, because they
+          # are who the DCO is a statement by.
+          git -c user.name="$author_name" -c user.email="$author_email" \
+              commit --amend --no-edit -s
+          git push --force-with-lease origin "$BRANCH"
 
   # ── npm ──────────────────────────────────────────────────────────────────
   #

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Join-Requests — List
 summary: List a community's join requests, optionally filtered by status, newest paged.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

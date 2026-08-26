@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Join-Requests — Decide
 summary: An administrator decides a pending join request — approving admits the applicant as a member, rejecting refuses them — optionally recording a reason.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

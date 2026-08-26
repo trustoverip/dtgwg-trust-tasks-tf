@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Community Profile — Update
 summary: Update the community's public profile (name, description, contact, language, extensions); a partial patch, refuses to set the read-only registry status.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

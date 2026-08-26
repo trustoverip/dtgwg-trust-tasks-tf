@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Import
 summary: A producer hands an externally-created private key to a custodian, which stores it and thereafter exercises it like any key it generated.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys

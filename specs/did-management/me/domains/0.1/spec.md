@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Me / Domains
 summary: An authenticated caller asks a hosting service for the subset of hosting domains it is permitted to act on, plus the caller's default.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, discovery, acl, default]
 authors:

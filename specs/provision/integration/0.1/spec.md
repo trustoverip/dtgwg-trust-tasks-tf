@@ -4,7 +4,7 @@ version: "0.1"
 title: Provision — Integration
 summary: A relayer presents a VP-signed bootstrap request from an integration holder; the maintainer mints the integration's DIDs and admin credential from a registered DID template and returns the material in a sealed bundle the holder can open.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - provision

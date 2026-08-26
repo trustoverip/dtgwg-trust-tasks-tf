@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Set State
 summary: A DID owner (or admin) sets a hosted DID's hosting state — `active` for live resolution, `suspended` to serve a deactivation marker while content is retained. Supersedes the separate enable / disable verbs.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, state, suspend, restore, enable, disable]
 authors:

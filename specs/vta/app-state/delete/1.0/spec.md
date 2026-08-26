@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Application State — Delete
 summary: An application deletes one of its state records from a VTA, leaving a versioned tombstone so that peers syncing incrementally learn of the deletion instead of resurrecting the record.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - vta

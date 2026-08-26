@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Registry Admin Register
 summary: An administrator manually inserts a server instance into the control-plane registry — used to seed a known instance from configuration before the instance has had a chance to self-register.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, registry, admin, seed]
 authors:

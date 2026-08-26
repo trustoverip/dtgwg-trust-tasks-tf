@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Sign
 summary: A producer asks a key custodian to sign a supplied byte string with a named key it holds, without the private key ever leaving the custodian.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys

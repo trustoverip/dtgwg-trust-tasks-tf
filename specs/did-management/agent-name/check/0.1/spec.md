@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Check Agent Name
 summary: A prospective claimant asks a hosting service whether an agent name (`/@alice`) is free to claim on a hosting domain — a read-only availability probe that distinguishes taken, reserved, and free.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, agent-name, availability, check]
 authors:

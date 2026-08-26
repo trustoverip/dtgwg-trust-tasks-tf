@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Admin Invites — List
 summary: Enumerate a Verifiable Trust Community's administrator invites, outstanding and historical, with their redemption state.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - vtc

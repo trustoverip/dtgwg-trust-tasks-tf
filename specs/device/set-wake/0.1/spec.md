@@ -4,7 +4,7 @@ version: "0.1"
 title: Device — Set Wake
 summary: A device tells its VTA the opaque WakeHandle it obtained from a push gateway, so the VTA can own the trigger allowlist and provision the gateway. Idempotent; carries no platform push token.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device

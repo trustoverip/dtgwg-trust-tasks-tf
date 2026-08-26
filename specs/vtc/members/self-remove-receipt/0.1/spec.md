@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Self-Remove Receipt
 summary: A community's asynchronous acknowledgement that a member's own departure request has been carried out, naming how their published record was dispositioned.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

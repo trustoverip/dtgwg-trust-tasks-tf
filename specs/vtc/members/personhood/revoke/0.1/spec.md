@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members Personhood — Revoke
 summary: An administrator revokes a member's personhood, re-issuing their credentials with the personhood flag cleared.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

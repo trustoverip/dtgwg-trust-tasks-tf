@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — List Approvers
 summary: Fetch the approver bindings that decide inbound-messaging consent, optionally filtered by platform or context.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

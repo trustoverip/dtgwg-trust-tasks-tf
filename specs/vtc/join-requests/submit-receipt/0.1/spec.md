@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Join Requests — Submit Receipt
 summary: A community's acknowledgement that an applicant's join request was accepted for processing, naming the request id the applicant polls on.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

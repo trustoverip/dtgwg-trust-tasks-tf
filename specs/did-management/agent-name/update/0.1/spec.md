@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Update Agent Name
 summary: Set the binding state of a human-memorable agent name (`/@alice`) on a hosted DID — `active` binds, refreshes, or resumes it; `parked` stops it resolving while keeping the reservation. Supersedes the separate set / enable / disable verbs.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, agent-name, alsoKnownAs, redirect, state, park]
 authors:

@@ -4,7 +4,7 @@ version: "0.1"
 title: ACL — Update
 summary: Amend the non-role attributes of an existing access-control entry — its label, scopes, allowed keys, expiry, step-up requirement, or approve-authority — leaving role changes to acl/change-role.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - acl

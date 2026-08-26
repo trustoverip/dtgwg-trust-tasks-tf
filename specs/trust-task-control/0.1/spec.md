@@ -4,7 +4,7 @@ version: "0.1"
 title: Trust Task Control
 summary: The framework-defined request by which a producer cancels, suspends, or resumes work a consumer has already accepted. Cancellation prevents future effects; it never undoes past ones, and the response reports what already occurred.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: framework
 keywords:
   - control

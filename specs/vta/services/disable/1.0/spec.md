@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Disable
 summary: An operator stops advertising a transport; for DIDComm this begins a drain rather than cutting delivery.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members Personhood — Assert
 summary: A member asserts personhood by presenting a Verifiable Presentation that satisfies the community's personhood policy; re-issues their credentials with the personhood flag set.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Query
 summary: Verifier to holder — a DCQL query with a freshness nonce and a mandatory stated purpose, which the holder answers, defers for consent, or refuses.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

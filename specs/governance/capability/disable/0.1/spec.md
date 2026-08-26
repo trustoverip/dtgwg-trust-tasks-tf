@@ -4,7 +4,7 @@ version: "0.1"
 title: Governance — Disable Capability
 summary: A community operator disables a previously enabled capability; its handlers stop, it leaves discovery, and its lifecycle hooks stop firing, while its registry records are retained for audit.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - governance

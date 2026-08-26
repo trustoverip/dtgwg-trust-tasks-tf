@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — List Agent Names
 summary: A DID owner reads the authoritative agent-name registry for a hosted DID — every name bound to it, including parked entries that the DID document itself cannot show.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, agent-name, list, parked]
 authors:

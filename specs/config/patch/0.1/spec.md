@@ -4,7 +4,7 @@ version: "0.1"
 title: Config — Patch
 summary: Write per-key overrides into a maintainer's runtime configuration, reporting which took effect, which await a restart, and which were rejected.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - config

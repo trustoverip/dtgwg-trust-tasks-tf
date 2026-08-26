@@ -4,7 +4,7 @@ version: "0.1"
 title: Governance — List Capabilities
 summary: A community member or surface queries which pluggable capabilities a community has enabled (or has available), with their manifests, to render management and status views.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - governance

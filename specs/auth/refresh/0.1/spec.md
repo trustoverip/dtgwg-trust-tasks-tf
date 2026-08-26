@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Refresh
 summary: Exchange a refresh token for a new access token, without re-running the challenge-response handshake.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

@@ -4,7 +4,7 @@ version: "0.1"
 title: Policy — Active
 summary: Read the policy currently active for a purpose decision slot — the active binding for one purpose, or every active binding. The read companion to policy/activate.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy

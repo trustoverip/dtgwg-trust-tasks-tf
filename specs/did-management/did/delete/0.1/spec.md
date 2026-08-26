@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Delete
 summary: A DID owner soft-deletes a hosted DID — the slot is taken off the public resolution path but content is retained for the host's recovery window.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, delete, soft-delete]
 authors:

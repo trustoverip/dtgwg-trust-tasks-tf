@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Servers — List"
 summary: "Enumerate the did:webvh hosting servers a VTA is registered with."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

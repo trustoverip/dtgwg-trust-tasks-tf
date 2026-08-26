@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Config — Import
 summary: Apply a portable configuration document to a Verifiable Trust Community, or preview what applying it would change. Previews by default.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

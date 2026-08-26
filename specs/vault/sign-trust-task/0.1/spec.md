@@ -4,7 +4,7 @@ version: "0.1"
 title: Vault — Sign Trust Task
 summary: A vault consumer asks the vault maintainer to attach a Data Integrity proof to a Trust Task envelope, signing as the principal DID of a `did-self-issued` (or `didcomm-peer`) vault entry. The long-term signing key never leaves the maintainer.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault

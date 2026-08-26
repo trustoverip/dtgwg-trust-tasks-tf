@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Request
 summary: Holder to issuer — an OID4VCI Credential Request carrying the key-binding proof that ties the credential to be issued to a key the holder controls.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

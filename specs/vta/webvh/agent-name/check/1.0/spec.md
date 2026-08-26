@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Agent-Name — Check"
 summary: "Ask whether an agent name is free on a host before trying to take it."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

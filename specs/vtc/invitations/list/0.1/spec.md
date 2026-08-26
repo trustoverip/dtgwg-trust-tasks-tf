@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Invitations — List
 summary: Enumerate a Verifiable Trust Community's issued Invitation Credentials with their issuance and revocation state, without re-disclosing credential material.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

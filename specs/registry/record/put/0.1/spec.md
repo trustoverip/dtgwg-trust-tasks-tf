@@ -4,7 +4,7 @@ version: "0.1"
 title: Registry — Put Record
 summary: An administrator creates or replaces, in a verifiable form, the recognition or authorization record at a trust registry key — one task for both halves of the superseded create/update pair.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - trust-registry

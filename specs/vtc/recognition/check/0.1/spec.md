@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Recognition — Check
 summary: Ask whether a Verifiable Trust Community recognises a foreign DID, and whether the trust registry backing that answer is actually configured.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: reputation
 keywords:
   - vtc

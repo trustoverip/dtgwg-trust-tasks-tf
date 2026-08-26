@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Removal Notice
 summary: A community tells a member it removed them — on whose authority, when, and why — so the most consequential decision a community makes is not the one it delivers in silence.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

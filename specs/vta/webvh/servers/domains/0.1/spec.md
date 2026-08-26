@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH Servers — Domains
 summary: A producer asks an agent which hosting domains it may use on one of the hosting servers it has registered; the agent relays the server's caller-scoped view.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - webvh

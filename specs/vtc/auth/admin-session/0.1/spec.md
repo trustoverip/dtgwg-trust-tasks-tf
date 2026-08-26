@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Auth — Admin Session
 summary: Exchange a bearer access token for an HttpOnly cookie session, so a browser administration UI can call the community without exposing the token to scripts.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vtc

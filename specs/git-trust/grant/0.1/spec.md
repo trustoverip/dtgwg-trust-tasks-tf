@@ -4,7 +4,7 @@ version: "0.1"
 title: Git Trust — Grant Commit-Signing Trust
 summary: A community operator grants a member's DID the authority to sign git commits for an org or repository; the host records it as a TRQP authorization tuple CI verifiers query.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - git

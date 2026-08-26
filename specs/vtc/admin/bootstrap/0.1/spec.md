@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Admin — Bootstrap
 summary: Write the first admin to a community's ACL, consuming the setup-session token from install claim.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, admin, bootstrap, install]
 authors:

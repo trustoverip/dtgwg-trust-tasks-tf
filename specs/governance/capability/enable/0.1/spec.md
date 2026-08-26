@@ -4,7 +4,7 @@ version: "0.1"
 title: Governance — Enable Capability
 summary: A community operator enables a pluggable capability (its Trust Task handlers, registry vocabulary, lifecycle hooks, and management surfaces) for a community.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - governance

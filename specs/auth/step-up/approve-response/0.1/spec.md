@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Step-up Approve Response
 summary: An approver's signed answer to a step-up approve-request — the proof on this document is the cryptographic gate the relying party uses to elevate the subject's session.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

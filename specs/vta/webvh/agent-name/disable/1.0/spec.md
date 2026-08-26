@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Agent-Name — Disable"
 summary: "An administrator stops an agent name resolving while continuing to hold it."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

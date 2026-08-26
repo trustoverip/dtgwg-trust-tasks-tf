@@ -4,7 +4,7 @@ version: "0.1"
 title: Chat — Message
 summary: A conversational message between an AI agent and a messaging-platform bridge, signed by its author and hash-linked to the previous message to form a verifiable per-conversation chain for audit and dispute resolution.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: chat
 keywords:
   - chat

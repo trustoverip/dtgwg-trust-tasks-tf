@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Application State — Get
 summary: An application reads one of its versioned state records from a VTA by its context, namespace and key, receiving the value together with the version a later conditional write will need.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - vta
