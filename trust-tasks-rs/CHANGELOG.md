@@ -29,6 +29,39 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.16] - 2026-08-26
+
+### Added
+
+- **`vault/_shared/0.1/vault-entry`'s `VaultEntry` gains `status`,
+  `archivedAt`, `deletedAt` and `graceUntil`.**
+
+  `vault/list/0.1` already specifies a `status` request filter whose `all`
+  value "lists every entry regardless of lifecycle state". That view was not
+  usable: `VaultEntry` is `additionalProperties: false` and carried no
+  lifecycle member, so a consumer that asked for every state received a mixed
+  list it had no way to partition. A specification that offers a filter and
+  then withholds the member the filter selects on is inconsistent with itself,
+  in the same way `CredentialCreationOptions` without `extensions` was in
+  0.11.15.
+
+  `graceUntil` is the member that matters most in practice. A `deleted` entry
+  is a tombstone, not an absence, and without a deadline a consumer cannot
+  distinguish "still restorable" from "gone" — which is the difference between
+  a holder recovering their credential and losing it.
+
+  All four are optional, and an absent `status` means `active`, so a maintainer
+  that models no archival lifecycle omits them and every existing document
+  stays valid. Additive: five specifications that reference the shared
+  component (`vault/{get,list,sync,upsert}` and `sync/event`) pick the members
+  up, and no previously-valid document becomes invalid.
+
+  `status` deliberately declares no JSON Schema `default`. A declared default
+  is materialised by the generated bindings, so an absent `status` would
+  reappear as an explicit `"active"` on re-serialisation — which broke
+  round-trip idempotence for `vault/list`'s own response example on the first
+  attempt at this change.
+
 ## [0.11.15] - 2026-08-26
 
 ### Added
