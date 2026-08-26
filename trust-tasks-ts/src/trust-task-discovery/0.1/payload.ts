@@ -79,7 +79,7 @@ export interface TrustTaskDiscoveryResponsePayload {
          */
         type: string;
         /**
-         * Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.
+         * Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.
          *
          * @minItems 1
          */
@@ -172,7 +172,7 @@ export const PAYLOAD_SCHEMA = {
                     },
                     "minItems": 1,
                     "uniqueItems": true,
-                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
+                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
                   }
                 },
                 "description": "Object form: lists a Type URI together with optional capability annotations."
@@ -236,7 +236,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                     },
                     "minItems": 1,
                     "uniqueItems": true,
-                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformed_request` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
+                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
                   }
                 },
                 "description": "Object form: lists a Type URI together with optional capability annotations."

@@ -29,6 +29,28 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.13.2] - 2026-08-26
+
+### Changed
+
+- **Regenerated after the registry re-cased 28 references to the §8.3 *standard*
+  error codes** (SPEC §4.10 rule 2). Where 0.13.1 covered rule 4's SHOULD over a
+  specification's own extended codes, this covers rule 2's MUST over the
+  framework's own — `permission_denied` where §8.3 says `permissionDenied`.
+
+  Only one spec's schema named a standard code in a `description`
+  (`trust-task-discovery/0.1`, `requiredExt`), so the movement is confined to
+  the doc comments and the embedded `PAYLOAD_SCHEMA` literal of
+  `specs::trust_task_discovery::v0_1`. Descriptions do not participate in
+  validation: no generated type, constant or behaviour changes, so this is a
+  patch.
+
+  `trust-task-error/0.1` was deliberately **not** re-cased and no generated
+  module moved on its account. Its snake_case table is the published
+  framework-0.1 error vocabulary, `trust-task-error/0.2` exists solely to carry
+  the re-cased set and declares `wireCompatibleWith: "0.1"`, and the Rust side
+  of that slug is hand-modelled in `error.rs` rather than generated.
+
 ## [0.13.1] - 2026-08-26
 
 ### Changed
