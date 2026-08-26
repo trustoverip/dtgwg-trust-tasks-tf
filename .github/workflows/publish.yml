@@ -23,6 +23,7 @@ on:
       - "trust-tasks-ceremony/**"
       - "trust-tasks-tsp/**"
       - "trust-tasks-capability-client/**"
+      - "trust-tasks/**"
       - "trust-tasks-ts/**"
       - "specs/**"
       - ".github/workflows/publish.yml"
@@ -45,11 +46,20 @@ jobs:
     # Publish order matters: trust-tasks-rs must land before the sibling
     # bindings, which depend on it by `version`. The siblings don't depend on
     # each other, so any order among them is fine. trust-tasks-codegen is
-    # publish=false (internal generator) and deliberately absent here. Each
-    # crate must have its own Trusted Publisher configured on crates.io for
-    # this repo + publish.yml, or its `cargo publish` will fail auth.
+    # publish=false (internal generator) and deliberately absent here. The
+    # `trust-tasks` facade goes LAST: it depends on every other crate, so its
+    # `cargo publish` can only resolve once they are all in the index.
+    #
+    # NOTE: `trust-tasks` has never been published. Trusted Publishing cannot
+    # create a crate that does not exist yet, so the first release is a manual
+    # `cargo publish -p trust-tasks` — the `decide` step below detects the 404
+    # and reports it as a warning + job summary rather than failing mid-run.
+    # After that first publish, add its Trusted Publisher on crates.io and this
+    # workflow takes over. Each crate must have its own Trusted Publisher
+    # configured on crates.io for this repo + publish.yml, or its
+    # `cargo publish` will fail auth.
     env:
-      CRATES: "trust-tasks-rs trust-tasks-https trust-tasks-didcomm trust-tasks-didcomm-v1 trust-tasks-proof trust-tasks-ceremony trust-tasks-tsp trust-tasks-capability-client"
+      CRATES: "trust-tasks-rs trust-tasks-https trust-tasks-didcomm trust-tasks-didcomm-v1 trust-tasks-proof trust-tasks-ceremony trust-tasks-tsp trust-tasks-capability-client trust-tasks"
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable

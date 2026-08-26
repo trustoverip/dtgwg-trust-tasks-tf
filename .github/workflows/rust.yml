@@ -6,6 +6,7 @@ on:
   # No `branches:` filter — see the note in ts.yml.
   pull_request:
     paths:
+      - "trust-tasks/**"
       - "trust-tasks-rs/**"
       - "trust-tasks-codegen/**"
       - "trust-tasks-https/**"
@@ -15,6 +16,10 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"
+      # GETTING-STARTED.md's Rust is asserted equal to
+      # trust-tasks/examples/acl_grant_roundtrip.rs by a test in that crate,
+      # so a doc-only edit still has to run cargo test.
+      - "GETTING-STARTED.md"
       - ".github/workflows/rust.yml"
 
 env:

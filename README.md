@@ -4,6 +4,7 @@ A reference registry of **Trust Task** specifications — self-contained, transp
 
 Developed under the [Trust Over IP Foundation](https://trustoverip.org) (ToIP) Decentralized Trust Graph Working Group (DTGWG).
 
+- **Using the libraries:** [`GETTING-STARTED.md`](GETTING-STARTED.md) — one dependency line to a signed round trip
 - **Live registry:** <https://trusttasks.org/registry>
 - **Framework specification:** [`SPEC.md`](SPEC.md)
 - **Individual specs:** [`specs/<slug>/<version>/`](specs/)

@@ -1,0 +1,98 @@
+[package]
+name = "trust-tasks"
+# Deliberately 0.1.0. This crate is new; it does not inherit the version of
+# any crate it re-exports, and it does not track them either — a facade whose
+# number chased eight independently-versioned crates would be a worse front
+# door than the eight numbers it exists to hide. The versions it pins live in
+# `[dependencies]` below.
+version = "0.1.0"
+edition.workspace = true
+rust-version = "1.95"
+license.workspace = true
+repository.workspace = true
+description = "One-dependency front door to the Trust Tasks framework: re-exports trust-tasks-rs plus the transport, proof, ceremony and capability crates behind Cargo features."
+homepage = "https://trusttasks.org/"
+documentation = "https://docs.rs/trust-tasks"
+readme = "README.md"
+keywords = ["trust-tasks", "trustoverip", "did", "transport", "verifiable"]
+categories = ["data-structures", "network-programming"]
+publish = true
+
+[features]
+# `all-specs` is the ONLY spec-family feature forwarded from `trust-tasks-rs`.
+# That crate has 26 per-family features (`vault`, `acl`, …); forwarding each
+# one through here would put 26 more names in front of the newcomer this crate
+# exists to help, and would still be the wrong tool for the job — Cargo unifies
+# features across the graph, so a consumer trimming spec families has to be the
+# only thing in the graph asking for them. Trimming spec families is therefore a
+# reason to depend on `trust-tasks-rs` DIRECTLY and skip this crate. The umbrella
+# is forwarded so `default-features = false` still gets you a working core.
+default = ["all-specs"]
+all-specs = ["trust-tasks-rs/all-specs"]
+
+# Runtime JSON Schema validation of payloads (pulls in `jsonschema`).
+validate = ["trust-tasks-rs/validate"]
+
+# ── Transports. One feature per binding; each pulls a different heavy
+# dependency tree, which is why they are separate crates in the first place.
+https = ["dep:trust-tasks-https"]
+didcomm = ["dep:trust-tasks-didcomm"]
+didcomm-v1 = ["dep:trust-tasks-didcomm-v1"]
+tsp = ["dep:trust-tasks-tsp"]
+# Every transport at once. Convenience for a gateway that bridges bindings;
+# not something an application normally wants.
+all-transports = ["https", "didcomm", "didcomm-v1", "tsp"]
+
+# Only genuinely-additive sub-features are forwarded. `trust-tasks-https`'s
+# `client`/`server` are both ON by default and Cargo features are additive, so a
+# `https-client` here could not turn `server` OFF — it would be a name that does
+# nothing. Trimming a transport's own defaults (https `client`/`server`,
+# didcomm-v1 `legacy-basic-message`, ceremony/proof backends) means depending on
+# that crate directly with `default-features = false`.
+https-jwt = ["https", "trust-tasks-https/jwt"]
+
+# ── Proof verification. Named `proof-affinidi` rather than `proof` because the
+# crate is a plug-in point: the backend is the choice, and a second backend
+# would land as `proof-<name>` beside this one rather than change what `proof`
+# means.
+proof-affinidi = ["dep:trust-tasks-proof", "trust-tasks-proof/affinidi"]
+
+# ── Trust Ceremonies (salted step digests, receipt checking).
+ceremony = ["dep:trust-tasks-ceremony"]
+
+# ── Wire helpers for the capability families (governance/capability/*,
+# git-trust/*).
+capability-client = ["dep:trust-tasks-capability-client"]
+
+[dependencies]
+# Core is unconditional: there is no useful configuration of this crate that
+# does not include it, and gating it would just be a feature everyone turns on.
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.14", default-features = false }
+
+trust-tasks-https = { path = "../trust-tasks-https", version = "0.15", optional = true }
+trust-tasks-didcomm = { path = "../trust-tasks-didcomm", version = "0.15", optional = true }
+trust-tasks-didcomm-v1 = { path = "../trust-tasks-didcomm-v1", version = "0.14", optional = true }
+trust-tasks-tsp = { path = "../trust-tasks-tsp", version = "0.14", optional = true }
+trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.13", optional = true, default-features = false }
+trust-tasks-ceremony = { path = "../trust-tasks-ceremony", version = "0.2", optional = true }
+trust-tasks-capability-client = { path = "../trust-tasks-capability-client", version = "0.14", optional = true }
+
+[dev-dependencies]
+# Only the `acl_grant_roundtrip` example needs these. Dev-dependencies are
+# stripped at publish, so they cost a consumer nothing.
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+affinidi-secrets-resolver = "0.5"
+
+[[example]]
+name = "acl_grant_roundtrip"
+# The example is the source of truth for GETTING-STARTED.md's Rust snippets
+# (see `tests/getting_started_snippets.rs`). It only builds with a transport
+# and a proof backend, so it is gated — `cargo clippy --workspace --all-targets
+# --all-features` in CI is what compiles it.
+required-features = ["https", "proof-affinidi"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
