@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Rename
 summary: A producer changes the identifier a custodian addresses a key by, leaving the key material untouched.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys

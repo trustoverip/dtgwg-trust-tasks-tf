@@ -4,7 +4,7 @@ version: "0.1"
 title: ACL — Swap Key
 summary: An ACL holder atomically replaces the VID bound to one of their own AclEntries with a new VID — preserving role, scopes, and label, and closing the old VID's access in the same transaction.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - acl

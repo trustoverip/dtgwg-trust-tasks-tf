@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Create
 summary: A producer asks a key custodian to generate a new key and hold it, receiving only the public half.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys

@@ -4,7 +4,7 @@ version: "0.1"
 title: Audit — List
 summary: Page through a maintainer's append-only audit log, newest first, with optional filters and an opaque continuation cursor.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - audit

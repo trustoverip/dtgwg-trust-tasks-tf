@@ -4,7 +4,7 @@ version: "0.1"
 title: Audit — Verify
 summary: Walk a maintainer's append-only audit hash chain and report whether it is internally consistent, locating the first break if it is not.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - audit

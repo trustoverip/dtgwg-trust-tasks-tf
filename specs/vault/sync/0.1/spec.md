@@ -4,7 +4,7 @@ version: "0.1"
 title: Vault — Sync
 summary: A vault consumer requests an incremental delta of vault, ACL, and policy events since a known seq baseline; pairs with sync/event push notifications to keep local caches converged with the maintainer.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault

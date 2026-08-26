@@ -4,7 +4,7 @@ version: "0.1"
 title: Vault — Upsert
 summary: A vault consumer creates a new vault entry or updates an existing one; secret material rides inside an HPKE-sealed envelope so the Trust Task itself carries only ciphertext.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault

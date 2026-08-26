@@ -4,7 +4,7 @@ version: "0.1"
 title: Git Trust — Revoke Commit-Signing Trust
 summary: A community operator revokes a member's commit-signing grant; the host marks the TRQP tuple unauthorized (retained for audit) so CI verifiers observe the denial on their next query.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - git

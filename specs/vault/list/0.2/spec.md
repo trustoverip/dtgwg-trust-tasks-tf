@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Vault — List
 summary: A vault consumer queries a vault maintainer for the metadata view of stored credentials, filtered by context, binding target, secret kind, tag, last-used time, expiry, or breach status; secrets are never returned by this task.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault

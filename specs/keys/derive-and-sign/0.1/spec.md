@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Derive and Sign
 summary: A producer asks a custodian to derive a key at a given path and sign with it in one step, without the key being added to the custodian's stored key set.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys
