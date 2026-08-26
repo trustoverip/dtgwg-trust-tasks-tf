@@ -76,7 +76,7 @@ make its write conditional on nothing having changed in between.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -90,8 +90,8 @@ A conforming **producer** (the application) **MUST**:
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements). Where a `proof` is present, verify it.
-2. Refuse a caller that lacks read access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)), and **MUST NOT** degrade an unreachable context to an empty result — a consumer that mistypes a context id must not be told its records are gone. A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). Where a `proof` is present, verify it.
+2. Refuse a caller that lacks read access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)), and **MUST NOT** degrade an unreachable context to an empty result — a consumer that mistypes a context id must not be told its records are gone. A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 4. Return the record at `(contextId, namespace, key)` with its `value`, `version` and timestamps.
 5. Refuse with `vta/app-state/get:notFound` when no live record exists at the address, and when a tombstone exists but `includeDeleted` was not set.
 6. Return a tombstone as a record with `deleted: true` and no `value` when `includeDeleted` is set.

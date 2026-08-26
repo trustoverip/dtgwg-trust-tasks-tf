@@ -57,7 +57,7 @@ Version 2.0 merges the 1.0 pair [`vta/did-templates/render/1.0`](../1.0/spec.md)
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -69,12 +69,12 @@ A conforming **producer** (the authenticated caller) **MUST**:
 2. Populate `payload.name` with the template to render, and `payload.contextId` with the target context — or omit `contextId` to render a global template.
 3. Supply every variable the template's `requiredVars` declares in `payload.vars`, and **MUST NOT** supply reserved ambient names (`DID`, `SIGNING_KEY_MB`, `KA_KEY_MB`, `VTA_DID`, `VTA_URL`, `CONTEXT_ID`, `CONTEXT_DID`, `NOW`).
 
-A conforming producer **SHOULD** include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof) so the render is attributable independent of transport.
+A conforming producer **SHOULD** include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof) so the render is attributable independent of transport.
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof` when present.
-2. Where the producer is not an authenticated caller — or, when `payload.contextId` is present, lacks access to that context — respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof` when present.
+2. Where the producer is not an authenticated caller — or, when `payload.contextId` is present, lacks access to that context — respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where no template named `payload.name` exists in the selected scope (after any global fallback the VTA applies for context renders), respond with `vta/did-templates/render:notFound`.
 4. Where `payload.vars` is missing a required variable or names a reserved ambient variable, respond with `malformedRequest`.
 5. Inject the ambient variables server-side — `VTA_DID`, `VTA_URL`, `NOW`, plus `CONTEXT_ID` and (if set on the context) `CONTEXT_DID` when `payload.contextId` is present — merge the caller's `vars` on top, substitute every placeholder, and return the [rendered document](#response).
@@ -122,7 +122,7 @@ Omit `contextId` to render the global template of the same name; `CONTEXT_ID`/`C
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/render/2.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload carries the rendered `document`.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including `vta/did-templates/render:notFound`.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including `vta/did-templates/render:notFound`.
 
 ### The rendered document
 

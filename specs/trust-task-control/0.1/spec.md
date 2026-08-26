@@ -61,7 +61,7 @@ related:
 
 **Trust Task Control** is how a *producer* stops work it has already asked for.
 It is the registry publication of the mechanism defined at
-[SPEC.md §12](../../../SPEC.md#12-task-control), and it carries three
+[SPEC.md §12](/SPEC.md#12-task-control), and it carries three
 operations: `cancel`, `suspend`, and `resume`.
 
 It is a **request**, not a response. A *consumer* that stops work on its own
@@ -73,7 +73,7 @@ otherwise tell apart from a retained document.
 
 **Cancellation prevents future effects. It does not undo past ones.** The
 framework declines to require rollback
-([SPEC.md §12.4](../../../SPEC.md#124-control-does-not-roll-back)), because many
+([SPEC.md §12.4](/SPEC.md#124-control-does-not-roll-back)), because many
 effects are irreversible by construction and because the state needed to reverse
 one is frequently the material the task existed to destroy. What this
 specification provides instead is **information**: the response reports what
@@ -83,7 +83,7 @@ invoke a compensating task of its own.
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per
-[SPEC.md §5.3](../../../SPEC.md#53-maturity-levels); the schema **MAY** change
+[SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change
 without notice. The design and its rationale are recorded in
 [`docs/design-notes/task-control-and-corrigibility.md`](../../../docs/design-notes/task-control-and-corrigibility.md).
 Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
@@ -97,9 +97,9 @@ A conforming **producer** (the controlling party) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is
    `https://trusttasks.org/spec/trust-task-control/0.1`, carrying a `proof`
-   ([SPEC.md §12.1](../../../SPEC.md#121-authorization)) and an in-band
+   ([SPEC.md §12.1](/SPEC.md#121-authorization)) and an in-band
    `recipient` per the audience-binding rule of
-   [SPEC.md §4.8.2](../../../SPEC.md#482-audience-binding).
+   [SPEC.md §4.8.2](/SPEC.md#482-audience-binding).
 2. Identify the target by its `id` in `payload.target.id`, and **SHOULD**
    populate `payload.target.typeUri`.
 3. Set `threadId` to the target document's `threadId` where it carried one, or
@@ -107,18 +107,18 @@ A conforming **producer** (the controlling party) **MUST**:
    exchange it acts upon.
 4. **MUST NOT** request that a suspension resume automatically after an interval
    of its own choosing; there is no member for it, and
-   [SPEC.md §12.5](../../../SPEC.md#125-suspension-and-resumption) forbids it.
+   [SPEC.md §12.5](/SPEC.md#125-suspension-and-resumption) forbids it.
 
 A conforming **consumer** (the executing party) **MUST**:
 
-1. Apply the [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) pipeline.
+1. Apply the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline.
 2. Establish authorization per
-   [SPEC.md §12.1](../../../SPEC.md#121-authorization): the target document's
+   [SPEC.md §12.1](/SPEC.md#121-authorization): the target document's
    `issuer` is authorized by default, and any other party only under the
    *consumer*'s own policy. Reject an unauthorized control document with
    `trust-task-control:notAuthorized`.
 3. Treat a valid, authorized operation as one of the conditions
-   [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 12 re-evaluates
+   [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 12 re-evaluates
    before each irreversible or externally visible effect. **This is how the
    operation takes effect**; there is no separate mechanism, and a *consumer*
    that implements item 12 correctly has already implemented the race.
@@ -129,7 +129,7 @@ A conforming **consumer** (the executing party) **MUST**:
    outcome is `appliedWithEffects` or `alreadyCompleted`. A *consumer*
    **MUST NOT** report `applied` where any irreversible or externally visible
    effect had already occurred.
-6. Retain the [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 11
+6. Retain the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 11
    record for a cancelled task for the remainder of its acceptance window, so a
    re-delivery of the original document is absorbed rather than executed.
 
@@ -140,7 +140,7 @@ the item 11 record already provides the storage and the expiry bound.
 
 ## Authorization
 
-*Declared under [SPEC.md §7.3](../../../SPEC.md#73-specification-requirements)
+*Declared under [SPEC.md §7.3](/SPEC.md#73-specification-requirements)
 item 15.*
 
 The authorization evidence is **being the initiator of the target task** — the
@@ -152,7 +152,7 @@ That is a **floor, not a ceiling**. A *consumer* executing on behalf of a
 mandate holder, a supervising principal, or an organization whose agent
 initiated the work **MAY** recognize that party's authority to stop it, under
 its own policy and applicable governance framework
-([SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 10). A
+([SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10). A
 *consumer* that recognizes only the initiator is equally conforming. This
 specification describes the evidence the task assumes; it does not oblige any
 *consumer* to authorize any particular party, and it declares nothing about
@@ -161,10 +161,10 @@ consent or human approval.
 The `proof` is **not** the authorization. It establishes that the control
 document was composed by the party it names, which is what makes the comparison
 against the target's `issuer` possible — per
-[SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 10, that
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10, that
 establishes *who asked*, never that they may. Membership of a *Trust Ceremony*
 confers nothing here, as
-[SPEC.md §4.11.4](../../../SPEC.md#4114-membership-is-a-claim-not-a-permission)
+[SPEC.md §4.11.4](/SPEC.md#4114-membership-is-a-claim-not-a-permission)
 provides generally.
 
 ## Payload
@@ -174,13 +174,13 @@ provides generally.
 `target` (REQUIRED) — `{ id, typeUri? }`. `id` is the sole identifying member;
 `threadId`, `parentThreadId` and ceremony membership **MUST NOT** identify the
 target on their own
-([SPEC.md §12.2](../../../SPEC.md#122-identifying-the-target)).
+([SPEC.md §12.2](/SPEC.md#122-identifying-the-target)).
 
 `reason` (optional) — human-readable explanation, for operator UI and audit. A
 *consumer* **MUST NOT** condition its handling on this value.
 
 `ext` (optional) — the framework extension slot
-([SPEC.md §4.5.1](../../../SPEC.md#451-the-ext-extension-member)).
+([SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)).
 
 ## Response
 
@@ -316,9 +316,9 @@ compensate, not to convey the content of the effect.
 
 **Silence means nothing.** A *producer* that receives no response cannot
 conclude that the task was cancelled, nor that it was not. Task control is
-best-effort ([SPEC.md §12.8](../../../SPEC.md#128-support-is-optional)), a
+best-effort ([SPEC.md §12.8](/SPEC.md#128-support-is-optional)), a
 *consumer* may not implement it, and a notification may be lost. A *producer*
 that reissues on the assumption that silence meant success can cause exactly the
 second consequential effect
-[SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 11 exists to
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 11 exists to
 prevent.

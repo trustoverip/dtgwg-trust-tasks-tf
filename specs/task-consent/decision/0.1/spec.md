@@ -88,7 +88,7 @@ free-standing, verifiable object.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -134,7 +134,7 @@ persistence.
 `payload.payloadDigest` (REQUIRED) — echoes the digest being authorized.
 `payload.decision` (REQUIRED) — `approve` or `deny`.
 `payload.reason` (OPTIONAL) — human-facing note, most useful on a denial.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

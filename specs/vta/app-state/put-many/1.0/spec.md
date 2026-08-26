@@ -115,7 +115,7 @@ rejection obliges a re-read, and the re-read races the next write.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -125,7 +125,7 @@ A conforming **producer** (the application) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/app-state/put-many/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId`, `payload.namespace`, and a `payload.writes` array of 1–64 writes with distinct keys, each supplying exactly one of `value` or `mergePatch`.
-3. Include a `proof` per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 4. Set `mode: "atomic"` **only** where the batch's records carry a joint invariant. A producer that sets it out of caution converts every independent conflict into a total failure.
 5. **MUST NOT** place secret material in any `value` or `mergePatch`.
 
@@ -133,8 +133,8 @@ A conforming producer **MUST NOT** assume that the writes in an `independent` ba
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Refuse a batch containing two writes to the same key with `vta/app-state/put-many:duplicateKey`, naming them in the details.
 4. Refuse a batch whose aggregate size exceeds its request limit with `vta/app-state/put-many:batchTooLarge`, carrying both the limit and the actual size — a limit the caller cannot see is a limit it cannot plan around.
 5. Evaluate each write's `expectedVersion`, `mergePatch` and per-record size cap exactly as [`vta/app-state/put`](../../put/1.0/spec.md) specifies for a single write.
@@ -163,7 +163,7 @@ The required `proof` establishes *who authored the writes*, so they can be
 attributed in the audit record. It is not the authorization — a correctly
 signed batch from a caller without write access is refused, and the access
 check happens after the signature is settled
-([SPEC §7.2 item 10](../../../../../SPEC.md#72-consumer-requirements)).
+([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)).
 
 ## Request
 

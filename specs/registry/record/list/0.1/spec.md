@@ -41,7 +41,7 @@ The **Registry — List Records** Trust Task returns every [`TrustRecord`](../..
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/query`](../../query/0.1/spec.md), which adds the cursor pagination this task's abstract conceded it lacked. Producers SHOULD NOT emit new documents against this specification.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/query`](../../query/0.1/spec.md), which adds the cursor pagination this task's abstract conceded it lacked. Producers SHOULD NOT emit new documents against this specification.
 
 ## Conformance
 

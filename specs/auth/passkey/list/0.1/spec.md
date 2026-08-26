@@ -52,7 +52,7 @@ Its output is the input to revocation: [`auth/passkey/revoke/start/0.1`](../../r
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -85,7 +85,7 @@ Consumers **SHOULD** sort by `registeredAt` descending, so a credential enrolled
 
 The request payload carries no required members. The proof is the request.
 
-`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

@@ -99,11 +99,11 @@ defect is being fixed here. This is the encoding argument alone.
 
 The change arrives through the shared component: this version re-pins its
 `$ref`s from `vault/_shared/0.2` to `vault/_shared/0.3`, which is why it is a new
-version at all ([SPEC.md §5.4](../../../../SPEC.md#54-migrating-between-versions)
+version at all ([SPEC.md §5.4](/SPEC.md#54-migrating-between-versions)
 couples the two). Nothing else in the payload moves.
 
 Breaking on the wire, released as a `MINOR` increment under
-[§5.2](../../../../SPEC.md#52-compatibility-rules)'s `draft` allowance. `0.2`
+[§5.2](/SPEC.md#52-compatibility-rules)'s `draft` allowance. `0.2`
 remains published and pinned to `vault/_shared/0.2`; `vault/proxy-login` and
 `vault/release` stay on `0.2` deliberately, since they reference only
 `SiteTarget` and `SecretKind` and never expose an attachment digest.

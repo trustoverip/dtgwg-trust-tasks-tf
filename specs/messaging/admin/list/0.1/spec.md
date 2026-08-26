@@ -42,7 +42,7 @@ The **Messaging — List Admins** Trust Task enumerates the administrator accoun
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/list`](../../../account/list/0.1/spec.md) with its `accountType` role filter — send `{ accountType: "admin" }` (or `"rootAdmin"`), with the same `cursor`/`limit` paging; the successor returns full `Account` views rather than the thinner `AdminAccount` shape.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/list`](../../../account/list/0.1/spec.md) with its `accountType` role filter — send `{ accountType: "admin" }` (or `"rootAdmin"`), with the same `cursor`/`limit` paging; the successor returns full `Account` views rather than the thinner `AdminAccount` shape.
 
 ## Conformance
 

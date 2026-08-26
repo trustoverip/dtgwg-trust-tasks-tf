@@ -61,13 +61,13 @@ Consumer: verify the proof and the presentation; if the VP fails verification or
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the **presentation in `vp`, whose holder MUST equal the envelope proof's signer**. That equality is the whole authorization: it establishes that the party asking to join is the party the presented credentials describe.
 
 `exposure.actsAsSubject` is `true` because the request is made in the subject's own name. A consumer that accepted a presentation whose holder differed from the signer would be admitting one party on another's evidence, which is why the check is stated as an equality rather than as two independent verifications.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 

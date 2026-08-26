@@ -54,7 +54,7 @@ Context-scoped templates are visible and manageable within a single context and 
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/get/2.0`](../../../../did-templates/get/2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/get/2.0`](../../../../did-templates/get/2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 
@@ -64,12 +64,12 @@ A conforming **producer** (the context member) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/contexts/did-templates/get/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId` with the context the template is scoped to and `payload.name` with the template's name.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer does not have access to `payload.contextId`, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer does not have access to `payload.contextId`, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where no template named `payload.name` exists in the context, respond with `vta/contexts/did-templates/get:notFound`.
 4. On success, return the stored [DidTemplateRecord](#response).
 
@@ -111,7 +111,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/contexts/did
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/contexts/did-templates/get/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload is the persisted **DidTemplateRecord**.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/contexts/did-templates/get:notFound` error.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/contexts/did-templates/get:notFound` error.
 
 ### The stored record
 
@@ -164,4 +164,4 @@ Response to the request example:
 
 **Read gated on context access.** A context-scoped template is only returned to a caller with access to its context, so the **REQUIRED** `proof` lets the VTA authenticate the caller before disclosing the template. A caller without context access receives `permissionDenied`, not the record.
 
-**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material; the VTA mints all keys at render time. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material; the VTA mints all keys at render time. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

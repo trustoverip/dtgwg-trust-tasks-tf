@@ -57,7 +57,7 @@ Version 2.0 merges the 1.0 pair [`vta/did-templates/update/1.0`](../1.0/spec.md)
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -68,12 +68,12 @@ A conforming **producer** (the administrator) **MUST**:
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/did-templates/update/2.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.name` with the resource id and `payload.template` with the full replacement document, with `template.name` equal to `payload.name`.
 3. Populate `payload.contextId` with the target context to replace a context-scoped template, or omit it to replace a global template.
-4. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+4. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where `payload.contextId` is absent and the producer is not a super-administrator, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where `payload.contextId` is absent and the producer is not a super-administrator, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where `payload.contextId` is present and the producer is neither an administrator of that context nor a super-administrator, respond with `permissionDenied`.
 4. Where `payload.name` does not equal `payload.template.name`, or the template is not a valid v1 template, respond with `malformedRequest`.
 5. Where no template named `payload.name` exists in the selected scope, respond with `vta/did-templates/update:notFound`.
@@ -146,7 +146,7 @@ Add `"contextId": "primary"` to the payload to replace the context-scoped templa
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/update/2.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload is the persisted **DidTemplateRecord**.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including `vta/did-templates/update:notFound`.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including `vta/did-templates/update:notFound`.
 
 ### The stored record
 
@@ -201,4 +201,4 @@ Response to the request example. `createdAt`/`createdBy` are preserved; `updated
 
 **Scope is enforced server-side.** The VTA authorizes the write against `payload.contextId` (or its absence); a context admin cannot replace templates outside the contexts they administer, and cannot reach the global scope at all.
 
-**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

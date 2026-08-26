@@ -52,7 +52,7 @@ This task replaces ad-hoc `/me` REST endpoints. It serves three concrete needs:
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -62,11 +62,11 @@ A conforming **producer** **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/auth/whoami/0.1`, with itself as `issuer` and the auth service as `recipient`.
 2. Provide an empty payload (only the optional `ext` slot is permitted).
-3. Include a verified `proof` per [SPEC.md §4.7](../../../../SPEC.md#47-proof).
+3. Include a verified `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the auth service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Look up the most recently-issued active session whose `subject` equals the document `issuer`. If none, respond with `auth/whoami:no_session`.
 3. Return a `#response` document carrying `{ session, roles?, scopes? }`. Consumers MAY omit `roles` / `scopes` when their model has no concept of either; the `session` field is REQUIRED.
 
@@ -82,7 +82,7 @@ A consumer **MAY** return information about a session distinct from the *most re
 
 The payload carries no required members. The `proof` is the entire request.
 
-`payload.ext` — optional extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — optional extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

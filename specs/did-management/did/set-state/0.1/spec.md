@@ -49,7 +49,7 @@ Use `suspended` for temporary suspensions (key-compromise investigations, billin
 
 ## Status of this Document
 
-Draft per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); schema **MAY** change without notice.
+Draft per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); schema **MAY** change without notice.
 
 ## Conformance
 

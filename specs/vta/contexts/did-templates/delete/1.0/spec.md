@@ -54,7 +54,7 @@ Context-scoped templates are visible and manageable within a single context and 
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/delete/2.0`](../../../../did-templates/delete/2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/delete/2.0`](../../../../did-templates/delete/2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 
@@ -64,12 +64,12 @@ A conforming **producer** (the context administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId` with the context the template is scoped to, and `payload.name` with the resource id of the template to remove.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer is neither an administrator of `payload.contextId` nor a super-administrator, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer is neither an administrator of `payload.contextId` nor a super-administrator, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where no template with `payload.name` exists in `payload.contextId`, respond with `vta/contexts/did-templates/delete:notFound`.
 4. On success, remove the template from the context scope and return the confirmation [response](#response) echoing `name` with `deleted: true`.
 
@@ -112,7 +112,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/contexts/did
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload confirms the removal.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/contexts/did-templates/delete:notFound` error.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/contexts/did-templates/delete:notFound` error.
 
 ### The confirmation
 
@@ -139,4 +139,4 @@ Response to the request example:
 
 **Scope is enforced server-side.** The VTA authorises the write against `payload.contextId`; a context admin cannot delete a template outside the contexts they administer, and a request that does not name an existing template in the context is rejected rather than silently succeeding.
 
-**Removal is the revocation mechanism.** Deleting a template stops the VTA minting that integration shape going forward; it does not affect integrations already provisioned from it. The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Removal is the revocation mechanism.** Deleting a template stops the VTA minting that integration shape going forward; it does not affect integrations already provisioned from it. The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

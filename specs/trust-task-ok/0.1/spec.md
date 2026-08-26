@@ -50,7 +50,7 @@ related:
 ## Abstract
 
 **Trust Task OK** is the courtesy acknowledgement reserved at
-[SPEC.md §8.6](../../../SPEC.md#86-reserved-response-type-slugs) since framework
+[SPEC.md §8.6](/SPEC.md#86-reserved-response-type-slugs) since framework
 `0.1`. A *consumer* **MAY** return one to confirm that it received and performed
 a *Trust Task* which defines no success-response document of its own.
 
@@ -63,7 +63,7 @@ A *consumer* may not implement this specification; a *consumer* that does may
 still not send one; and the document may be lost in transit. A *producer* that
 treats silence as failure will reissue work that succeeded — and for a
 *consequential Trust Task* that is precisely the second effect
-[SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 11 exists to
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 11 exists to
 prevent.
 
 **If an acknowledgement matters, do not use this document.** A task whose
@@ -78,7 +78,7 @@ rather than a transport-level ack".
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per
-[SPEC.md §5.3](../../../SPEC.md#53-maturity-levels); the schema **MAY** change
+[SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change
 without notice. Feedback via the
 [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
@@ -95,7 +95,7 @@ now acknowledging it) **MUST**:
    the original task's *producer* as `recipient`.
 2. Set `threadId` to the originating document's `threadId` if it carried one, or
    to the originating document's `id` otherwise, per
-   [SPEC.md §4.9](../../../SPEC.md#49-the-threadid-member). This document's own
+   [SPEC.md §4.9](/SPEC.md#49-the-threadid-member). This document's own
    `id` **MUST NOT** reuse the originating document's `id`.
 3. Send it **only** where the originating *Trust Task specification* defines no
    success-response document. Where a specification defines one, that document
@@ -119,7 +119,7 @@ A conforming **consumer** of this document (the original *producer*) **MUST**:
 
 ## Authorization
 
-*Declared under [SPEC.md §7.3](../../../SPEC.md#73-specification-requirements)
+*Declared under [SPEC.md §7.3](/SPEC.md#73-specification-requirements)
 item 15.*
 
 This task is not *consequential* — it changes no recipient state and discloses
@@ -133,7 +133,7 @@ recipient to nothing, and per Conformance may not be relied upon even when
 genuine. A *consumer* receiving one from a party it did not transact with
 discards it; that is a correlation matter rather than an authorization one, and
 the `threadId` and `recipient` checks of
-[SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) already cover it.
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) already cover it.
 
 ## Payload
 
@@ -156,7 +156,7 @@ own `#response`. Without that line this member becomes the place specifications
 put things they could not be bothered to model.
 
 `ext` (optional) — the framework extension slot
-([SPEC.md §4.5.1](../../../SPEC.md#451-the-ext-extension-member)).
+([SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)).
 
 ## Examples
 
@@ -206,7 +206,7 @@ With a reference the operator may find useful, and a proof:
 **Silence carries no information, and that is normative.** The rule exists
 because the alternative is worse in both directions. A *producer* that reads
 absence as failure and reissues a *consequential Trust Task* causes the
-duplicate effect [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item
+duplicate effect [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item
 11 exists to prevent; one that reads absence as success can believe work
 happened that never did. Neither reading is available: an acknowledgement is
 informative when it arrives and meaningless when it does not.

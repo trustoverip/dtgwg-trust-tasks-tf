@@ -53,7 +53,7 @@ conversation to the agent and, on the next inbound, MAY raise a fresh
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -71,7 +71,7 @@ authority over the subject (else `notAuthorized`), delete the grant (else
 
 `payload.subject` (REQUIRED) — the [`ConsentSubject`](../../_shared/0.1/consent.schema.json) to revoke.
 `payload.reason` (OPTIONAL) — operator note recorded in the audit trail.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

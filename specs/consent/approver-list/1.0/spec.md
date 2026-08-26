@@ -48,7 +48,7 @@ the current routing; the VTA itself resolves bindings internally during
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -65,7 +65,7 @@ authorized to see (else `notAuthorized`).
 
 `payload.platform` (OPTIONAL) — restrict to this platform tag.
 `payload.context` (OPTIONAL) — restrict to this context path.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

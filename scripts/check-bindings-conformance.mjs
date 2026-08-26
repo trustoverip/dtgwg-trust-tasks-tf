@@ -51,6 +51,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+import { discoverSpecs as discoverSpecsShared } from "./lib/specs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -78,26 +79,26 @@ const RUST_HAND_WRITTEN = new Set(["trust-task-error"]);
 
 /* ── Discovery ──────────────────────────────────────────────────────────── */
 
-/** Every published spec version: `specs/<slug>/<version>/payload.schema.json`. */
+/**
+ * Every published spec version, via the shared rule in `scripts/lib/specs.mjs`.
+ *
+ * This one *is* safe to share, unlike `expectedPolicy()` below. Which
+ * directories are specs has a single right answer and no independent-derivation
+ * property to preserve; re-walking the tree here only bought a second chance to
+ * disagree with the build about what the registry contains. The policy
+ * derivation stays duplicated on purpose — see the header note.
+ *
+ * Structural problems are surfaced here too rather than swallowed: a version
+ * folder missing half its pair fails this check the same way it fails the
+ * build, because a spec the generators can see and the registry cannot is
+ * exactly the drift this script exists to catch.
+ */
 function discoverSpecs() {
-  const out = [];
-  (function walk(dir) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (!entry.isDirectory() || entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
-      const full = path.join(dir, entry.name);
-      if (fs.existsSync(path.join(full, "spec.md"))) {
-        const rel = path.relative(SPECS_DIR, full).split(path.sep);
-        out.push({
-          slug: rel.slice(0, -1).join("/"),
-          version: rel[rel.length - 1],
-          dir: full,
-        });
-      } else {
-        walk(full);
-      }
-    }
-  })(SPECS_DIR);
-  return out;
+  return discoverSpecsShared({
+    specsDir: SPECS_DIR,
+    onIncomplete: ({ rel, message }) => fail(`specs/${rel}`, message),
+    onNestedSlug: ({ rel, message }) => console.warn(`  warn: specs/${rel}: ${message}`),
+  });
 }
 
 /**

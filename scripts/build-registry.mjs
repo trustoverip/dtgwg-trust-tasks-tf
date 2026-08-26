@@ -22,6 +22,12 @@ import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import { discoverSpecs as discoverSpecsShared } from './lib/specs.mjs';
+import {
+  assessSecurityPrivacy,
+  checkSecurityPrivacySections,
+  writeAllowlist
+} from './lib/security-privacy.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -33,6 +39,12 @@ const DATA_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'data.js');
 const BINDINGS_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'bindings.js');
 
 const validateOnly = process.argv.includes('--validate-only');
+// Maintenance affordance for the Security & Privacy backlog: rewrite the
+// allowlist from what is currently non-conforming and exit. Deliberately not a
+// documented everyday flag — running it after regressing a spec would launder
+// the regression into accepted debt, which is why the list is committed and
+// reviewed rather than derived at build time.
+const updateSpAllowlist = process.argv.includes('--update-security-privacy-allowlist');
 
 const errors = [];
 const warn = (msg) => console.warn(`  warn: ${msg}`);
@@ -82,31 +94,25 @@ function firstAdded(dirRel) {
   return new Date().toISOString().slice(0, 10);
 }
 
+/* Spec discovery lives in scripts/lib/specs.mjs — one rule, shared with
+ * scripts/check-bindings-conformance.mjs. See that module for why: the build
+ * used to find specs by `spec.md` while the code generators found them by
+ * `payload.schema.json`, which agree only for as long as every version folder
+ * carries both. This wiring makes the disagreement a build failure instead of
+ * two tools describing two different registries in silence.
+ *
+ * Memoised because the module walks the tree and several callers want the list
+ * (checkExampleDocuments() runs before main()'s own pass), and because the
+ * structural problems below must be reported once, not once per caller. */
+let specsCache = null;
 function discoverSpecs() {
-  if (!fs.existsSync(SPECS_DIR)) return [];
-  const found = [];
-  walk(SPECS_DIR);
-  return found;
-
-  function walk(dir) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      if (entry.name.startsWith('_') || entry.name.startsWith('.')) continue;
-      const full = path.join(dir, entry.name);
-      const specPath = path.join(full, 'spec.md');
-      if (fs.existsSync(specPath)) {
-        // `full` is a version directory (it contains spec.md). Slug is the
-        // relative path from SPECS_DIR to `full`'s parent, with `/` separators.
-        const relVersionDir = path.relative(SPECS_DIR, full);
-        const segments = relVersionDir.split(path.sep);
-        const version = segments[segments.length - 1];
-        const slug = segments.slice(0, -1).join('/');
-        found.push({ slug, version, dir: full, specPath });
-      } else {
-        walk(full);
-      }
-    }
-  }
+  if (specsCache) return specsCache;
+  specsCache = discoverSpecsShared({
+    specsDir: SPECS_DIR,
+    onIncomplete: ({ rel, message }) => fail(rel, message),
+    onNestedSlug: ({ rel, message }) => warn(`specs/${rel}: ${message}`)
+  });
+  return specsCache;
 }
 
 /* ---------- Shared schemas: discovery, slug, ref-walk ----------
@@ -501,6 +507,33 @@ function checkProofFloor(meta, rel, hasResponse) {
   }
 }
 
+/*
+ * `parties[].identifierScope: public` (framework 0.5.0) narrows the privacy
+ * properties available to every producer of the task: it says the counterparty
+ * must be able to recognise the same identifier it sees elsewhere, which
+ * forecloses the pairwise identifiers that would otherwise stop documents of
+ * this task being joined to that party's activity. The framework asks the
+ * specification to justify that in prose rather than declare it and move on.
+ *
+ * The check is deliberately cheap and deliberately a warning: it asks only that
+ * the body discuss the declaration at all, on the reasoning that a lint cannot
+ * tell a justification from a sentence, but it can tell a justification from
+ * silence — and silence is the failure mode the framework text is aimed at.
+ */
+function checkIdentifierScopeJustification(meta, body, rel) {
+  const publicParties = (meta.parties || []).filter((p) => p?.identifierScope === 'public');
+  if (!publicParties.length) return;
+  if (/identifierScope|identifier scope/i.test(body)) return;
+  warn(
+    `${rel}/spec.md declares identifierScope: public on ${publicParties
+      .map((p) => `'${p.role}'`)
+      .join(', ')} but the prose never discusses it. Framework 0.5.0 asks a specification ` +
+      `to justify a public identifier scope: say what the task needs a recognisable, ` +
+      `reusable identifier for, and what a pairwise one would break. Add a paragraph — ` +
+      `Security & Privacy → Correlation is the natural home.`
+  );
+}
+
 function checkErrorCodeNamespaces(meta, rel) {
   const slug = meta.slug;
   if (typeof slug !== 'string') return;
@@ -585,7 +618,10 @@ function checkExampleDocuments() {
   for (const { slug, version, specPath } of discoverSpecs()) {
     const { data } = splitFrontMatter(fs.readFileSync(specPath, 'utf8'));
     if (data?.targetFrameworkVersion) {
-      targetByTypePrefix.set(`https://trusttasks.org/spec/${slug}/${version}`, data.targetFrameworkVersion);
+      targetByTypePrefix.set(
+        `https://trusttasks.org/spec/${slug}/${version}`,
+        frameworkMinor(data.targetFrameworkVersion)
+      );
     }
   }
 
@@ -652,6 +688,21 @@ function checkExampleDocuments() {
     );
   }
   console.log(`  validated ${checked} example documents against the framework envelope schema`);
+}
+
+/*
+ * `targetFrameworkVersion` accepts both `MAJOR.MINOR` (what all 349 published
+ * specs declare) and `MAJOR.MINOR.PATCH` (what the canonical framework spec
+ * repo, trustoverip/dtgwg-trust-tasks-spec, now normatively requires). The
+ * envelope schemas on disk are keyed by `MAJOR.MINOR` — `specs/_framework/0.4/`
+ * — because a patch release does not change the envelope. Truncating here is
+ * what stops a spec written to the canonical text from landing in the
+ * "no envelope schema compiled, NOT validated" bucket, which is a silent loss
+ * of coverage dressed up as a warning nobody reads.
+ */
+function frameworkMinor(v) {
+  const m = /^(\d+\.\d+)(?:\.\d+)?$/.exec(String(v));
+  return m ? m[1] : String(v);
 }
 
 /** Whether a schema states how unrecognized members are treated (§7.3 item 7.4). */
@@ -737,25 +788,143 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
   return out;
 }
 
+/* ---------- Derived front matter: authors, keywords ----------
+ *
+ * Both were `required`, and both had stopped carrying information. `authors`
+ * was byte-identical in 345 of 349 specs; 46% of declared keywords were
+ * literally a slug segment or the spec's own category. A required field whose
+ * value is the same everywhere is not metadata, it is a toll — every author
+ * pays it and no reader learns anything.
+ *
+ * So they became OPTIONAL in the meta-schema and are derived when omitted. The
+ * derivation has to be good enough that omitting is the *right* default rather
+ * than the lazy one, which means it has to reach the same answer a
+ * conscientious author would have typed:
+ *
+ *   authors  — from CODEOWNERS, which already names who reviews each slug and
+ *              is kept current because GitHub enforces it. Falling back to the
+ *              spec folder's git history, which is who actually wrote it.
+ *   keywords — from the slug's own segments plus the category, which is exactly
+ *              what 46% of hand-written keyword lists already were.
+ *
+ * A spec that declares either wins outright: the derivation exists to remove
+ * ceremony, not to overrule an author who has something real to say.
+ */
+
+let codeownersRules = null;
+
+/* CODEOWNERS, reduced to what this needs: (pattern, owners) in file order, last
+ * match winning, as GitHub does. Only path-prefix patterns are honoured — the
+ * file uses nothing else, and implementing the full gitignore grammar to serve
+ * a display string would be a poor trade. */
+function loadCodeowners() {
+  if (codeownersRules) return codeownersRules;
+  codeownersRules = [];
+  for (const candidate of ['.github/CODEOWNERS', 'CODEOWNERS', 'docs/CODEOWNERS']) {
+    const p = path.join(ROOT, candidate);
+    if (!fs.existsSync(p)) continue;
+    for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
+      const stripped = line.replace(/#.*$/, '').trim();
+      if (!stripped) continue;
+      const [pattern, ...owners] = stripped.split(/\s+/);
+      const handles = owners.filter((o) => o.startsWith('@'));
+      if (!handles.length) continue;
+      codeownersRules.push({ pattern, owners: handles });
+    }
+    break;
+  }
+  return codeownersRules;
+}
+
+function codeownersFor(relPath) {
+  let match = null;
+  for (const rule of loadCodeowners()) {
+    const p = rule.pattern;
+    if (p === '*') { match = rule; continue; }
+    const needle = p.startsWith('/') ? p.slice(1) : p;
+    if (relPath === needle || relPath.startsWith(needle.endsWith('/') ? needle : `${needle}/`)) {
+      match = rule;
+    }
+  }
+  return match ? match.owners : [];
+}
+
+/* A GitHub handle rendered in the same "Name (url)" shape the declared authors
+ * use, so the spec page's existing renderer links it without a special case. */
+function handleToAuthor(handle) {
+  const login = handle.replace(/^@/, '');
+  // A team handle (@org/team) has no user profile page; link the org.
+  if (login.includes('/')) {
+    const [org, team] = login.split('/');
+    return `${login} (https://github.com/orgs/${org}/teams/${team})`;
+  }
+  return `${login} (https://github.com/${login})`;
+}
+
+function gitAuthorsFor(dirRel) {
+  try {
+    const out = execSync(`git log --format=%an -- "${dirRel}"`, { cwd: ROOT, encoding: 'utf8' }).trim();
+    if (!out) return [];
+    return [...new Set(out.split('\n').map((s) => s.trim()).filter(Boolean))];
+  } catch {
+    return [];
+  }
+}
+
+function deriveAuthors(meta, entry) {
+  if (Array.isArray(meta.authors) && meta.authors.length) {
+    return { authors: meta.authors, source: 'declared' };
+  }
+  const specRel = path.relative(ROOT, entry.specPath).split(path.sep).join('/');
+  const owners = codeownersFor(specRel);
+  if (owners.length) return { authors: owners.map(handleToAuthor), source: 'codeowners' };
+  const fromGit = gitAuthorsFor(path.relative(ROOT, entry.dir));
+  if (fromGit.length) return { authors: fromGit, source: 'git' };
+  // Never empty: TT_STATS iterates authors unconditionally, and a spec with no
+  // attribution at all should read as the working group's rather than as a gap.
+  return { authors: ['Trust Tasks Task Force'], source: 'fallback' };
+}
+
+function deriveKeywords(meta) {
+  if (Array.isArray(meta.keywords) && meta.keywords.length) {
+    return { keywords: meta.keywords, source: 'declared' };
+  }
+  const fromSlug = String(meta.slug || '').split('/').flatMap((seg) => seg.split('-'));
+  const derived = [...new Set([...fromSlug, meta.category].filter(Boolean))];
+  return { keywords: derived.length ? derived : [meta.slug], source: 'slug+category' };
+}
+
 function buildTask(entry, meta, schema, uses) {
   const hasResponse = !!(schema && schema.$defs && schema.$defs.Response);
+  const { authors, source: authorsSource } = deriveAuthors(meta, entry);
+  const { keywords, source: keywordsSource } = deriveKeywords(meta);
   return {
     id: meta.slug,
     slug: meta.slug,
     title: meta.title,
     summary: meta.summary,
     category: meta.category,
-    keywords: meta.keywords,
+    keywords,
+    // Which way each of these was arrived at, so a reader (and a future audit
+    // of this decision) can tell an author's deliberate choice from the
+    // build's default without diffing the front matter.
+    keywordsSource,
     status: meta.status,
     version: meta.version,
     targetFrameworkVersion: meta.targetFrameworkVersion,
     created: firstAdded(path.relative(ROOT, entry.dir)),
     updated: lastModified(path.relative(ROOT, entry.dir)),
-    authors: meta.authors,
+    authors,
+    authorsSource,
     parties: meta.parties.map((p) => p.role),
     partiesDetail: meta.parties,
     proofRequirement: meta.proofRequirement,
     sideEffects: meta.sideEffects || null,
+    // Framework 0.5.0's third descriptive dimension. Carried even when absent
+    // (as null) for the same reason knownImplementations is: a reader needs to
+    // tell "not declared" from "declared transient", and a field that only
+    // appears when set makes those look alike to a machine consumer.
+    retention: meta.retention || null,
     exposure: meta.exposure || null,
     consequences: meta.consequences || [],
     subjectPath: meta.subjectPath || null,
@@ -995,6 +1164,15 @@ function checkBindingRegistry() {
 
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
+
+  if (updateSpAllowlist) {
+    const failing = discoverSpecs()
+      .filter((e) => !assessSecurityPrivacy(fs.readFileSync(e.specPath, 'utf8')).conforms)
+      .map((e) => e.rel);
+    console.log(`  wrote scripts/lib/security-privacy-allowlist.json (${writeAllowlist(failing)} spec(s))`);
+    return;
+  }
+
   const validate = loadMetaValidator();
   checkCategoryTaxonomy();
   checkBindingRegistry();
@@ -1003,6 +1181,7 @@ function main() {
   if (entries.length === 0) {
     console.warn('No specs found under specs/<slug>/<version>/.');
   }
+  checkSecurityPrivacySections(entries, { warn, fail, log: console.log });
 
   // Discover shared/framework/method-extension schemas first so we can
   // resolve $refs from payload schemas against them when building tasks.
@@ -1018,7 +1197,7 @@ function main() {
     const { slug, version, specPath, dir } = entry;
     const rel = `${slug}/${version}`;
     const src = fs.readFileSync(specPath, 'utf8');
-    const { data: meta } = splitFrontMatter(src);
+    const { data: meta, body } = splitFrontMatter(src);
     if (!meta) {
       fail(`${rel}/spec.md`, 'missing or malformed YAML front matter');
       continue;
@@ -1044,6 +1223,7 @@ function main() {
       warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
     checkErrorCodeNamespaces(meta, rel);
+    checkIdentifierScopeJustification(meta, body, rel);
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
       fail(rel, `duplicate slug+version ${idKey}`);
@@ -1114,6 +1294,14 @@ function main() {
   // `../finish/0.1/spec.md` points at `.../start/finish/0.1/`, not at the
   // sibling leg. 135 links across 65 files had drifted this way before anything
   // checked, and they were broken on the live site, not merely in the repo.
+  //
+  // Root-relative links (`/SPEC.md#...`) are checked too, and resolve from the
+  // REPOSITORY ROOT rather than from the version directory. They exist because
+  // the `../` count in a link to the framework spec is a function of slug depth
+  // — which is why 731 of them had to be written four different ways, and why
+  // the drift above happened at all. `/SPEC.md#anchor` is the same string from
+  // every depth, and the website resolves it onto the rendered /specification
+  // route. Checking them is what keeps the new form from being an unverified one.
   for (const { dir, slug, version, specPath } of entries) {
     const prose = fs.readFileSync(specPath, 'utf8');
     for (const m of prose.matchAll(/\]\((\.\.[^)#\s]*?)(#[^)\s]*)?\)/g)) {
@@ -1124,6 +1312,15 @@ function main() {
           ? ` — one level too shallow; '../${m[1]}' resolves`
           : '';
         fail(`${slug}/${version}/spec.md`, `relative link '${m[1]}' does not resolve${hint}`);
+      }
+    }
+    for (const m of prose.matchAll(/\]\((\/[^)#\s]+?)(#[^)\s]*)?\)/g)) {
+      if (!fs.existsSync(path.join(ROOT, m[1]))) {
+        fail(
+          `${slug}/${version}/spec.md`,
+          `root-relative link '${m[1]}' does not resolve — these resolve from the ` +
+            `repository root, not from the spec folder`
+        );
       }
     }
   }

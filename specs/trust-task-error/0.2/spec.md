@@ -38,13 +38,13 @@ related: []
 
 The **Trust Task Error** is the framework-defined response a *consumer* returns when it cannot or will not act upon a received *Trust Task document*. It is itself a *Trust Task document*, signed and validated by the same pipeline that handles successful tasks, so an implementation does not need a parallel "error path".
 
-This specification is the registry publication of the type reserved at [SPEC.md §8](../../../SPEC.md#8-error-responses). It defines the canonical `payload` shape carried by every framework-conformant error response, enumerates the standard error codes consumers **MUST** recognize, and describes how individual *Trust Task specifications* extend the code set ([SPEC.md §8.5](../../../SPEC.md#85-extension-by-individual-trust-task-specifications)).
+This specification is the registry publication of the type reserved at [SPEC.md §8](/SPEC.md#8-error-responses). It defines the canonical `payload` shape carried by every framework-conformant error response, enumerates the standard error codes consumers **MUST** recognize, and describes how individual *Trust Task specifications* extend the code set ([SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)).
 
 A `trust-task-error` document is itself a *response*. It does not have a `#response` variant of its own.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -53,15 +53,15 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../SPEC
 A conforming **producer** (the consumer of the original task, now reporting failure) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-error/0.2`, with itself as `issuer` and the original task's producer as `recipient`.
-2. Set the document's `threadId` to the originating document's `threadId` if one was carried, or to the originating document's `id` otherwise, per [SPEC.md §4.9](../../../SPEC.md#49-the-threadid-member). The error document's own `id` **MUST NOT** reuse the originating document's `id`.
-3. Populate `payload.code` with one of the standard codes below or a slug-namespaced extension per [SPEC.md §8.5](../../../SPEC.md#85-extension-by-individual-trust-task-specifications).
+2. Set the document's `threadId` to the originating document's `threadId` if one was carried, or to the originating document's `id` otherwise, per [SPEC.md §4.9](/SPEC.md#49-the-threadid-member). The error document's own `id` **MUST NOT** reuse the originating document's `id`.
+3. Populate `payload.code` with one of the standard codes below or a slug-namespaced extension per [SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications).
 4. Populate `payload.retryable` with a boolean reflecting whether retrying the original document is expected to succeed.
 5. Include a `proof` member where the failure is intended to be retained or replayed beyond the original transport.
 
 A conforming **consumer** (the original producer, receiving the failure) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements).
-2. Apply retry semantics per [SPEC.md §8.4](../../../SPEC.md#84-retry-semantics): **MUST NOT** re-send the original document when `retryable` is `false`; **SHOULD** wait until any `retryAfter` value and apply transport-appropriate backoff when `retryable` is `true`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Apply retry semantics per [SPEC.md §8.4](/SPEC.md#84-retry-semantics): **MUST NOT** re-send the original document when `retryable` is `false`; **SHOULD** wait until any `retryAfter` value and apply transport-appropriate backoff when `retryable` is `true`.
 3. Recognize every standard code listed below. Unrecognized extended codes **SHOULD** be treated as `taskFailed`, but `retryable` and `retryAfter` **MUST** still be honored.
 
 A failure that **arises while handling** a `trust-task-error` document (for example, an error document with a malformed payload) is itself reported with another `trust-task-error` whose `code` is `malformedRequest`; this is not recursion in practice because the inner document is small and well-formed by definition once it reaches the consumer.
@@ -90,11 +90,11 @@ The codes below are normative; every conforming consumer **MUST** recognize them
 | `unavailable` | The consumer is temporarily unable to process the task. | `true` |
 | `internalError` | The consumer encountered an unexpected internal failure. | `true` |
 
-See [SPEC.md §8.3](../../../SPEC.md#83-standard-error-codes) for the authoritative version of this table.
+See [SPEC.md §8.3](/SPEC.md#83-standard-error-codes) for the authoritative version of this table.
 
 ## Extending the code set
 
-An individual *Trust Task specification* **MAY** define additional codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` followed by a colon and a snake_case local name — for example, `acl/grant:roleNotRecognized`. Extended codes **MUST NOT** shadow any code in the standard table above. See [SPEC.md §8.5](../../../SPEC.md#85-extension-by-individual-trust-task-specifications).
+An individual *Trust Task specification* **MAY** define additional codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` followed by a colon and a snake_case local name — for example, `acl/grant:roleNotRecognized`. Extended codes **MUST NOT** shadow any code in the standard table above. See [SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications).
 
 A consumer that does not recognize an extended code **SHOULD** treat the failure as if its code were `taskFailed`, and **MUST** still honor the `retryable` and `retryAfter` members.
 

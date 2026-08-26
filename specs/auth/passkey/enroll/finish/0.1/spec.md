@@ -64,7 +64,7 @@ The **Auth — Passkey Enroll (finish)** Trust Task completes the WebAuthn regis
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -91,7 +91,7 @@ A conforming **consumer** **MUST**:
 
 ## Authorization
 
-*Stated in anticipation of [SPEC.md §7.3](../../../../../../SPEC.md#73-specification-requirements)
+*Stated in anticipation of [SPEC.md §7.3](/SPEC.md#73-specification-requirements)
 item 15, which binds specifications targeting framework 0.4; this specification
 targets 0.1, where the declaration is not yet required.*
 
@@ -107,7 +107,7 @@ The document `proof` is a distinct check and is not the authorization. It
 attributes the finish request to a signer, and the producer is required to
 carry one whose `verificationMethod` resolves to the same VID the start
 ceremony was bound to — but per
-[SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements) item 10, establishing
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10, establishing
 that the signer is that VID is what makes the `subject_mismatch` comparison
 possible, not a substitute for it. Neither is the WebAuthn attestation
 verification: it establishes that the credential is genuine and well-formed,

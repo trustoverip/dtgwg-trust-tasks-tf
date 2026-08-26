@@ -63,11 +63,11 @@ This task serves two semantically-distinct flows, distinguished by `payload.purp
 - **`login`** — issue a fresh session at AAL ≥ 2 on the matching finish.
 - **`step-up`** — elevate the producer's existing session's `acr` on the matching finish, without rotating its `id` or `subject`.
 
-A consumer that does not support step-up MAY refuse `purpose: "step-up"` and respond with the framework's `permission_denied` ([SPEC.md §8.3](../../../../../../SPEC.md#83-standard-error-codes)).
+A consumer that does not support step-up MAY refuse `purpose: "step-up"` and respond with the framework's `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -81,7 +81,7 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Generate a fresh server-side `authId` and bind it to:
    - The challenge embedded in `options.challenge`.
    - The named subject (when present).

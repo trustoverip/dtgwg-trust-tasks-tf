@@ -60,7 +60,7 @@ The update is **partial**: a [`QueueLimits`](../../../_shared/0.1/messaging.sche
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../update/0.1/spec.md), which accepts this task's exact payload — send `{ did, queueLimits }` with the same members and the same partial-update semantics (`-1` = unlimited, omitted member unchanged); the `selfChangeDenied` guard carries over per member.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/account/update`](../../update/0.1/spec.md), which accepts this task's exact payload — send `{ did, queueLimits }` with the same members and the same partial-update semantics (`-1` = unlimited, omitted member unchanged); the `selfChangeDenied` guard carries over per member.
 
 ## Conformance
 
@@ -70,11 +70,11 @@ A conforming **producer** (the administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/account/change-queue-limits/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID and `payload.queueLimits` with the limit members to apply (`-1` = unlimited; an omitted member is left unchanged).
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Where the target DID has no account, respond with `messaging/account/change-queue-limits:unknownAccount`.
 3. Where the requester is the account's own `standard` controller and is changing a limit it is not permitted to self-manage, respond with `messaging/account/change-queue-limits:selfChangeDenied` listing the denied limits, or with the framework's `permissionDenied` where the requester has no standing at all.
 4. Apply the present limit members as a partial update, treating `-1` as unlimited and leaving omitted members unchanged, and return the full realized [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) in the response.
@@ -142,7 +142,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -150,4 +150,4 @@ Setting queue limits is an administrative mutation that governs how much undeliv
 
 An unlimited (`-1`) limit removes a back-pressure control and can let a single account exhaust mediator storage; a mediator **SHOULD** treat granting it as a privileged action and **MUST** restrict a `standard` account to changing only the limits it is permitted to self-manage. The mediator **SHOULD** return the full realized [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) so the administrator can confirm the applied limits.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

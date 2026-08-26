@@ -13,8 +13,6 @@
     "status",
     "targetFrameworkVersion",
     "category",
-    "keywords",
-    "authors",
     "parties",
     "proofRequirement",
     "sideEffects",
@@ -72,8 +70,8 @@
     },
     "targetFrameworkVersion": {
       "type": "string",
-      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-      "description": "Framework MAJOR.MINOR this spec targets, per SPEC \u00a77.3 item 3."
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(\\.(0|[1-9][0-9]*))?$",
+      "description": "Framework version this spec targets, per SPEC \u00a77.3 item 3. Accepts both the two-part `MAJOR.MINOR` form used by every spec published so far and the three-part `MAJOR.MINOR.PATCH` form that the canonical framework spec repo (trustoverip/dtgwg-trust-tasks-spec) now normatively requires. Prefer the three-part form for new specs; the two-part form stays valid because 349 published specs use it and re-versioning them would be a wire-visible change for an editorial reason. The build normalises a three-part value to its `MAJOR.MINOR` prefix when selecting the envelope schema under `specs/_framework/`, so a spec written to the canonical text is still example-validated."
     },
     "category": {
       "type": "string",
@@ -104,7 +102,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Free-text keywords used by registry search."
+      "description": "Free-text keywords used by registry search. OPTIONAL. When omitted the build derives them from the slug's own path segments plus the category — which is what 46% of hand-written keyword lists already were, word for word. Declare them only where that derivation would miss the term a searcher would actually use (`revocation` for `acl/revoke`, `passkey` for `auth/webauthn/*`). Made optional because a required field whose value is mechanically implied by another field is a toll on every author that buys no reader anything."
     },
     "authors": {
       "type": "array",
@@ -113,7 +111,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Editor names or working group attributions."
+      "description": "Editor names or working group attributions, in the form `Name (https://…)` so the registry site can link them. OPTIONAL. When omitted the build derives the list from CODEOWNERS — which already names who reviews each slug and is kept current because GitHub enforces it — falling back to the spec folder's git history. Made optional because the declared value was byte-identical in 345 of 349 specs: a field that says the same thing everywhere is attribution theatre, and the two places that do know who owns a spec are already maintained."
     },
     "parties": {
       "type": "array",
@@ -137,6 +135,15 @@
               "RECOMMENDED",
               "OPTIONAL"
             ]
+          },
+          "identifierScope": {
+            "type": "string",
+            "enum": [
+              "pairwise",
+              "public",
+              "any"
+            ],
+            "description": "The identifier correlation scope this party's VID is expected to have, per framework 0.5.0. `pairwise`: an identifier minted for this relationship and not reused across counterparties, so documents of this task cannot be joined to that party's activity elsewhere. `public`: a stable, widely-known identifier — the task is only meaningful when the counterparty can recognise the same identifier it sees elsewhere. `any`: the specification takes no position and either is conforming. OPTIONAL and SHOULD-strength: omitting it claims nothing. Declaring `public` narrows the privacy properties available to every producer of the task, so the framework requires the specification's prose to justify it; checkIdentifierScopeJustification() in scripts/build-registry.mjs warns when a `public` declaration is never discussed in the body."
           },
           "member": {
             "type": "string",
@@ -262,6 +269,16 @@
           ],
           "description": "Sensitivity of data returned to the caller. `none`: an acknowledgement or determination only. `metadata`: non-secret descriptive data about a subject or resource (an enumeration, a status read). `secret`: confidential material the caller retains (released credential material, a usable session blob)."
         },
+        "ingests": {
+          "type": "string",
+          "enum": [
+            "none",
+            "metadata",
+            "personal",
+            "secret"
+          ],
+          "description": "Sensitivity of data the REQUEST carries INTO the recipient, per framework 0.5.0 \u2014 the inbound counterpart of `discloses`, which describes only what comes back out. `none`: identifiers and control data the recipient already holds or minted. `metadata`: non-personal descriptive data about a subject or resource. `personal`: data about an identifiable natural person. `secret`: confidential material the recipient must protect on the producer's behalf (key material, credentials, tokens).\n\nThe enumeration deliberately differs from `discloses`, which has no `personal` value: what a task returns is assessed for whether the caller may hold it, and personal-but-not-secret data returned to a caller that already identified the subject is the ordinary case rather than a distinct class. What a task *accepts* is assessed for what the recipient now has to protect and minimise, and personal data is exactly the class that changes those obligations without being secret. Merging the two enums would lose that, so they are kept apart on purpose.\n\nOPTIONAL and SHOULD-strength: absent claims nothing and no existing specification is invalidated by its introduction. `exposure.rationale` becomes REQUIRED when `ingests` is `personal` or `secret`, on the same terms as `discloses: secret`."
+        },
         "actsAsSubject": {
           "type": "boolean",
           "description": "True when execution exercises the subject's own authority to produce an attributable effect in their name \u2014 a login on their behalf, a signature bearing their identity, a credential issued under their authority \u2014 even when nothing is disclosed and no recipient state changes."
@@ -269,7 +286,7 @@
         "rationale": {
           "type": "string",
           "minLength": 1,
-          "description": "Names the disclosed material or the exercised authority. Required when `discloses` is `secret` or `actsAsSubject` is true."
+          "description": "Names the disclosed material, the ingested material, or the exercised authority. Required when `discloses` is `secret`, when `ingests` is `personal` or `secret`, or when `actsAsSubject` is true."
         }
       },
       "if": {
@@ -287,6 +304,19 @@
                 "const": true
               }
             }
+          },
+          {
+            "required": [
+              "ingests"
+            ],
+            "properties": {
+              "ingests": {
+                "enum": [
+                  "personal",
+                  "secret"
+                ]
+              }
+            }
           }
         ]
       },
@@ -295,7 +325,32 @@
           "rationale"
         ]
       },
-      "description": "Exposure class per SPEC.md \u00a77.3 item 14 \u2014 the confidentiality-and-agency dimension, orthogonal to the integrity-focused `sideEffects` of item 13. States what leaves the recipient (`discloses`) and whether the subject's authority is exercised (`actsAsSubject`), independent of any state change. DESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as `sideEffects`: a consumer MUST derive authoritative values from the handler it invokes and MUST treat an absent declaration as no less exposed than `discloses: secret` with `actsAsSubject: true`."
+      "description": "Exposure class per SPEC.md \u00a77.3 item 14 \u2014 the confidentiality-and-agency dimension, orthogonal to the integrity-focused `sideEffects` of item 13. States what leaves the recipient (`discloses`), what the request carries into it (`ingests`, framework 0.5.0, OPTIONAL), and whether the subject's authority is exercised (`actsAsSubject`), independent of any state change. DESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as `sideEffects`: a consumer MUST derive authoritative values from the handler it invokes and MUST treat an absent declaration as no less exposed than `discloses: secret` with `actsAsSubject: true`."
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "rationale"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "transient",
+            "exchange",
+            "durable"
+          ],
+          "description": "What the recipient is expected to keep, and for how long. `transient`: the document is consumed and discarded \u2014 nothing beyond what the handler needs in-flight survives the exchange. `exchange`: retained for the life of the exchange the document belongs to (a session, a thread, a ceremony enactment) and dropped when it closes. `durable`: retained beyond the exchange, because the document or its effect is a record \u2014 an audit trail, a granted entitlement, an issued credential."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why this class. For `durable`, name what makes the record worth keeping and what a consumer would lose by deleting it."
+        }
+      },
+      "description": "Retention class per framework 0.5.0 \u2014 the third descriptive dimension alongside `sideEffects` (integrity) and `exposure` (confidentiality and agency): how long what the recipient receives is expected to live. OPTIONAL and SHOULD-strength, so no existing specification is invalidated by its introduction; unlike `sideEffects` and `exposure` it is deliberately NOT in `required`.\n\nDESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as the other two: it states what the task's design assumes, never what a data-protection regime obliges a deployment to do, and a specification MUST NOT derive a consent or approval requirement from it. A consumer MUST treat an absent or unrecognized declaration as `durable` \u2014 the conservative reading, and the only one that cannot understate what a recipient is holding by omission."
     },
     "errorCodes": {
       "type": "array",

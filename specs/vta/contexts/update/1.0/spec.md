@@ -54,7 +54,7 @@ id creates a new context and moves what belongs in it.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -82,7 +82,7 @@ the context.
 
 The required `proof` attributes the edit for audit. It is not the
 authorization; the role check is, and it follows signature verification
-([SPEC §7.2 item 10](../../../../../SPEC.md#72-consumer-requirements)).
+([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)).
 
 ## Request
 

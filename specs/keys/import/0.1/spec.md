@@ -46,7 +46,7 @@ Import is the counterpart to [`keys/create`](../../create/0.1/spec.md): create a
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -61,8 +61,8 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Establish the producer's authority to install key material before storing anything, refusing with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) otherwise.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Establish the producer's authority to install key material before storing anything, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. **Refuse `privateKeyMultibase` unless the transport provides end-to-end confidentiality between producer and custodian.** A transport that terminates at an intermediary — TLS ending at a load balancer or gateway — does not qualify, because the cleartext key exists on that intermediary.
 4. Verify the supplied material is a well-formed private key of the declared `keyType`, and refuse with `invalid_argument` where it is not. A custodian that stores unvalidated material discovers the problem at first use, which is to say at the moment something depends on the signature.
 5. Refuse, with `already_exists`, an import that would collide with an existing key record. Import **MUST NOT** overwrite material: silently replacing a key invalidates every signature relying party has already verified against the old one.
@@ -148,7 +148,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/im
 
 Note the absent `derivationPath` — the shape itself records that this key is not reproducible.
 
-Failures (`permission_denied`, `invalid_argument`, `already_exists`) use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permission_denied`, `invalid_argument`, `already_exists`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

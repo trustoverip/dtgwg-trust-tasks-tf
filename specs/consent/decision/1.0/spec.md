@@ -72,7 +72,7 @@ This mirrors [`auth/step-up/approve-response`](../../../auth/step-up/approve-res
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -100,7 +100,7 @@ A conforming **consumer** (the VTA) **MUST**:
 `payload.scope` (REQUIRED when `effect` is `allow`) — granted [`Scope`](../../_shared/0.1/consent.schema.json).
 `payload.challenge` (RECOMMENDED) — echoes the `consent/request` challenge; omit only for pre-authorization.
 `payload.expiresAt` (OPTIONAL) — grant TTL; after it, the subject must be re-consented.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

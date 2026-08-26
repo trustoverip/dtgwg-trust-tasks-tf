@@ -73,7 +73,7 @@ Swap-key does NOT issue or revoke tokens itself. The maintainer's policy decides
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -85,12 +85,12 @@ A conforming **producer** (the ACL holder) **MUST**:
 2. Populate `payload.currentSubject` with the VID currently bound in the ACL.
 3. Populate `payload.newSubject` with the VID to bind after the swap. `newSubject` MUST differ from `currentSubject`.
 4. The `issuer` of the document MUST equal `currentSubject` (the default policy: only the existing holder may swap their own entry). Maintainers whose policy permits administrative swap MAY accept other issuers — see "Administrative swap" below.
-5. Include a `proof` per [SPEC.md §4.7](../../../../SPEC.md#47-proof). The proof's `verificationMethod` MUST resolve via `currentSubject`'s DID document.
+5. Include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof). The proof's `verificationMethod` MUST resolve via `currentSubject`'s DID document.
 6. **MAY** include `payload.linkProof` — see "Link proof" below.
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Verify the document's `issuer` equals `payload.currentSubject` (unless administrative swap is configured — see below).
 3. Look up `payload.currentSubject` in the ACL. Absent → `acl/swap-key:subject_not_found`.
 4. Verify `payload.newSubject` is not already an AclEntry subject. Present → `acl/swap-key:subject_already_in_use`.
@@ -133,7 +133,7 @@ Maintainers documenting their policy MUST specify which formats they accept and 
 
 `payload.reason` (optional) — human-readable rationale.
 
-`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 The full JSON Schema is in [`payload.schema.json`](payload.schema.json).
 

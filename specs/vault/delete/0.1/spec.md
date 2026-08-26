@@ -86,7 +86,7 @@ NOT** rely on `consequences` to describe a forced delete. Where it cannot comput
 them it **MUST** say so, rather than present the recoverable case as though it
 were the whole story.
 
-This is SPEC [§7.3](../../../../SPEC.md#73-specification-requirements) item 13 in
+This is SPEC [§7.3](/SPEC.md#73-specification-requirements) item 13 in
 practice: the declared class exists to inform and to render, not to authorize.
 
 ## Payload

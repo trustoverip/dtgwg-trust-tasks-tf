@@ -57,7 +57,7 @@ Version 2.0 merges the 1.0 pair [`vta/did-templates/delete/1.0`](../1.0/spec.md)
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -67,12 +67,12 @@ A conforming **producer** (the administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/did-templates/delete/2.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.name` with the template to remove, and `payload.contextId` with the target context — or omit `contextId` to remove a global template.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where `payload.contextId` is absent and the producer is not a super-administrator, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where `payload.contextId` is absent and the producer is not a super-administrator, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where `payload.contextId` is present and the producer is neither an administrator of that context nor a super-administrator, respond with `permissionDenied`.
 4. Where no template named `payload.name` exists in the selected scope, respond with `vta/did-templates/delete:notFound`.
 5. On success, remove the template from the selected scope and return the [confirmation](#response).
@@ -116,7 +116,7 @@ Omit `contextId` to remove the global template of the same name instead (super-a
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/delete/2.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including `vta/did-templates/delete:notFound`.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including `vta/did-templates/delete:notFound`.
 
 ### Deletion confirmed
 

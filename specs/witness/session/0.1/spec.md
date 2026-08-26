@@ -63,7 +63,7 @@ the same witness — each party opens its own — and both name the same
 exchange and how a verifier holding both can see that they do.
 
 This follows from the framework's model rather than from preference. A *Trust
-Task* is bilateral ([SPEC.md §2](../../../../SPEC.md#2-terminology)), and the
+Task* is bilateral ([SPEC.md §2](/SPEC.md#2-terminology)), and the
 challenge travels in a `#response`, which reaches the party that sent the
 request and nobody else. A single shared session would leave the second party
 with no conforming way to obtain the challenge it is required to bind to;
@@ -79,7 +79,7 @@ presentation can be replayed into the other's session.
 
 Where the pair of sessions needs to be named as a single flow rather than
 inferred from the `parties` pair, that is what a *Trust Ceremony* is for
-([§4.11](../../../../SPEC.md#411-the-ceremony-member)): the `ceremony` member
+([§4.11](/SPEC.md#411-the-ceremony-member)): the `ceremony` member
 is carried on the document rather than in `payload`, and §4.11.1 forbids a
 *Trust Task specification* from declaring anything about it — so this
 specification says nothing, and composing these sessions into an enactment
@@ -92,7 +92,7 @@ Two rules follow, and they are the reason this specification exists in this
 exact shape:
 
 1. **This document's `id` is the session's name.** Per
-   [SPEC.md §4.9.1](../../../../SPEC.md#491-naming-an-exchange-from-outside-the-framework),
+   [SPEC.md §4.9.1](/SPEC.md#491-naming-an-exchange-from-outside-the-framework),
    a citation naming an exchange as evidence names the *innermost* exchange
    that attests the event, by the `id` of the document that initiated it. The
    witnessing is attested by *this* exchange — not by the surrounding
@@ -105,14 +105,14 @@ exact shape:
    The `id` is the *locator* half of that anchor. Because an `id` is a name
    anyone can reuse on a counterfeit document, the credential also carries a
    **task digest** over this document
-   ([§4.9.3](../../../../SPEC.md#493-binding-a-citation-to-the-document-it-names)),
+   ([§4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)),
    which is what binds the credential to *this* document rather than to
    anything that borrowed its name. See
    [`witness/session/submit`](../submit/0.1/spec.md) for the verifier's
    pairing rule.
 2. **Every document of the session carries `parentThreadId`.** A *producer*
    **MUST** set `parentThreadId`
-   ([§4.9.2](../../../../SPEC.md#492-the-parentthreadid-member)) to the
+   ([§4.9.2](/SPEC.md#492-the-parentthreadid-member)) to the
    containing relationship exchange's `threadId` on every document of this
    exchange, including responses and error responses. Per §4.9.2 the member
    is navigation only: a *consumer* **MUST NOT** reject a document solely for
@@ -128,14 +128,14 @@ A conforming **participating party** (`issuer`):
 
 A conforming **witness** (`recipient`):
 
-1. Applies the [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) pipeline.
+1. Applies the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline.
 2. Verifies that the session's `issuer` is one of the DIDs named in `parties`; a session opened by a party that is not in the exchange it claims to witness is refused with `witness/session:refused`.
 3. On accepting, returns the `#response` carrying a fresh, unpredictable `challenge` and its `domain`, under the REQUIRED proof.
 4. On declining, returns a `trust-task-error` with `witness/session:refused`.
 
 ## Authorization
 
-*Declared under [SPEC.md §7.3](../../../../SPEC.md#73-specification-requirements) item 15.*
+*Declared under [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
 The authorization evidence this task presupposes is **membership of the exchange
 the session claims to witness**: the session's `issuer` is one of the
@@ -145,7 +145,7 @@ exchange it names is refused with `witness/session:refused`.
 
 Nothing else in the document carries authority. The request's `proof` is
 OPTIONAL here, and where present it attributes the request to its sender; per
-[SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 that
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10 that
 attribution establishes *who asked*, never that they may have a session opened
 for them.
 

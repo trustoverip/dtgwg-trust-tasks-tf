@@ -57,7 +57,7 @@ a decision about who can already reach the thing being created.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -87,7 +87,7 @@ The required `proof` establishes *who authored the request*, so that the
 resulting context can be attributed in the audit record. It is not the
 authorization — a correctly signed request from a caller without the role is
 refused, and the role check happens after the signature is settled
-([SPEC §7.2 item 10](../../../../../SPEC.md#72-consumer-requirements)).
+([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)).
 
 ## Request
 

@@ -53,7 +53,7 @@ Render lets a caller preview or materialise the document a template produces wit
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/render/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/render/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 
@@ -63,11 +63,11 @@ A conforming **producer** (the authenticated caller) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/did-templates/render/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Set `payload.name` to the name of an existing global template and supply every variable the template declares as required in `payload.vars`.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Where no global template with `payload.name` exists, respond with `vta/did-templates/render:notFound`.
 3. Inject the ambient variables (`VTA_DID`, `VTA_URL`, `NOW`) server-side and merge `payload.vars` on top before substitution.
 4. Where a required variable is missing, or a placeholder in the template cannot be resolved from the merged variable set, respond with the framework's `malformedRequest`.
@@ -115,7 +115,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/did-template
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/render/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload carries the rendered `document`.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/render:notFound` case.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/render:notFound` case.
 
 ### The rendered document
 
@@ -156,4 +156,4 @@ Response to the request example. Ambient placeholders (`{DID}`, `{SIGNING_KEY_MB
 
 **Authenticated read with ambient injection.** Rendering returns a document derived from the VTA's own identity — the renderer injects `VTA_DID`, `VTA_URL`, and `NOW` and the caller cannot override them — so the task requires an authenticated caller. The **REQUIRED** `proof` binds the request to a specific operator for the audit trail and prevents a captured request being attributed to the wrong party.
 
-**No key material, no persistence.** Render substitutes only placeholder tokens and public document structure; it never mints keys and never writes to template storage, so a rendered document carries no secrets. The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**No key material, no persistence.** Render substitutes only placeholder tokens and public document structure; it never mints keys and never writes to template storage, so a rendered document carries no secrets. The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

@@ -46,7 +46,7 @@ The **Keys — Revoke** Trust Task retires a key: the *key custodian* refuses fu
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -56,8 +56,8 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Establish the producer's authority over the key, refusing with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) otherwise.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Establish the producer's authority over the key, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. Refuse with `not_found` where no record carries `keyId`.
 4. Set the record's status to `revoked`, **retain the record**, and refuse every subsequent [`keys/sign`](../../sign/0.1/spec.md) naming it.
 5. **Never** return a revoked key to `active`. Reactivation would make the audit trail unfalsifiable in the wrong direction: a signature made during the revoked window would afterwards look as though it were made by a valid key.
@@ -67,13 +67,13 @@ Revoking an already-revoked key **SHOULD** succeed idempotently rather than erro
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the producer's **authority over the named key**, which Conformance item 2 already requires the custodian to establish before acting.
 
 This task is `destructive`: revocation cannot be undone by this exchange, and a key revoked in error is recovered only by whatever process the custodian provides outside it. The authority check is the only thing standing between a validly-signed request and that outcome.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Definitions
 
@@ -118,7 +118,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/re
 }
 ```
 
-Failures (`permission_denied`, `not_found`) use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permission_denied`, `not_found`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

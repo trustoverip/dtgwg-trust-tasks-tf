@@ -63,11 +63,11 @@ exchange is **mutual** (both parties issue, via
 
 The `id` of a `propose` document names the relationship exchange: every later
 document of the exchange — the acceptance, both `issue` legs — carries it as
-`threadId` per [SPEC.md §4.9](../../../../../SPEC.md#49-the-threadid-member).
+`threadId` per [SPEC.md §4.9](/SPEC.md#49-the-threadid-member).
 Where the exchange is witnessed, each party's witness session is a **separate,
 nested exchange**: its documents carry their own `threadId` and name this
 exchange via `parentThreadId`
-([§4.9.2](../../../../../SPEC.md#492-the-parentthreadid-member)). No document
+([§4.9.2](/SPEC.md#492-the-parentthreadid-member)). No document
 of *this* specification references a session — witnessing is additive, never a
 precondition, and a party that never opens one still completes the exchange.
 
@@ -81,7 +81,7 @@ A conforming **proposing party** (`issuer`):
 
 A conforming **counterparty** (`recipient`):
 
-1. Applies the [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) pipeline.
+1. Applies the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline.
 2. On accepting, returns a `#response` with `accept: true` and its own `relationshipDid`.
 3. Sets `witnessed: true` on that response where it agrees the exchange will be witnessed. An acceptance **silent** on `witnessed` accepts an **unwitnessed** exchange, whatever the proposal asked for; a counterparty unwilling to proceed unwitnessed **MUST** decline rather than accept, since this specification defines no renegotiation.
 4. On declining, returns a `trust-task-error` with `vrc/relationships/propose:declined`. A decline is an error response, not a message type, on the same grounds `vtc/relationships/request` records.

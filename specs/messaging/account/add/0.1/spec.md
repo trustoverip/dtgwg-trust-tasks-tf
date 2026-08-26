@@ -49,7 +49,7 @@ When `accountType` is omitted the mediator provisions a `standard` account. Memb
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -59,11 +59,11 @@ A conforming **producer** (the administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/account/add/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the new account's DID and **MAY** include `payload.accountType`, `payload.acl`, and `payload.queueLimits`.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Where the mediator runs an explicit-allow policy, accept the request only from an `admin`/`rootAdmin` requester; respond with the framework's `permissionDenied` where the requester has no standing.
 3. Where assigning a non-standard `accountType` (`admin`, `rootAdmin`, or `mediator`) without sufficient standing — only a `rootAdmin` may assign `rootAdmin` — respond with the framework's `permissionDenied`.
 4. Where the target DID already has an account, respond with `messaging/account/add:alreadyExists`.
@@ -149,7 +149,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -157,4 +157,4 @@ Adding an account is an administrative mutation that grants standing at the medi
 
 Assigning a privileged `accountType` is a privilege grant; a mediator **MUST** refuse to elevate beyond the requester's own standing and **MUST** restrict the `rootAdmin` role to assignment by an existing `rootAdmin`. The mediator **SHOULD** return the full realized [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) so the administrator can confirm the defaults the mediator applied.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
