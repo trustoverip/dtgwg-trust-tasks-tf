@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Upsert is the canonical state-changing task on the vault; it can introduce credentials that other Companions will later trust and use. The producer's identity MUST be verifiable so the maintainer can attribute the change to a specific consumer and so the audit log records who introduced or rotated the credential.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An upsert overwrites the entry's secret, so a stale copy restores a secret the owner has already rotated away from, silently reinstating the very credential the rotation was performed to retire.
 sideEffects:
   level: mutating
   rationale: "Creates or updates a vault entry; secret material rides sealed inside the envelope."

@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation withdraws signing capacity and is irreversible. An unattributable revocation is a denial-of-service against whoever depended on the key, with no record of who caused it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation destroys the key's usability irreversibly. Replayed after a replacement has been created under the same alias it revokes the replacement, and only a window in which the document is too old to execute prevents that.
 sideEffects:
   level: destructive
   rationale: "Irreversible: a revoked key MUST NOT be reactivated. The record survives, but the key's usefulness does not."

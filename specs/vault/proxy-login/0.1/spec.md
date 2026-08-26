@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Proxy-login causes the maintainer to authenticate as the holder at a third party — a high-trust, audited action. The consumer's identity MUST be verifiable so the maintainer can attribute every session it creates on the holder's behalf to a specific Companion or Service.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A proxy login spends the entry’s secret to authenticate as the subject at a third-party site. Replayed, it authenticates again at a moment the subject did not choose and against a site they may since have disconnected, so the acceptance window is what bounds how long a captured request can act as them.
 sideEffects:
   level: mutating
   rationale: "Performs a login at the bound site on the holder's behalf and returns a session blob; the use is logged."

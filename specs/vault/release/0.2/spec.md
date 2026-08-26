@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Release transfers long-term secret material to the consumer. Even though wrapped in HPKE, the consumer becomes the secret's custodian for the TTL window. The producer's identity MUST be verifiable for audit and so policy can enforce per-consumer release rules.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Release hands the caller cleartext secret material, and material once released cannot be recalled. The entry TTL bounds what the consumer should keep, but only the issue time bounds how long the request itself stays executable; without it a captured release is a standing withdrawal against the entry.
 sideEffects:
   level: mutating
   rationale: "Returns an entry's cleartext secret in an HPKE-sealed envelope with a strict TTL; the release is logged."
