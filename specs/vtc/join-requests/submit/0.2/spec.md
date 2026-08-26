@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The document proof authenticates the applicant — its signer DID is the applicant DID. This replaces the transport-specific signature the pre-migration REST shape carried, and matches what DIDComm authcrypt provides intrinsically.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The applicant submits under their own authority, so a captured submission keeps re-presenting them to the community after they have stopped asking. Placing the document in a window is what lets the community stop treating it as a live request.
 sideEffects:
   level: mutating
   rationale: "Creates a pending join request."

@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rollback changes what the live site serves; it MUST be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A rollback restores a previous generation of the site, so what it discards depends entirely on when it runs. Replayed, it reverts work published since the first execution, and the payload names a generation but never a moment.
 sideEffects:
   level: mutating
   rationale: "Flips the current pointer to a past generation; reversible by rolling forward again."

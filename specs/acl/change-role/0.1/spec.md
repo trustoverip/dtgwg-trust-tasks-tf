@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Role changes are the highest-impact ACL operation — promotions can extend privilege; demotions can withdraw it. A non-repudiable, transport-independent record of the change is necessary for audit, dispute resolution, and downstream parties that retained the prior grant.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A role change overwrites the entry rather than incrementing it, so a stale copy applied out of order silently reinstates a role an operator has already moved the subject off. The issue time is what lets the maintainer order two changes to the same entry and refuse the older one.
 sideEffects:
   level: mutating
   rationale: "Reassigns a subject's role in the ACL; recoverable by changing it back."

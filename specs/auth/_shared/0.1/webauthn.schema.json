@@ -26,7 +26,7 @@
           "required": ["id", "name"],
           "properties": {
             "id": { "type": "string", "minLength": 1 },
-            "name": { "type": "string", "minLength": 1 }
+            "name": { "type": "string", "minLength": 1, "maxLength": 64 }
           }
         },
         "user": {
@@ -38,8 +38,8 @@
               "type": "string",
               "description": "base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here."
             },
-            "name": { "type": "string", "minLength": 1 },
-            "displayName": { "type": "string" }
+            "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "displayName": { "type": "string", "maxLength": 64 }
           }
         },
         "pubKeyCredParams": {
@@ -125,6 +125,7 @@
         },
         "deviceLabel": {
           "type": "string",
+          "maxLength": 256,
           "description": "Operator-facing label captured at enrollment (e.g. \"Alice's MacBook Pro\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke."
         },
         "transports": {

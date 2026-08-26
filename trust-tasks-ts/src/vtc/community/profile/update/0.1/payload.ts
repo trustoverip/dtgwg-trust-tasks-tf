@@ -72,7 +72,8 @@ export const PAYLOAD_SCHEMA = {
   "properties": {
     "name": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "maxLength": 256
     },
     "description": {
       "type": "string",
@@ -180,7 +181,8 @@ export const PAYLOAD_SCHEMA = {
         },
         "name": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 256
         },
         "description": {
           "type": "string",
@@ -333,7 +335,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "name": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 256
         },
         "description": {
           "type": "string",
@@ -433,7 +436,7 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
@@ -447,6 +450,6 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

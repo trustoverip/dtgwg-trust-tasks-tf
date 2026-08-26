@@ -217,6 +217,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "filename": {
           "type": "string",
+          "maxLength": 256,
           "description": "OPTIONAL. Suggested filename."
         },
         "mediaType": {
@@ -270,6 +271,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "displayName": {
           "type": "string",
+          "maxLength": 256,
           "description": "OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention."
         },
         "start": {
@@ -318,6 +320,6 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;

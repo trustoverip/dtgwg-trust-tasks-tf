@@ -95,6 +95,7 @@ export const PAYLOAD_SCHEMA = {
         "name": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 256,
           "description": "Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name."
         },
         "did": {
@@ -174,6 +175,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "name": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 256,
           "description": "Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name."
         },
         "did": {
@@ -232,7 +234,7 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
@@ -246,6 +248,6 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

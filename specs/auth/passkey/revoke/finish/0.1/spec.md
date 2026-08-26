@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: This leg destroys an authentication capability. The proof identifies the owner and the assertion proves presence; requiring both means neither a stolen token alone nor a captured assertion alone is sufficient.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation removes an authenticator irreversibly. Replayed after the holder has enrolled a replacement it strips the replacement too, and a maintainer with no window to date the document in cannot refuse it as stale.
 sideEffects:
   level: destructive
   rationale: "The credential is unbound. A revoked passkey cannot be restored — the authenticator must be enrolled afresh, which requires it to be physically present."

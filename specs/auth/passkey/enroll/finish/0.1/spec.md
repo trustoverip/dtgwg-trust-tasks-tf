@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The producer is asserting "I, $subject, control a fresh passkey that should be bound to my VID for future authentication." The framework proof ties that assertion to the same key that signed the matching start.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Enrolment completion binds a new authenticator to the account. A replayed finish re-binds an authenticator the account holder may have since revoked, and the attestation inside carries no timestamp the maintainer can bound the document by.
 sideEffects:
   level: mutating
   rationale: "Binds a new passkey credential to the subject's VID; revocable."
@@ -193,3 +196,16 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/pa
 **Replay.** Consuming the `enrollmentId` server-side prevents the same attestation from being submitted twice. A consumer that allows multi-submit "for idempotency" opens a window for a stale attestation to bind a credential after the legitimate ceremony was abandoned.
 
 The optional `ext` extension is part of the signed surface.
+
+**Free text.** `deviceLabel` is free text, bounded at 256 characters — a
+display name rather than prose. It is authored by the enrolling subject and is
+not covered by any attestation, so it is **untrusted**: it says nothing about
+the authenticator it names, and a surface MUST NOT present it as though it did.
+The consumer **retains** it, deliberately: it is stored with the credential and
+echoed on the response and on every subsequent
+[`auth/passkey/list`](../../../list/0.1/spec.md) for the life of that
+credential, because an operator deciding which passkey to revoke has nothing
+else to distinguish them by. That means it is read by whoever can list the
+subject's credentials, which in an administrator-managed deployment is not only
+the subject.
+

@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Creating a context creates a scope that ACL grants will later name, so the VTA must attribute it to a specific administrator in the audit record — independently of the transport that carried it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A context is the isolation boundary other tasks are scoped by. A replayed create leaves a second context the operator did not ask for, and anything scoped into it sits outside the boundary they believe they have.
 sideEffects:
   level: mutating
   rationale: "Creates a durable context. Re-creatable, but grants made against it are not."
@@ -149,3 +152,15 @@ Creating a context discloses nothing by itself. What it does is create a name
 that later ACL grants will reference — and a grant naming a context that was
 subsequently deleted and recreated is a grant over different contents, which is
 why [`vta/contexts/delete`](../../delete/1.0/spec.md) is specified as it is.
+
+**Free text.** `name` is free text, bounded at 256 characters — a display name,
+not prose. It is REQUIRED, which is a departure from the SHOULD of
+[SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 19 and is deliberate:
+a context with no name is unmanageable in an operator console, and two contexts
+MAY share one. It is authored by the operator creating the context, read by
+every operator who later lists or inspects contexts, and **retained** by the VTA
+for the life of the context — it is part of the stored `ContextRecord`. It
+carries no authorization meaning at all: authority is decided from the context's
+identifier and the ACL, never from its name, and an operator MUST NOT rely on a
+name to tell two contexts apart.
+

@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Chat messages form an evidentiary chain that must be verifiable after the transport has closed. For audit and dispute resolution a third party must verify each message's author and its position in the conversation independently of the (ephemeral, authcrypted) DIDComm session that carried it — transport authentication alone is not portable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A chat message is fire-and-forget with no response to correlate it by, so the timestamp on the document is the only thing that stops a captured message being re-delivered later and read as newly said.
 sideEffects:
   level: mutating
   rationale: "Appends a signed, hash-linked message to the conversation chain; persisted history."
@@ -321,6 +324,17 @@ orders; it does not encrypt. A deployment carrying sensitive conversation
 **SHOULD** run it over a confidential binding such as DIDComm authcrypt, and
 should understand that doing so protects the message in flight and not the chain
 at rest.
+
+Two smaller members are free text on the same terms and are bounded accordingly.
+`mentions[].displayName` (256) is the name the *source platform* supplied for a
+mentioned participant — not the bridge's own view of them and never an identity
+claim, so a surface MUST render it as a hint and MUST NOT resolve a participant
+by it. `attachments[].filename` (256) is whatever the sender's device called the
+file, which is routinely more disclosive than the sender expects; it is carried
+for display only. Both are read by whoever reads the message and, because the
+chain is `durable`, both are retained for as long as the message is — a display
+name that was accurate when the message was sent is retained unchanged
+afterwards, and neither member is refreshed.
 
 ### Correlation
 

@@ -108,6 +108,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "deviceLabel": {
       "type": "string",
+      "maxLength": 256,
       "description": "Suggested label for the credential. Used as a default; the invitee MAY override during redemption."
     },
     "ttl": {
@@ -252,7 +253,7 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
@@ -266,6 +267,6 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

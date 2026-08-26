@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A grant changes what the community's registry answers to CI enforcement — an evidentiary, state-changing governance act.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A commit-signing grant is consulted long after it is issued, by verifiers reading history rather than by the maintainer that recorded it. A grant that cannot be dated cannot be aged out, and a replayed one re-admits a signer whose trust has been withdrawn.
 sideEffects:
   level: mutating
   rationale: "Records a TRQP authorization tuple; reversible via git-trust/revoke."

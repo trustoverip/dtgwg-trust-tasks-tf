@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "A name speaks for a DID to anyone who resolves it; the VTA must attribute a change to a specific administrator independently of the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Enabling the agent name republishes it for resolution. Replayed after it was disabled, it makes the name resolvable again, undoing precisely the action taken to stop it resolving.
 sideEffects:
   level: mutating
   rationale: "Re-enables an existing name binding."

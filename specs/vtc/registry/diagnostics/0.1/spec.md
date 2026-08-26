@@ -68,3 +68,16 @@ failure) are `null`.
 upstream registry URLs, HTTP status codes, or error messages — operationally
 sensitive detail. The task sits behind the community-admin gate; do not
 surface `lastError` to non-admin callers.
+
+**Free text.** Two members are free text and are now bounded at 1024 characters
+each: `lastError` and, per transport, `error`. Both are maintainer-authored
+diagnostic prose rather than status, so both are trusted to the degree the
+response is, and neither may be parsed — a consumer decides from the structured
+members beside them. Their intended reader is the community administrator the
+admin gate already restricts this task to, and, as the note above says, they may
+echo upstream registry URLs, HTTP codes or messages and MUST NOT be surfaced
+further. This task persists nothing itself; the maintainer **retains**
+`lastError` only as the most recent value in its own live diagnostic state,
+which the next failure overwrites, and a caller that stores a diagnostics
+response has converted that transient value into a retained one.
+

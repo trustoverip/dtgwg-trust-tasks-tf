@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Wipe is destructive and irreversible from the target's perspective. The maintainer's authority MUST be verifiable so the target can confirm the wipe is genuine before executing it (defence against an attacker who has captured the transport channel attempting to silently wipe legitimate Companions).
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A wipe destroys the device's local state irreversibly. A wipe document that cannot be placed in an acceptance window stays armed forever, and the consumer must otherwise remember every wipe it has ever executed in order not to run one twice.
 sideEffects:
   level: destructive
   rationale: "Destroys the target's cache and optionally its device-local keys, revokes access, and rotates the cache-key root."

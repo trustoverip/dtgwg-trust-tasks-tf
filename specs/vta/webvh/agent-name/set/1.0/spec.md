@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "A name speaks for a DID to anyone who resolves it; the VTA must attribute a change to a specific administrator independently of the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An agent name is how counterparties address the agent, and setting it is an overwrite. A stale copy restores a name the operator has already changed, which sends correspondence to the wrong place.
 sideEffects:
   level: mutating
   rationale: "Records a name binding for the DID."

@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An invite assigns a role + scopes to a VID the auth service has never seen authenticate. The administrator's signed proof is the entire trust chain — without it, a token-stealing attacker could mint admin-tier invites pointing at attacker-controlled VIDs.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An enrolment invite is an offer to bind an authenticator, and an offer with no issue time is an offer that never lapses. Requiring it gives the maintainer an outer bound on how long a captured invite stays usable, independent of whatever expiry the invite body carries.
 sideEffects:
   level: mutating
   rationale: "Issues a single-use enrollment invite; consumable/expiring state."
@@ -159,3 +162,13 @@ On redemption (a separate flow that the consumer drives once the invitee opens t
 **Audit.** Both the issuance and the redemption MUST log the administrator + invitee VIDs and the timestamps; a future incident review needs to reconstruct who admitted whom.
 
 The optional `ext` extension is part of the producer's signed surface.
+
+**Free text.** `deviceLabel` is free text, bounded at 256 characters — a
+display name rather than prose. Here it is authored by the *inviter*, not by the
+invitee whose credential it will name, which makes it the one member of this
+payload written by somebody other than the subject it describes. It is a
+suggestion only: the invitee MAY override it at redemption, and a surface
+rendering it before redemption SHOULD attribute it to the inviter. If it is not
+overridden the consumer **retains** it with the credential and shows it on every
+later credential listing, so an inviter's wording outlives the invitation.
+

@@ -164,3 +164,17 @@ a `consent/decision` cannot be replayed for a different conversation.
 approval prompt, so an unenrolled party cannot spam an operator.
 
 The optional `ext` extension is part of the signed surface.
+
+**Free text.** `displayHint` is free text, bounded at 256 characters — a label
+for an approval prompt, not prose. It is OPTIONAL and it is authored by the
+*bridge*, which is the party the operator has not yet decided to trust; it is
+therefore **untrusted**, and the surface that renders it MUST attribute it to the
+requesting bridge and MUST NOT let it stand in for the `scope` the operator is
+actually approving. Its only reader is the human at that prompt. The VTA
+**retains** it for the life of the pending consent, because the prompt may be
+re-rendered before the decision arrives, and SHOULD discard it once the matching
+[`consent/decision`](../../decision/1.0/spec.md) is recorded — the grant is the
+thing worth keeping, not the sentence that asked for it. The schema's existing
+rule that it MUST NOT contain a raw platform address is the minimisation half of
+the same requirement.
+

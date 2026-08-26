@@ -195,3 +195,17 @@ The challenge document itself carries no evidentiary value — it does NOT prove
 **Rate limiting.** Unauthenticated challenge issuance is the cheapest attack surface in the auth family. Consumers SHOULD apply per-IP AND per-subject limits; a single-axis limiter is bypassable by either rotating IPs or rotating attempted subjects.
 
 The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is part of the producer's signed surface when a proof is included; producers MUST NOT place data in `ext` they would not be comfortable signing.
+
+**Free text.** `purpose` is the only member here whose content nothing
+constrains, and it is now bounded at 128 characters — an intent token such as
+`login` or `step-up`, not prose. It is authored by the *producer*, not by the
+auth service that signs the response, so it is **untrusted**: a consumer MAY
+scope the issued nonce with it and MAY record it, but MUST NOT read it as an
+assertion about what the producer is doing, and any surface that renders it
+MUST attribute it to the requesting producer. It is read by the auth service's
+own scoping logic and, where the consumer keeps one, by an operator reading the
+audit log; it is never shown to the subject and is not covered by the proof on
+the subsequent authenticate document. A consumer that logs it retains it for as
+long as it retains the surrounding audit line; a consumer that only scopes the
+nonce discards it when the challenge is consumed or expires.
+

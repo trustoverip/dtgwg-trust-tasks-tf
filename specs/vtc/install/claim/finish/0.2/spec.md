@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: The install token plus the passkey attestation in the payload are the gate; no admin key exists yet to carry a framework proof.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Claim completion binds an installation to its owner once. A replayed completion re-binds an installation that may have been transferred, and the claim is what every later authorisation in the community is rooted in.
 sideEffects:
   level: mutating
   rationale: "Derives the admin DID from the passkey and mints a short-lived setup-session token; the ACL write itself happens at admin/bootstrap."

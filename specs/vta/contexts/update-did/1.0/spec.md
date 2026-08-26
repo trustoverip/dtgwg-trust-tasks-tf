@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: This changes the identity a context acts as, which downstream parties will see as the author of everything it signs afterwards. The VTA must attribute the change independently of the transport.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Repointing a context's DID changes which identity the agent acts as inside it. Replayed out of order it restores a DID the operator has already moved the context off, typically one whose keys were being retired.
 sideEffects:
   level: mutating
   rationale: "Changes the DID a context acts as. Reversible as a write, but signatures made under either DID remain attributed to it."
@@ -138,3 +141,12 @@ say no, correctly, until it is told otherwise out of band.
 Reassignment is therefore an operation with an audience beyond the VTA, and the
 audit record is the only trace of when the switch happened. That is why `proof`
 is REQUIRED here even though the task is a single-field write.
+
+**Free text.** The returned record's `name` is free text, bounded at 256
+characters — a display name, not prose. It was authored by whichever operator
+created or last updated the context, is read by whoever reads this response, and
+is **retained** by the VTA for the life of the context. It is operator-facing
+only and carries no authorization meaning; re-pointing a context's DID does not
+change it, and a caller MUST NOT read the unchanged name as evidence that
+nothing moved.
+

@@ -526,7 +526,8 @@ impl<'de> ::serde::Deserialize<'de> for GovernancePolicyClaimsPolicyHash {
 ///    },
 ///    "purpose": {
 ///      "description": "Optional human-readable rationale, recorded for audit.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "validitySeconds": {
 ///      "description": "Credential lifetime in seconds from issuance. The issuer MAY cap this.",
@@ -558,7 +559,7 @@ pub struct Payload {
     pub holder: PayloadHolder,
     ///Optional human-readable rationale, recorded for audit.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub purpose: ::std::option::Option<::std::string::String>,
+    pub purpose: ::std::option::Option<PayloadPurpose>,
     ///Credential lifetime in seconds from issuance. The issuer MAY cap this.
     #[serde(rename = "validitySeconds")]
     pub validity_seconds: ::std::num::NonZeroU64,
@@ -628,6 +629,75 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadHolder {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadHolder {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Optional human-readable rationale, recorded for audit.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional human-readable rationale, recorded for audit.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadPurpose(::std::string::String);
+impl ::std::ops::Deref for PayloadPurpose {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadPurpose> for ::std::string::String {
+    fn from(value: PayloadPurpose) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadPurpose {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadPurpose {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadPurpose {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadPurpose {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadPurpose {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -831,7 +901,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         holder: ::std::result::Result<super::PayloadHolder, ::std::string::String>,
         purpose: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadPurpose>,
             ::std::string::String,
         >,
         validity_seconds: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
@@ -893,7 +963,7 @@ pub mod builder {
         }
         pub fn purpose<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadPurpose>>,
             T::Error: ::std::fmt::Display,
         {
             self.purpose = value
@@ -1044,14 +1114,16 @@ pub mod builder {
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/credentials/issue/0.1";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GovernancePolicyClaims\": {\n      \"$anchor\": \"governancePolicyClaims\",\n      \"additionalProperties\": false,\n      \"description\": \"Claims profile activated by credentialType \\\"GovernancePolicyCredential\\\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Trust context the domain belongs to, when the issuing VTA partitions per context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"domain\": {\n          \"description\": \"The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"description\": \"The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"policyHash\": {\n          \"description\": \"Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policyMediaType\": {\n          \"description\": \"Media type of the `policy` document. Default application/json.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"domain\",\n        \"policy\",\n        \"policyHash\"\n      ],\n      \"title\": \"GovernancePolicyClaims\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\\n\\nThis is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuing context's key.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"supersedes\": {\n          \"description\": \"credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTA Credentials Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/credentials/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claims\": {\n      \"description\": \"The scoped claims to attest — the share's scope. Opaque to the framework; non-empty.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"credentialType\": {\n      \"description\": \"Additional credential type beyond VerifiableCredential (e.g. ScopedShareCredential). Some values name a claims profile defined by this specification (e.g. GovernancePolicyCredential), which constrains the shape of `claims`.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"holder\": {\n      \"description\": \"DID of the credential's subject/holder (becomes credentialSubject.id).\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"type\": \"string\"\n    },\n    \"validitySeconds\": {\n      \"description\": \"Credential lifetime in seconds from issuance. The issuer MAY cap this.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"holder\",\n    \"claims\",\n    \"validitySeconds\"\n  ],\n  \"title\": \"VTA Credentials Issue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GovernancePolicyClaims\": {\n      \"$anchor\": \"governancePolicyClaims\",\n      \"additionalProperties\": false,\n      \"description\": \"Claims profile activated by credentialType \\\"GovernancePolicyCredential\\\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Trust context the domain belongs to, when the issuing VTA partitions per context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"domain\": {\n          \"description\": \"The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"description\": \"The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"policyHash\": {\n          \"description\": \"Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policyMediaType\": {\n          \"description\": \"Media type of the `policy` document. Default application/json.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"domain\",\n        \"policy\",\n        \"policyHash\"\n      ],\n      \"title\": \"GovernancePolicyClaims\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\\n\\nThis is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuing context's key.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"supersedes\": {\n          \"description\": \"credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTA Credentials Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/credentials/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claims\": {\n      \"description\": \"The scoped claims to attest — the share's scope. Opaque to the framework; non-empty.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"credentialType\": {\n      \"description\": \"Additional credential type beyond VerifiableCredential (e.g. ScopedShareCredential). Some values name a claims profile defined by this specification (e.g. GovernancePolicyCredential), which constrains the shape of `claims`.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"holder\": {\n      \"description\": \"DID of the credential's subject/holder (becomes credentialSubject.id).\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"validitySeconds\": {\n      \"description\": \"Credential lifetime in seconds from issuance. The issuer MAY cap this.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"holder\",\n    \"claims\",\n    \"validitySeconds\"\n  ],\n  \"title\": \"VTA Credentials Issue — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/credentials/issue/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
+    const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GovernancePolicyClaims\": {\n      \"$anchor\": \"governancePolicyClaims\",\n      \"additionalProperties\": false,\n      \"description\": \"Claims profile activated by credentialType \\\"GovernancePolicyCredential\\\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Trust context the domain belongs to, when the issuing VTA partitions per context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"domain\": {\n          \"description\": \"The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"description\": \"The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"policyHash\": {\n          \"description\": \"Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policyMediaType\": {\n          \"description\": \"Media type of the `policy` document. Default application/json.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"domain\",\n        \"policy\",\n        \"policyHash\"\n      ],\n      \"title\": \"GovernancePolicyClaims\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\\n\\nThis is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuing context's key.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"supersedes\": {\n          \"description\": \"credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTA Credentials Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",

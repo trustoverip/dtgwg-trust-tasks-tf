@@ -31,6 +31,9 @@ proofRequirement:
     the credential carries its own issuer signature, but the envelope proof is what
     attributes the delivery on a relayed path. Declared per variant rather than as
     one value so each states its own threat model, though both land on REQUIRED.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The request carries secret material used to establish the relationship. Replayed, it re-offers that material to a counterparty who may have been removed since, and the material cannot be taken back.
 sideEffects:
   level: mutating
   rationale: "Successful execution mints a VRC at the issuing member; reversible via relationships/revoke."

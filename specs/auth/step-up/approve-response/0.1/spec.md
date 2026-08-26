@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Exactly one cryptographic gate MUST back the elevation. For `evidence.kind = did-signed` (the default when `evidence` is absent) the gate IS the framework proof — a signature from the subject's authoritative key — so proof is mandatory in that case. For `evidence.kind = webauthn` the gate is the carried WebAuthn assertion over the challenge, and the framework proof MAY be omitted; WebAuthn supplies its own audience binding via rpId/origin. The requirement is therefore RECOMMENDED at the spec level and made conditional in the conformance rules below.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: This document carries a human's approval of one specific elevated operation. A replayed approval spends that decision a second time on an operation they never saw, which is the case SPEC §7.2 item 11 exists for, and item 11 cannot recognise the duplicate outside a bounded window.
 sideEffects:
   level: mutating
   rationale: "The signed approval that elevates the subject's session assurance level."
@@ -276,3 +279,17 @@ The relying party's `#response` confirms whether elevation succeeded.
 **Wallet UX.** Approvers presenting approve-requests to humans MUST display the request's `reason` and the relying party identity verbatim. Substituting a friendlier summary for an unclear reason is a phishing vector.
 
 The optional `ext` extension is part of the producer's signed surface.
+
+**Free text.** `deniedReason` is free text, bounded at 500 characters — the
+consent-surface figure, because this is prose a human wrote at an approval
+prompt and a second human reads at the other end. It is OPTIONAL in the schema
+and REQUIRED by the prose only when `decision` is `denied`. It is authored by
+the approver (or inferred by their device) rather than by the service that acted
+on the denial, so a surface rendering it MUST attribute it to the approver and
+MUST NOT present it as the service's own account of the refusal. It is read by
+the requesting party and by whoever reviews the step-up audit trail; a consumer
+that keeps a record of the denial **retains** it with that record, and one that
+does not discards it when the step-up closes. An approver SHOULD say which
+condition applied rather than describe their own circumstances — a reason
+travels further than the person who wrote it expects.
+

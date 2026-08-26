@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An admin removing another member is a high-trust, irreversible-capable action; it MUST be attributable to the operator who ordered it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Administrative removal ejects a member irreversibly. Replayed after they rejoined it ejects them again, and the community's record then shows two removals with one decision behind them.
 sideEffects:
   level: destructive
   rationale: "With disposition purge the member's record is irreversibly erased; the task can destroy data, so it declares the strongest class."

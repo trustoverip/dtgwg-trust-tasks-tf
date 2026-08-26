@@ -226,3 +226,18 @@ The two challenges are distinct and both bound to the `enrollmentId`. Reusing on
 **Attestation.** `attestation: "none"` is appropriate for most deployments — privacy-preserving and good enough for binding. Consumers operating under regulatory regimes that require attestation (FIDO2 enterprise contexts) MAY set `"direct"`, but should be aware this reveals authenticator-make/model.
 
 The optional `ext` extension is part of the signed surface.
+
+**Free text.** Four members of this exchange are free text and are now bounded.
+`deviceLabel` (256) is the subject's own display name for the credential; the
+consumer **retains** it with the credential and surfaces it on every later
+credential listing, which is what it is for. The WebAuthn entity names inside
+`options` — `rp.name`, `user.name` and `user.displayName` — are bounded at 64
+each, the length [WebAuthn's user entity](https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialuserentity)
+tells authenticators to truncate to, so a longer value would be silently cut on
+the device rather than carried. All three are consumer-authored and are read by
+the *authenticator*, which may store them and redisplay them at future
+ceremonies on hardware the consumer does not control — that is the retention
+that matters here, and it is outside this exchange. None of the four is trusted
+input to any decision: they are rendering material, and a consumer MUST NOT
+derive identity from them.
+

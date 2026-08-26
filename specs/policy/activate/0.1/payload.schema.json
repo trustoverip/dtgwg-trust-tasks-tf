@@ -40,6 +40,7 @@
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Echoed from the request."
         },
         "previousPolicyId": {

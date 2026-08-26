@@ -219,6 +219,7 @@ export const PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive."
         },
         "ext": {
@@ -352,6 +353,7 @@ export const PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Why the last selection failed, if it did."
         }
       }
@@ -435,6 +437,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive."
         },
         "ext": {
@@ -568,6 +571,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Why the last selection failed, if it did."
         }
       }

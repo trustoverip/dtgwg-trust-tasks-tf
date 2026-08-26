@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Submission mutates a DID document (a passkey verificationMethod is appended via a WebVH log entry) and is admin-gated. The VTA MUST attribute the change to a producer holding the admin role on the target DID's context; transport-independent producer identity is required so the published change is non-repudiable and auditable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Enrolment submission binds an authenticator into the agent's verification method set. A replayed submission re-binds one the owner has since removed.
 sideEffects:
   level: mutating
   rationale: "Publishes a passkey as a verificationMethod on the DID via a log entry."

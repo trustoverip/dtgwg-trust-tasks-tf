@@ -115,6 +115,7 @@ export const PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Echoed from the request."
         },
         "previousPolicyId": {
@@ -170,6 +171,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Echoed from the request."
         },
         "previousPolicyId": {
@@ -213,7 +215,7 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
@@ -227,6 +229,6 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

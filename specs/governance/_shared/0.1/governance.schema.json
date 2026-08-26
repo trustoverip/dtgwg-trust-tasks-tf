@@ -23,6 +23,7 @@
         },
         "title": {
           "type": "string",
+          "maxLength": 256,
           "description": "Human-readable capability name for management surfaces."
         },
         "description": {

@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Assignment shapes the fleet's traffic routing; an evidentiary record is valuable for cross-instance debugging.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Assignment binds a domain to an owner, and a replayed assignment re-binds it to a party the domain has since been taken from.
 sideEffects:
   level: mutating
   rationale: "Binds a hosting domain to a server instance; reversible via unassign."

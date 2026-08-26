@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A delete removes durable state that an account's recoverability may depend on, and after the tombstone's retention window expires it is unrecoverable. Attribution must survive the transport, so an audit record read later names the application key that deleted rather than the session it arrived on.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting application state destroys it. Replayed after the key was written again it destroys the new value, and the document names the key but not the revision.
 sideEffects:
   level: destructive
   rationale: "Removes the record's value. A tombstone preserves the fact of the deletion for the retention window, but the value is gone immediately and the tombstone itself is reaped afterwards — after which nothing records that the record ever existed."

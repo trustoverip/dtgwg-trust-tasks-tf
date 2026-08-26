@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The response enumerates which credentials the wallet holds and what a verifier asked of them. That is the wallet's contents by another name, so the caller must be authenticated and attributable — transport authentication alone is not enough for a surface whose output is an inventory.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Listing pending requests is performed under the subject's own authority, so a captured list request keeps enumerating the subject's exchange queue for as long as it remains acceptable. The window is what ends that.
 sideEffects:
   level: none
   rationale: Reads the deferral backlog; decides nothing.
@@ -93,6 +96,15 @@ approval can re-present byte-faithfully against the verifier's nonce, but it is 
 rather than a decision input, and surfacing it would invite an operator to read the
 query instead of the resolved disclosure — the same substitution of the abstract for the
 concrete that `requested` exists to prevent.
+
+`purpose` on each pending entry is free text, bounded at 500 characters — the
+consent-surface figure, carried through verbatim from the query that raised the
+deferral. It is the *verifier's* prose, not the agent's, so it is **untrusted**
+wherever it is rendered: the surface listing pending decisions MUST attribute it
+to the verifier that wrote it and MUST NOT let it stand in for the credential
+types being requested. Its reader is the holder working through their pending
+list. This task retains nothing — it is a projection — so the value lives
+exactly as long as the deferral it belongs to.
 
 ### Correlation
 

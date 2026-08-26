@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A domain state transition has a fleet-wide effect in either direction; the maintainer SHOULD retain a signed record.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Domain state gates every DID beneath it. Set out of order it re-enables a domain an operator disabled, and re-enables every identifier under it along with it.
 sideEffects:
   level: mutating
   rationale: "Moves a hosting domain between active service and read-only disablement with a grace period. Both directions are reversible with another set-state until the purge grace period expires."

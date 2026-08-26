@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "A name speaks for a DID to anyone who resolves it; the VTA must attribute a change to a specific administrator independently of the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Removal frees the name for anyone to claim. Replayed after it was re-registered it removes the new registration, and the name falls unclaimed at a moment nobody chose.
 sideEffects:
   level: destructive
   rationale: "Releases the name. Anyone may then take it."

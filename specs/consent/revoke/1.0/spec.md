@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation withdraws a previously-granted authorization; it must be bound to an approver so a third party cannot silently cut off a conversation.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation withdraws a consent that may since have been granted again. Without a window the recipient cannot tell a withdrawal written about the current grant from one written about its predecessor.
 sideEffects:
   level: mutating
   rationale: "Revokes a standing consent grant; recoverable via consent/decision."

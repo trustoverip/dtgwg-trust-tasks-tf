@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Activation changes which policy governs a decision slot — a different active `join` policy admits different members. The producer's identity MUST be verifiable for audit and to prevent a stealth swap of the authoritative policy.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Activation selects which policy version is in force. A stale activation reinstates a version an operator has superseded, which is a policy downgrade with nothing in the document recording it as one.
 sideEffects:
   level: mutating
   rationale: "Changes the active policy for a purpose; the previously-active policy is deactivated. Reversible by activating the previous id (returned as previousPolicyId)."
@@ -66,3 +69,16 @@ Consumer: verify `PolicyAdmin` capability. Resolve the policy by `id`; if none e
 **Atomic swap under contention.** Two concurrent activations for the same `(contextId, purpose)` MUST NOT interleave: the read-displaced-then-set sequence runs under a per-slot lock so exactly one wins and the loser sees the winner as `previousPolicyId`. Without this, both could report the same `previousPolicyId` and the active pointer could end on either — the audit trail would then misrepresent the order.
 
 **No-op suppression.** Re-activating the already-active policy returns `alreadyActive` rather than succeeding, so the audit log cannot be padded with activations that changed nothing — a reviewer reading the trail sees only real transitions.
+
+**Free text.** `purpose` names a decision slot and is constrained by no
+vocabulary the framework defines — each maintainer defines its own set — so it
+is free text under [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item
+19. The request member already declared `maxLength: 128`; the response member
+that echoes it now declares the same bound, because a value that fits the
+request must fit the reply. It is authored by the operator activating the
+policy, read by the maintainer's own policy router and by anyone reading the
+active-policy map, and the maintainer **retains** it for as long as the binding
+is active — it is half the binding's key. A maintainer SHOULD choose slot names
+that name a decision rather than a subject: this value is stable and widely
+read, which makes it a poor place for anything about a person.
+

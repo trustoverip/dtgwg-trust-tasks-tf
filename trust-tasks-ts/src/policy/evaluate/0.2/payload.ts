@@ -111,7 +111,8 @@ export const PAYLOAD_SCHEMA = {
         "trace": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 1024
           },
           "description": "Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging."
         },
@@ -184,6 +185,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "explanation": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Human-readable explanation for diagnostic display."
         }
       }
@@ -439,7 +441,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "trace": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 1024
           },
           "description": "Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging."
         },
@@ -512,6 +515,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "explanation": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Human-readable explanation for diagnostic display."
         }
       }

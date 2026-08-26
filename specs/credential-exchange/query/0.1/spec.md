@@ -27,6 +27,9 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: An authcrypted transport proves which DID is asking, and the verifier's identity is the input the holder's consent decision turns on. A document proof is permitted where the envelope's authentication does not survive relaying.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The query mutates exchange state and returns nothing, so the consumer has no reply to correlate a duplicate against and must fall back on the record of SPEC §7.2 item 11, which is bounded by this timestamp and nothing else.
 sideEffects:
   level: mutating
   rationale: A query the holder does not auto-consent to is PERSISTED as a deferral awaiting an out-of-band decision. Asking therefore leaves durable state at the holder even when nothing is presented — which is also why an unbounded query rate is a storage concern, not merely a nuisance.
@@ -106,6 +109,20 @@ consent record, so it is the verifier's most durable statement in the whole exch
 A producer **SHOULD** write the reason for this request and not the case file behind
 it — a purpose string is read by a person and retained as evidence, and neither of
 those is improved by additional detail about why the verifier is interested.
+
+`purpose` is the payload's one free-text member and is bounded at 500
+characters — the consent-surface figure, because that is exactly what it is: a
+sentence a verifier writes and a holder reads while deciding. It is **REQUIRED**,
+which departs from the SHOULD of
+[SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 19 and is the whole
+point of purpose binding — a verifier that could omit it could ask without
+saying why. It is authored by the *verifier*, who is not the party the holder
+trusts, so it is **explicitly untrusted**: a consent surface MUST attribute it to
+the requesting verifier, MUST NOT let it displace the credential types actually
+being asked for, and MUST NOT treat it as a statement of what the verifier will
+do with what it receives. Its only reader is the holder, or the approver acting
+for them; where the query is deferred it is retained for the life of that
+deferral, per *Retention* below, and not beyond it.
 
 ### Correlation
 

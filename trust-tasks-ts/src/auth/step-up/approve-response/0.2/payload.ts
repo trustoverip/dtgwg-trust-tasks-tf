@@ -134,6 +134,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "deniedReason": {
       "type": "string",
+      "maxLength": 500,
       "description": "Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred)."
     },
     "grantedAcr": {
@@ -553,7 +554,7 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
@@ -567,6 +568,6 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;

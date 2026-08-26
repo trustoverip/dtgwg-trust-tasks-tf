@@ -68,6 +68,7 @@ export const PAYLOAD_SCHEMA = {
     "purpose": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 500,
       "description": "The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use."
     },
     "ext": {
@@ -99,6 +100,6 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;

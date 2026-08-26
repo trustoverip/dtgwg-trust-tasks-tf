@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A revocation is the evidentiary counterpart to a grant; the maintainer, the former subject, and any downstream party that retained the grant document need to be able to verify, after the fact, that the revocation was authorized.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A revoke replayed after the subject has legitimately been granted again removes them a second time, and nothing in the payload distinguishes the stale copy from a fresh instruction to revoke.
 sideEffects:
   level: mutating
   rationale: "Removes a subject (or scopes) from the ACL; recoverable via acl/grant."

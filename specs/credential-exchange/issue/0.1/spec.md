@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The credential inside carries its own issuer signature, so a document proof is not what makes the credential trustworthy — that reasoning stands. What it does not cover is the delivery. This message hands over an asset, and on a relayed path the delivering party may not be the credential's issuer, so a holder receiving an unexpected credential has no way to attribute the delivery itself without an envelope proof. Repudiation of the hand-off, and substitution by an intermediary that re-wraps a genuine credential into a delivery it did not make, are the threats addressed.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Issuance mints a credential that outlives the exchange, and the task returns no response the issuer can correlate against. The issue time is what lets the consumer bound how long a captured issue request stays executable.
 sideEffects:
   level: mutating
   rationale: The holder receives the credential into its wallet. Recoverable — a credential can be deleted, and re-issuance is an ordinary flow.
