@@ -153,3 +153,11 @@ Policy describes what a context restricts, and a caller who may see that a
 context exists does not thereby need to know how it is fenced; a caller who
 needs the policy asks [`vta/contexts/get`](../../get/1.0/spec.md) for that one
 context.
+
+**Free text.** Each returned record's `name` is free text, bounded at 256
+characters — a display name, not prose. It was authored by whichever operator
+created or last updated that context, is read by whoever reads this listing, and
+is **retained** by the VTA for the life of the context. It is operator-facing
+only and carries no authorization meaning; two contexts may share a name, so a
+caller MUST match on the context identifier rather than on `name`.
+

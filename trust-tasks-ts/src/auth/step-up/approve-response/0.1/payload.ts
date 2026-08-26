@@ -134,6 +134,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "deniedReason": {
       "type": "string",
+      "maxLength": 500,
       "description": "Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred)."
     },
     "grantedAcr": {

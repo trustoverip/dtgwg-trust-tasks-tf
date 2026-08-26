@@ -107,6 +107,20 @@ A producer **SHOULD** write the reason for this request and not the case file be
 it — a purpose string is read by a person and retained as evidence, and neither of
 those is improved by additional detail about why the verifier is interested.
 
+`purpose` is the payload's one free-text member and is bounded at 500
+characters — the consent-surface figure, because that is exactly what it is: a
+sentence a verifier writes and a holder reads while deciding. It is **REQUIRED**,
+which departs from the SHOULD of
+[SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 19 and is the whole
+point of purpose binding — a verifier that could omit it could ask without
+saying why. It is authored by the *verifier*, who is not the party the holder
+trusts, so it is **explicitly untrusted**: a consent surface MUST attribute it to
+the requesting verifier, MUST NOT let it displace the credential types actually
+being asked for, and MUST NOT treat it as a statement of what the verifier will
+do with what it receives. Its only reader is the holder, or the approver acting
+for them; where the query is deferred it is retained for the life of that
+deferral, per *Retention* below, and not beyond it.
+
 ### Correlation
 
 The verifier's identifier is the pivot this task turns on. The holder's consent policy

@@ -22,6 +22,7 @@
     },
     "deviceLabel": {
       "type": "string",
+      "maxLength": 256,
       "description": "Final operator-facing label for the credential. Overrides any label passed at start."
     },
     "ext": {
@@ -48,6 +49,7 @@
         },
         "deviceLabel": {
           "type": "string",
+          "maxLength": 256,
           "description": "The label persisted with the credential."
         },
         "registeredAt": {

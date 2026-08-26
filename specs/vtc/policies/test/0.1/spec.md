@@ -58,3 +58,14 @@ Testing MUST NOT activate the module or affect any live decision.
 The isolation is the safety property. An administrator must be able to run an untrusted, half-written policy against realistic input without any chance of it deciding a real membership question — so evaluation reads a stored module and writes nothing.
 
 `result` is returned uninterpreted, which means a policy that leaks data into its output will leak it here. That is acceptable for an admin-gated authoring tool and is exactly what makes it useful for debugging, but it is the reason this task is not exposed more widely.
+
+**Free text.** The response's `purpose` names the decision slot the tested module
+is classified under. Nothing the framework defines constrains it — each community
+defines its own set — so it is free text under
+[SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 19, and it is now
+bounded at 128 characters, matching the bound the `policy/*` family already
+declares for the same concept. It is authored by whoever stored the module, read
+by the administrator running the test, and **retained** by the maintainer with
+the stored module rather than by this task, which persists nothing. Testing a
+module does not activate it, and the returned slot name confers no authority.
+

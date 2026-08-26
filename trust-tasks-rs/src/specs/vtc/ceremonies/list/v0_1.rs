@@ -45,7 +45,8 @@ pub mod error {
 ///  "properties": {
 ///    "blurb": {
 ///      "description": "One-line explanation shown beside the label.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "factsTemplate": {
 ///      "description": "\nA JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\n\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one.",
@@ -77,6 +78,7 @@ pub mod error {
 ///    "purpose": {
 ///      "description": "Governance purpose this ceremony decides, e.g. join, removal.",
 ///      "type": "string",
+///      "maxLength": 128,
 ///      "minLength": 1
 ///    },
 ///    "wired": {
@@ -96,7 +98,7 @@ pub mod error {
 pub struct CeremonyManifest {
     ///One-line explanation shown beside the label.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub blurb: ::std::option::Option<::std::string::String>,
+    pub blurb: ::std::option::Option<CeremonyManifestBlurb>,
     /**
     A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.
 
@@ -126,6 +128,75 @@ pub struct CeremonyManifest {
 impl CeremonyManifest {
     pub fn builder() -> builder::CeremonyManifest {
         Default::default()
+    }
+}
+///One-line explanation shown beside the label.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "One-line explanation shown beside the label.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct CeremonyManifestBlurb(::std::string::String);
+impl ::std::ops::Deref for CeremonyManifestBlurb {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<CeremonyManifestBlurb> for ::std::string::String {
+    fn from(value: CeremonyManifestBlurb) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for CeremonyManifestBlurb {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for CeremonyManifestBlurb {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CeremonyManifestBlurb {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CeremonyManifestBlurb {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CeremonyManifestBlurb {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Human-readable name for an operator UI.
@@ -347,6 +418,7 @@ impl<'de> ::serde::Deserialize<'de> for CeremonyManifestPkg {
 ///{
 ///  "description": "Governance purpose this ceremony decides, e.g. join, removal.",
 ///  "type": "string",
+///  "maxLength": 128,
 ///  "minLength": 1
 ///}
 /// ```
@@ -368,6 +440,9 @@ impl ::std::convert::From<CeremonyManifestPurpose> for ::std::string::String {
 impl ::std::str::FromStr for CeremonyManifestPurpose {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -669,7 +744,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct CeremonyManifest {
         blurb: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::CeremonyManifestBlurb>,
             ::std::string::String,
         >,
         facts_template: ::std::result::Result<
@@ -709,7 +784,7 @@ pub mod builder {
     impl CeremonyManifest {
         pub fn blurb<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::CeremonyManifestBlurb>>,
             T::Error: ::std::fmt::Display,
         {
             self.blurb = value
@@ -915,14 +990,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/ceremonies/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CeremonyManifest\": {\n      \"$anchor\": \"ceremonyManifest\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"blurb\": {\n          \"description\": \"One-line explanation shown beside the label.\",\n          \"type\": \"string\"\n        },\n        \"factsTemplate\": {\n          \"description\": \"A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\\n\\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one.\",\n          \"type\": \"object\"\n        },\n        \"fields\": {\n          \"description\": \"Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"label\": {\n          \"description\": \"Human-readable name for an operator UI.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nature\": {\n          \"description\": \"Whether the ceremony is automatic, operator-driven, or advisory.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"pkg\": {\n          \"description\": \"Policy package backing the decision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Governance purpose this ceremony decides, e.g. join, removal.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"wired\": {\n          \"description\": \"Whether the ceremony is actually reachable in this deployment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"purpose\",\n        \"label\",\n        \"nature\"\n      ],\n      \"title\": \"CeremonyManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ceremonies\": {\n          \"description\": \"Every ceremony this maintainer implements.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CeremonyManifest\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"ceremonies\"\n      ],\n      \"title\": \"VTC Ceremonies List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/ceremonies/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Ceremonies List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CeremonyManifest\": {\n      \"$anchor\": \"ceremonyManifest\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"blurb\": {\n          \"description\": \"One-line explanation shown beside the label.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"factsTemplate\": {\n          \"description\": \"A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\\n\\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one.\",\n          \"type\": \"object\"\n        },\n        \"fields\": {\n          \"description\": \"Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"label\": {\n          \"description\": \"Human-readable name for an operator UI.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nature\": {\n          \"description\": \"Whether the ceremony is automatic, operator-driven, or advisory.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"pkg\": {\n          \"description\": \"Policy package backing the decision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Governance purpose this ceremony decides, e.g. join, removal.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"wired\": {\n          \"description\": \"Whether the ceremony is actually reachable in this deployment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"purpose\",\n        \"label\",\n        \"nature\"\n      ],\n      \"title\": \"CeremonyManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ceremonies\": {\n          \"description\": \"Every ceremony this maintainer implements.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CeremonyManifest\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"ceremonies\"\n      ],\n      \"title\": \"VTC Ceremonies List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/ceremonies/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Ceremonies List — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/ceremonies/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CeremonyManifest\": {\n      \"$anchor\": \"ceremonyManifest\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"blurb\": {\n          \"description\": \"One-line explanation shown beside the label.\",\n          \"type\": \"string\"\n        },\n        \"factsTemplate\": {\n          \"description\": \"A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\\n\\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one.\",\n          \"type\": \"object\"\n        },\n        \"fields\": {\n          \"description\": \"Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"label\": {\n          \"description\": \"Human-readable name for an operator UI.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nature\": {\n          \"description\": \"Whether the ceremony is automatic, operator-driven, or advisory.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"pkg\": {\n          \"description\": \"Policy package backing the decision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Governance purpose this ceremony decides, e.g. join, removal.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"wired\": {\n          \"description\": \"Whether the ceremony is actually reachable in this deployment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"purpose\",\n        \"label\",\n        \"nature\"\n      ],\n      \"title\": \"CeremonyManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ceremonies\": {\n          \"description\": \"Every ceremony this maintainer implements.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CeremonyManifest\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"ceremonies\"\n      ],\n      \"title\": \"VTC Ceremonies List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CeremonyManifest\": {\n      \"$anchor\": \"ceremonyManifest\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"blurb\": {\n          \"description\": \"One-line explanation shown beside the label.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"factsTemplate\": {\n          \"description\": \"A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\\n\\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one.\",\n          \"type\": \"object\"\n        },\n        \"fields\": {\n          \"description\": \"Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"label\": {\n          \"description\": \"Human-readable name for an operator UI.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nature\": {\n          \"description\": \"Whether the ceremony is automatic, operator-driven, or advisory.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"pkg\": {\n          \"description\": \"Policy package backing the decision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Governance purpose this ceremony decides, e.g. join, removal.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"wired\": {\n          \"description\": \"Whether the ceremony is actually reachable in this deployment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"purpose\",\n        \"label\",\n        \"nature\"\n      ],\n      \"title\": \"CeremonyManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ceremonies\": {\n          \"description\": \"Every ceremony this maintainer implements.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CeremonyManifest\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"ceremonies\"\n      ],\n      \"title\": \"VTC Ceremonies List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

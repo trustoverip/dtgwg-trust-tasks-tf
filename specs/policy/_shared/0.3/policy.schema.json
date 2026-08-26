@@ -156,6 +156,7 @@
         },
         "explanation": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Human-readable explanation for diagnostic display."
         }
       }

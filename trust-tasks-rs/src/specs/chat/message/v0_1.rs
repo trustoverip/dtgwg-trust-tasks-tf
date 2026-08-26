@@ -47,7 +47,8 @@ pub mod error {
 ///    },
 ///    "filename": {
 ///      "description": "OPTIONAL. Suggested filename.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "id": {
 ///      "description": "Opaque attachment id, resolvable via the bridge's attachment fetch.",
@@ -78,7 +79,7 @@ pub struct AttachmentRef {
     pub digest: ::std::option::Option<DigestMultibase>,
     ///OPTIONAL. Suggested filename.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub filename: ::std::option::Option<::std::string::String>,
+    pub filename: ::std::option::Option<AttachmentRefFilename>,
     ///Opaque attachment id, resolvable via the bridge's attachment fetch.
     pub id: AttachmentRefId,
     ///IANA media type (e.g. `image/jpeg`).
@@ -95,6 +96,75 @@ pub struct AttachmentRef {
 impl AttachmentRef {
     pub fn builder() -> builder::AttachmentRef {
         Default::default()
+    }
+}
+///OPTIONAL. Suggested filename.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "OPTIONAL. Suggested filename.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AttachmentRefFilename(::std::string::String);
+impl ::std::ops::Deref for AttachmentRefFilename {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AttachmentRefFilename> for ::std::string::String {
+    fn from(value: AttachmentRefFilename) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AttachmentRefFilename {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AttachmentRefFilename {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AttachmentRefFilename {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AttachmentRefFilename {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AttachmentRefFilename {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Opaque attachment id, resolvable via the bridge's attachment fetch.
@@ -557,7 +627,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "properties": {
 ///    "displayName": {
 ///      "description": "OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "length": {
 ///      "description": "Source-platform native length of the sentinel span in `text`. Advisory; see `start`.",
@@ -589,7 +660,7 @@ pub struct Mention {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub display_name: ::std::option::Option<::std::string::String>,
+    pub display_name: ::std::option::Option<MentionDisplayName>,
     ///Source-platform native length of the sentinel span in `text`. Advisory; see `start`.
     pub length: u64,
     ///Opaque, bridge-issued handle for the mentioned participant. MUST NOT be a raw platform address; like `conversationId` it carries no platform-native identifier (phone number, UUID, member id) upstream.
@@ -600,6 +671,75 @@ pub struct Mention {
 impl Mention {
     pub fn builder() -> builder::Mention {
         Default::default()
+    }
+}
+///OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct MentionDisplayName(::std::string::String);
+impl ::std::ops::Deref for MentionDisplayName {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<MentionDisplayName> for ::std::string::String {
+    fn from(value: MentionDisplayName) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for MentionDisplayName {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for MentionDisplayName {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for MentionDisplayName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for MentionDisplayName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for MentionDisplayName {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Opaque, bridge-issued handle for the mentioned participant. MUST NOT be a raw platform address; like `conversationId` it carries no platform-native identifier (phone number, UUID, member id) upstream.
@@ -1169,7 +1309,7 @@ pub mod builder {
             ::std::string::String,
         >,
         filename: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::AttachmentRefFilename>,
             ::std::string::String,
         >,
         id: ::std::result::Result<super::AttachmentRefId, ::std::string::String>,
@@ -1200,7 +1340,7 @@ pub mod builder {
         }
         pub fn filename<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::AttachmentRefFilename>>,
             T::Error: ::std::fmt::Display,
         {
             self.filename = value
@@ -1321,7 +1461,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Mention {
         display_name: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::MentionDisplayName>,
             ::std::string::String,
         >,
         length: ::std::result::Result<u64, ::std::string::String>,
@@ -1341,7 +1481,7 @@ pub mod builder {
     impl Mention {
         pub fn display_name<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::MentionDisplayName>>,
             T::Error: ::std::fmt::Display,
         {
             self.display_name = value
@@ -1608,7 +1748,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AttachmentRef\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper.\"\n        },\n        \"filename\": {\n          \"description\": \"OPTIONAL. Suggested filename.\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Opaque attachment id, resolvable via the bridge's attachment fetch.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"mediaType\": {\n          \"description\": \"IANA media type (e.g. `image/jpeg`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sizeBytes\": {\n          \"description\": \"OPTIONAL. Size in bytes, if known ahead of fetch.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"mediaType\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ChainLink\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the previous document, so a gap, reorder, or removal in the chain is detectable. The algorithm travels in the multihash rather than being fixed here.\"\n        },\n        \"id\": {\n          \"description\": \"The `id` of the previous `chat/message` Trust Task document in this conversation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"digest\"\n      ],\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Mention\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"displayName\": {\n          \"description\": \"OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention.\",\n          \"type\": \"string\"\n        },\n        \"length\": {\n          \"description\": \"Source-platform native length of the sentinel span in `text`. Advisory; see `start`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"participant\": {\n          \"description\": \"Opaque, bridge-issued handle for the mentioned participant. MUST NOT be a raw platform address; like `conversationId` it carries no platform-native identifier (phone number, UUID, member id) upstream.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"start\": {\n          \"description\": \"Source-platform native start offset of the sentinel span in `text`. Advisory: offset units differ across platforms, so the authoritative binding is positional (Nth U+FFFC → Nth mention), not by offset.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"participant\",\n        \"start\",\n        \"length\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/chat/message/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A conversational message exchanged between an AI agent and a messaging-platform bridge. Signed by its author (via the document `proof`) and hash-linked to the previous message in the conversation (`prev`), so a third party can verify each message's author and ordering after the transport has closed — for audit and dispute resolution. Conversations and contacts are referenced by opaque, bridge-issued handles, never raw platform addresses.\",\n  \"properties\": {\n    \"attachments\": {\n      \"description\": \"OPTIONAL. Attachments carried by reference, never inline.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/AttachmentRef\"\n      },\n      \"type\": \"array\"\n    },\n    \"conversationId\": {\n      \"description\": \"Opaque, bridge-issued conversation handle. MUST NOT be a raw platform address (phone number, chat id).\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"direction\": {\n      \"description\": \"`inbound` = platform → agent (the bridge attests what it received and normalized); `outbound` = agent → platform (authored by the agent).\",\n      \"enum\": [\n        \"inbound\",\n        \"outbound\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"isGroup\": {\n      \"description\": \"OPTIONAL. True when the conversation is a group/channel, false (or absent) for a 1:1 DM. Part of the signed record so the audit chain captures where a message was sent, not just its text.\",\n      \"type\": \"boolean\"\n    },\n    \"isMention\": {\n      \"description\": \"OPTIONAL. Platform-confirmed signal that this (inbound) message addresses the agent — e.g. an @-mention of the agent, or any DM. Lets a group-aware consumer decide whether a group message is for it without agent-name heuristics. Distinct from `mentions`, which lists the participants referenced in the body. Outbound messages leave this absent/false.\",\n      \"type\": \"boolean\"\n    },\n    \"mentions\": {\n      \"description\": \"OPTIONAL. @-mentions carried by the message, ordered to match the U+FFFC sentinel placeholders in `text`: the Nth U+FFFC binds to the Nth entry. Absent/empty when the message mentions no one. The producer is responsible for emitting one U+FFFC sentinel per mention, in order — translating each platform's native mention encoding into this neutral form.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Mention\"\n      },\n      \"type\": \"array\"\n    },\n    \"platform\": {\n      \"description\": \"OPTIONAL. Platform key the message belongs to (e.g. `signal`, `whatsapp`). Advisory.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"prev\": {\n      \"$ref\": \"#/$defs/ChainLink\",\n      \"description\": \"OPTIONAL on the first message in a conversation; present on every message thereafter. Links to the previous message so the conversation forms a verifiable, ordered chain.\"\n    },\n    \"replyToId\": {\n      \"description\": \"OPTIONAL. The `id` of the message this one replies to.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"sentAt\": {\n      \"description\": \"RFC 3339 timestamp the author asserts for this message.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"text\": {\n      \"description\": \"OPTIONAL. Plain-text body. Absent for attachment-only messages.\",\n      \"maxLength\": 16384,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"conversationId\",\n    \"direction\",\n    \"sentAt\"\n  ],\n  \"title\": \"Chat Message — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AttachmentRef\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper.\"\n        },\n        \"filename\": {\n          \"description\": \"OPTIONAL. Suggested filename.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Opaque attachment id, resolvable via the bridge's attachment fetch.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"mediaType\": {\n          \"description\": \"IANA media type (e.g. `image/jpeg`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sizeBytes\": {\n          \"description\": \"OPTIONAL. Size in bytes, if known ahead of fetch.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"mediaType\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ChainLink\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the previous document, so a gap, reorder, or removal in the chain is detectable. The algorithm travels in the multihash rather than being fixed here.\"\n        },\n        \"id\": {\n          \"description\": \"The `id` of the previous `chat/message` Trust Task document in this conversation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"digest\"\n      ],\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Mention\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"displayName\": {\n          \"description\": \"OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"length\": {\n          \"description\": \"Source-platform native length of the sentinel span in `text`. Advisory; see `start`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"participant\": {\n          \"description\": \"Opaque, bridge-issued handle for the mentioned participant. MUST NOT be a raw platform address; like `conversationId` it carries no platform-native identifier (phone number, UUID, member id) upstream.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"start\": {\n          \"description\": \"Source-platform native start offset of the sentinel span in `text`. Advisory: offset units differ across platforms, so the authoritative binding is positional (Nth U+FFFC → Nth mention), not by offset.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"participant\",\n        \"start\",\n        \"length\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/chat/message/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A conversational message exchanged between an AI agent and a messaging-platform bridge. Signed by its author (via the document `proof`) and hash-linked to the previous message in the conversation (`prev`), so a third party can verify each message's author and ordering after the transport has closed — for audit and dispute resolution. Conversations and contacts are referenced by opaque, bridge-issued handles, never raw platform addresses.\",\n  \"properties\": {\n    \"attachments\": {\n      \"description\": \"OPTIONAL. Attachments carried by reference, never inline.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/AttachmentRef\"\n      },\n      \"type\": \"array\"\n    },\n    \"conversationId\": {\n      \"description\": \"Opaque, bridge-issued conversation handle. MUST NOT be a raw platform address (phone number, chat id).\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"direction\": {\n      \"description\": \"`inbound` = platform → agent (the bridge attests what it received and normalized); `outbound` = agent → platform (authored by the agent).\",\n      \"enum\": [\n        \"inbound\",\n        \"outbound\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"isGroup\": {\n      \"description\": \"OPTIONAL. True when the conversation is a group/channel, false (or absent) for a 1:1 DM. Part of the signed record so the audit chain captures where a message was sent, not just its text.\",\n      \"type\": \"boolean\"\n    },\n    \"isMention\": {\n      \"description\": \"OPTIONAL. Platform-confirmed signal that this (inbound) message addresses the agent — e.g. an @-mention of the agent, or any DM. Lets a group-aware consumer decide whether a group message is for it without agent-name heuristics. Distinct from `mentions`, which lists the participants referenced in the body. Outbound messages leave this absent/false.\",\n      \"type\": \"boolean\"\n    },\n    \"mentions\": {\n      \"description\": \"OPTIONAL. @-mentions carried by the message, ordered to match the U+FFFC sentinel placeholders in `text`: the Nth U+FFFC binds to the Nth entry. Absent/empty when the message mentions no one. The producer is responsible for emitting one U+FFFC sentinel per mention, in order — translating each platform's native mention encoding into this neutral form.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Mention\"\n      },\n      \"type\": \"array\"\n    },\n    \"platform\": {\n      \"description\": \"OPTIONAL. Platform key the message belongs to (e.g. `signal`, `whatsapp`). Advisory.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"prev\": {\n      \"$ref\": \"#/$defs/ChainLink\",\n      \"description\": \"OPTIONAL on the first message in a conversation; present on every message thereafter. Links to the previous message so the conversation forms a verifiable, ordered chain.\"\n    },\n    \"replyToId\": {\n      \"description\": \"OPTIONAL. The `id` of the message this one replies to.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"sentAt\": {\n      \"description\": \"RFC 3339 timestamp the author asserts for this message.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"text\": {\n      \"description\": \"OPTIONAL. Plain-text body. Absent for attachment-only messages.\",\n      \"maxLength\": 16384,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"conversationId\",\n    \"direction\",\n    \"sentAt\"\n  ],\n  \"title\": \"Chat Message — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 #[cfg(test)]

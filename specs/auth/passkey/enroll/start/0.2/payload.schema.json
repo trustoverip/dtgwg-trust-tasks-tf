@@ -8,6 +8,7 @@
   "properties": {
     "deviceLabel": {
       "type": "string",
+      "maxLength": 256,
       "description": "Operator-facing label for the credential (e.g. \"Alice's MacBook\"). Surfaced in the credential list for later management."
     },
     "ext": {

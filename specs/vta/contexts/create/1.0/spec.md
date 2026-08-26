@@ -149,3 +149,15 @@ Creating a context discloses nothing by itself. What it does is create a name
 that later ACL grants will reference — and a grant naming a context that was
 subsequently deleted and recreated is a grant over different contents, which is
 why [`vta/contexts/delete`](../../delete/1.0/spec.md) is specified as it is.
+
+**Free text.** `name` is free text, bounded at 256 characters — a display name,
+not prose. It is REQUIRED, which is a departure from the SHOULD of
+[SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 19 and is deliberate:
+a context with no name is unmanageable in an operator console, and two contexts
+MAY share one. It is authored by the operator creating the context, read by
+every operator who later lists or inspects contexts, and **retained** by the VTA
+for the life of the context — it is part of the stored `ContextRecord`. It
+carries no authorization meaning at all: authority is decided from the context's
+identifier and the ACL, never from its name, and an operator MUST NOT rely on a
+name to tell two contexts apart.
+

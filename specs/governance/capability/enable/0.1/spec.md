@@ -139,3 +139,13 @@ capabilities, the delegation boundary is the manifest's declared vocabulary:
 the host MUST reject registry writes from the delegate outside
 `vocabulary.actions`, and SHOULD treat the delegate DID's key rotation or
 deactivation as suspending the delegation.
+
+**Free text.** `title` on a capability manifest is free text, bounded at 256
+characters — a human-readable capability name for a management surface, not
+prose. It is authored by whoever published the capability, read by the operator
+looking at that surface, and **retained** by the maintainer for as long as the
+manifest is installed. It carries no authorization meaning whatever: enablement
+is decided from the capability's identifier and the caller's authority, never
+from its title, and a surface MUST NOT let two capabilities that share a title
+be distinguishable only by it.
+

@@ -20,7 +20,7 @@
         "did": { "type": "string", "minLength": 1, "description": "The probed DID, echoed." },
         "recognised": { "type": "boolean", "description": "Whether the community recognises this DID. Meaningless unless registryConfigured is true." },
         "registryConfigured": { "type": "boolean", "description": "Whether a trust registry backs the answer. False makes `recognised` indeterminate, not negative." },
-        "error": { "type": ["string", "null"], "description": "Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one." },
+        "error": { "type": ["string", "null"], "maxLength": 1024, "description": "Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one." },
         "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
       }
     }

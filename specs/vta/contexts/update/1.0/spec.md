@@ -156,3 +156,12 @@ so. A conforming producer sends the complete intended policy every time.
 Lifting `exportAllowed` is not retroactive: material already exported under a
 permissive policy stays exported. Setting it to `false` constrains what happens
 next, and nothing more.
+
+**Free text.** `name` is free text, bounded at 256 characters — a display name,
+not prose. It is OPTIONAL here, as a patch member should be. It is authored by
+the operator performing the update, read by every operator who later lists or
+inspects contexts, and **retained** by the VTA for the life of the context,
+replacing the previous name outright. It carries no authorization meaning:
+renaming a context grants and revokes nothing, and an ACL grant that named the
+context before the rename still names it after.
+

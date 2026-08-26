@@ -85,6 +85,7 @@ export const PAYLOAD_SCHEMA = {
     "purpose": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 128,
       "description": "Producer-declared intent (e.g. \"login\", \"step-up\", \"sign-out\"). Consumers MAY surface this in audit logs or use it to scope the issued nonce. Free-form; ecosystems define the vocabulary."
     },
     "ext": {

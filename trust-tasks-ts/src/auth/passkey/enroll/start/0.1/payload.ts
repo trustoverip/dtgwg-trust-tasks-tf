@@ -71,6 +71,7 @@ export const PAYLOAD_SCHEMA = {
   "properties": {
     "deviceLabel": {
       "type": "string",
+      "maxLength": 256,
       "description": "Operator-facing label for the credential (e.g. \"Alice's MacBook\"). Surfaced in the credential list for later management."
     },
     "ext": {
@@ -150,7 +151,8 @@ export const PAYLOAD_SCHEMA = {
             },
             "name": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             }
           }
         },
@@ -169,10 +171,12 @@ export const PAYLOAD_SCHEMA = {
             },
             "name": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "displayName": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           }
         },
@@ -356,7 +360,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "name": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             }
           }
         },
@@ -375,10 +380,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "name": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 64
             },
             "displayName": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           }
         },

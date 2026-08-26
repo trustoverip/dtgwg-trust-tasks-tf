@@ -123,6 +123,7 @@ export const PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 500,
           "description": "The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request."
         },
         "createdAt": {
@@ -243,6 +244,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 500,
           "description": "The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request."
         },
         "createdAt": {
