@@ -85,7 +85,7 @@ This task complements `vault/proxy-login/0.1`: proxy-login mints a *session cred
 
 ### Motivating use case
 
-A consumer logs in to a relying party via `vault/proxy-login/0.1`. The RP authenticates the resulting session as the vault entry's `principalDid` (the `iss`/`sub` of the SIOP id_token). The consumer then needs to send the RP a follow-up Trust Task — for example `acl/grant/0.1` to add a new admin. The RP's verifier requires the task's `proof.verificationMethod` to match the authenticated session's DID. If the consumer signs the task with its own holder DID (the wallet's general identity), the RP rejects with `proof_invalid`: "proof verificationMethod DID does not match the authenticated caller."
+A consumer logs in to a relying party via `vault/proxy-login/0.1`. The RP authenticates the resulting session as the vault entry's `principalDid` (the `iss`/`sub` of the SIOP id_token). The consumer then needs to send the RP a follow-up Trust Task — for example `acl/grant/0.1` to add a new admin. The RP's verifier requires the task's `proof.verificationMethod` to match the authenticated session's DID. If the consumer signs the task with its own holder DID (the wallet's general identity), the RP rejects with `proofInvalid`: "proof verificationMethod DID does not match the authenticated caller."
 
 `vault/sign-trust-task/0.1` closes that gap: the consumer hands the unsigned task to the maintainer, the maintainer signs as `principalDid`, the resulting envelope is acceptable to the RP.
 

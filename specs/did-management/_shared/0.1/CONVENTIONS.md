@@ -9,7 +9,7 @@ Every operation that creates, reads, or mutates a DID slot — or queries slots 
 1. **Explicit on the wire.** If `payload.domain` is present and non-empty, the consumer uses it directly.
 2. **Caller's ACL default.** If the calling party's ACL record carries a `DomainScope` with a default domain, that value is used.
 3. **System default.** If the calling party's scope is `All` (no per-caller default), the host's system-default domain is used.
-4. **Reject.** If none of the above resolves, the consumer responds with the framework's `malformed_request` carrying `details.reason: "no_default_domain"` so the caller knows to declare a target explicitly.
+4. **Reject.** If none of the above resolves, the consumer responds with the framework's `malformedRequest` carrying `details.reason: "no_default_domain"` so the caller knows to declare a target explicitly.
 
 This chain is mandatory across the category. It enables a third-party operator (for example, a VTA managing DID lifecycle across multiple tenant domains on one shared `did-hosting-control` backplane) to direct every operation at the intended domain by passing `payload.domain` explicitly, without having to track per-caller defaults out-of-band.
 

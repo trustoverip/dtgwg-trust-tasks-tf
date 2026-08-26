@@ -81,7 +81,7 @@ A conforming **producer** (the revoking party) **MUST**:
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Confirm the revoking party is either the subject themselves (self-revoke) or a party authorized to remove the subject. If neither, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
+2. Confirm the revoking party is either the subject themselves (self-revoke) or a party authorized to remove the subject. If neither, respond with the framework's `permissionDenied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. If the subject is not in the ACL, respond with `acl/revoke:subjectNotPresent`.
 4. Reject any revocation that would leave the ACL with no holder of a privileged role required by the maintainer's policy, returning `acl/revoke:lastAuthorityProtected`.
 5. On acceptance, persist the document as the evidentiary record of the change.
