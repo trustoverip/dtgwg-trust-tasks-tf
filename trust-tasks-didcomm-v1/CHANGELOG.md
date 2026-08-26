@@ -3,6 +3,15 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.11.0] - 2026-08-26
+
+### Changed
+
+- **`trust-tasks-rs` requirement moved to `0.12`** (SPEC §7.2 item 11 duplicate
+  execution, item 13 freshness). Leading component moves with the re-exported
+  types. As with the v2 binding, a `ReplayGuard` keyed on the *document* `id`
+  remains to be wired.
+
 ## [0.10.0] - 2026-08-26
 
 ### Added

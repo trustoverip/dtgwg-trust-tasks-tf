@@ -4,6 +4,14 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.11.0] - 2026-08-26
+
+### Changed
+
+- **`trust-tasks-rs` requirement moved to `0.12`** (SPEC §7.2 item 11 duplicate
+  execution, item 13 freshness). Leading component moves with the re-exported
+  types. No change to signing or verification behaviour.
+
 ## [0.8.0] - 2026-08-16
 
 ### Changed

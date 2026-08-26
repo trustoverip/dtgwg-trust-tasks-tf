@@ -29,19 +29,17 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
-## [0.11.18] - 2026-08-26
+## [0.12.0] - 2026-08-26
 
-> ### ⚠ This entry is breaking, and the version number understates it
+> ### ⚠ Breaking, and released as a workspace event
 >
 > Under the rules at the top of this file this change earns **`0.12.0`**: it
 > adds a required argument to `consume_inbound`, adds variants to two public
 > enums, and — most importantly — makes a consumer reject documents it used to
-> accept. It ships as `0.11.17` only because moving the leading component is a
-> workspace event: the six crates that depend on this one each pin
-> `version = "0.11"`, and editing those requirements is out of scope for a
-> change that touches no binding crate. **The release manager should cut this
-> as `0.12.0` together with the six dependent releases**, in the dependency
-> order `publish.yml` uses.
+> accept. Moving the leading component is a workspace event, so this release
+> also carries the six crates that depend on this one: each has had its
+> `trust-tasks-rs` requirement moved to `version = "0.12"` and its own leading
+> component bumped. Publish in the dependency order `publish.yml` uses.
 
 ### Added
 

@@ -4,6 +4,20 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.12.0] - 2026-08-26
+
+### Changed
+
+- **`trust-tasks-rs` requirement moved to `0.12`.** That crate's `0.12.0` makes
+  the duplicate-execution record of SPEC §7.2 item 11 and the freshness bound of
+  item 13 part of `consume_inbound`. This crate re-exports its types, so the
+  leading component moves with it.
+
+  This server does **not** yet get the guard: its pipeline runs its own §7.2
+  checks and never reaches `consume_inbound`, so a `ReplayGuard` still has to be
+  threaded through the handler path. Until it is, an HTTPS deployment has no
+  duplicate-execution defence.
+
 ## [0.11.1] - 2026-08-26
 
 ### Changed
