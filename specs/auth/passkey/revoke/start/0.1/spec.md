@@ -70,7 +70,7 @@ So this pair keeps the confirmation **in-band and synchronous**: the same WebAut
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -113,7 +113,7 @@ The check in step 3 and the removal in the matching finish **MUST** be serialize
 
 `payload.credentialId` — REQUIRED, the credential to remove.
 
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

@@ -48,7 +48,7 @@ The response carries `publicKey` for a reason that is easy to miss: the producer
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -61,8 +61,8 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Decide, from its own policy, whether this producer may derive and sign **at this path**, refusing with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) otherwise. A path is not a stored record, so there is no per-key ACL to fall back on — the policy has to be expressed over paths.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Decide, from its own policy, whether this producer may derive and sign **at this path**, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise. A path is not a stored record, so there is no per-key ACL to fall back on — the policy has to be expressed over paths.
 3. Refuse an `algorithm` the derived key type cannot perform, with `invalid_argument`.
 4. Sign the decoded bytes verbatim.
 5. Return the derived `publicKey` alongside the signature, and **not** the derived private key.
@@ -70,13 +70,13 @@ A conforming **consumer** (the key custodian) **MUST**:
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the consumer's own decision, made per request, that **this producer may derive and sign at this path**, as Conformance item 2 already requires.
 
 Recorded because the shape is unusual and easy to get wrong: a path is not a stored record, so there is no per-key ACL to fall back on, and a policy expressed over key identifiers will not cover this task at all. `exposure.actsAsSubject` is `true` — an over-broad path policy lets a producer act under the subject's authority, not merely read something it should not.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Definitions
 
@@ -124,7 +124,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/de
 }
 ```
 
-Failures (`permission_denied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permission_denied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

@@ -7,7 +7,11 @@
 //! URL like `did:peer:2.Ez6...#key-agreement-1`) is stripped of its
 //! fragment and surfaced as the binding's transport-authenticated peer.
 
+use std::collections::BTreeSet;
+
 use affinidi_messaging_didcomm::{DIDCommAgent, Message, UnpackResult};
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::Engine as _;
 use serde::{de::DeserializeOwned, Serialize};
 use trust_tasks_rs::{Payload, TrustTask};
 
@@ -63,17 +67,35 @@ where
 /// the verified peer DID.
 ///
 /// `expected_sender_did` is the DID the consumer expects the envelope
-/// to come from. The current `affinidi-messaging-didcomm` (v0.14)
+/// to come from. The current `affinidi-messaging-didcomm` (v0.15)
 /// `DIDCommAgent::unpack` requires this to look up the sender's public
 /// key in its store; pass the DID of the peer you previously called
-/// `agent.add_peer(...)` for. Servers receiving from multiple peers
-/// iterate over their known senders (per-peer retry on
-/// `DIDCommError::IdentityNotFound`).
+/// `agent.add_peer(...)` for. A server receiving from many peers should
+/// **not** loop over its known senders retrying this call — use
+/// [`unpack_trust_task_from`], which reads the envelope's own `skid`
+/// and looks the sender up once against an explicit
+/// [`SenderAllowlist`].
 ///
-/// **Conformance:** rejects anoncrypt'd and plaintext envelopes — both
-/// lack the transport-authenticated sender SPEC.md §4.8.1 needs to
-/// cross-check the in-band `issuer`. Returns
-/// [`DidcommError::UnauthenticatedSender`] in those cases.
+/// Where `expected_sender_did` is supplied it is enforced, not merely
+/// used as a lookup key: the envelope's `skid`-derived sender must equal
+/// it, or [`DidcommError::SenderKidMismatch`] is returned. The `skid` is
+/// sender-chosen, so without that check a peer could authenticate with
+/// its own key while labelling the envelope with another party's DID and
+/// have the label handed to §4.8.1 as the authenticated sender.
+///
+/// **Conformance:** binding §2 makes authcrypt a **MUST** and §4 keeps
+/// every other envelope shape out of the framework pipeline. This
+/// function therefore rejects:
+///
+/// * anoncrypt'd and plaintext envelopes —
+///   [`DidcommError::UnauthenticatedSender`];
+/// * signed-only (bare JWS) envelopes —
+///   [`DidcommError::SignedNotAuthcrypted`]. A JWS has no recipient
+///   binding, so one message can be delivered to every party and each
+///   accepts it, and it leaves no transport-authenticated *recipient* to
+///   cross-check the in-band `recipient` against;
+/// * an authenticated `sender_kid` with no `#fragment` —
+///   [`DidcommError::UnqualifiedSenderKid`].
 ///
 /// The returned [`DidcommHandler`] is ready to feed into
 /// [`TransportHandler::resolve_parties`](trust_tasks_rs::TransportHandler::resolve_parties),
@@ -99,20 +121,47 @@ where
             // gating on the legacy KEK would be a behaviour change beyond
             // this binding's current contract, so they're ignored here.
             ..
-        } => (
-            message,
-            did_from_kid(&sender_kid),
-            Some(did_from_kid(&recipient_kid).unwrap_or(recipient_kid)),
-        ),
+        } => {
+            // A fragment-less kid is an error, never a `None`. Returning
+            // `None` here used to downgrade an authenticated identity into
+            // an unauthenticated one: the pipeline then fell back to the
+            // in-band `issuer` with the transport cross-check skipped.
+            let peer = sender_did_from_kid(&sender_kid)?;
+            // The `skid`/`apu` is sender-chosen; the DID that actually
+            // authenticated is the one whose public key opened the
+            // ECDH-1PU wrap, which is `expected_sender_did`. Where the
+            // caller named one, the two must agree.
+            if let Some(expected) = expected_sender_did {
+                if expected != peer {
+                    return Err(DidcommError::SenderKidMismatch {
+                        expected: expected.to_string(),
+                        advertised: peer,
+                    });
+                }
+            }
+            (
+                message,
+                Some(peer),
+                // A fragment-less *recipient* kid is left as-is rather than
+                // rejected: unlike the sender case this fails closed. The
+                // raw kid becomes the transport-authenticated recipient and
+                // a document whose in-band `recipient` disagrees is caught
+                // by §4.8.1 as an `identityMismatch`.
+                Some(did_from_kid(&recipient_kid).unwrap_or(recipient_kid)),
+            )
+        }
         UnpackResult::Encrypted { .. } | UnpackResult::Plaintext(_) => {
             return Err(DidcommError::UnauthenticatedSender);
         }
-        UnpackResult::Signed {
-            message,
-            signer_kid: Some(signer_kid),
-        } => (message, did_from_kid(&signer_kid), None),
+        // Binding §2: authcrypt is a MUST, and §4 keeps plaintext out of
+        // the pipeline. A bare JWS is signed but not sealed to anyone, so
+        // it has no recipient binding and no confidentiality; accepting it
+        // (as this binding did through 0.10) meant one signed message could
+        // be delivered to every recipient in a deployment and each would
+        // take it, with the §4.8.1 recipient cross-check disabled because
+        // there was no local DID to check against. Fail closed.
         UnpackResult::Signed { .. } => {
-            return Err(DidcommError::UnauthenticatedSender);
+            return Err(DidcommError::SignedNotAuthcrypted);
         }
         // `UnpackResult` is `#[non_exhaustive]` as of didcomm 0.14. Any
         // future variant won't carry the transport-authenticated sender
@@ -175,6 +224,159 @@ fn check_thread(
 /// cares about the DID portion.
 fn did_from_kid(kid: &str) -> Option<String> {
     kid.split_once('#').map(|(did, _)| did.to_string())
+}
+
+/// The same reduction for a `kid` that is supposed to name the
+/// *transport-authenticated sender*, where the absence of a fragment is a
+/// hard error rather than an absent identity.
+///
+/// Downgrading it to `None` — which is what this binding did through
+/// 0.10 — reclassified an authenticated party as an unauthenticated one
+/// and skipped the SPEC.md §4.8.1 cross-check entirely, so a document
+/// arriving with a malformed `kid` had its in-band `issuer` believed
+/// without challenge.
+fn sender_did_from_kid(kid: &str) -> Result<String, DidcommError> {
+    did_from_kid(kid).ok_or_else(|| DidcommError::UnqualifiedSenderKid {
+        kid: kid.to_string(),
+    })
+}
+
+/// The set of sender DIDs a consumer will accept an inbound Trust Task
+/// envelope from.
+///
+/// Before 0.11 this crate's callers were told to loop over their known
+/// peers, retrying [`unpack_trust_task`] on
+/// `DIDCommError::IdentityNotFound`. That loop was O(known peers)
+/// ECDH-1PU decrypts per inbound message, and — more to the point — it
+/// *was* the sender allowlist: a peer the agent had never been given
+/// could not be unpacked, so it could not be accepted. That property was
+/// real but incidental, invisible in the type signature and easy to lose
+/// to a refactor that made unpacking cheaper.
+///
+/// [`unpack_trust_task_from`] makes it explicit: the envelope's own
+/// `skid` is read from the JWE protected header, the DID it names is
+/// looked up **once**, and a sender outside the list is rejected with
+/// [`DidcommError::SenderNotAllowed`] before any decryption is
+/// attempted.
+///
+/// An empty allowlist permits nothing.
+///
+/// The `skid` is sender-chosen and unauthenticated at the point it is
+/// read — it selects which key to unpack against, it does not prove
+/// anything. Authentication still comes from the ECDH-1PU wrap opening,
+/// and [`unpack_trust_task`] additionally re-checks the verified sender
+/// against the DID that was looked up.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SenderAllowlist {
+    allowed: BTreeSet<String>,
+}
+
+impl SenderAllowlist {
+    /// An allowlist of exactly these sender DIDs.
+    pub fn new<I, S>(dids: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        Self {
+            allowed: dids.into_iter().map(Into::into).collect(),
+        }
+    }
+
+    /// Every peer the agent has been given a resolved identity for.
+    ///
+    /// This reproduces exactly the set the old retry loop could accept —
+    /// use it when migrating off that loop and tighten later.
+    pub fn from_agent_peers(agent: &DIDCommAgent) -> Self {
+        Self::new(agent.store().resolved_dids())
+    }
+
+    /// Add one permitted sender DID.
+    pub fn allow(mut self, did: impl Into<String>) -> Self {
+        self.allowed.insert(did.into());
+        self
+    }
+
+    /// Whether `did` may send this consumer a Trust Task.
+    pub fn permits(&self, did: &str) -> bool {
+        self.allowed.contains(did)
+    }
+
+    /// The permitted sender DIDs.
+    pub fn allowed(&self) -> impl Iterator<Item = &str> {
+        self.allowed.iter().map(String::as_str)
+    }
+
+    /// Whether the list is empty — in which case it permits nothing.
+    pub fn is_empty(&self) -> bool {
+        self.allowed.is_empty()
+    }
+}
+
+/// The sender DID an authcrypt envelope *names*, read from the JWE
+/// protected header's `skid` without decrypting anything.
+///
+/// **This is a routing hint, not an authenticated identity.** The `skid`
+/// is written by whoever produced the envelope. Its only safe use is to
+/// choose which known sender to unpack against — which is precisely what
+/// [`unpack_trust_task_from`] uses it for, re-checking the value against
+/// the key that actually opened the envelope afterwards.
+///
+/// Returns [`DidcommError::NotAuthcryptJwe`] for bytes that are not a JWE
+/// or carry no `skid` (an anoncrypt envelope carries none), and
+/// [`DidcommError::UnqualifiedSenderKid`] where the `skid` has no
+/// `#fragment`.
+pub fn advertised_sender_did(wire: &str) -> Result<String, DidcommError> {
+    let envelope: serde_json::Value = serde_json::from_str(wire)
+        .map_err(|e| DidcommError::NotAuthcryptJwe(format!("not JSON: {e}")))?;
+    let protected = envelope
+        .get("protected")
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(|| DidcommError::NotAuthcryptJwe("no `protected` header".into()))?;
+    let decoded = URL_SAFE_NO_PAD
+        .decode(protected)
+        .map_err(|e| DidcommError::NotAuthcryptJwe(format!("`protected` is not base64url: {e}")))?;
+    let header: serde_json::Value = serde_json::from_slice(&decoded)
+        .map_err(|e| DidcommError::NotAuthcryptJwe(format!("`protected` is not JSON: {e}")))?;
+    let skid = header
+        .get("skid")
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(|| DidcommError::NotAuthcryptJwe("no `skid` (not authcrypt)".into()))?;
+    sender_did_from_kid(skid)
+}
+
+/// Unwrap an inbound envelope from any sender on an explicit
+/// [`SenderAllowlist`], with **one** decrypt attempt.
+///
+/// The envelope's `skid` names the sender it claims to be from; that DID
+/// is checked against `allowlist` before anything is decrypted, and the
+/// unpack then runs once against that one sender. A sender outside the
+/// list is rejected with [`DidcommError::SenderNotAllowed`] having cost
+/// no cryptography at all.
+///
+/// This replaces the "iterate over known senders, retry on
+/// `IdentityNotFound`" pattern the crate previously documented, which was
+/// O(known peers) ECDH-1PU decrypts per inbound message and expressed the
+/// allowlist only as a side effect of which peers the agent happened to
+/// hold. To keep the old behaviour exactly while dropping the cost, pass
+/// [`SenderAllowlist::from_agent_peers`].
+///
+/// Every conformance rule of [`unpack_trust_task`] still applies —
+/// including the re-check that the verified sender matches the `skid`
+/// that selected it.
+pub fn unpack_trust_task_from<P>(
+    wire: &str,
+    agent: &DIDCommAgent,
+    allowlist: &SenderAllowlist,
+) -> Result<(TrustTask<P>, DidcommHandler), DidcommError>
+where
+    P: Payload + DeserializeOwned,
+{
+    let advertised = advertised_sender_did(wire)?;
+    if !allowlist.permits(&advertised) {
+        return Err(DidcommError::SenderNotAllowed { did: advertised });
+    }
+    unpack_trust_task(wire, agent, Some(&advertised))
 }
 
 #[cfg(test)]

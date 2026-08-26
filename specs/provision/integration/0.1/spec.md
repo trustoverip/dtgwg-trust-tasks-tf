@@ -114,7 +114,7 @@ Both variants share the same envelope, the same proof model, and the same sealed
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 This task is the *canonical migration target* of the private FPN-namespaced `provision-integration/1.0` protocol (URI `https://firstperson.network/protocols/provision-integration/1.0`) that earlier VTA deployments speak. Maintainers MAY accept both URIs during a deprecation window; new consumers MUST emit the canonical Trust Task URI.
 
@@ -154,7 +154,7 @@ A conforming **producer** (the integration holder or its relayer) **MUST**:
 
 A conforming **consumer** (the provisioning maintainer) **MUST**:
 
-1. Validate the *Trust Task document* per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements). Verify the transport-level proof; refuse with `unauthorized` if it fails.
+1. Validate the *Trust Task document* per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). Verify the transport-level proof; refuse with `unauthorized` if it fails.
 2. Validate the VP structurally before any signature work: required fields present, `type` array contains the two reserved entries, `holder` decodes as `did:key`, `validUntil` parses as RFC 3339 UTC and falls within the maintainer's freshness window. Failures emit `provision/integration:invalid_bootstrap_request` with a `details.reason` from the enum.
 3. Verify the VP's `proof`:
    * cryptosuite MUST equal `eddsa-jcs-2022`;
@@ -249,7 +249,7 @@ Maintainers that wish to expose a configured "primary" context (e.g. TEE deploym
 
 `payload.createContext` (OPTIONAL, super-admin only) — provision the target context inline if it does not exist.
 
-`payload.ext` (OPTIONAL) — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` (OPTIONAL) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Sealed bundle
 

@@ -50,13 +50,13 @@ Consumer: verify the install token (`invalidToken`), match the `registrationId` 
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is four things together, none of which is sufficient alone: a valid **install token**, a matching **`registrationId`**, a verifying **WebAuthn attestation**, and a verifying **DID-binding signature**.
 
 The combination is the point. The token establishes that this installation was expected, the registration match that this is the claim it was expected for, the attestation that the authenticator is genuine, and the binding signature that the DID being claimed is controlled by whoever holds that authenticator. Each failure has its own code (`invalidToken`, `registrationMismatch`, `bindingInvalid`) so an operator can tell which assumption broke.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 

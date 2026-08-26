@@ -60,7 +60,7 @@ That scoping is not incidental. An agent that administers its own hosting server
 
 ## Why this is not a `list` task with a filter
 
-[SPEC.md](../../../../../../SPEC.md) asks new families to ship a `list`/`get` pair, or to say why a filter suffices. Neither shape fits, because the response is not an enumeration of a collection.
+[SPEC.md](/SPEC.md) asks new families to ship a `list`/`get` pair, or to say why a filter suffices. Neither shape fits, because the response is not an enumeration of a collection.
 
 A divergence is a property of **two listings compared at one instant**, not a record with an identity that persists. There is nothing for a sibling `get` to fetch by id: asking "show me divergence *D*" is asking a question about a comparison that has to be re-run to be answered, and re-running it may legitimately return nothing because the operator repaired it. The identifiers that *do* persist — the slot on the host, the DID in the agent — already have their own read tasks in the [`did-management`](../../../../../did-management) family and in the agent's own surface.
 
@@ -68,7 +68,7 @@ So this task returns the whole comparison, and the count of what matched, in one
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -78,7 +78,7 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 
 A conforming **consumer** (the agent) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../../SPEC.md#72-consumer-requirements).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Refuse with `notFound` where it holds no registration under `serverId`. An unknown server is not an empty comparison — a producer told "nothing diverges" about a server the agent has never heard of has been given a false assurance.
 3. Obtain the hosting server's listing **scoped to the agent itself as owner**, and compare it only against local records that name that same server. Records naming another server, or no server at all, are not missing from this one.
 4. Compare on the **slot identifier**, not the DID. A slot the server reserved but never published to carries no DID, and omitting it would hide exactly the entries an operator is least likely to find another way.
@@ -118,7 +118,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/webvh/server
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
-`hostOnly` and `agentOnly` are the two divergences; `inBoth` is the count that matched. Failures use `trust-task-error` ([SPEC.md §8](../../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+`hostOnly` and `agentOnly` are the two divergences; `inBoth` is the count that matched. Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Divergence in both directions
 
@@ -205,7 +205,7 @@ The agent holds the registration but cannot read the server's listing over the t
 }
 ```
 
-`inResponseTo` is populated here deliberately. [SPEC.md §8.2](../../../../../../SPEC.md#82-error-payload) makes it **MUST** where the error will be relied upon beyond the original producer, and this one will be: a report that could not be produced is itself a finding an operator may keep, and `threadId` alone means nothing to a reader who never saw the request.
+`inResponseTo` is populated here deliberately. [SPEC.md §8.2](/SPEC.md#82-error-payload) makes it **MUST** where the error will be relied upon beyond the original producer, and this one will be: a report that could not be produced is itself a finding an operator may keep, and `threadId` alone means nothing to a reader who never saw the request.
 
 ## Security & Privacy
 

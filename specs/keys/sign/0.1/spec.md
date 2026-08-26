@@ -48,7 +48,7 @@ This is the signing-oracle pattern: the custodian is an oracle that will sign an
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -62,8 +62,8 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Decide, from its own policy, whether **this producer may use this key** — and refuse with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) where it may not. The custodian signs bytes it does not interpret, so this decision is the only limit on what the producer can obtain a signature for.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Decide, from its own policy, whether **this producer may use this key** — and refuse with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) where it may not. The custodian signs bytes it does not interpret, so this decision is the only limit on what the producer can obtain a signature for.
 3. Refuse a key whose `status` is not `active`, with `failed_precondition`.
 4. Refuse an `algorithm` the named key's `keyType` cannot perform, with `invalid_argument`. An `x25519` key signs nothing and **MUST** be refused whatever algorithm is named.
 5. Sign the decoded bytes **verbatim** and return the signature under the `#response` variant.
@@ -118,7 +118,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/si
 }
 ```
 
-Failures (`permission_denied`, `failed_precondition`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permission_denied`, `failed_precondition`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

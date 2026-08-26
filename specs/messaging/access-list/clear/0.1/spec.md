@@ -55,7 +55,7 @@ The clear is **idempotent**: clearing an already-empty list succeeds and reports
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/update`](../../update/0.1/spec.md) — send `{ did, clear: true }`; `clear` is applied before any `add`, so `{ clear: true, add: [...] }` additionally replaces the list wholesale, which this task could not express.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels): it is no longer recommended for new use and is preserved so already-issued documents remain verifiable. It is superseded by [`messaging/access-list/update`](../../update/0.1/spec.md) — send `{ did, clear: true }`; `clear` is applied before any `add`, so `{ clear: true, add: [...] }` additionally replaces the list wholesale, which this task could not express.
 
 ## Conformance
 
@@ -65,11 +65,11 @@ A conforming **producer** (the administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/access-list/clear/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Where the target DID has no account, respond with `messaging/access-list/clear:unknownAccount`.
 3. Where the requester is the account's own controller and the account is not permitted to self-manage its access list, respond with `messaging/access-list/clear:selfChangeDenied`, or with the framework's `permissionDenied` where the requester has no standing at all.
 4. Otherwise remove every entry from the account's access list, and return an `accessListCount` of `0`.
@@ -120,7 +120,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -128,4 +128,4 @@ A clear-access-list document is an administrative mutation: the **REQUIRED** `pr
 
 Clearing is a coarse operation whose effect depends on `accessListMode`: emptying the list under `explicitAllow` denies every sender, while emptying under `explicitDeny` allows every sender. An administrator **SHOULD** confirm the account's `accessListMode` before clearing, since the two modes invert the security posture of an empty list.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

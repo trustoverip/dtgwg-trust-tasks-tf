@@ -22,7 +22,7 @@ parties:
     member: recipient
 proofRequirement:
   requirement: OPTIONAL
-  rationale: A discovery exchange is non-authoritative metadata exchange between parties that have already authenticated through the transport. The responder's list is advisory — the discoverer still validates each subsequent task per [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements). A `proof` adds little beyond what the transport binding already provides and may be omitted.
+  rationale: A discovery exchange is non-authoritative metadata exchange between parties that have already authenticated through the transport. The responder's list is advisory — the discoverer still validates each subsequent task per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). A `proof` adds little beyond what the transport binding already provides and may be omitted.
 sideEffects:
   level: none
   rationale: "Read-only query for the task types a party supports."
@@ -37,11 +37,11 @@ related: []
 
 The **Trust Task Discovery** exchange lets one party ask another which *Trust Task specifications* it can act upon. The query carries an optional list of slug-glob patterns; the response carries the matching subset of *Type URIs* the responder supports.
 
-Discovery is a framework-defined meta-task: it exists so that a *consumer* and a *producer* can negotiate a shared task vocabulary before committing to any single specification. The slug `trust-task-discovery` is reserved by [SPEC.md §6.1](../../../SPEC.md#61-type-uri) under the framework's `trust-task-` namespace, alongside `trust-task-error`, `trust-task-ok`, and `trust-task-next-step`.
+Discovery is a framework-defined meta-task: it exists so that a *consumer* and a *producer* can negotiate a shared task vocabulary before committing to any single specification. The slug `trust-task-discovery` is reserved by [SPEC.md §6.1](/SPEC.md#61-type-uri) under the framework's `trust-task-` namespace, alongside `trust-task-error`, `trust-task-ok`, and `trust-task-next-step`.
 
 ## Status of this document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -57,18 +57,18 @@ A *conforming responder* **MUST**:
 Each `supportedTypes` entry **MAY** be either:
 
 * **Shorthand** — a bare *Type URI* string. Semantically equivalent to an expanded form with no capability annotations.
-* **Expanded** — an object with `type` (the bare *Type URI*) and optional capability annotations. The 0.1 schema reserves one annotation, `requiredExt`, for declaring `ext` namespaces the responder requires on inbound documents per [SPEC.md §4.5.1](../../../SPEC.md#451-the-ext-extension-member) and [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements). A *responder* that enforces `ext` policy **SHOULD** advertise it here so *producers* can satisfy the policy before issuing the task.
+* **Expanded** — an object with `type` (the bare *Type URI*) and optional capability annotations. The 0.1 schema reserves one annotation, `requiredExt`, for declaring `ext` namespaces the responder requires on inbound documents per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member) and [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). A *responder* that enforces `ext` policy **SHOULD** advertise it here so *producers* can satisfy the policy before issuing the task.
 
 A *conforming responder* **SHOULD**:
 
 * Sort `supportedTypes` lexicographically by *Type URI* for deterministic output.
 * Include the bare-string shorthand for every entry that has no capability annotations — the expanded form is only useful when at least one annotation is present.
-* Set `frameworkVersion` to the MAJOR.MINOR of the framework specification ([SPEC.md](../../../SPEC.md)) the responder targets, so a discoverer at framework version X can reason about forward-minor compatibility per [SPEC.md §5.2](../../../SPEC.md#52-compatibility-rules). The field is optional in 0.1 and **RECOMMENDED** in future revisions.
+* Set `frameworkVersion` to the MAJOR.MINOR of the framework specification ([SPEC.md](/SPEC.md)) the responder targets, so a discoverer at framework version X can reason about forward-minor compatibility per [SPEC.md §5.2](/SPEC.md#52-compatibility-rules). The field is optional in 0.1 and **RECOMMENDED** in future revisions.
 * Include specifications whose `targetFrameworkVersion` is older than the discoverer's framework version where it has a choice — listing those permits forward-minor-compatible processing.
 
 A *conforming discoverer* **MUST**:
 
-* Treat the response as advisory: a Type URI's presence is a hint that the responder will accept a *Trust Task document* of that type, not a binding promise. The full [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) pipeline still applies to every subsequent exchange.
+* Treat the response as advisory: a Type URI's presence is a hint that the responder will accept a *Trust Task document* of that type, not a binding promise. The full [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline still applies to every subsequent exchange.
 
 A *conforming discoverer* **MAY**:
 
@@ -237,8 +237,8 @@ An empty `supportedTypes` array is a valid response and means "I support nothing
 
 ## Security & Privacy
 
-See the "Privacy considerations" section above. The responder's framework-level identity authentication ([SPEC.md §4.8.1](../../../SPEC.md#481-precedence-of-in-band-over-transport-derived-identity)) still applies — a `recipient` mismatch or transport-identity-mismatch on either side of the exchange is a framework-level rejection per [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements), unrelated to anything specific to this specification.
+See the "Privacy considerations" section above. The responder's framework-level identity authentication ([SPEC.md §4.8.1](/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity)) still applies — a `recipient` mismatch or transport-identity-mismatch on either side of the exchange is a framework-level rejection per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements), unrelated to anything specific to this specification.
 
 ## References
 
-* [SPEC.md](../../../SPEC.md) — Trust Tasks framework specification.
+* [SPEC.md](/SPEC.md) — Trust Tasks framework specification.

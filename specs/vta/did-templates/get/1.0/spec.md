@@ -53,7 +53,7 @@ Global templates are visible to every context on the VTA. To fetch a template sc
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/get/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/get/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 
@@ -63,12 +63,12 @@ A conforming **producer** (the authenticated caller) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/did-templates/get/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.name` with the name of the global template to fetch.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer is not an authenticated caller, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer is not an authenticated caller, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where no global template with `payload.name` exists, respond with `vta/did-templates/get:notFound`.
 4. On success, return the stored [DidTemplateRecord](#response) for that name.
 
@@ -109,7 +109,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/did-template
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/get/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload is the persisted **DidTemplateRecord**.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/get:notFound` case.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/get:notFound` case.
 
 ### The stored record
 
@@ -162,4 +162,4 @@ Response to the request example:
 
 **Attributed read.** Fetching a template is a read, but the **REQUIRED** `proof` keeps the `vta/*` family's authorization model uniform and lets the VTA attribute the read to a specific caller in its audit trail. A captured request cannot be replayed under another party's identity.
 
-**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

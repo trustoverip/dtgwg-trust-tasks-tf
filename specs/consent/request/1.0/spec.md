@@ -69,7 +69,7 @@ pattern, specialized to "may this conversation reach this agent."
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -101,7 +101,7 @@ The decision arrives out-of-band as a `consent/decision`; the bridge MAY also po
 `payload.displayHint` (OPTIONAL) — a redactable human label shown to the operator (e.g. "Signal group 'Family'"); MUST NOT carry a raw address.
 `payload.firstMessageDigest` (OPTIONAL) — multihash digest of the held first message, binding the request to concrete content.
 `payload.contextHint` (OPTIONAL) — the VTA context path the bridge runs under.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

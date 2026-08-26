@@ -49,7 +49,7 @@ The task is read-only; it makes no change to the account. The mediator applies i
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -59,11 +59,11 @@ A conforming **producer** (the requester) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/account/get/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID — or, for privacy (and for mediators that key accounts by a one-way hash and never hold the full DID), a stable hash of that DID. Either form is a valid [`Vid`](../../../_shared/0.1/messaging.schema.json#/$defs/Vid); the same form is used across `account/*`, `acl/*`, and `access-list/*` and compared by exact string equality.
-3. **SHOULD** include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. **SHOULD** include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
 2. Enforce its own authorization policy and respond with the framework's `permissionDenied` where the requester may not read the target account.
 3. Where the target DID has no account, respond with `messaging/account/get:unknownAccount`.
 4. Return the full [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) view in the response.
@@ -141,7 +141,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -149,4 +149,4 @@ An account view discloses the account's role, capabilities, limits, and current 
 
 A `proof`, when present, binds the request to its requester for authorization and audit; the queue-state counts it returns are point-in-time and **MAY** be stale by the time the response is read.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

@@ -50,13 +50,13 @@ Consumer: look up the `rotationId`; if unknown or expired, return `rotationExpir
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is **both signatures over the challenge** — the old DID's and the new DID's — against a `rotationId` that is still live.
 
 Requiring both is what makes rotation safe in each direction. The old DID's signature establishes that the party currently holding the membership consents to move it; the new DID's establishes that the party receiving it controls the key it is being moved to. Either alone would allow a hostile transfer: one steals a membership, the other strands it on a key nobody holds. A failure of either changes nothing and returns `signatureInvalid`.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 

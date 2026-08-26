@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Document version** | 0.3 |
+| **Document version** | 0.4 |
 | **Date** | 2026-08-07 |
 | **This version** | `https://trustoverip.github.io/dtgwg-trust-tasks-tf/SPEC.html` |
 | **Latest published version** | None — this document has not yet been published as a Working Group Deliverable. |
@@ -13,6 +13,15 @@
 | **Repository** | <https://github.com/trustoverip/dtgwg-trust-tasks-tf> |
 | **Feedback** | <https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues> |
 | **License** | See [LICENSE.md](LICENSE.md) and [SOURCE_CODE.md](SOURCE_CODE.md) |
+
+> **Canonical source.** The normative text of this framework specification is
+> maintained at <https://github.com/trustoverip/dtgwg-trust-tasks-spec>. The copy
+> in this repository exists because the registry build serves it to the website
+> and every spec under `specs/` cross-references its sections, and it **MUST** be
+> kept in sync with the canonical repo — a divergence here is a defect in this
+> copy, not a variant of the framework. Whether this copy should instead be
+> generated from the canonical repo, or dropped in favour of linking to it, is an
+> open working-group decision; until it is taken, changes land in both places.
 
 ---
 

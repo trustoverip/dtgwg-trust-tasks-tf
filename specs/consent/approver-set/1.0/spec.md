@@ -55,7 +55,7 @@ resolves the binding to route a prompt to the right operator.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -77,7 +77,7 @@ is an admin of `payload.context` (else `notAuthorized`), validate the binding
 `payload.approver` (REQUIRED) — VID of the operator authorized to decide.
 `payload.route` (OPTIONAL) — [`Route`](../../_shared/0.1/consent.schema.json) (`wake` / `bridge-relay`); defaults to `bridge-relay`.
 `payload.routeHint` (OPTIONAL) — routing detail (e.g. the operator's opaque conversationRef).
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

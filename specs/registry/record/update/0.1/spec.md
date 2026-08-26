@@ -46,7 +46,7 @@ The **Registry — Update Record** Trust Task replaces the stored [`TrustRecord`
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/put`](../../put/0.1/spec.md), which covers strict-update via `expectedExisting: true`. Producers SHOULD NOT emit new documents against this specification.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/put`](../../put/0.1/spec.md), which covers strict-update via `expectedExisting: true`. Producers SHOULD NOT emit new documents against this specification.
 
 ## Conformance
 

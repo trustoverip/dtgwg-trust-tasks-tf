@@ -72,7 +72,7 @@ echo the credential back.
 The relationship exchange runs on a single `threadId` (the `propose`
 document's `id`), and it carries five documents: the proposal, its acceptance,
 and **two** `issue` requests with **two** receipts. A `#response` carries no
-`inResponseTo` — [SPEC.md §8.2](../../../../../SPEC.md#82-error-payload) added
+`inResponseTo` — [SPEC.md §8.2](/SPEC.md#82-error-payload) added
 that member to the *error* response only — so a party holding a receipt cannot
 learn from the framework's envelope which of its deliveries the receipt
 answers.
@@ -101,13 +101,13 @@ A conforming **issuing party** (`issuer`):
 
 A conforming **receiving party** (`recipient`):
 
-1. Applies the [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) pipeline.
+1. Applies the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline.
 2. Verifies the credential's own proof and its party bindings against the accepted proposal **before** storing it or returning a receipt.
 3. On acceptance, returns the `#response` receipt carrying `vrcDigestMultibase`, **computed over the credential as stored**. On refusal, returns a `trust-task-error` with `vrc/relationships/issue:notAccepted`.
 
 ## Authorization
 
-*Declared under [SPEC.md §7.3](../../../../../SPEC.md#73-specification-requirements) item 15.*
+*Declared under [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
 The authorization evidence is **the accepted proposal**. A delivery is
 authorized only as the completion of a relationship exchange the receiving
@@ -121,7 +121,7 @@ verifies, and is refused with `vrc/relationships/issue:notAccepted`.
 Two proofs appear on this exchange and **neither is the authorization**. The
 credential's inner proof makes the credential verifiable indefinitely; the
 envelope proof attributes the delivery. Per
-[SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10, both
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10, both
 establish attribution, not entitlement — the entitlement comes from the
 proposal, and a party that verifies both proofs on a delivery it never agreed
 to has verified everything and authorized nothing. See also *Two proofs, two

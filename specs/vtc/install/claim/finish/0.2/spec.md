@@ -53,7 +53,7 @@ Consumer: verify the install token (`invalidToken`), match the `registrationId` 
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is three things together, none of which is sufficient alone: a valid **install token**, a matching **`registrationId`**, and a verifying **WebAuthn attestation**.
 
@@ -61,7 +61,7 @@ The combination is the point. The token establishes that this installation was e
 
 `0.1` named a fourth — a DID-binding signature — on the reasoning that the attestation proved control of the *authenticator* while the signature proved control of the *DID*. That distinction does not hold when the DID is derived from the attested key: both statements are made by one key about itself. A version that let the installer supply a DID they already control would restore the distinction, and would then need a fourth piece of evidence again.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 

@@ -50,7 +50,7 @@ The record is keyed by its four identifiers (`entity_id`, `authority_id`, `actio
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/put`](../../put/0.1/spec.md), which covers strict-create via `expectedExisting: false`. Producers SHOULD NOT emit new documents against this specification.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels) and is preserved for historical reference; its schema and prose are frozen. It is superseded by [`registry/record/put`](../../put/0.1/spec.md), which covers strict-create via `expectedExisting: false`. Producers SHOULD NOT emit new documents against this specification.
 
 ## Conformance
 

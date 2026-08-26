@@ -55,13 +55,13 @@ Consumer: resolve the member (`notFound` if absent). Verify the presentation; if
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the **presentation**, whose holder MUST equal the `did` being asserted and whose `proof.challenge` MUST be the paired `challengeId`.
 
 Both halves are load-bearing and neither substitutes for the other. Holder equality establishes that the assertion is about the party making it; the challenge binding establishes that this presentation was made for this exchange, and is what stops one captured and replayed into another. A consumer that checks only the first accepts replays; one that checks only the second accepts an assertion made on someone else's behalf.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 

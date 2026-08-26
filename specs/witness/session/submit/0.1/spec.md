@@ -72,10 +72,10 @@ obligation refers to:
 1. The delivered VWC's `taskContext` **MUST** equal the `id` of the
    `witness/session` document that opened **this** session — the innermost
    exchange that attests the witnessing, per
-   [SPEC.md §4.9.1](../../../../../SPEC.md#491-naming-an-exchange-from-outside-the-framework) —
+   [SPEC.md §4.9.1](/SPEC.md#491-naming-an-exchange-from-outside-the-framework) —
    **and** the VWC's `taskDigestMultibase` **MUST** be the *task digest* of
    that same document, computed per
-   [SPEC.md §4.9.3](../../../../../SPEC.md#493-binding-a-citation-to-the-document-it-names).
+   [SPEC.md §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names).
    The `id` locates the session document; the digest binds it. An `id` alone
    proves nothing about *which* document opened the session, because anyone
    may write a different one bearing the same `id`.
@@ -107,7 +107,7 @@ obligation refers to:
 
 `witness/session` declares `proofRequirement.request: OPTIONAL`, so the session
 document a holder ships may carry no `proof` of its own — and per
-[§4.9.3](../../../../../SPEC.md#493-binding-a-citation-to-the-document-it-names)
+[§4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)
 the task digest is taken over the document with any top-level `proof` removed,
 so a signed and an unsigned copy of the same session document reproduce the
 same value. Neither fact weakens the pairing, and it is worth being exact about
@@ -164,14 +164,14 @@ A conforming **participating party** (`issuer`):
 
 A conforming **witness** (`recipient`):
 
-1. Applies the [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) pipeline.
+1. Applies the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline.
 2. Verifies the presentation's binding to the session challenge **before** any other check; a wrong binding is `witness/session/submit:challengeMismatch`, distinct from `presentationInvalid`, because the operator responses differ — a replay versus a defect.
 3. Verifies that the submitting party is the one that opened the session; a submission on a session opened by another party is `witness/session/submit:challengeMismatch`, since it can only have been made with a challenge that was not issued to it.
 4. On success, **MUST** return the `#response` delivering the VWC and its `vwcDigestMultibase`, under the REQUIRED proof, with the `taskContext` rule of this document honoured.
 
 ## Authorization
 
-*Declared under [SPEC.md §7.3](../../../../../SPEC.md#73-specification-requirements) item 15.*
+*Declared under [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
 Two pieces of evidence, both verified by the witness under Conformance above:
 the submitting party is **the party that opened this session** (item 3), and
@@ -189,7 +189,7 @@ defect is one of entitlement, not of construction.
 The envelope `proof` is REQUIRED here and it is **not** the authorization: it
 attributes the outer document to its sender so that a presentation cannot be
 relayed anonymously on a party's behalf. Per
-[SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10,
+[SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10,
 verifying it establishes *who submitted*, not that they may. The inner
 presentation's holder binding is likewise evidence about the credential
 material, not about entitlement to this session.

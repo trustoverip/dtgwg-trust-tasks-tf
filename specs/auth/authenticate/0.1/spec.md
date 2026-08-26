@@ -70,7 +70,7 @@ This task does NOT mint tokens itself — it requests them. The auth service app
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -80,12 +80,12 @@ A conforming **producer** (the subject) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/auth/authenticate/0.1`, with itself as `issuer` and the auth service as `recipient`.
 2. Echo `payload.challenge` and `payload.sessionId` verbatim from the `auth/challenge` response.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../SPEC.md#47-proof). The proof's `verificationMethod` MUST resolve via the issuer's DID document.
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof). The proof's `verificationMethod` MUST resolve via the issuer's DID document.
 4. **MAY** request specific `payload.scope` capabilities. The producer MUST be prepared for the consumer to issue a token bundle with a narrower `scope`.
 
 A conforming **consumer** (the auth service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) and verify the `proof`. The proof being absent or invalid is a hard failure.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`. The proof being absent or invalid is a hard failure.
 2. Look up the server-side binding for `payload.sessionId`. If no binding exists, respond with `auth/authenticate:challenge_not_found`.
 3. Compare the binding's stored challenge to `payload.challenge` using a constant-time comparator. Mismatch → `auth/authenticate:challenge_mismatch`.
 4. Reject expired bindings with `auth/authenticate:challenge_expired`.
@@ -110,7 +110,7 @@ A conforming **consumer** (the auth service) **MUST**:
 
 `payload.scope` (optional) — capability tags the subject is requesting; consumer-defined vocabulary.
 
-`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` (optional) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 The full JSON Schema is in [`payload.schema.json`](payload.schema.json).
 
@@ -164,7 +164,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/au
 
 The response payload is `{ session, tokens }`. The `session.amr` MUST include `"did"` (the authentication factor that completed). Consumers issuing a fresh session set `session.acr` to `"aal1"` unless the consumer combined this exchange with additional factors at issuance time (e.g. a co-located passkey assertion), in which case higher AAL classes are appropriate.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful authentication
 

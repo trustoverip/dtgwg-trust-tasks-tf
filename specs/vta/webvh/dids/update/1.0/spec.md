@@ -77,14 +77,14 @@ Two things follow, and both are normative:
    invoke — and **MUST NOT** derive them from this payload. A diff of the document
    shows a one-line endpoint addition and silently hides a key rotation, and every
    signature over the resulting approval still verifies.
-2. The task is classified `destructive`. SPEC [§7.3](../../../../../../SPEC.md#73-specification-requirements)
+2. The task is classified `destructive`. SPEC [§7.3](/SPEC.md#73-specification-requirements)
    item 13 names rotation of a sole controlling key as authority-shifting, and the
    rotation happens whether or not the caller asked for it. The side effect is the
    dangerous one precisely because nobody asked for it.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
 
 ## Conformance
 
@@ -127,7 +127,7 @@ precondition, the caller's own source reads as though the danger were handled
 while nothing is handling it. A silently-ignored precondition is worse than an
 absent one, because an absent one is visible.
 
-The framework's `ext` slot ([SPEC §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member))
+The framework's `ext` slot ([SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member))
 remains the sanctioned place for anything not defined here.
 
 ## Payload
@@ -140,7 +140,7 @@ remains the sanctioned place for anything not defined here.
 `payload.ttl` (OPTIONAL) — new TTL, seconds.
 `payload.label` (OPTIONAL) — operator-facing audit label.
 `payload.expectedVersionId` (OPTIONAL) — optimistic-concurrency precondition.
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

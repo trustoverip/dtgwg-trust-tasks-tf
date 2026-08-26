@@ -53,7 +53,7 @@ Update is the way to evolve a template in place: the resource `name` is unchange
 
 ## Status of this Document
 
-This specification is **retired** per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/update/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/did-templates/update/2.0`](../2.0/spec.md), which merges the global and context-scoped families behind an optional `contextId`. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 
@@ -63,12 +63,12 @@ A conforming **producer** (the super-administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/did-templates/update/1.0`, with itself as `issuer` and the VTA as `recipient`.
 2. Set `payload.name` to the name of the existing global template and populate `payload.template` with a complete replacement that validates against `#/$defs/DidTemplate`, where `template.name` equals `payload.name`.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer does not hold the super-administrator role, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer does not hold the super-administrator role, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where `payload.template` is not a valid v1 template (bad name grammar, missing `{DID}` placeholder, undeclared placeholder, reserved variable name), or where `payload.template.name` does not equal `payload.name`, respond with the framework's `malformedRequest`.
 4. Where no global template with `payload.name` exists, respond with `vta/did-templates/update:notFound`.
 5. On success, replace the stored template body in the global scope, preserve `createdAt` and `createdBy`, advance `updatedAt`, and return the stored [DidTemplateRecord](#response).
@@ -139,7 +139,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/did-template
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/did-templates/update/1.0#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`. The response payload is the persisted **DidTemplateRecord**.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/update:notFound` case.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant — including the `vta/did-templates/update:notFound` case.
 
 ### The stored record
 
@@ -192,4 +192,4 @@ Response to the request example. `createdAt` and `createdBy` are unchanged from 
 
 **Privileged write, audited.** Replacing a template changes what the VTA will mint for future integrations, so the task is restricted to super-administrators and the VTA records the writer DID. The **REQUIRED** `proof` binds the change to a specific operator for the audit trail and prevents a captured request being attributed to the wrong party. Because update mutates a name every other context can render from, the consumer rejects any request whose `payload.name` does not match `payload.template.name`, so an operator can never silently retarget a different template than they intended.
 
-**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+**Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.

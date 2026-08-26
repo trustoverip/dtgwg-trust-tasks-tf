@@ -51,7 +51,7 @@ The framework `proof` is REQUIRED. A bearer-token-only revocation would let any 
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -61,11 +61,11 @@ A conforming **producer** **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/auth/revoke-session/0.1`, with itself as `issuer` and the auth service as `recipient`.
 2. Provide exactly one of `payload.sessionId` (revoke a single session) or `payload.all: true` (revoke every session the consumer holds for the producer's subject).
-3. Include a verified `proof` per [SPEC.md §4.7](../../../../SPEC.md#47-proof).
+3. Include a verified `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the auth service) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. When `sessionId` is provided:
    - Look up the session; if absent, respond with `auth/revoke-session:session_not_found`.
    - Verify the session's `subject` equals the document `issuer`. Mismatch → `auth/revoke-session:not_owner`.
@@ -89,7 +89,7 @@ A consumer **MAY** also accept revoke requests from an *administrative* issuer w
 
 `payload.reason` — optional human-readable rationale.
 
-`payload.ext` — extension slot per [SPEC.md §4.5.1](../../../../SPEC.md#451-the-ext-extension-member).
+`payload.ext` — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 
 ## Examples
 

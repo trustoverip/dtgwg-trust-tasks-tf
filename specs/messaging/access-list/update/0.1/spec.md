@@ -55,7 +55,7 @@ The update is **idempotent at the set level**: an added entry already present is
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -65,11 +65,11 @@ A conforming **producer** (the administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/access-list/update/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID and at least one of `payload.clear`, `payload.add`, `payload.remove`. A producer **SHOULD NOT** name the same DID in both `add` and `remove`; where it does, the fixed apply order means the entry ends up removed.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Where the target DID has no account, respond with `messaging/access-list/update:unknownAccount`.
 3. Where the requester is the account's own controller and the account is not permitted to self-manage its access list, respond with `messaging/access-list/update:selfChangeDenied`, or with the framework's `permissionDenied` where the requester has no standing at all.
 4. Where applying the additions would exceed the account's configured maximum access-list size, change nothing and respond with `messaging/access-list/update:listFull`.
@@ -135,7 +135,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -145,4 +145,4 @@ The access list combined with `accessListMode` directly governs delivery, and th
 
 An access list reveals who an account communicates with; a mediator **SHOULD** treat list contents as sensitive and disclose them only to the account's controller or an administrator.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

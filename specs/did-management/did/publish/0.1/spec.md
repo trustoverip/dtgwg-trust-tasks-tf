@@ -79,7 +79,7 @@ The task is **idempotent**: re-submitting the same `didData` against an unchange
 
 A conforming **producer** **MUST**: emit a *Trust Task document* of type `https://trusttasks.org/spec/did-management/did/publish/0.1` with `payload.mnemonic`, `payload.method`, and `payload.didData`.
 
-A conforming **consumer** **MUST**: validate per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements); verify the caller is the slot's current owner (or an admin); validate `didData` against `method`; commit the new log content and bumped record in a single atomic batch.
+A conforming **consumer** **MUST**: validate per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements); verify the caller is the slot's current owner (or an admin); validate `didData` against `method`; commit the new log content and bumped record in a single atomic batch.
 
 ## Definitions
 

@@ -71,13 +71,13 @@ Consumer: verify holder binding, freshness and audience before reading any claim
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is **holder binding** — that the presenting party controls the credential it presents — together with the audience and freshness bindings the verifier checks before reading any claim.
 
 The specification already states the principle this section names: *a presentation that verifies cryptographically may still be a credential you should not accept — signature validity is not the same question as issuer trust.* Holder binding establishes who is presenting; whether the underlying credential's issuer is one the verifier trusts, and whether the disclosure serves a purpose it will honour, are separate decisions the verifier makes under its own policy.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 

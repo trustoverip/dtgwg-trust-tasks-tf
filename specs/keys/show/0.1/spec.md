@@ -46,7 +46,7 @@ A key the custodian does not hold is reported as `key: null`, not as an error: "
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -56,8 +56,8 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 
 A conforming **consumer** (the key custodian) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Apply its policy to decide whether this producer may read this key's record, refusing with `permission_denied` ([SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)) where it may not.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Apply its policy to decide whether this producer may read this key's record, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) where it may not.
 3. Respond with `key` set to the record, or `null` where no such key exists.
 4. **Not** include private key material in the record.
 

@@ -62,7 +62,7 @@ not. A departing member knows why they left.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -72,7 +72,7 @@ A conforming **producer** (the community) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vtc/members/removal-notice/0.1`, with itself as `issuer` and the removed member as `recipient`.
 2. Send it **after** the removal has taken effect, not on deciding it. A notice for a removal that then fails is worse than none.
-3. Include a `proof` per [SPEC.md §4.7](../../../../../SPEC.md#47-proof) — see [Security & Privacy](#security--privacy) for why this is REQUIRED here.
+3. Include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof) — see [Security & Privacy](#security--privacy) for why this is REQUIRED here.
 4. Resolve `disposition` to a concrete value. A community's `policydefault` preference **MUST NOT** appear on the wire; the member learns nothing from being told a default was applied without being told which.
 5. Populate `decidedAt` with when the removal took effect, **not** when the notice was sent. The two diverge whenever the member was offline, and it is the decision that has to be placeable in time.
 6. **MUST NOT** send this for a member-initiated departure. That is

@@ -50,7 +50,7 @@ The entries returned here are the same ones published in the DID document, so th
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -60,12 +60,12 @@ A conforming **producer** (the DID administrator) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/passkey-vms/list/0.1`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.did` with the DID to enumerate.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the producer does not hold the admin role on the target DID's context, respond with the framework's `permissionDenied` ([SPEC.md §8.3](../../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
+2. Where the producer does not hold the admin role on the target DID's context, respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where the target DID is not managed by this VTA, respond with `vta/passkey-vms/list:didNotFound`.
 4. On success, return every passkey verificationMethod on the DID — an empty array when none are enrolled.
 
@@ -108,7 +108,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/vta/pas
 
 The response payload is `{ verificationMethods: PasskeyVerificationMethod[] }`. The array is empty when the DID has no passkey verificationMethods.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### A DID with one passkey
 
@@ -142,4 +142,4 @@ Response to the request example:
 
 **Public data, admin-gated access.** The verificationMethods returned here are published in the DID document and are therefore already public — they carry no secret. The admin gate exists to scope the management surface to the DID's controllers, not to protect the data itself. The **REQUIRED** `proof` lets the VTA attribute the request to a specific admin and keeps the family's authorization model uniform.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.

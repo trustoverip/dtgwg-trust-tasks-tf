@@ -60,7 +60,7 @@ Re-putting an existing `key` replaces the value (upsert).
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -70,7 +70,7 @@ A conforming **producer** (the agent) **MUST**:
 
 1. Emit a *Trust Task document* of type `https://trusttasks.org/spec/vta/memory/put/0.1` with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.contextId`, `payload.key`, and `payload.value`.
-3. Include a `proof` per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 

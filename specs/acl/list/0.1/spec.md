@@ -45,7 +45,7 @@ This task is **read-only**: it never mutates the ACL. The response carries the e
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Reading a scope filter in two directions
 
@@ -81,8 +81,8 @@ A conforming **producer** (the querying party) **MUST**:
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../SPEC.md#72-consumer-requirements).
-2. Apply its own policy to decide whether the querying party is permitted to enumerate the ACL. Where the policy denies the query, respond with the framework's `permission_denied` (see [SPEC.md §8.3](../../../../SPEC.md#83-standard-error-codes)).
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Apply its own policy to decide whether the querying party is permitted to enumerate the ACL. Where the policy denies the query, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Apply any provided filters (conjunctively) and return only the matching entries. Filter strings the maintainer does not recognize **MUST** simply produce zero matches; they are not an error.
 4. Honor `pageSize` (default and maximum at the maintainer's discretion) and return a continuation `cursor` if more entries remain.
 5. Respond via the `#response` variant defined below.
@@ -172,7 +172,7 @@ The response payload carries:
 * `cursor` — present only when `truncated` is `true` **and** the maintainer supports pagination from this point. Opaque to the consumer; re-send verbatim to fetch the next page. A response with `truncated: true` but no `cursor` means the maintainer cut the result short and cannot continue (for example, an enforced maximum total result size); the consumer **SHOULD** narrow its filter and re-query.
 * `redactedFields` — optional; lists *AclEntry* field names the maintainer redacted from every returned entry.
 
-Failures use `trust-task-error` ([SPEC.md §8](../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### A page of admin entries
 

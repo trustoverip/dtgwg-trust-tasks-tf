@@ -48,13 +48,13 @@ Consumer: resolve the relationship; if absent, or the proof signer is not its is
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is being the **relationship's own issuer** — the proof signer must be the party that created the relationship being revoked.
 
 Note the deliberate choice in how a failure is reported: a caller that is not the issuer receives `notFound`, the same code as for a relationship that does not exist. That is an anti-probing measure, not an oversight. Distinguishing the two would let a caller enumerate relationships it did not issue by observing which id returns a permission error rather than a not-found.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 

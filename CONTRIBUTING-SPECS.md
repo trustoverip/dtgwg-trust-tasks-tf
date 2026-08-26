@@ -8,14 +8,26 @@ For framework-level contributions (changes to `SPEC.md`, the build pipeline, or 
 
 ```
 specs/<slug>/<version>/
-├── spec.md              # YAML front matter + prose + examples
-└── payload.schema.json  # JSON Schema 2020-12 for the payload
+├── spec.md                        # YAML front matter + prose + examples   (REQUIRED)
+├── payload.schema.json            # JSON Schema 2020-12 for the payload    (REQUIRED)
+├── payload.invalid-examples.json  # documents that MUST fail validation    (optional)
+└── context.jsonld                 # JSON-LD context, if jsonLdContext: true (optional)
 ```
 
+`spec.md` and `payload.schema.json` are a pair: a version directory carrying one without the other **fails the build**. (It used to fail nothing — the registry build discovered specs by `spec.md` while the code generators discovered them by `payload.schema.json`, so a half-populated folder was a published spec to one half of the toolchain and did not exist to the other. `scripts/lib/specs.mjs` is now the single discovery rule.)
+
 1. Fork the repo and create a branch.
-2. Create the folder `specs/<your-slug>/<your-version>/`. The slug may be hierarchical — `specs/acl/grant/0.1/` is a valid layout whose slug is `acl/grant`.
-3. Add `spec.md` with the YAML front matter shape described below, prose for your specification, and at least one example Trust Task document under an `## Examples` section. If your task is consequential — most non-read tasks are — it also needs an [`## Authorization`](#the--authorization-section) section; nothing in CI checks for it.
-4. Add `payload.schema.json` describing your `payload` member. Its `$id` **MUST** equal `https://trusttasks.org/spec/<your-slug>/<your-version>` — note that the slug's `/` separators appear literally in the URL.
+2. Scaffold the folder:
+
+   ```sh
+   npm run new-spec -- <your-slug> [--version 0.1] [--no-response]
+   ```
+
+   This writes `specs/<your-slug>/<version>/{spec.md,payload.schema.json}` with every required front-matter declaration, an [`## Authorization`](#the--authorization-section) stub when your declared side-effect and exposure classes make the task consequential, the four [`## Security & Privacy`](#the--security--privacy-section) sub-headings the build lints for, and an example document that validates against the framework envelope. **It passes `npm run validate` as generated**, so you can confirm your toolchain works before writing a word. Run `npm run new-spec -- --help` for the flags that set the classes up front (`--side-effects`, `--discloses`, `--acts-as-subject`, `--category`).
+
+   Doing it by hand is fine too — the shape is documented below — but do not copy a neighbouring spec: you inherit its keywords, its error codes, and (until this PR) its depth-specific `../../../../SPEC.md` links.
+3. Fill in the prose: Abstract, Definitions, Request/Response, and the Security & Privacy sub-headings. Every `TODO` in the scaffold marks something only you can write.
+4. Check `payload.schema.json` describes your `payload` member. Its `$id` **MUST** equal `https://trusttasks.org/spec/<your-slug>/<your-version>` — note that the slug's `/` separators appear literally in the URL.
 5. Run `npm install` then `npm run build` from the repo root to validate.
 6. Open a PR. CODEOWNERS will route review to the right people.
 
@@ -31,6 +43,28 @@ The folder structure mirrors the canonical *Type URI* (per [SPEC.md §6.1](SPEC.
 | `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>` (JSON Schema) | `specs/<slug>/<MAJOR.MINOR>/payload.schema.json` |
 | `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>` (JSON-LD context) | `specs/<slug>/<MAJOR.MINOR>/context.jsonld` (optional) |
 
+### `payload.invalid-examples.json` (optional, and worth writing)
+
+254 of the registry's specs carry one and this guide never mentioned it. It is a JSON array of fixtures your schema **MUST reject**:
+
+```jsonc
+[
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "entry": { "subject": "did:web:alice.example", "role": "admin" },
+                 "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `frobnicate`.",
+    "payload": { "entry": { "subject": "did:web:alice.example", "role": "admin" }, "frobnicate": true }
+  }
+]
+```
+
+`note` is prose describing the bug class the fixture exemplifies; it is rendered into the generated test's failure message, so write it for the reviewer who will one day see the fixture start *passing*. `payload` is the deliberately non-conforming payload — the `payload` member only, not a whole Trust Task document.
+
+`trust-tasks-codegen` emits a `rejects_invalid_examples` test per spec from this file. That is the only thing in the toolchain that tests your schema's **negative** space: the `## Examples` in your prose prove valid documents validate, and nothing else proves invalid ones do not. A missing `additionalProperties: false`, an `enum` that should be a `pattern`, a `required` you forgot — all of them pass every other check. An absent file is not a failure; it is just an untested schema.
+
 Slugs may be single-segment (`kyc-handoff`) or hierarchical (`acl/grant`, `members/promote-to-admin`). In either case, the on-disk path matches the slug verbatim: a slug of `acl/grant` means `specs/acl/grant/<version>/`. Use hierarchical slugs to group related specifications under a namespace and keep the top of the `specs/` tree readable.
 
 Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/acl/grant/1.1/`, …). Each version is independently editable; you never overwrite a published version.
@@ -39,7 +73,8 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
 
 - Each path segment is lowercase, hyphen-separated, and matches the regex `^[a-z][a-z0-9]*(-[a-z0-9]+)*$` (no consecutive hyphens within a segment).
 - Path segments are joined with `/`; consecutive slashes and leading/trailing slashes are not permitted.
-- The slug `trust-task` and any slug whose first segment is `trust-task` or begins with `trust-task-` are **reserved** for framework-defined types (see SPEC §6.1 and §8).
+- Every slug matching `^trust-(task|ceremony)($|-|/)` is **reserved** for framework-defined types — **both** halves. That is `trust-task`, anything beginning `trust-task-` or `trust-task/`, **and** `trust-ceremony`, anything beginning `trust-ceremony-` or `trust-ceremony/`. The `trust-ceremony` half was added by framework 0.4 ([SPEC §6.7](SPEC.md#67-ceremony-namespace)) and is enforced by the meta-schema exactly like the `trust-task` half; this guide previously documented only `trust-task*`, which is how the reservation could read as narrower than it is. See SPEC §6.1 and §8.
+- Publishing a slug in the reserved namespace means editing **two** hand-maintained places: the reserved-slug table in `SPEC.md` §6.1, and the allowlist at `specs/spec.meta.schema.json` → `#/properties/slug/anyOf[1]/enum`. Miss the second and the build reports `/slug must NOT be valid`, which is the schema's way of saying "you hit the reservation and are not on the list". `npm run new-spec` refuses reserved slugs outright rather than emitting something that cannot validate.
 
 ## Version rules (per SPEC §5)
 
@@ -51,7 +86,7 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
 
 ## `spec.md` front matter
 
-Every `spec.md` begins with a YAML block delimited by `---` lines. The block is validated against [`specs/spec.meta.schema.json`](specs/spec.meta.schema.json) at build time. Required fields:
+Every `spec.md` begins with a YAML block delimited by `---` lines. The block is validated against [`specs/spec.meta.schema.json`](specs/spec.meta.schema.json) at build time. `npm run new-spec` emits this for you; the template below is what it emits, and — unlike the version this guide carried until now, which omitted the **required** `sideEffects` and `exposure` — copying it produces a spec that validates.
 
 ```yaml
 ---
@@ -60,27 +95,48 @@ version: "0.1"                     # MUST match the version-folder name
 title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard | retired
-targetFrameworkVersion: "0.1"      # SPEC.md MAJOR.MINOR this spec targets
+targetFrameworkVersion: "0.4.0"    # framework version this spec targets. MAJOR.MINOR.PATCH
+                                   # (preferred, matches the canonical spec repo) or MAJOR.MINOR
 category: access-control           # must be one of the TT_CATEGORIES ids
-keywords: [acl, access-control, grant]
-authors:
+keywords: [acl, access-control, grant]   # optional — see below
+authors:                                 # optional — see below
   - Glenn Gore (https://github.com/stormer78)
 parties:
   - role: Granting authority
     requirement: REQUIRED          # REQUIRED | RECOMMENDED | OPTIONAL
     member: issuer                 # issuer | recipient | (omit if the party is neither)
+    identifierScope: pairwise      # optional, framework 0.5.0: pairwise | public | any
   - role: ACL maintainer
     requirement: REQUIRED
     member: recipient
 proofRequirement:
   requirement: REQUIRED            # OPTIONAL | RECOMMENDED | REQUIRED
   rationale: A one-sentence reason your threat model needs this strength.
+sideEffects:                       # REQUIRED — SPEC §7.3 item 13
+  level: mutating                  # none | mutating | destructive
+  rationale: Why this level. For destructive, name the irreversible effect.
+exposure:                          # REQUIRED — SPEC §7.3 item 14
+  discloses: metadata              # none | metadata | secret — what goes back OUT
+  actsAsSubject: false             # true when execution exercises the subject's own authority
+  ingests: metadata                # optional, framework 0.5.0: none | metadata | personal | secret
+                                   # — what the REQUEST carries IN. `personal` or `secret` makes
+                                   # `rationale` below REQUIRED, as `discloses: secret` does.
+  rationale: Names the disclosed or ingested material, or the exercised authority.
+retention:                         # optional, framework 0.5.0 — SHOULD, not MUST
+  class: durable                   # transient | exchange | durable; absent reads as durable
+  rationale: Why this class. For durable, name what makes the record worth keeping.
 errorCodes: []                     # see "Task-specific error codes" below; [] is fine
 related: []                        # slugs of related Trust Tasks (full slugs incl. /)
 ---
 ```
 
 Notes:
+
+- **`authors` and `keywords` are optional, and usually better omitted.** `authors` was identical in 345 of 349 specs and 46% of declared keywords were literally a slug segment or the category name — a required field that says the same thing everywhere carries no information, and asking an author to fill it in is friction that buys nothing. When you omit them the build derives them: `authors` from `CODEOWNERS` (falling back to the spec folder's git history), `keywords` from the slug segments plus the category. **Declare them when the derivation would be wrong** — a spec written by someone other than its CODEOWNER, or a task a searcher would look for under a word that appears nowhere in its slug (`revocation` for `acl/revoke`, `passkey` for `auth/webauthn/*`).
+
+- **The three `rationale` fields are the most-read prose you will write.** `proofRequirement.rationale`, `sideEffects.rationale` and `exposure.rationale` are rendered on the spec detail page under **Why this task is classified as it is**. They are the registry's best security writing; write them as sentences aimed at an implementer deciding whether to accept the task, not as a box to tick.
+
+- **The three framework 0.5.0 declarations — `retention`, `exposure.ingests`, `parties[].identifierScope` — are SHOULD, not MUST.** None is in `required`, and no existing spec was invalidated by adding them. Declare them on new specs: together they say what a recipient ends up holding, for how long, and whether the parties can be correlated across tasks — questions the existing three declarations do not reach. `identifierScope: public` narrows the privacy properties available to every producer of the task, so the build warns unless your prose discusses it.
 
 - **Do not declare `vidSchemes` on parties.** Which VID schemes (`did:web`, `did:key`, `x509`, OIDC, …) a maintainer accepts is an implementation/trust-framework concern, not a spec one. Leaving it out keeps specs portable across maintainers with different verification preferences.
 
@@ -90,7 +146,7 @@ Notes:
 
 - **`proofRequirement.requirement` is runtime-enforceable, not advisory.** The three values map to consumer behaviour through `Payload::IS_PROOF_REQUIRED` (codegen-emitted): `REQUIRED` sets the const to `true` and causes every conforming consumer pipeline to reject a proofless document with `proofRequired` ([SPEC §7.2 item 7](SPEC.md#72-consumer-requirements)); `RECOMMENDED` and `OPTIONAL` leave the const at its trait default (`false`) and the pipeline accepts proofless documents (subject to the consumer's chosen `ProofPolicy`). Picking `REQUIRED` therefore commits every conforming consumer — including bindings without an in-band verifier — to reject proofless requests, which is the right outcome for evidentiary specs like `acl/grant` but makes the spec unreachable on bindings whose integrity guarantees are out-of-band until those bindings grow a verifier. **Pick `REQUIRED` only when the threat model genuinely needs transport-independent integrity** (audit replay, downstream corroboration, dispute resolution after the original transport has closed). For everyday request/response interactions whose integrity is already guaranteed by the transport, `RECOMMENDED` is the right default.
 
-After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, Security & Privacy, plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
+After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, and [Security & Privacy](#the--security--privacy-section) (**required**, and linted — see below), plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
 - **Tag the party that fills each framework member** with `member: issuer` or `member: recipient`. A party named only in the `payload` (neither the document issuer nor recipient) omits `member`. This is what makes `requirement: REQUIRED` enforceable: the codegen emits `Payload::IS_RECIPIENT_REQUIRED` from the `member: recipient` party, and every conforming consumer then rejects a document with no in-band `recipient` ([SPEC §7.2 item 5](SPEC.md#72-consumer-requirements)). For a request the `recipient` is the `member: recipient` party; a response swaps parties, so its `recipient` requirement follows the `member: issuer` party.
 
@@ -139,6 +195,82 @@ Item 15 binds specifications whose `targetFrameworkVersion` is `0.4` or later. A
 | [`vrc/relationships/issue/0.1`](specs/vrc/relationships/issue/0.1/spec.md) | Authority comes from a prior accepted proposal; two proofs are on the exchange and neither is the authorization |
 | [`auth/refresh/0.1`](specs/auth/refresh/0.1/spec.md) | Bearer possession as the entire authority — and how saying so explains why `proof` is optional and why rotation is the only theft signal available |
 | [`push/register/0.2`](specs/push/register/0.2/spec.md) | The no-evidence case, and how to write it without leaving a reader guessing |
+
+## The `## Security & Privacy` section
+
+Every specification **MUST** carry a `## Security & Privacy` section with four `###` sub-headings, in this order:
+
+```markdown
+## Security & Privacy
+
+### Data carried
+
+What the request and the response actually move. Name the personal or sensitive
+members explicitly, and say what a producer **MUST NOT** put in the free-form
+ones (`ext`, notes, labels). This is where data minimisation is written down:
+state the smallest payload that still answers the task, and why anything larger
+is the producer's choice rather than the spec's requirement.
+
+### Correlation
+
+What an observer, an intermediary, or the recipient can join across documents —
+subject identifiers, `threadId`, stable handles, request timing, response size.
+Say which of those are unavoidable given the task and which a producer can vary.
+
+### Retention
+
+How long a recipient needs to keep what it receives, and what the document's
+evidentiary value implies about deleting it. A signed document retained as
+evidence and a request retained as a log line have different answers; say which
+this is.
+
+### Consent/purpose
+
+The purpose the data is collected for, and the limit on reusing it for anything
+else. **Descriptive only** — per [SPEC §7.3 item 13](SPEC.md#73-specification-requirements)
+a specification **MUST NOT** declare that consent, human approval, or an
+authentication step-up is required; that policy belongs to the consumer. Say
+what the data is *for*, and let the consumer decide what gate that warrants.
+```
+
+Write prose under each; one substantive paragraph beats four one-liners. Where a heading genuinely has nothing to say for your task, say so and say why — "this task carries no subject identifier, so there is nothing to correlate on beyond transport metadata" is an answer; an empty heading is not.
+
+**The build lints this.** `checkSecurityPrivacySections()` in `scripts/build-registry.mjs` checks for the section and the four sub-headings on every spec and prints a summary count. It is currently a **warning**, because every spec published before the lint landed fails it; those are enumerated in `scripts/lib/security-privacy-allowlist.json`, which may only shrink. A spec that is **not** on that list and fails the lint warns by name on every build, so new specs get the rule immediately. Two follow-on behaviours keep the count honest: an allowlisted spec that starts conforming is reported as a stale entry to delete, and an allowlist entry naming a spec that no longer exists is reported too.
+
+To hold a harder line — on a branch, in a job, or permanently once the backlog is cleared — set:
+
+```sh
+TT_STRICT_SECURITY_PRIVACY=1 npm run build
+```
+
+which fails the build on every non-conforming spec, allowlist or not. When the allowlist reaches zero, delete it, make strict the default in `scripts/lib/security-privacy.mjs`, and drop the variable.
+
+Rewriting an allowlisted spec's section is a welcome PR on its own: remove the entry in the same commit.
+
+## Linking to `SPEC.md`
+
+Write framework cross-references **root-relative**:
+
+```markdown
+[SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member)
+```
+
+Not `../../../../SPEC.md#…`. The `../` count is a function of how deep your slug is — four from `auth/passkey/enroll/start/0.1`, three from `acl/grant/0.1` — which makes the link's correctness a property of where the file sits rather than of what it says. It then breaks when a spec moves, when a slug gains a segment, and above all when you copy a paragraph from a neighbouring spec at a different depth, which is how most specs get written. 135 such links across 65 files had drifted before the build started checking them, and they were broken on the live site, not merely wrong in the repo.
+
+`/SPEC.md#anchor` is the same string from every depth. The website's renderer resolves it onto the rendered `/specification` page at the right heading — a better destination than the relative form ever reached, which was a raw markdown download — and `npm run build` validates it from the repository root, so a wrong anchor path still fails the build.
+
+Links to **other files in your own spec folder or family** stay relative (`payload.schema.json`, `../../_shared/0.1/acl-entry.schema.json`): those genuinely are relative to your file, and the build checks them from the version directory.
+
+The existing corpus was converted in one pass:
+
+```sh
+npm run codemod:spec-links -- --dry-run   # report
+npm run codemod:spec-links                # rewrite
+```
+
+It only rewrites a `../` chain that actually resolves to this repository's `SPEC.md`, skips fenced code blocks, and reports anything it declined to touch.
+
+> **One caveat.** GitHub's markdown renderer does not resolve a root-relative link against the repository root, so these links work on the registry site and in the build's link check but not when browsing `spec.md` on github.com. That trade was taken deliberately: the rendered site is where specs are read, and the depth-relative form was silently broken *there* for 135 links.
 
 ## Naming conventions (per SPEC §4.10)
 

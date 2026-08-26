@@ -51,7 +51,7 @@ An optional `entries` member turns the enumeration into a **membership check**: 
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -61,11 +61,11 @@ A conforming **producer** (the requester) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/access-list/list/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID; omit `cursor` on the first request and echo the previous page's `nextCursor` thereafter.
-3. Treat `cursor` as opaque, and include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof) where the ecosystem relies on the response (**RECOMMENDED**).
+3. Treat `cursor` as opaque, and include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof) where the ecosystem relies on the response (**RECOMMENDED**).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
 2. Where the target DID has no account, respond with `messaging/access-list/list:unknownAccount`.
 3. Apply its own read-authorization policy, responding with the framework's `permissionDenied` where the requester has no standing to inspect the account's access list.
 4. Where `entries` is present, return exactly the supplied DIDs that are present in the account's access list (the membership check); the mediator **MAY** omit paging for a filtered request whose result fits one page. `accessListCount` remains the total size of the whole list.
@@ -123,7 +123,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-A request echoing `nextCursor` returns the next page; the final page omits `nextCursor`. Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+A request echoing `nextCursor` returns the next page; the final page omits `nextCursor`. Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -133,4 +133,4 @@ An access list reveals who an account communicates with; enumerating it disclose
 
 The `cursor` is opaque and **SHOULD** be unguessable and bound to the requesting principal so it cannot be replayed by another party to page an account's list. A requester **MUST NOT** treat a page as a consistent snapshot — entries MAY be added or removed between pages — and **MUST NOT** interpret membership against `accessListMode` without also knowing the account's mode.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

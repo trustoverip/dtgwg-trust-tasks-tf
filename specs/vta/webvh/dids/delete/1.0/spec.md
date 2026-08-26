@@ -51,7 +51,7 @@ server, and the response says so when the server did not confirm.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. It documents a task already deployed at this version, written down after the fact.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. It documents a task already deployed at this version, written down after the fact.
 
 ## Conformance
 
@@ -72,7 +72,7 @@ The required `proof` attributes the deletion. Once the keys are gone the audit
 record is the only remaining account of what was destroyed and on whose
 instruction.
 
-Verifying the producer's VID or `proof` establishes *who is asking*, never *what they may do* ([SPEC §7.2 item 10](../../../../../../SPEC.md#72-consumer-requirements)). The role check follows, and is the authorization.
+Verifying the producer's VID or `proof` establishes *who is asking*, never *what they may do* ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). The role check follows, and is the authorization.
 
 ## Request
 

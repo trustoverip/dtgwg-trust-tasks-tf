@@ -82,7 +82,7 @@ Certain `credentialType` values name a **claims profile** defined by this specif
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -92,11 +92,11 @@ A conforming **producer** (the issuing authority) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/credentials/issue/0.1`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.holder` with the recipient DID, `payload.claims` with a non-empty object of the claims to attest, and `payload.validitySeconds` with the desired lifetime.
-3. Include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the VTA) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and verify the `proof`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Refuse the operation unless the caller has satisfied operator step-up; otherwise respond with `vta/credentials/issue:step_up_required`.
 3. Refuse with `vta/credentials/issue:scope_empty` when `payload.claims` is empty, and with `vta/credentials/issue:validity_too_long` when `payload.validitySeconds` exceeds its configured maximum.
 4. Mint a Verifiable Credential whose `credentialSubject.id` is `payload.holder`, whose claims are `payload.claims`, with `validFrom = now` and `validUntil = now + validitySeconds`, signed by the issuing context's key.

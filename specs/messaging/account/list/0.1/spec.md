@@ -47,7 +47,7 @@ The `accountType` filter with `admin` or `rootAdmin` enumerates the mediator's a
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -57,11 +57,11 @@ A conforming **producer** (the requester) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/account/list/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Where continuing a previous enumeration, set `payload.cursor` to the `nextCursor` returned by the prior page, echoed verbatim.
-3. **SHOULD** include a `proof` member per [SPEC.md §4.7](../../../../../SPEC.md#47-proof).
+3. **SHOULD** include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **consumer** (the mediator) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../../../SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and, where a `proof` is present, verify it.
 2. Enforce its own authorization policy and respond with the framework's `permissionDenied` where the requester may not list accounts.
 3. Where `accountType` is present, return only accounts holding that role.
 4. Return at most `limit` accounts where `limit` is present, otherwise a mediator-chosen default page size.
@@ -136,7 +136,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/messagi
 }
 ```
 
-Because `nextCursor` is present, more accounts remain; the requester re-issues the request with `payload.cursor` set to `"eyJvIjoxMDB9"` to fetch the next page. Failures use `trust-task-error` ([SPEC.md §8](../../../../../SPEC.md#8-error-responses)), not the `#response` variant.
+Because `nextCursor` is present, more accounts remain; the requester re-issues the request with `payload.cursor` set to `"eyJvIjoxMDB9"` to fetch the next page. Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -144,4 +144,4 @@ A listing discloses the full roster of served accounts, their roles, and their c
 
 The `cursor` is an opaque continuation token; a mediator **SHOULD** make it stateless and unforgeable so a requester cannot enumerate beyond its authorization by crafting cursor values. The page is point-in-time and **MAY** be inconsistent under concurrent account changes.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
+The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

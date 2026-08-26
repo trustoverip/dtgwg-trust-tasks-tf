@@ -37,19 +37,19 @@ related: []
 
 The **Trust Task Error** is the framework-defined response a *consumer* returns when it cannot or will not act upon a received *Trust Task document*. It is itself a *Trust Task document*, signed and validated by the same pipeline that handles successful tasks, so an implementation does not need a parallel "error path".
 
-This specification is the registry publication of the type reserved at [SPEC.md §8](../../../SPEC.md#8-error-responses). It defines the canonical `payload` shape carried by every framework-conformant error response, enumerates the standard error codes consumers **MUST** recognize, and describes how individual *Trust Task specifications* extend the code set ([SPEC.md §8.5](../../../SPEC.md#85-extension-by-individual-trust-task-specifications)).
+This specification is the registry publication of the type reserved at [SPEC.md §8](/SPEC.md#8-error-responses). It defines the canonical `payload` shape carried by every framework-conformant error response, enumerates the standard error codes consumers **MUST** recognize, and describes how individual *Trust Task specifications* extend the code set ([SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)).
 
 A `trust-task-error` document is itself a *response*. It does not have a `#response` variant of its own.
 
-**New in 0.5:** the `cancelled` standard code, for a consumer that stops a task on its own initiative. It is deliberately distinct from a *producer*-requested cancellation, which is answered by a response to the `trust-task-control` document ([SPEC.md §12](../../../SPEC.md#12-task-control)) rather than by an error: without the distinction, no party — and no auditor reading the retained documents afterwards — could tell a withdrawal from a refusal, and the two imply opposite things about whether the producer should try again. Where effects had already occurred before the consumer stopped, `details` reports them; the code alone **MUST NOT** be read as meaning nothing happened.
+**New in 0.5:** the `cancelled` standard code, for a consumer that stops a task on its own initiative. It is deliberately distinct from a *producer*-requested cancellation, which is answered by a response to the `trust-task-control` document ([SPEC.md §12](/SPEC.md#12-task-control)) rather than by an error: without the distinction, no party — and no auditor reading the retained documents afterwards — could tell a withdrawal from a refusal, and the two imply opposite things about whether the producer should try again. Where effects had already occurred before the consumer stopped, `details` reports them; the code alone **MUST NOT** be read as meaning nothing happened.
 
-**New in 0.4:** the `idConflict` standard code, reporting a document whose `id` matches one the consumer has already accepted but whose content differs. It exists to keep that case distinguishable from a retry: [SPEC.md §8.4](../../../SPEC.md#84-retry-semantics) defines a retry as re-sending the bit-for-bit identical document, and [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) item 11 requires a consumer to absorb such a resend without executing a consequential effect twice. A document that reuses an `id` over *different* bytes is not that, and silently treating it as a retry would suppress an execution the producer may well have intended. See [Standard codes](#standard-codes).
+**New in 0.4:** the `idConflict` standard code, reporting a document whose `id` matches one the consumer has already accepted but whose content differs. It exists to keep that case distinguishable from a retry: [SPEC.md §8.4](/SPEC.md#84-retry-semantics) defines a retry as re-sending the bit-for-bit identical document, and [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 11 requires a consumer to absorb such a resend without executing a consequential effect twice. A document that reuses an `id` over *different* bytes is not that, and silently treating it as a retry would suppress an execution the producer may well have intended. See [Standard codes](#standard-codes).
 
 **New in 0.3:** the optional `inResponseTo` member, which names the document the error reports on. Without it an error response is correlated only by `threadId`, which is meaningful to a party that saw the originating request and to nobody else — so a retained error names neither the task it terminated nor the instance. See [Identifying what failed](#identifying-what-failed).
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
 
@@ -58,15 +58,15 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](../../../SPEC
 A conforming **producer** (the consumer of the original task, now reporting failure) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-error/0.5`, with itself as `issuer` and the original task's producer as `recipient`.
-2. Set the document's `threadId` to the originating document's `threadId` if one was carried, or to the originating document's `id` otherwise, per [SPEC.md §4.9](../../../SPEC.md#49-the-threadid-member). The error document's own `id` **MUST NOT** reuse the originating document's `id`.
-3. Populate `payload.code` with one of the standard codes below or a slug-namespaced extension per [SPEC.md §8.5](../../../SPEC.md#85-extension-by-individual-trust-task-specifications).
+2. Set the document's `threadId` to the originating document's `threadId` if one was carried, or to the originating document's `id` otherwise, per [SPEC.md §4.9](/SPEC.md#49-the-threadid-member). The error document's own `id` **MUST NOT** reuse the originating document's `id`.
+3. Populate `payload.code` with one of the standard codes below or a slug-namespaced extension per [SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications).
 4. Populate `payload.retryable` with a boolean reflecting whether retrying the original document is expected to succeed.
 5. Include a `proof` member where the failure is intended to be retained or replayed beyond the original transport.
 
 A conforming **consumer** (the original producer, receiving the failure) **MUST**:
 
-1. Validate the document per [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements).
-2. Apply retry semantics per [SPEC.md §8.4](../../../SPEC.md#84-retry-semantics): **MUST NOT** re-send the original document when `retryable` is `false`; **SHOULD** wait until any `retryAfter` value and apply transport-appropriate backoff when `retryable` is `true`.
+1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
+2. Apply retry semantics per [SPEC.md §8.4](/SPEC.md#84-retry-semantics): **MUST NOT** re-send the original document when `retryable` is `false`; **SHOULD** wait until any `retryAfter` value and apply transport-appropriate backoff when `retryable` is `true`.
 3. Recognize every standard code listed below. Unrecognized extended codes **SHOULD** be treated as `taskFailed`, but `retryable` and `retryAfter` **MUST** still be honored.
 
 A failure that **arises while handling** a `trust-task-error` document (for example, an error document with a malformed payload) is itself reported with another `trust-task-error` whose `code` is `malformedRequest`; this is not recursion in practice because the inner document is small and well-formed by definition once it reaches the consumer.
@@ -97,19 +97,19 @@ The codes below are normative; every conforming consumer **MUST** recognize them
 | `unavailable` | The consumer is temporarily unable to process the task. | `true` |
 | `internalError` | The consumer encountered an unexpected internal failure. | `true` |
 
-See [SPEC.md §8.3](../../../SPEC.md#83-standard-error-codes) for the authoritative version of this table.
+See [SPEC.md §8.3](/SPEC.md#83-standard-error-codes) for the authoritative version of this table.
 
 ## Identifying what failed
 
-An *error response* correlates back to the document it reports on by `threadId` ([SPEC.md §4.9](../../../SPEC.md#49-the-threadid-member)). That is sufficient between the two parties to an exchange: the *producer* knows what it sent.
+An *error response* correlates back to the document it reports on by `threadId` ([SPEC.md §4.9](/SPEC.md#49-the-threadid-member)). That is sufficient between the two parties to an exchange: the *producer* knows what it sent.
 
-It is not sufficient for anyone else. A `threadId` is opaque, and the error payload names neither the *Trust Task specification* the failure occurred under nor the document instance that triggered it. A party handed a retained error — a verifier evaluating it as evidence, an auditor reconstructing a sequence, an operator reading a log — sees `{"code": "taskFailed", "retryable": false}` and cannot tell what failed. For an extended code the *slug* namespace ([SPEC.md §8.5](../../../SPEC.md#85-extension-by-individual-trust-task-specifications)) hints at the family, but for any of the standard codes in [§8.3](../../../SPEC.md#83-standard-error-codes) there is no signal at all.
+It is not sufficient for anyone else. A `threadId` is opaque, and the error payload names neither the *Trust Task specification* the failure occurred under nor the document instance that triggered it. A party handed a retained error — a verifier evaluating it as evidence, an auditor reconstructing a sequence, an operator reading a log — sees `{"code": "taskFailed", "retryable": false}` and cannot tell what failed. For an extended code the *slug* namespace ([SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)) hints at the family, but for any of the standard codes in [§8.3](/SPEC.md#83-standard-error-codes) there is no signal at all.
 
 `inResponseTo` closes that. A *reporting consumer*:
 
 - **SHOULD** include `inResponseTo.typeUri`, carrying the `type` of the document being reported on, **including any `#request` or `#response` fragment it carried**. This is what tells a consumer which specification's semantics apply to an extended `code`, and which specification declared the requirement that was breached.
-- **SHOULD** include `inResponseTo.id`, carrying that document's `id`. Because [§4.3](../../../SPEC.md#43-the-id-member) makes an `id` globally unique and never reused, it names one instance where `threadId` names an exchange.
-- **MUST** include both where the error is intended to be retained, replayed, or relied upon by parties beyond the immediate exchange — the same condition under which [§4.7.1](../../../SPEC.md#471-when-to-include-a-proof) makes a `proof` mandatory. An attributable-but-unidentifiable error is not evidence of anything.
+- **SHOULD** include `inResponseTo.id`, carrying that document's `id`. Because [§4.3](/SPEC.md#43-the-id-member) makes an `id` globally unique and never reused, it names one instance where `threadId` names an exchange.
+- **MUST** include both where the error is intended to be retained, replayed, or relied upon by parties beyond the immediate exchange — the same condition under which [§4.7.1](/SPEC.md#471-when-to-include-a-proof) makes a `proof` mandatory. An attributable-but-unidentifiable error is not evidence of anything.
 
 Both members are optional in this version so that a `0.2` consumer's output remains valid `0.3`. That is a migration allowance, not a design position: a future **major** version is expected to require them, and `0.1` and `0.2` to be retired once consumers have moved.
 
@@ -117,12 +117,12 @@ Both members are optional in this version so that a `0.2` consumer's output rema
 
 `inResponseTo` echoes values the *original producer* already chose and sent, so returning them to that producer discloses nothing new. Two cases need care:
 
-- Under `identityMismatch` the response is addressed to the transport-authenticated sender rather than the in-band `issuer` ([SPEC.md §8.1](../../../SPEC.md#81-the-trust-task-error-specification)). That party is not necessarily the one that composed the document, so a *consumer* **SHOULD** omit `inResponseTo.id` in that case; the `typeUri` alone is not identifying.
+- Under `identityMismatch` the response is addressed to the transport-authenticated sender rather than the in-band `issuer` ([SPEC.md §8.1](/SPEC.md#81-the-trust-task-error-specification)). That party is not necessarily the one that composed the document, so a *consumer* **SHOULD** omit `inResponseTo.id` in that case; the `typeUri` alone is not identifying.
 - Where an error is forwarded beyond the original producer, the `typeUri` reveals which task was attempted. A *consumer* that treats the attempted task as sensitive **MAY** omit the member entirely rather than emit a partly-populated one.
 
 ## Extending the code set
 
-An individual *Trust Task specification* **MAY** define additional codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` followed by a colon and a snake_case local name — for example, `acl/grant:roleNotRecognized`. Extended codes **MUST NOT** shadow any code in the standard table above. See [SPEC.md §8.5](../../../SPEC.md#85-extension-by-individual-trust-task-specifications).
+An individual *Trust Task specification* **MAY** define additional codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` followed by a colon and a snake_case local name — for example, `acl/grant:roleNotRecognized`. Extended codes **MUST NOT** shadow any code in the standard table above. See [SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications).
 
 A consumer that does not recognize an extended code **SHOULD** treat the failure as if its code were `taskFailed`, and **MUST** still honor the `retryable` and `retryAfter` members.
 

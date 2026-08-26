@@ -47,6 +47,31 @@ pub const CAPABILITY_DISABLE_TYPE: &str =
 pub const GIT_TRUST_GRANT_TYPE: &str = "https://trusttasks.org/spec/git-trust/grant/0.1";
 pub const GIT_TRUST_REVOKE_TYPE: &str = "https://trusttasks.org/spec/git-trust/revoke/0.1";
 
+/// The extended error code `git-trust/grant` declares for "an active grant
+/// already exists for this subject and resource" (SPEC §8.5; the code is
+/// declared in the registry entry's `errorCodes` front matter).
+///
+/// This is the **control surface** for idempotent success on a grant. SPEC
+/// §8.2 types `message` as non-normative free text "intended for logs and
+/// operator UI"; a client that decides an outcome from it is deciding on a
+/// string the emitting service is free to reword, translate, or drop.
+pub const GIT_TRUST_ALREADY_GRANTED_CODE: &str = "git-trust/grant:already_granted";
+
+/// The extended error code `git-trust/revoke` declares for "no active grant
+/// exists for this subject and resource".
+pub const GIT_TRUST_NOT_GRANTED_CODE: &str = "git-trust/revoke:not_granted";
+
+/// The lowerCamelCase spellings of the two codes above.
+///
+/// The registry entries declare the snake_case forms, which is what a
+/// conforming emitter sends today. SPEC §4.10 rule 4 **SHOULD**s lowerCamelCase
+/// for specification-defined values, so the registry may normalise; accepting
+/// both spellings means that normalisation is not a flag day for this client.
+/// Both are namespaced extended codes either way — neither is free text.
+pub const GIT_TRUST_ALREADY_GRANTED_CODE_CAMEL: &str = "git-trust/grant:alreadyGranted";
+/// See [`GIT_TRUST_ALREADY_GRANTED_CODE_CAMEL`].
+pub const GIT_TRUST_NOT_GRANTED_CODE_CAMEL: &str = "git-trust/revoke:notGranted";
+
 /// Errors from document construction.
 #[derive(Debug, thiserror::Error)]
 pub enum CapabilityClientError {
@@ -149,18 +174,59 @@ pub fn build_git_trust_revoke(
 
 /// Parse a DIDComm envelope body into `(threadId, document)`. `None` when the
 /// body is not a threaded Trust Task document.
+///
+/// The returned `threadId` is a **dispatch key, not a check**: it tells a
+/// caller holding a map of outstanding requests which one this document
+/// belongs to. It does not establish that the document is a reply to anything
+/// the caller sent. Correlate before acting — either by finding the thread in
+/// your own outstanding map, or with [`parse_envelope_document_for`].
 pub fn parse_envelope_document(body: &Value) -> Option<(String, TrustTask<Value>)> {
     let doc: TrustTask<Value> = serde_json::from_value(body.clone()).ok()?;
     let thid = doc.thread_id.clone()?;
     Some((thid, doc))
 }
 
+/// Parse a DIDComm envelope body into the document it carries, **only** if
+/// that document is threaded to `expected_thread_id`.
+///
+/// `None` covers both "not a Trust Task document" and "a Trust Task document
+/// belonging to some other exchange"; in either case it is not an answer to
+/// the request you are waiting on, and the correct action is to keep waiting.
+pub fn parse_envelope_document_for(
+    body: &Value,
+    expected_thread_id: &str,
+) -> Option<TrustTask<Value>> {
+    let (_, doc) = parse_envelope_document(body)?;
+    replies_to(&doc, expected_thread_id).then_some(doc)
+}
+
+/// The thread an exchange started by `doc` is correlated by: its own
+/// `threadId`, or its `id` where it opens the exchange (SPEC §4.9's fallback,
+/// which is the value `respond_with` and `reject_with` will thread the reply
+/// to).
+///
+/// Hold this from the moment you send a request; it is what every
+/// reply-classifying function here wants as `expected_thread_id`.
+pub fn correlation_thread<P>(doc: &TrustTask<P>) -> &str {
+    doc.thread_id.as_deref().unwrap_or(&doc.id)
+}
+
+/// Whether `reply` is threaded to `expected_thread_id` — SPEC §4.9
+/// correlation, and the precondition for acting on any reply.
+///
+/// A reply with no `threadId` at all matches nothing: §8.1 requires an error
+/// response to carry one, and a `#response` gets one from `respond_with`, so
+/// its absence means the document is not correlated to any exchange.
+pub fn replies_to<P>(reply: &TrustTask<P>, expected_thread_id: &str) -> bool {
+    reply.thread_id.as_deref() == Some(expected_thread_id)
+}
+
 // --- git-trust write replies (grant/revoke producers) ------------------------
 
 /// The classification of a `git-trust` write reply.
 ///
-/// `IdempotentSuccess` is load-bearing for redelivery-safe writers:
-/// `already_granted`/`not_granted` rejections mean the desired end state
+/// `IdempotentSuccess` is load-bearing for redelivery-safe writers: an
+/// `already_granted` / `not_granted` rejection means the desired end state
 /// already holds, so the write is done, not failed.
 #[derive(Debug, Clone, PartialEq)]
 pub enum WriteOutcome {
@@ -175,17 +241,105 @@ pub enum WriteOutcome {
     },
 }
 
+/// How much a caller is willing to infer from a non-conforming peer.
+///
+/// The default infers nothing: an outcome is decided from the error `code`
+/// alone.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ReplyPolicy {
+    /// **DEPRECATED — opt-in compatibility only, removed in the next MAJOR.**
+    ///
+    /// Also treat a `taskFailed` whose free-text `message` contains
+    /// `already_granted:` or `not_granted:` as [`WriteOutcome::IdempotentSuccess`].
+    ///
+    /// This is how the classification worked before 0.10.0, and it was wrong:
+    /// SPEC §8.2 defines `message` as non-normative free text "intended for
+    /// logs and operator UI". Deciding an outcome from it means the client's
+    /// behaviour hinges on wording the emitting service may reword, translate
+    /// or drop at any time — and, in the other direction, that a *genuine*
+    /// `taskFailed` whose operator message happens to quote the phrase is
+    /// silently reported to the caller as success.
+    ///
+    /// Enable this only while a specific peer still emits the free-text form,
+    /// and only after confirming there is no code-bearing alternative. The
+    /// correct fix is on the emitting side: send
+    /// [`GIT_TRUST_ALREADY_GRANTED_CODE`] / [`GIT_TRUST_NOT_GRANTED_CODE`],
+    /// which SPEC §8.5 provides for exactly this and the registry entries
+    /// already declare.
+    pub accept_legacy_free_text_idempotence: bool,
+}
+
+impl ReplyPolicy {
+    /// The strict policy: the error `code` decides, free text decides nothing.
+    pub fn strict() -> Self {
+        Self::default()
+    }
+
+    /// DEPRECATED: additionally accept the pre-0.10 free-text form. See
+    /// [`Self::accept_legacy_free_text_idempotence`].
+    pub fn with_legacy_free_text() -> Self {
+        Self {
+            accept_legacy_free_text_idempotence: true,
+        }
+    }
+}
+
 /// Classify the reply to a `git-trust/grant` or `git-trust/revoke` write.
-/// `None` when `doc` is not a reply to this family.
-pub fn classify_git_trust_reply(doc: &TrustTask<Value>) -> Option<WriteOutcome> {
+///
+/// `expected_thread_id` is the thread of the request this is supposed to be
+/// answering — [`correlation_thread`] of the document you sent. A reply
+/// threaded to anything else is not an answer to it, and yields `None` rather
+/// than an outcome: acting on an uncorrelated reply means letting whichever
+/// document arrives next decide the fate of a write it has nothing to do with.
+///
+/// `None` therefore means "not an answer to this request" — either a document
+/// of another family, or a reply belonging to another exchange. Use
+/// [`replies_to`] if you need to tell those apart.
+///
+/// Idempotent success is keyed on the **extended error code** of SPEC §8.5
+/// ([`GIT_TRUST_ALREADY_GRANTED_CODE`], [`GIT_TRUST_NOT_GRANTED_CODE`]), never
+/// on the free-text `message`. See
+/// [`classify_git_trust_reply_with_policy`] for the deprecated compatibility
+/// path.
+pub fn classify_git_trust_reply(
+    doc: &TrustTask<Value>,
+    expected_thread_id: &str,
+) -> Option<WriteOutcome> {
+    classify_git_trust_reply_with_policy(doc, expected_thread_id, ReplyPolicy::strict())
+}
+
+/// [`classify_git_trust_reply`] with an explicit [`ReplyPolicy`].
+///
+/// Pass [`ReplyPolicy::strict`] unless you are talking to a peer that predates
+/// the extended error codes; see
+/// [`ReplyPolicy::accept_legacy_free_text_idempotence`].
+pub fn classify_git_trust_reply_with_policy(
+    doc: &TrustTask<Value>,
+    expected_thread_id: &str,
+    policy: ReplyPolicy,
+) -> Option<WriteOutcome> {
+    // SPEC §4.9: correlation comes first. Nothing below is safe to act on for
+    // a document that is not answering this request.
+    if !replies_to(doc, expected_thread_id) {
+        return None;
+    }
+
     let slug = doc.type_uri.slug();
     if slug == "trust-task-error" {
         let (code, message) = error_code_and_message(doc);
-        let reason = message.as_deref().unwrap_or("");
-        if code == "taskFailed"
-            && (reason.contains("already_granted:") || reason.contains("not_granted:"))
-        {
+        if is_idempotent_code(&code) {
             return Some(WriteOutcome::IdempotentSuccess);
+        }
+        // DEPRECATED: pre-0.10 peers signalled idempotence in the free-text
+        // `message` under a bare `taskFailed`. SPEC §8.2 makes `message`
+        // non-normative, so this is a string match on a field nobody promised
+        // to keep stable — opt-in, and gone in the next MAJOR. Remove this
+        // block, `ReplyPolicy`, and the `*_with_policy` entry point together.
+        if policy.accept_legacy_free_text_idempotence && code == "taskFailed" {
+            let reason = message.as_deref().unwrap_or("");
+            if reason.contains("already_granted:") || reason.contains("not_granted:") {
+                return Some(WriteOutcome::IdempotentSuccess);
+            }
         }
         return Some(WriteOutcome::Rejected { code, message });
     }
@@ -193,6 +347,18 @@ pub fn classify_git_trust_reply(doc: &TrustTask<Value>) -> Option<WriteOutcome> 
         return Some(WriteOutcome::Success);
     }
     None
+}
+
+/// Whether `code` is one of the extended codes that mean "the end state you
+/// asked for already holds" (SPEC §8.5).
+fn is_idempotent_code(code: &str) -> bool {
+    matches!(
+        code,
+        GIT_TRUST_ALREADY_GRANTED_CODE
+            | GIT_TRUST_NOT_GRANTED_CODE
+            | GIT_TRUST_ALREADY_GRANTED_CODE_CAMEL
+            | GIT_TRUST_NOT_GRANTED_CODE_CAMEL
+    )
 }
 
 // --- governance/capability replies (management UIs) --------------------------
@@ -224,17 +390,29 @@ pub enum CapabilityReply {
     },
 }
 
-/// Parse an inbound envelope body directly into `(threadId, reply)` — the
-/// entry point for a UI's inbound dispatch, which holds only a `Value`.
-pub fn parse_envelope_reply(body: &Value) -> Option<(String, CapabilityReply)> {
-    let (thid, doc) = parse_envelope_document(body)?;
-    let reply = parse_capability_reply(&doc)?;
-    Some((thid, reply))
+/// Parse an inbound envelope body directly into a reply to the request
+/// threaded `expected_thread_id` — the entry point for a UI's inbound
+/// dispatch, which holds only a `Value`.
+///
+/// `None` when the body is not a `governance/capability/*` reply, or is one
+/// belonging to a different exchange. As on the write side, a reply the caller
+/// did not ask for must not be allowed to resolve a request the caller did.
+pub fn parse_envelope_reply(body: &Value, expected_thread_id: &str) -> Option<CapabilityReply> {
+    let doc = parse_envelope_document_for(body, expected_thread_id)?;
+    parse_capability_reply(&doc, expected_thread_id)
 }
 
 /// Classify a `governance/capability/*` reply document. `None` when it is not
-/// part of this family.
-pub fn parse_capability_reply(doc: &TrustTask<Value>) -> Option<CapabilityReply> {
+/// part of this family, or is not threaded to `expected_thread_id`.
+pub fn parse_capability_reply(
+    doc: &TrustTask<Value>,
+    expected_thread_id: &str,
+) -> Option<CapabilityReply> {
+    // SPEC §4.9 correlation, as on the write side: a listing or a toggle
+    // acknowledgement from another exchange answers nothing here.
+    if !replies_to(doc, expected_thread_id) {
+        return None;
+    }
     let slug = doc.type_uri.slug();
     if slug == "trust-task-error" {
         let (code, message) = error_code_and_message(doc);
@@ -358,25 +536,41 @@ mod tests {
         serde_json::from_value(serde_json::to_value(doc).unwrap()).unwrap()
     }
 
+    /// An error response carrying an arbitrary `code`, built the way a
+    /// conforming emitter would (SPEC §8.2), so the tests below exercise the
+    /// wire form rather than a Rust enum.
+    fn error_reply(
+        request: &TrustTask<Value>,
+        code: &str,
+        message: Option<&str>,
+    ) -> TrustTask<Value> {
+        let mut payload = serde_json::json!({ "code": code, "retryable": false });
+        if let Some(message) = message {
+            payload["message"] = serde_json::json!(message);
+        }
+        let mut doc = TrustTask::new(
+            "urn:uuid:err".to_string(),
+            "https://trusttasks.org/spec/trust-task-error/0.5"
+                .parse()
+                .unwrap(),
+            payload,
+        );
+        doc.thread_id = Some(correlation_thread(request).to_string());
+        doc
+    }
+
     #[test]
     fn git_trust_reply_classification() {
         let grant = build_git_trust_grant("did:a", "did:r", "did:s", "org");
+        let thread = correlation_thread(&grant).to_string();
+
         let ok = grant.respond_with(
             "urn:uuid:r".to_string(),
             serde_json::json!({ "granted": true }),
         );
-        assert_eq!(classify_git_trust_reply(&ok), Some(WriteOutcome::Success));
-
-        let already = reserialize(&grant.reject_with(
-            "urn:uuid:e".to_string(),
-            RejectReason::TaskFailed {
-                reason: "already_granted: exists".to_string(),
-                details: None,
-            },
-        ));
         assert_eq!(
-            classify_git_trust_reply(&already),
-            Some(WriteOutcome::IdempotentSuccess)
+            classify_git_trust_reply(&ok, &thread),
+            Some(WriteOutcome::Success)
         );
 
         let denied = reserialize(&grant.reject_with(
@@ -386,14 +580,150 @@ mod tests {
             },
         ));
         assert!(matches!(
-            classify_git_trust_reply(&denied),
+            classify_git_trust_reply(&denied, &thread),
             Some(WriteOutcome::Rejected { .. })
         ));
+    }
+
+    /// SPEC §8.2 defines `message` as non-normative free text "intended for
+    /// logs and operator UI". Before 0.10.0 this client decided idempotent
+    /// success from a substring of it, which meant (a) the client's behaviour
+    /// was pinned to wording no emitter promised to keep, and (b) a genuine
+    /// `taskFailed` whose operator message merely *quoted* the phrase was
+    /// reported to the caller as success — a failed write recorded as done.
+    ///
+    /// The control surface is the namespaced extended code of §8.5, which the
+    /// registry entries for `git-trust/grant` and `git-trust/revoke` already
+    /// declare.
+    #[test]
+    fn idempotent_success_is_keyed_on_the_extended_code_not_the_message() {
+        let grant = build_git_trust_grant("did:a", "did:r", "did:s", "org");
+        let thread = correlation_thread(&grant).to_string();
+
+        // The declared code decides — with no `message` at all.
+        let by_code = error_reply(&grant, GIT_TRUST_ALREADY_GRANTED_CODE, None);
+        assert_eq!(
+            classify_git_trust_reply(&by_code, &thread),
+            Some(WriteOutcome::IdempotentSuccess)
+        );
+        let revoke = build_git_trust_revoke("did:a", "did:r", "did:s", "org", None);
+        let revoke_thread = correlation_thread(&revoke).to_string();
+        assert_eq!(
+            classify_git_trust_reply(
+                &error_reply(&revoke, GIT_TRUST_NOT_GRANTED_CODE, None),
+                &revoke_thread
+            ),
+            Some(WriteOutcome::IdempotentSuccess)
+        );
+        // §4.10's lowerCamelCase spelling, should the registry normalise.
+        assert_eq!(
+            classify_git_trust_reply(
+                &error_reply(&grant, GIT_TRUST_ALREADY_GRANTED_CODE_CAMEL, None),
+                &thread
+            ),
+            Some(WriteOutcome::IdempotentSuccess)
+        );
+
+        // The free text does NOT decide. This is the regression: a real
+        // failure whose operator message names the condition is a failure.
+        let free_text = error_reply(
+            &grant,
+            "taskFailed",
+            Some("registry write aborted; not already_granted: the tuple was never written"),
+        );
+        assert_eq!(
+            classify_git_trust_reply(&free_text, &thread),
+            Some(WriteOutcome::Rejected {
+                code: "taskFailed".to_string(),
+                message: Some(
+                    "registry write aborted; not already_granted: the tuple was never written"
+                        .to_string()
+                ),
+            }),
+            "a taskFailed whose free text quotes the phrase is still a failure"
+        );
+
+        // The deprecated compatibility path is opt-in, and only reachable by
+        // asking for it by name.
+        assert_eq!(
+            classify_git_trust_reply_with_policy(
+                &free_text,
+                &thread,
+                ReplyPolicy::with_legacy_free_text()
+            ),
+            Some(WriteOutcome::IdempotentSuccess)
+        );
+        assert_eq!(
+            classify_git_trust_reply_with_policy(&free_text, &thread, ReplyPolicy::strict()),
+            classify_git_trust_reply(&free_text, &thread),
+            "strict is the default"
+        );
+        assert!(!ReplyPolicy::default().accept_legacy_free_text_idempotence);
+    }
+
+    /// A reply must be matched to the request before it is acted on (SPEC
+    /// §4.9). Before 0.10.0 the thread was extracted and discarded, so a reply
+    /// belonging to a different exchange — including an attacker-chosen one on
+    /// a shared inbound path — could resolve a write the caller was still
+    /// waiting on.
+    #[test]
+    fn a_reply_on_another_thread_resolves_nothing() {
+        let mine = build_git_trust_grant("did:a", "did:r", "did:s", "org");
+        let theirs = build_git_trust_grant("did:a", "did:r", "did:other", "other-org");
+        let my_thread = correlation_thread(&mine).to_string();
+        assert_ne!(my_thread, correlation_thread(&theirs));
+
+        // A perfectly valid success for somebody else's grant.
+        let their_ok = theirs.respond_with(
+            "urn:uuid:r".to_string(),
+            serde_json::json!({ "granted": true }),
+        );
+        assert_eq!(
+            classify_git_trust_reply(&their_ok, &my_thread),
+            None,
+            "a reply to another exchange must not resolve this request"
+        );
+        // And the same document does resolve the request it actually answers.
+        assert_eq!(
+            classify_git_trust_reply(&their_ok, correlation_thread(&theirs)),
+            Some(WriteOutcome::Success)
+        );
+
+        // Same for the idempotent-success shortcut, which is the one an
+        // attacker would want to forge: it must not be reachable off-thread.
+        let their_already = error_reply(&theirs, GIT_TRUST_ALREADY_GRANTED_CODE, None);
+        assert_eq!(classify_git_trust_reply(&their_already, &my_thread), None);
+
+        // A reply carrying no thread at all correlates to nothing.
+        let mut unthreaded = their_ok.clone();
+        unthreaded.thread_id = None;
+        assert!(!replies_to(&unthreaded, &my_thread));
+        assert_eq!(classify_git_trust_reply(&unthreaded, &my_thread), None);
+
+        // The governance family enforces the same rule.
+        let list = build_list_document("did:me", "did:vtc");
+        let other_list = build_list_document("did:me", "did:vtc");
+        let other_reply = other_list.respond_with(
+            "urn:uuid:r".to_string(),
+            serde_json::json!({ "capabilities": [] }),
+        );
+        assert_eq!(
+            parse_capability_reply(&other_reply, correlation_thread(&list)),
+            None
+        );
+        assert_eq!(
+            parse_envelope_reply(
+                &serde_json::to_value(&other_reply).unwrap(),
+                correlation_thread(&list)
+            ),
+            None
+        );
     }
 
     #[test]
     fn governance_reply_classification() {
         let list = build_list_document("did:me", "did:vtc");
+        let list_thread = correlation_thread(&list).to_string();
         let reply = list.respond_with(
             "urn:uuid:r".to_string(),
             serde_json::json!({ "capabilities": [{
@@ -401,7 +731,8 @@ mod tests {
                 "enabled": true, "enabledAt": "2026-07-18T00:00:00Z"
             }]}),
         );
-        let Some(CapabilityReply::Listing(items)) = parse_capability_reply(&reply) else {
+        let Some(CapabilityReply::Listing(items)) = parse_capability_reply(&reply, &list_thread)
+        else {
             panic!("expected listing");
         };
         assert_eq!(items.len(), 1);
@@ -409,12 +740,21 @@ mod tests {
         assert!(items[0].enabled);
 
         let toggle = build_toggle_document("did:me", "did:vtc", "git-trust", "0.1", true);
+        let toggle_thread = correlation_thread(&toggle).to_string();
         let ack = toggle.respond_with(
             "urn:uuid:t".to_string(),
             serde_json::json!({ "capability": "git-trust", "enabled": true }),
         );
         assert_eq!(
-            parse_capability_reply(&ack),
+            parse_capability_reply(&ack, &toggle_thread),
+            Some(CapabilityReply::Toggled {
+                capability: "git-trust".to_string(),
+                enabled: true
+            })
+        );
+        // And through the envelope entry point a UI actually uses.
+        assert_eq!(
+            parse_envelope_reply(&serde_json::to_value(&ack).unwrap(), &toggle_thread),
             Some(CapabilityReply::Toggled {
                 capability: "git-trust".to_string(),
                 enabled: true
@@ -430,5 +770,9 @@ mod tests {
         let (thid, _) = parse_envelope_document(&body).unwrap();
         assert_eq!(thid, grant.id);
         assert!(parse_envelope_document(&serde_json::to_value(&grant).unwrap()).is_none());
+
+        // The correlating form takes the same body only for the right thread.
+        assert!(parse_envelope_document_for(&body, &grant.id).is_some());
+        assert!(parse_envelope_document_for(&body, "urn:uuid:someone-else").is_none());
     }
 }

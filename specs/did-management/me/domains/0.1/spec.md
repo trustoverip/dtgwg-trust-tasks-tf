@@ -79,7 +79,7 @@ Caller authenticates to the hosting service and emits `type: https://trusttasks.
   } }
 ```
 
-Each element of `domains[]` is a `DomainEntry` per [`_shared/0.1/domain-entry.schema.json`](../../../_shared/0.1/domain-entry.schema.json). Consumers MAY populate operator-managed fields under `ext.<vendor>:*` (per [SPEC §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) when the host configures additional per-domain metadata; those keys are advisory and consumers SHOULD ignore unrecognized vendor namespaces.
+Each element of `domains[]` is a `DomainEntry` per [`_shared/0.1/domain-entry.schema.json`](../../../_shared/0.1/domain-entry.schema.json). Consumers MAY populate operator-managed fields under `ext.<vendor>:*` (per [SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member)) when the host configures additional per-domain metadata; those keys are advisory and consumers SHOULD ignore unrecognized vendor namespaces.
 
 ## Security & Privacy
 

@@ -72,13 +72,13 @@ Consumer: reject a payload carrying both members or neither. On the sealed path,
 
 ## Authorization
 
-*Stated in anticipation of [SPEC §7.3](../../../../SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
+*Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.2, where the declaration is not yet required.*
 
 The authorization evidence this task presupposes is the consumer's own decision that this **issuer** is one it will accept a credential from, taken against the credential's own issuer signature rather than against whoever delivered it.
 
 Conformance already states the rule this section exists to name: *the envelope proving who delivered it says nothing about who issued it.* On a relayed path the delivering party and the issuing party are routinely different, and accepting a credential because it arrived from a trusted relayer is the confusion the two-layer model exists to prevent. Verifying either proof establishes attribution; neither establishes that the credential should be accepted.
 
-The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](../../../../SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
+The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
 ## Security & Privacy
 
