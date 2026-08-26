@@ -1294,6 +1294,14 @@ function main() {
   // `../finish/0.1/spec.md` points at `.../start/finish/0.1/`, not at the
   // sibling leg. 135 links across 65 files had drifted this way before anything
   // checked, and they were broken on the live site, not merely in the repo.
+  //
+  // Root-relative links (`/SPEC.md#...`) are checked too, and resolve from the
+  // REPOSITORY ROOT rather than from the version directory. They exist because
+  // the `../` count in a link to the framework spec is a function of slug depth
+  // — which is why 731 of them had to be written four different ways, and why
+  // the drift above happened at all. `/SPEC.md#anchor` is the same string from
+  // every depth, and the website resolves it onto the rendered /specification
+  // route. Checking them is what keeps the new form from being an unverified one.
   for (const { dir, slug, version, specPath } of entries) {
     const prose = fs.readFileSync(specPath, 'utf8');
     for (const m of prose.matchAll(/\]\((\.\.[^)#\s]*?)(#[^)\s]*)?\)/g)) {
@@ -1304,6 +1312,15 @@ function main() {
           ? ` — one level too shallow; '../${m[1]}' resolves`
           : '';
         fail(`${slug}/${version}/spec.md`, `relative link '${m[1]}' does not resolve${hint}`);
+      }
+    }
+    for (const m of prose.matchAll(/\]\((\/[^)#\s]+?)(#[^)\s]*)?\)/g)) {
+      if (!fs.existsSync(path.join(ROOT, m[1]))) {
+        fail(
+          `${slug}/${version}/spec.md`,
+          `root-relative link '${m[1]}' does not resolve — these resolve from the ` +
+            `repository root, not from the spec folder`
+        );
       }
     }
   }

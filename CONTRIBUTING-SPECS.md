@@ -247,6 +247,31 @@ which fails the build on every non-conforming spec, allowlist or not. When the a
 
 Rewriting an allowlisted spec's section is a welcome PR on its own: remove the entry in the same commit.
 
+## Linking to `SPEC.md`
+
+Write framework cross-references **root-relative**:
+
+```markdown
+[SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member)
+```
+
+Not `../../../../SPEC.md#…`. The `../` count is a function of how deep your slug is — four from `auth/passkey/enroll/start/0.1`, three from `acl/grant/0.1` — which makes the link's correctness a property of where the file sits rather than of what it says. It then breaks when a spec moves, when a slug gains a segment, and above all when you copy a paragraph from a neighbouring spec at a different depth, which is how most specs get written. 135 such links across 65 files had drifted before the build started checking them, and they were broken on the live site, not merely wrong in the repo.
+
+`/SPEC.md#anchor` is the same string from every depth. The website's renderer resolves it onto the rendered `/specification` page at the right heading — a better destination than the relative form ever reached, which was a raw markdown download — and `npm run build` validates it from the repository root, so a wrong anchor path still fails the build.
+
+Links to **other files in your own spec folder or family** stay relative (`payload.schema.json`, `../../_shared/0.1/acl-entry.schema.json`): those genuinely are relative to your file, and the build checks them from the version directory.
+
+The existing corpus was converted in one pass:
+
+```sh
+npm run codemod:spec-links -- --dry-run   # report
+npm run codemod:spec-links                # rewrite
+```
+
+It only rewrites a `../` chain that actually resolves to this repository's `SPEC.md`, skips fenced code blocks, and reports anything it declined to touch.
+
+> **One caveat.** GitHub's markdown renderer does not resolve a root-relative link against the repository root, so these links work on the registry site and in the build's link check but not when browsing `spec.md` on github.com. That trade was taken deliberately: the rendered site is where specs are read, and the depth-relative form was silently broken *there* for 135 links.
+
 ## Naming conventions (per SPEC §4.10)
 
 The registry has a single canonical casing convention: member names and enumerated values in payload schemas use **lowerCamelCase**, so documents are consistent for both human readers and code generators:

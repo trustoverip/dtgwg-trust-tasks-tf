@@ -182,6 +182,33 @@ function ClassificationPanel({ task, setRoute }) {
   );
 }
 
+/* ---------- SPEC.md cross-references in rendered prose ------
+ *
+ * A spec's prose links the framework spec 731 times, and until now every one of
+ * those links was written relative to the spec's own depth:
+ * `../../../../SPEC.md#451-the-ext-extension-member` from a four-segment slug,
+ * one fewer `../` from a three-segment one. The count is a function of where the
+ * file sits, so moving a spec, adding a slug segment, or copying a paragraph
+ * from a neighbour at a different depth silently breaks it — 135 such links
+ * across 65 files had drifted that way before anything checked, and they were
+ * broken on the live site rather than merely wrong in the repo.
+ *
+ * The fix is to let a spec write `/SPEC.md#anchor`, which is the same string
+ * from every depth. This resolves both forms — the root-relative one and any
+ * `../` chain that still exists — onto the SPA's own `/specification` route, so
+ * the reader lands on the rendered framework spec at the right heading instead
+ * of downloading a raw markdown file, which is what the relative form actually
+ * did.
+ *
+ * Applied to spec and binding prose. The framework spec's own page needs no
+ * such rewrite: its cross-references are bare `#anchor` fragments. */
+function rewriteSpecMdLinks(html) {
+  return html.replace(
+    /href="(?:(?:\.\.\/)+|\/)SPEC\.md(#[^"]*)?"/g,
+    (_m, frag) => `href="/specification${frag || ''}"`
+  );
+}
+
 /* GitHub-style heading slug: strip HTML, strip punctuation (including `.`),
  * collapse whitespace into single hyphens. Matches the anchors that SPEC.md's
  * own cross-references use (e.g. "4.8.1 Precedence..." -> "481-precedence-..."). */
@@ -1384,7 +1411,7 @@ function SpecPage({ slug, version, id, setRoute }) {
         if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
         const body = stripFrontMatter(src);
         marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = marked.parse(body);
+        const rawHtml = rewriteSpecMdLinks(marked.parse(body));
         const { html, toc } = injectHeadingIds(rawHtml);
         setProseHtml(html);
         setProseToc(toc);
@@ -2656,7 +2683,7 @@ function BindingSpecPage({ slug, version, setRoute }) {
         if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
         const body = stripFrontMatter(src);
         marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = marked.parse(body);
+        const rawHtml = rewriteSpecMdLinks(marked.parse(body));
         const { html, toc } = injectHeadingIds(rawHtml);
         setProseHtml(html);
         setProseToc(toc);
