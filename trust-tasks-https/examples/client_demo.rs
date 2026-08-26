@@ -5,6 +5,12 @@
 //! the response. Pair with the `server_demo` example for end-to-end
 //! exercise.
 //!
+//! `acl/grant/0.1` declares `proof` REQUIRED, so this example **signs**.
+//! Both demos derive the same `did:key` from a fixed seed, so they agree
+//! on the client's identity without any key exchange: the server maps the
+//! `alice` bearer token to it, and SPEC §4.8.1 cross-checks the in-band
+//! `issuer` against that transport-authenticated identity.
+//!
 //! Run with:
 //!
 //! ```sh
@@ -14,17 +20,44 @@
 //! cargo run -p trust-tasks-https --example client_demo
 //! ```
 
+use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks_https::{ClientError, HttpsClient};
+use trust_tasks_proof::affinidi::SignOptions;
+use trust_tasks_proof::ProofExt;
 use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, TrustTask};
+
+/// The demo client's identity, derived from a fixed seed so that
+/// `server_demo` can arrive at the same value independently.
+///
+/// `Verifier::for_did_key()` resolves a `did:key` offline, so the pair of
+/// demos needs no network and no DID document to verify the proof.
+pub(crate) fn demo_identity() -> (Secret, String) {
+    const SEED: [u8; 32] = [7u8; 32];
+    let throwaway = Secret::generate_ed25519(None, Some(&SEED));
+    let pk_mb = throwaway
+        .get_public_keymultibase()
+        .expect("ed25519 public multikey");
+    let vm = format!("did:key:{pk_mb}#{pk_mb}");
+    let mut secret = Secret::generate_ed25519(Some(&vm), Some(&SEED));
+    secret.id = vm.clone();
+    let did = vm.split('#').next().expect("did:key prefix").to_string();
+    (secret, did)
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let url = std::env::var("TRUST_TASKS_URL").unwrap_or_else(|_| "http://localhost:3000".into());
 
+    let (secret, my_did) = demo_identity();
+
+    // `my_vid` must be the signing identity, not a separate `did:web`:
+    // the client checks the response's `recipient` against it, and the
+    // server cross-checks the request's in-band `issuer` against the
+    // identity its bearer token maps to.
     let client = HttpsClient::builder()
         .server_url(&url)
         .server_vid("did:web:maintainer.example")
-        .my_vid("did:web:alice.example")
+        .my_vid(&my_did)
         .my_token("alice")
         .build()?;
 
@@ -51,9 +84,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
     );
 
+    // Party members and `issuedAt` must be set *before* signing.
+    // `HttpsClient::send` fills in any that are still unset, and a member
+    // added after signing is a member the proof does not cover — the
+    // server would then reject it as `proofInvalid` rather than accept it.
+    let mut request = request;
+    request.issuer = Some(my_did.clone());
+    request.recipient = Some("did:web:maintainer.example".into());
+    request.issued_at = Some(chrono::Utc::now());
+    request.sign(&secret, SignOptions::new()).await?;
+
     println!(
-        "→ POST {}/trust-tasks\n  request id: {}\n  type: {}",
-        url, request.id, request.type_uri
+        "→ POST {}/trust-tasks\n  request id: {}\n  type: {}\n  signed by: {}",
+        url, request.id, request.type_uri, my_did
     );
 
     match client
