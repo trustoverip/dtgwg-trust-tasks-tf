@@ -4,7 +4,7 @@ version: "0.1"
 title: Trust Task Discovery
 summary: Query a Trust Task party for the set of task types it supports.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: framework
 keywords:
   - discovery
