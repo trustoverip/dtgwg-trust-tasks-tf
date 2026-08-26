@@ -82,6 +82,10 @@ commit_parsers = [
   { message = "^security", group = "Security" },
   { message = "^refactor", group = "Changed" },
   { message = "^docs", group = "Documentation" },
+  # `site` is ours too: a change to the registry website under `website/`.
+  # It reaches no published package, so it only shows up in "Other" today;
+  # naming it keeps that from being confusing.
+  { message = "^site", group = "Website" },
   { message = "^test", skip = true },
   { message = "^ci", group = "Build & CI" },
   { message = "^build", group = "Build & CI" },

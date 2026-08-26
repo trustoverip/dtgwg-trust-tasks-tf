@@ -38,22 +38,30 @@ jobs:
           TITLE: ${{ github.event.pull_request.title }}
         run: |
           set -euo pipefail
-          types='feat|fix|docs|test|ci|build|perf|refactor|chore|security|spec|revert'
-          if printf '%s' "$TITLE" | grep -qE "^($types)(\([a-z0-9._/-]+\))?!?: .+"; then
+          types='feat|fix|docs|test|ci|build|perf|refactor|chore|security|spec|site|revert'
+          # The scope allows commas and spaces because this repo really does
+          # write `feat(rs, proof):` and `feat(didcomm,didcomm-v1,tsp):`.
+          # git-cliff's conventional parser treats a multi-scope as
+          # unconventional and files it under "Other", so prefer one scope —
+          # but a title that reads correctly is not worth failing a PR over.
+          if printf '%s' "$TITLE" | grep -qE "^($types)(\([a-z0-9._/, -]+\))?!?: .+"; then
             echo "ok: $TITLE"
             exit 0
           fi
-          cat <<EOF
-          ::error::PR title is not a conventional commit: "$TITLE"
-
+          # `<<'EOF'` (quoted delimiter) so NOTHING in the block is expanded.
+          # An unquoted heredoc would run command substitution on a PR title
+          # containing backticks or $(...) — attacker-controlled text executing
+          # in the runner.
+          printf '::error::PR title is not a conventional commit: %s\n' "$TITLE"
+          cat <<'EOF'
           The title becomes the squashed commit subject on main, which is both the
           changelog entry consumers read and the signal release-plz uses to size the
           version bump. Format:
 
             <type>(<scope>)!: <summary>
 
-          type   one of: $types
-          scope  optional, e.g. (rs) (https) (vault) (ts-bindings)
+          type   feat fix docs test ci build perf refactor chore security spec site revert
+          scope  optional, e.g. (rs) (https) (vault) (ts-bindings); one is best
           !      optional, marks a breaking change
 
           Examples:

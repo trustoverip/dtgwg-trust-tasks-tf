@@ -11,6 +11,13 @@ on:
       - "trust-tasks-codegen/**"
       - "trust-tasks-https/**"
       - "trust-tasks-didcomm/**"
+      # These three were missing, so a change to one of them ran no Rust CI at
+      # all. It matters more now: `publication-order` reads every publishable
+      # crate's manifest, and a dev-dependency added in an unwatched crate is
+      # exactly the edit that guard exists to catch.
+      - "trust-tasks-didcomm-v1/**"
+      - "trust-tasks-capability-client/**"
+      - "trust-tasks-ceremony/**"
       - "trust-tasks-proof/**"
       - "trust-tasks-tsp/**"
       - "Cargo.toml"
