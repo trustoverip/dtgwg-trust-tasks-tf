@@ -85,6 +85,32 @@ appending `_v<MAJOR>_<MINOR>`. Multiple versions of the same spec
 land in sibling directories (`0.1/`, `1.0/`, …) and export
 distinct names — there is no "latest" alias by design.
 
+### Shared definitions
+
+A definition several specs `$ref` — `Ext` (the SPEC §4.5.1 extension object),
+`AclEntry`, `VaultEntry`, `DigestMultibase` — is declared **once**, in
+`src/_shared/components.ts`, and re-exported from every spec module that uses
+it under the name that module has always used. So `AclGrant_v0_1.AclEntry` and
+`AclShow_v0_1.AclEntry` are the same type, not two copies of one shape:
+
+```ts
+import { SharedComponents, type AclGrant_v0_1 } from "@openvtc/trust-tasks";
+
+// Write a helper once, over the shared definition, and it takes any spec's.
+const namespaces = (ext: SharedComponents.Ext) => Object.keys(ext);
+```
+
+Where one definition *name* covers more than one shape — `VaultEntry` differs
+between `vault/_shared/0.1`, `0.2` and `0.3` — `components.ts` qualifies each
+(`VaultEntry_VaultV0_1`, …) rather than pretending they are interchangeable.
+The spec modules still export the bare `VaultEntry`, bound to the version they
+were generated against.
+
+Before 0.15.0 these definitions were copied into every module that referenced
+them, and repeated copies inside one module were numbered `Ext1`, `Ext2`, `Vid1`
+and so on. Those numbered names are gone; see
+[CHANGELOG.md](./CHANGELOG.md) for the one-line migration.
+
 ## Consuming a document
 
 A conforming *consumer* applies all eight checks in
@@ -197,9 +223,18 @@ specification's `targetFrameworkVersion` declaration instead.
 A bump in an individual spec's own `MAJOR.MINOR` ships as a new exported module
 name (`AclGrant_v1_0` alongside `AclGrant_v0_1`) and so is additive here.
 
-`trust-tasks-rs` and `@openvtc/trust-tasks` are released together and carry
-matching version numbers, so a given pair is known to be generated from the
-same registry revision.
+`trust-tasks-rs` and `@openvtc/trust-tasks` are usually released together and
+carry matching version numbers, so a given pair is known to be generated from
+the same registry revision. They diverge when a change is breaking on one side
+only — 0.15.0 is such a release, hoisting the shared definitions in a way that
+is safe here (TypeScript is structurally typed) and a coherence break in Rust.
+
+One divergence is standing and worth knowing before you write a `switch`:
+`StandardCode` is a **closed** union here and `#[non_exhaustive]` in
+`trust-tasks-rs`, so a new SPEC §8.3 error code is a **minor** bump on this
+package and a patch on the crate. Narrow with `isStandardCode` and keep a
+`default` arm to be immune to it; the reasoning is on the type itself and in
+[CHANGELOG.md](./CHANGELOG.md).
 
 ## License
 
