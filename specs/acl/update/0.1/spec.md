@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An amendment changes what a subject may do or who may vouch for it, and may be relied on after the transport has closed. Same evidentiary standing as the grant it modifies.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An update rewrites the entry's scopes wholesale, so an out-of-order copy widens or narrows access by reverting to an earlier state rather than by expressing an intent. Placing the document in time is how the maintainer tells the two apart.
 sideEffects:
   level: mutating
   rationale: "Replaces attributes of an existing entry; recoverable by amending again, or by acl/revoke."
