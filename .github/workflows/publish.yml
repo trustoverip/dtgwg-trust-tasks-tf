@@ -207,12 +207,15 @@ jobs:
           fi
 
           # The checkout sets persist-credentials: false, so the local remote
-          # carries no auth and a bare `git push` fails. Push over an
-          # explicitly authenticated URL instead of re-persisting credentials
-          # for the whole job.
-          git push --force-with-lease \
-            "https://x-access-token:${GH_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            "HEAD:$BRANCH"
+          # carries no auth. Authenticate `origin` itself rather than pushing
+          # to a bare URL: --force-with-lease resolves its expected value from
+          # the remote-TRACKING ref, and an anonymous URL has none, so the
+          # push is rejected with "stale info" and the protection silently
+          # becomes an outage. Keeping the named remote keeps the lease real.
+          git remote set-url origin \
+            "https://x-access-token:${GH_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force-with-lease="$BRANCH:$(git rev-parse "origin/$BRANCH")" \
+            origin "HEAD:$BRANCH"
 
   # ── npm ──────────────────────────────────────────────────────────────────
   #
