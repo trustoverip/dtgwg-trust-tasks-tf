@@ -29,7 +29,7 @@
         "authorized": { "type": "boolean", "description": "True if the action+resource authorization has been confirmed, false otherwise." },
         "time_evaluated": { "type": "string", "format": "date-time", "description": "Server time the query was evaluated at, per the endpoint clock." },
         "time_requested": { "type": "string", "format": "date-time", "description": "The requested server time, echoed from the request `context.time` when supplied." },
-        "message": { "type": "string", "description": "Additional human-readable detail about the authorization response." },
+        "message": { "type": "string", "maxLength": 1024, "description": "Additional human-readable detail about the authorization response." },
         "context": { "$ref": "../../_shared/0.1/registry.schema.json#/$defs/QueryContext" },
         "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
       }

@@ -2750,7 +2750,7 @@ export interface VaultEntry_VaultV0_1 {
    */
   targets: [SiteTarget_VaultV0_1, ...SiteTarget_VaultV0_1[]];
   /**
-   * Human-readable display name (e.g. "Work GitHub", "Personal bank — checking"). Maintainers MAY enforce a maximum length; the wire spec does not.
+   * Human-readable display name (e.g. "Work GitHub", "Personal bank — checking"). Bounded on the wire at 256 characters; a maintainer MAY enforce a shorter limit.
    */
   label: string;
   /**
@@ -2852,7 +2852,7 @@ export interface VaultEntry_VaultV0_2 {
    */
   targets: [SiteTarget_VaultV0_2, ...SiteTarget_VaultV0_2[]];
   /**
-   * Human-readable display name (e.g. "Work GitHub", "Personal bank — checking"). Maintainers MAY enforce a maximum length; the wire spec does not.
+   * Human-readable display name (e.g. "Work GitHub", "Personal bank — checking"). Bounded on the wire at 256 characters; a maintainer MAY enforce a shorter limit.
    */
   label: string;
   /**
@@ -2938,7 +2938,7 @@ export interface VaultEntry_VaultV0_3 {
    */
   targets: [SiteTarget_VaultV0_2, ...SiteTarget_VaultV0_2[]];
   /**
-   * Human-readable display name (e.g. "Work GitHub", "Personal bank — checking"). Maintainers MAY enforce a maximum length; the wire spec does not.
+   * Human-readable display name (e.g. "Work GitHub", "Personal bank — checking"). Bounded on the wire at 256 characters; a maintainer MAY enforce a shorter limit.
    */
   label: string;
   /**

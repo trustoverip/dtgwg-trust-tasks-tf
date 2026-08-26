@@ -99,6 +99,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "reason": {
       "type": "string",
+      "maxLength": 500,
       "description": "OPTIONAL human-facing note, most useful on a `deny`."
     },
     "ext": {

@@ -85,7 +85,8 @@ export const PAYLOAD_SCHEMA = {
       }
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 256
     },
     "enabledMethods": {
       "type": "array",

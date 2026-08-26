@@ -14,6 +14,7 @@
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Human-readable reason, recorded for audit."
     },
     "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
@@ -33,6 +34,7 @@
         },
         "message": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Additional human-readable detail."
         },
         "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }

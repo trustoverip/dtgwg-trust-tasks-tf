@@ -158,6 +158,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "message": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Additional human-readable detail about the authorization response."
         },
         "context": {
@@ -247,6 +248,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "message": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Additional human-readable detail about the authorization response."
         },
         "context": {

@@ -172,17 +172,22 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // Generated payload types are `#[non_exhaustive]` as of trust-tasks-rs
     // 0.14, so cross-crate construction goes through `X::builder()`. A member
     // added by a later revision of the spec leaves this call site alone.
+    // A free-text member declaring a `maxLength` (SPEC §7.3) generates a
+    // validating newtype rather than a bare `String`, so the bound is checked
+    // where the value is authored instead of at the far end of the wire.
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
-        .label("Carol — content moderation".to_string())
+        .label(grant::AclEntryLabel::try_from(
+            "Carol — content moderation",
+        )?)
         .try_into()?;
 
     let mut request = TrustTask::for_payload(
         format!("urn:uuid:{}", uuid::Uuid::new_v4()),
         grant::Payload::builder()
             .entry(entry)
-            .reason("onboarding moderator".to_string())
+            .reason(grant::PayloadReason::try_from("onboarding moderator")?)
             .try_into()?,
     );
 

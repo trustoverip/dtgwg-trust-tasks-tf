@@ -32,7 +32,7 @@
       "type": "string",
       "description": "Hosting domain to publish under, when the server serves more than one."
     },
-    "label": { "type": "string" },
+    "label": { "type": "string", "maxLength": 256 },
     "portable": {
       "type": "boolean",
       "default": false,

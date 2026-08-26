@@ -173,7 +173,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "minLength": 1
 ///    },
 ///    "label": {
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "protocolVersion": {
 ///      "description": "Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.",
@@ -212,7 +213,7 @@ pub struct Payload {
     #[serde(rename = "instanceId")]
     pub instance_id: PayloadInstanceId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<::std::string::String>,
+    pub label: ::std::option::Option<PayloadLabel>,
     ///Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.
     #[serde(
         rename = "protocolVersion",
@@ -434,6 +435,74 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
             })
     }
 }
+///`PayloadLabel`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadLabel(::std::string::String);
+impl ::std::ops::Deref for PayloadLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadLabel> for ::std::string::String {
+    fn from(value: PayloadLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.
 ///
 /// <details><summary>JSON schema</summary>
@@ -565,7 +634,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         instance_id: ::std::result::Result<super::PayloadInstanceId, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadLabel>,
             ::std::string::String,
         >,
         protocol_version: ::std::result::Result<
@@ -633,7 +702,7 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -787,7 +856,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/server/register/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        },\n        \"lastSeen\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\",\n        \"lastSeen\"\n      ],\n      \"title\": \"Server Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/server/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"enabledMethods\": {\n      \"description\": \"DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh'].\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"instanceId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"label\": {\n      \"type\": \"string\"\n    },\n    \"protocolVersion\": {\n      \"description\": \"Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"publicUrl\": {\n      \"format\": \"uri\",\n      \"type\": \"string\"\n    },\n    \"servedDomains\": {\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"instanceId\",\n    \"did\",\n    \"publicUrl\",\n    \"servedDomains\"\n  ],\n  \"title\": \"Server Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        },\n        \"lastSeen\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\",\n        \"lastSeen\"\n      ],\n      \"title\": \"Server Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/server/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"enabledMethods\": {\n      \"description\": \"DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh'].\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"instanceId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"protocolVersion\": {\n      \"description\": \"Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"publicUrl\": {\n      \"format\": \"uri\",\n      \"type\": \"string\"\n    },\n    \"servedDomains\": {\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"instanceId\",\n    \"did\",\n    \"publicUrl\",\n    \"servedDomains\"\n  ],\n  \"title\": \"Server Register — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

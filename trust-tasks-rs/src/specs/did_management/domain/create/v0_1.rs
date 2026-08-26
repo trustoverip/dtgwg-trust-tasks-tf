@@ -328,7 +328,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "label": {
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "name": {
 ///      "type": "string",
@@ -350,7 +351,7 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<::std::string::String>,
+    pub label: ::std::option::Option<PayloadLabel>,
     pub name: PayloadName,
     #[serde(rename = "setAsDefault", default)]
     pub set_as_default: bool,
@@ -358,6 +359,74 @@ pub struct Payload {
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+///`PayloadLabel`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadLabel(::std::string::String);
+impl ::std::ops::Deref for PayloadLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadLabel> for ::std::string::String {
+    fn from(value: PayloadLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`PayloadName`
@@ -623,7 +692,7 @@ pub mod builder {
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadLabel>,
             ::std::string::String,
         >,
         name: ::std::result::Result<super::PayloadName, ::std::string::String>,
@@ -652,7 +721,7 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -760,7 +829,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DomainEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"defaultDomain\": {\n          \"description\": \"When `true`, this domain is the host's default — new DIDs created without an explicit domain are hosted here. Exactly one entry SHOULD carry `defaultDomain: true`.\",\n          \"type\": \"boolean\"\n        },\n        \"disabledAt\": {\n          \"description\": \"Present iff `status === \\\"disabled\\\"`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Hosting domain name (e.g. `did.example.com`). Compared case-insensitively; producers SHOULD emit lowercase canonical form.\",\n          \"type\": \"string\"\n        },\n        \"purgeAt\": {\n          \"description\": \"Earliest RFC3339 timestamp at which the host's background sweep is allowed to purge content for a disabled domain. Operators with administrative authority MAY override the wait via `domain/purge`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.\",\n          \"enum\": [\n            \"active\",\n            \"disabled\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"status\",\n        \"createdAt\"\n      ],\n      \"title\": \"DomainEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entry\": {\n          \"$ref\": \"#/$defs/DomainEntry\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"Domain Create — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/domain/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"type\": \"string\"\n    },\n    \"name\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"setAsDefault\": {\n      \"default\": false,\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"name\"\n  ],\n  \"title\": \"Domain Create — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"DomainEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"defaultDomain\": {\n          \"description\": \"When `true`, this domain is the host's default — new DIDs created without an explicit domain are hosted here. Exactly one entry SHOULD carry `defaultDomain: true`.\",\n          \"type\": \"boolean\"\n        },\n        \"disabledAt\": {\n          \"description\": \"Present iff `status === \\\"disabled\\\"`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Hosting domain name (e.g. `did.example.com`). Compared case-insensitively; producers SHOULD emit lowercase canonical form.\",\n          \"type\": \"string\"\n        },\n        \"purgeAt\": {\n          \"description\": \"Earliest RFC3339 timestamp at which the host's background sweep is allowed to purge content for a disabled domain. Operators with administrative authority MAY override the wait via `domain/purge`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.\",\n          \"enum\": [\n            \"active\",\n            \"disabled\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"status\",\n        \"createdAt\"\n      ],\n      \"title\": \"DomainEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entry\": {\n          \"$ref\": \"#/$defs/DomainEntry\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"Domain Create — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/domain/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"name\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"setAsDefault\": {\n      \"default\": false,\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"name\"\n  ],\n  \"title\": \"Domain Create — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

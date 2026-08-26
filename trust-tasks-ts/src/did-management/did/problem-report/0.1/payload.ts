@@ -60,7 +60,8 @@ export const PAYLOAD_SCHEMA = {
     },
     "message": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "maxLength": 1024
     },
     "domain": {
       "type": "string"

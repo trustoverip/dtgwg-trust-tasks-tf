@@ -90,6 +90,7 @@ export const PAYLOAD_SCHEMA = {
     "reason": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 500,
       "description": "Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect."
     },
     "ext": {

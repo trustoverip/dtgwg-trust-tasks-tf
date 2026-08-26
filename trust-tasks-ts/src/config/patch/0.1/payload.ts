@@ -145,6 +145,7 @@ export const PAYLOAD_SCHEMA = {
         "reason": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 1024,
           "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc."
         }
       }
@@ -226,6 +227,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "reason": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 1024,
           "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc."
         }
       }

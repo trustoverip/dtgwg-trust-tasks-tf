@@ -159,7 +159,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "label": {
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "preRotationCount": {
 ///      "description": "Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise.",
@@ -179,7 +180,7 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<::std::string::String>,
+    pub label: ::std::option::Option<PayloadLabel>,
     ///Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise.
     #[serde(
         rename = "preRotationCount",
@@ -250,6 +251,74 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadDid {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadDid {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`PayloadLabel`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadLabel(::std::string::String);
+impl ::std::ops::Deref for PayloadLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadLabel> for ::std::string::String {
+    fn from(value: PayloadLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -351,7 +420,7 @@ pub mod builder {
         did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadLabel>,
             ::std::string::String,
         >,
         pre_rotation_count:
@@ -390,7 +459,7 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -574,7 +643,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newLogEntry\": {\n          \"description\": \"The appended entry.\",\n          \"type\": \"string\"\n        },\n        \"newScid\": {\n          \"description\": \"The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it.\",\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"Version id of the appended entry.\",\n          \"type\": \"string\"\n        },\n        \"preRotationKeyCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverless\": {\n          \"description\": \"True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys.\",\n          \"type\": \"boolean\"\n        },\n        \"updateKeysCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newVersionId\",\n        \"newScid\",\n        \"newLogEntry\",\n        \"updateKeysCount\",\n        \"preRotationKeyCount\",\n        \"serverless\"\n      ],\n      \"title\": \"VTA WebVH DIDs Rotate-Keys — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.\",\n  \"properties\": {\n    \"did\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"type\": \"string\"\n    },\n    \"preRotationCount\": {\n      \"description\": \"Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTA WebVH DIDs Rotate-Keys — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newLogEntry\": {\n          \"description\": \"The appended entry.\",\n          \"type\": \"string\"\n        },\n        \"newScid\": {\n          \"description\": \"The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it.\",\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"Version id of the appended entry.\",\n          \"type\": \"string\"\n        },\n        \"preRotationKeyCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverless\": {\n          \"description\": \"True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys.\",\n          \"type\": \"boolean\"\n        },\n        \"updateKeysCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newVersionId\",\n        \"newScid\",\n        \"newLogEntry\",\n        \"updateKeysCount\",\n        \"preRotationKeyCount\",\n        \"serverless\"\n      ],\n      \"title\": \"VTA WebVH DIDs Rotate-Keys — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.\",\n  \"properties\": {\n    \"did\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"preRotationCount\": {\n      \"description\": \"Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTA WebVH DIDs Rotate-Keys — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

@@ -121,6 +121,7 @@ export const PAYLOAD_SCHEMA = {
           },
           "reason": {
             "type": "string",
+            "maxLength": 1024,
             "description": "Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs."
           },
           "hint": {
@@ -162,6 +163,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "message": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why."
     },
     "ext": {

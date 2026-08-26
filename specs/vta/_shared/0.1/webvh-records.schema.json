@@ -84,7 +84,7 @@
           "type": "string",
           "description": "The server's own DID, used to authenticate it."
         },
-        "label": { "type": "string" },
+        "label": { "type": "string", "maxLength": 256 },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" },
         "ext": {

@@ -63,7 +63,8 @@ The operation takes effect through SPEC.md §7.2 item 12: a valid, authorized co
 ///    },
 ///    "reason": {
 ///      "description": "Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "target": {
 ///      "description": "The specific Trust Task document this operation applies to. Per SPEC.md §12.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.",
@@ -107,7 +108,7 @@ pub struct Payload {
     pub operation: PayloadOperation,
     ///Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<::std::string::String>,
+    pub reason: ::std::option::Option<PayloadReason>,
     pub target: PayloadTarget,
 }
 impl Payload {
@@ -196,6 +197,75 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadOperation {
         value: ::std::string::String,
     ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
+    }
+}
+///Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadReason(::std::string::String);
+impl ::std::ops::Deref for PayloadReason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadReason> for ::std::string::String {
+    fn from(value: PayloadReason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadReason {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///The specific Trust Task document this operation applies to. Per SPEC.md §12.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.
@@ -341,6 +411,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetId {
 ///          "description": {
 ///            "description": "Human-readable statement of the effect that occurred.",
 ///            "type": "string",
+///            "maxLength": 1024,
 ///            "minLength": 1
 ///          },
 ///          "ref": {
@@ -443,6 +514,7 @@ impl Response {
 ///    "description": {
 ///      "description": "Human-readable statement of the effect that occurred.",
 ///      "type": "string",
+///      "maxLength": 1024,
 ///      "minLength": 1
 ///    },
 ///    "ref": {
@@ -488,6 +560,7 @@ impl ResponseEffectsItem {
 ///{
 ///  "description": "Human-readable statement of the effect that occurred.",
 ///  "type": "string",
+///  "maxLength": 1024,
 ///  "minLength": 1
 ///}
 /// ```
@@ -509,6 +582,9 @@ impl ::std::convert::From<ResponseEffectsItemDescription> for ::std::string::Str
 impl ::std::str::FromStr for ResponseEffectsItemDescription {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -838,7 +914,7 @@ pub mod builder {
         >,
         operation: ::std::result::Result<super::PayloadOperation, ::std::string::String>,
         reason: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadReason>,
             ::std::string::String,
         >,
         target: ::std::result::Result<super::PayloadTarget, ::std::string::String>,
@@ -878,7 +954,7 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -1212,7 +1288,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.\",\n      \"properties\": {\n        \"effects\": {\n          \"description\": \"What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"description\": {\n                \"description\": \"Human-readable statement of the effect that occurred.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"An identifier for the effect where one exists — a credential id, a record identifier, a transaction reference — so a compensating task can name it.\",\n                \"type\": \"string\"\n              },\n              \"reversible\": {\n                \"description\": \"Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`.\",\n                \"type\": \"boolean\"\n              }\n            },\n            \"required\": [\n              \"description\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1.\",\n          \"type\": \"object\"\n        },\n        \"operation\": {\n          \"description\": \"Echoed from the request, so the response is self-describing when retained apart from it.\",\n          \"enum\": [\n            \"cancel\",\n            \"suspend\",\n            \"resume\"\n          ]\n        },\n        \"outcome\": {\n          \"description\": \"`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\\n\\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).\\n\\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\\n\\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.\",\n          \"enum\": [\n            \"applied\",\n            \"appliedWithEffects\",\n            \"alreadyCompleted\",\n            \"unknownTask\"\n          ]\n        },\n        \"target\": {\n          \"additionalProperties\": false,\n          \"description\": \"Echoed from the request.\",\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"format\": \"uri\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"target\",\n        \"outcome\"\n      ],\n      \"title\": \"Trust Task Control — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/trust-task-control/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The task-control request defined at SPEC.md §12: a producer withdrawing, pausing, or resuming work a consumer has already accepted.\\n\\nThis is a REQUEST, not a response. A consumer that stops work on its own initiative does not send one of these — it returns a trust-task-error carrying `cancelled`, so that a withdrawal and a refusal remain distinguishable to every party and to any auditor reading the retained documents afterwards.\\n\\nThe operation takes effect through SPEC.md §7.2 item 12: a valid, authorized control operation is one of the conditions a consumer re-evaluates immediately before each irreversible or externally visible effect. There is no separate race protocol.\",\n  \"properties\": {\n    \"ext\": {\n      \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer controls.\",\n      \"type\": \"object\"\n    },\n    \"operation\": {\n      \"description\": \"The control operation requested.\\n\\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §12.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §12.5).\\n\\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess.\",\n      \"enum\": [\n        \"cancel\",\n        \"suspend\",\n        \"resume\"\n      ]\n    },\n    \"reason\": {\n      \"description\": \"Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value.\",\n      \"type\": \"string\"\n    },\n    \"target\": {\n      \"additionalProperties\": false,\n      \"description\": \"The specific Trust Task document this operation applies to. Per SPEC.md §12.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.\",\n      \"properties\": {\n        \"id\": {\n          \"description\": \"The `id` of the target Trust Task document. The sole identifying member.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The target document's `type`, including any `#request` fragment. RECOMMENDED. A consumer that holds the named `id` under a different specification can then detect the mismatch rather than acting on a coincidence of identifiers.\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"operation\",\n    \"target\"\n  ],\n  \"title\": \"Trust Task Control — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.\",\n      \"properties\": {\n        \"effects\": {\n          \"description\": \"What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"description\": {\n                \"description\": \"Human-readable statement of the effect that occurred.\",\n                \"maxLength\": 1024,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"An identifier for the effect where one exists — a credential id, a record identifier, a transaction reference — so a compensating task can name it.\",\n                \"type\": \"string\"\n              },\n              \"reversible\": {\n                \"description\": \"Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`.\",\n                \"type\": \"boolean\"\n              }\n            },\n            \"required\": [\n              \"description\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1.\",\n          \"type\": \"object\"\n        },\n        \"operation\": {\n          \"description\": \"Echoed from the request, so the response is self-describing when retained apart from it.\",\n          \"enum\": [\n            \"cancel\",\n            \"suspend\",\n            \"resume\"\n          ]\n        },\n        \"outcome\": {\n          \"description\": \"`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\\n\\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).\\n\\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\\n\\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.\",\n          \"enum\": [\n            \"applied\",\n            \"appliedWithEffects\",\n            \"alreadyCompleted\",\n            \"unknownTask\"\n          ]\n        },\n        \"target\": {\n          \"additionalProperties\": false,\n          \"description\": \"Echoed from the request.\",\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"format\": \"uri\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"target\",\n        \"outcome\"\n      ],\n      \"title\": \"Trust Task Control — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/trust-task-control/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The task-control request defined at SPEC.md §12: a producer withdrawing, pausing, or resuming work a consumer has already accepted.\\n\\nThis is a REQUEST, not a response. A consumer that stops work on its own initiative does not send one of these — it returns a trust-task-error carrying `cancelled`, so that a withdrawal and a refusal remain distinguishable to every party and to any auditor reading the retained documents afterwards.\\n\\nThe operation takes effect through SPEC.md §7.2 item 12: a valid, authorized control operation is one of the conditions a consumer re-evaluates immediately before each irreversible or externally visible effect. There is no separate race protocol.\",\n  \"properties\": {\n    \"ext\": {\n      \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer controls.\",\n      \"type\": \"object\"\n    },\n    \"operation\": {\n      \"description\": \"The control operation requested.\\n\\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §12.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §12.5).\\n\\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess.\",\n      \"enum\": [\n        \"cancel\",\n        \"suspend\",\n        \"resume\"\n      ]\n    },\n    \"reason\": {\n      \"description\": \"Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"target\": {\n      \"additionalProperties\": false,\n      \"description\": \"The specific Trust Task document this operation applies to. Per SPEC.md §12.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.\",\n      \"properties\": {\n        \"id\": {\n          \"description\": \"The `id` of the target Trust Task document. The sole identifying member.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The target document's `type`, including any `#request` fragment. RECOMMENDED. A consumer that holds the named `id` under a different specification can then detect the mismatch rather than acting on a coincidence of identifiers.\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"operation\",\n    \"target\"\n  ],\n  \"title\": \"Trust Task Control — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1220,7 +1296,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.\",\n      \"properties\": {\n        \"effects\": {\n          \"description\": \"What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"description\": {\n                \"description\": \"Human-readable statement of the effect that occurred.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"An identifier for the effect where one exists — a credential id, a record identifier, a transaction reference — so a compensating task can name it.\",\n                \"type\": \"string\"\n              },\n              \"reversible\": {\n                \"description\": \"Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`.\",\n                \"type\": \"boolean\"\n              }\n            },\n            \"required\": [\n              \"description\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1.\",\n          \"type\": \"object\"\n        },\n        \"operation\": {\n          \"description\": \"Echoed from the request, so the response is self-describing when retained apart from it.\",\n          \"enum\": [\n            \"cancel\",\n            \"suspend\",\n            \"resume\"\n          ]\n        },\n        \"outcome\": {\n          \"description\": \"`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\\n\\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).\\n\\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\\n\\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.\",\n          \"enum\": [\n            \"applied\",\n            \"appliedWithEffects\",\n            \"alreadyCompleted\",\n            \"unknownTask\"\n          ]\n        },\n        \"target\": {\n          \"additionalProperties\": false,\n          \"description\": \"Echoed from the request.\",\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"format\": \"uri\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"target\",\n        \"outcome\"\n      ],\n      \"title\": \"Trust Task Control — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.\",\n      \"properties\": {\n        \"effects\": {\n          \"description\": \"What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"description\": {\n                \"description\": \"Human-readable statement of the effect that occurred.\",\n                \"maxLength\": 1024,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"An identifier for the effect where one exists — a credential id, a record identifier, a transaction reference — so a compensating task can name it.\",\n                \"type\": \"string\"\n              },\n              \"reversible\": {\n                \"description\": \"Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`.\",\n                \"type\": \"boolean\"\n              }\n            },\n            \"required\": [\n              \"description\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1.\",\n          \"type\": \"object\"\n        },\n        \"operation\": {\n          \"description\": \"Echoed from the request, so the response is self-describing when retained apart from it.\",\n          \"enum\": [\n            \"cancel\",\n            \"suspend\",\n            \"resume\"\n          ]\n        },\n        \"outcome\": {\n          \"description\": \"`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\\n\\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).\\n\\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\\n\\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.\",\n          \"enum\": [\n            \"applied\",\n            \"appliedWithEffects\",\n            \"alreadyCompleted\",\n            \"unknownTask\"\n          ]\n        },\n        \"target\": {\n          \"additionalProperties\": false,\n          \"description\": \"Echoed from the request.\",\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"format\": \"uri\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"target\",\n        \"outcome\"\n      ],\n      \"title\": \"Trust Task Control — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

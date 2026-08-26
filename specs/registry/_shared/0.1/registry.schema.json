@@ -43,7 +43,7 @@
       "required": ["ok"],
       "properties": {
         "ok": { "type": "boolean", "description": "Whether the mutation was applied." },
-        "message": { "type": "string", "description": "Optional human-readable detail." }
+        "message": { "type": "string", "maxLength": 1024, "description": "Optional human-readable detail." }
       }
     }
   }

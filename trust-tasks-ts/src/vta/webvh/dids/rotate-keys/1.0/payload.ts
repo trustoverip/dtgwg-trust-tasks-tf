@@ -89,7 +89,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise."
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 256
     },
     "ext": {
       "$ref": "#/$defs/Ext"

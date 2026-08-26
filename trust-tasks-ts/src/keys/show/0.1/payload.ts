@@ -150,6 +150,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "label": {
           "type": "string",
+          "maxLength": 256,
           "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
         },
         "contextId": {
@@ -287,6 +288,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "label": {
           "type": "string",
+          "maxLength": 256,
           "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
         },
         "contextId": {

@@ -145,6 +145,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "message": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Additional human-readable detail."
         },
         "ext": {
@@ -189,6 +190,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "description": {
           "type": "string",
+          "maxLength": 1024,
           "description": "One-paragraph description for management surfaces."
         },
         "specs": {
@@ -316,6 +318,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "message": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Additional human-readable detail."
         },
         "ext": {
@@ -360,6 +363,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "description": {
           "type": "string",
+          "maxLength": 1024,
           "description": "One-paragraph description for management surfaces."
         },
         "specs": {

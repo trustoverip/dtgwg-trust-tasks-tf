@@ -124,7 +124,8 @@ export const PAYLOAD_SCHEMA = {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "maxLength": 1024
         },
         "methods": {
           "type": "array",
@@ -262,6 +263,7 @@ export const PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Human-readable description of what the template provisions."
         },
         "methods": {
@@ -342,7 +344,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "maxLength": 1024
         },
         "methods": {
           "type": "array",
@@ -480,6 +483,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Human-readable description of what the template provisions."
         },
         "methods": {

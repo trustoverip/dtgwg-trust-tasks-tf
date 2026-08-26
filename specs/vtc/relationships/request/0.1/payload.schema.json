@@ -9,6 +9,7 @@
     "reason": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 500,
       "description": "Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back."
     },
     "ext": {

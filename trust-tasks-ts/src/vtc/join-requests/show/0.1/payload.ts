@@ -158,6 +158,7 @@ export const PAYLOAD_SCHEMA = {
                 "string",
                 "null"
               ],
+              "maxLength": 1024,
               "description": "Elaboration in prose, when the decider gave one."
             },
             "decidedAt": {
@@ -286,6 +287,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "string",
                 "null"
               ],
+              "maxLength": 1024,
               "description": "Elaboration in prose, when the decider gave one."
             },
             "decidedAt": {

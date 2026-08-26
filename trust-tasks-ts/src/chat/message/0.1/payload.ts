@@ -158,6 +158,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "text": {
       "type": "string",
+      "maxLength": 16384,
       "description": "OPTIONAL. Plain-text body. Absent for attachment-only messages."
     },
     "mentions": {

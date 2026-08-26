@@ -65,17 +65,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // builder typify emits: only the members this request actually carries
     // are named, so a member added to `acl/grant` in a later revision of the
     // specification leaves this call site alone.
+    // Free-text members carry a `maxLength` (SPEC §7.3), so each is a
+    // validating newtype rather than a bare `String` — the bound is enforced
+    // at construction here rather than discovered by the server.
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
-        .label("Carol — content moderation".to_string())
+        .label(grant::AclEntryLabel::try_from(
+            "Carol — content moderation",
+        )?)
         .try_into()?;
 
     let request = TrustTask::for_payload(
         format!("urn:uuid:{}", uuid::Uuid::new_v4()),
         grant::Payload::builder()
             .entry(entry)
-            .reason("onboarding moderator".to_string())
+            .reason(grant::PayloadReason::try_from("onboarding moderator")?)
             .try_into()?,
     );
 

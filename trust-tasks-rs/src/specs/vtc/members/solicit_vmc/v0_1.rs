@@ -161,6 +161,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "reason": {
 ///      "description": "Operator note relayed verbatim to the member, e.g. \"renewal\", \"audit\".",
 ///      "type": "string",
+///      "maxLength": 500,
 ///      "minLength": 1
 ///    }
 ///  },
@@ -263,6 +264,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMemberDid {
 ///{
 ///  "description": "Operator note relayed verbatim to the member, e.g. \"renewal\", \"audit\".",
 ///  "type": "string",
+///  "maxLength": 500,
 ///  "minLength": 1
 ///}
 /// ```
@@ -284,6 +286,9 @@ impl ::std::convert::From<PayloadReason> for ::std::string::String {
 impl ::std::str::FromStr for PayloadReason {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 500usize {
+            return Err("longer than 500 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -675,7 +680,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member the request was dispatched to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requested\": {\n          \"description\": \"The request was DISPATCHED. Not a delivery or reply receipt.\",\n          \"type\": \"boolean\"\n        },\n        \"threadId\": {\n          \"description\": \"Correlates the member's eventual vtc/members/vmc delivery with this solicitation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"memberDid\",\n        \"requested\",\n        \"threadId\"\n      ],\n      \"title\": \"VTC Members Solicit VMC — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"memberDid\": {\n      \"description\": \"The active member to request a VMC from.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Operator note relayed verbatim to the member, e.g. \\\"renewal\\\", \\\"audit\\\".\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"memberDid\"\n  ],\n  \"title\": \"VTC Members Solicit VMC — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member the request was dispatched to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requested\": {\n          \"description\": \"The request was DISPATCHED. Not a delivery or reply receipt.\",\n          \"type\": \"boolean\"\n        },\n        \"threadId\": {\n          \"description\": \"Correlates the member's eventual vtc/members/vmc delivery with this solicitation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"memberDid\",\n        \"requested\",\n        \"threadId\"\n      ],\n      \"title\": \"VTC Members Solicit VMC — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"memberDid\": {\n      \"description\": \"The active member to request a VMC from.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Operator note relayed verbatim to the member, e.g. \\\"renewal\\\", \\\"audit\\\".\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"memberDid\"\n  ],\n  \"title\": \"VTC Members Solicit VMC — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

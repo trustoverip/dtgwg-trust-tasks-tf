@@ -161,7 +161,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    },
 ///    "reason": {
 ///      "description": "Human-readable reason, recorded for audit.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -178,7 +179,7 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///Human-readable reason, recorded for audit.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<::std::string::String>,
+    pub reason: ::std::option::Option<PayloadReason>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -256,6 +257,75 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCapability {
             })
     }
 }
+///Human-readable reason, recorded for audit.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Human-readable reason, recorded for audit.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadReason(::std::string::String);
+impl ::std::ops::Deref for PayloadReason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadReason> for ::std::string::String {
+    fn from(value: PayloadReason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadReason {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///`Response`
 ///
 /// <details><summary>JSON schema</summary>
@@ -281,7 +351,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCapability {
 ///    },
 ///    "message": {
 ///      "description": "Additional human-readable detail.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -300,11 +371,80 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///Additional human-readable detail.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub message: ::std::option::Option<::std::string::String>,
+    pub message: ::std::option::Option<ResponseMessage>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
+    }
+}
+///Additional human-readable detail.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Additional human-readable detail.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseMessage(::std::string::String);
+impl ::std::ops::Deref for ResponseMessage {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseMessage> for ::std::string::String {
+    fn from(value: ResponseMessage) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseMessage {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseMessage {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseMessage {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 /// Types for composing complex structures.
@@ -314,7 +454,7 @@ pub mod builder {
         capability: ::std::result::Result<super::PayloadCapability, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         reason: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadReason>,
             ::std::string::String,
         >,
     }
@@ -350,7 +490,7 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -384,7 +524,7 @@ pub mod builder {
         enabled: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         message: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::ResponseMessage>,
             ::std::string::String,
         >,
     }
@@ -431,7 +571,7 @@ pub mod builder {
         }
         pub fn message<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseMessage>>,
             T::Error: ::std::fmt::Display,
         {
             self.message = value
@@ -467,7 +607,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"capability\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"False once the capability is inactive for the community.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"enabled\"\n      ],\n      \"title\": \"Governance Capability Disable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/governance/capability/disable/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community operator disables a previously enabled capability. Disable is not delete: the capability's registry records are retained for audit, but its handlers stop executing, it disappears from discovery, and its lifecycle hooks stop firing.\",\n  \"properties\": {\n    \"capability\": {\n      \"description\": \"Namespace slug of the capability to disable.\",\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable reason, recorded for audit.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"capability\"\n  ],\n  \"title\": \"Governance Capability Disable — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"capability\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"False once the capability is inactive for the community.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"enabled\"\n      ],\n      \"title\": \"Governance Capability Disable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/governance/capability/disable/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community operator disables a previously enabled capability. Disable is not delete: the capability's registry records are retained for audit, but its handlers stop executing, it disappears from discovery, and its lifecycle hooks stop firing.\",\n  \"properties\": {\n    \"capability\": {\n      \"description\": \"Namespace slug of the capability to disable.\",\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable reason, recorded for audit.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"capability\"\n  ],\n  \"title\": \"Governance Capability Disable — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -476,7 +616,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"capability\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"False once the capability is inactive for the community.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"enabled\"\n      ],\n      \"title\": \"Governance Capability Disable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"capability\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"False once the capability is inactive for the community.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"enabled\"\n      ],\n      \"title\": \"Governance Capability Disable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

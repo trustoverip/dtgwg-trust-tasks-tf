@@ -153,6 +153,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value."
     },
     "ext": {
@@ -222,6 +223,7 @@ export const PAYLOAD_SCHEMA = {
               "description": {
                 "type": "string",
                 "minLength": 1,
+                "maxLength": 1024,
                 "description": "Human-readable statement of the effect that occurred."
               },
               "ref": {
@@ -310,6 +312,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "description": {
                 "type": "string",
                 "minLength": 1,
+                "maxLength": 1024,
                 "description": "Human-readable statement of the effect that occurred."
               },
               "ref": {

@@ -25,6 +25,7 @@
     },
     "description": {
       "type": "string",
+      "maxLength": 1024,
       "description": "New description."
     },
     "contextPolicy": {

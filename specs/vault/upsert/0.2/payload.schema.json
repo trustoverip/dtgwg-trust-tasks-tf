@@ -27,7 +27,7 @@
       "minItems": 1,
       "items": { "$ref": "../../_shared/0.2/vault-entry.schema.json#/$defs/SiteTarget" }
     },
-    "label": { "type": "string", "minLength": 1 },
+    "label": { "type": "string", "minLength": 1, "maxLength": 256 },
     "secretKind": { "$ref": "../../_shared/0.2/vault-entry.schema.json#/$defs/SecretKind" },
     "tags": {
       "type": "array",

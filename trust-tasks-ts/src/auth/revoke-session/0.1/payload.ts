@@ -87,6 +87,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"key-rotation\"). Surfaced in audit logs; the framework imposes no vocabulary."
     },
     "ext": {

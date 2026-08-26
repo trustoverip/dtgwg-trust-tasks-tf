@@ -60,6 +60,7 @@
         "label": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 256,
           "description": "Human-readable name for an operator UI."
         },
         "wired": {

@@ -55,6 +55,7 @@
         },
         "reason": {
           "type": "string",
+          "maxLength": 1024,
           "description": "Required when status is `refused`."
         },
         "ext": {

@@ -498,7 +498,8 @@ impl ::std::convert::TryFrom<::std::string::String> for Kind {
 ///    },
 ///    "reason": {
 ///      "description": "Optional operator note recorded in the audit trail.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 1024
 ///    },
 ///    "subject": {
 ///      "$ref": "#/definitions/ConsentSubject"
@@ -516,12 +517,81 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///Optional operator note recorded in the audit trail.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<::std::string::String>,
+    pub reason: ::std::option::Option<PayloadReason>,
     pub subject: ConsentSubject,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+///Optional operator note recorded in the audit trail.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional operator note recorded in the audit trail.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadReason(::std::string::String);
+impl ::std::ops::Deref for PayloadReason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadReason> for ::std::string::String {
+    fn from(value: PayloadReason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadReason {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`Response`
@@ -730,7 +800,7 @@ pub mod builder {
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         reason: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadReason>,
             ::std::string::String,
         >,
         subject: ::std::result::Result<super::ConsentSubject, ::std::string::String>,
@@ -757,7 +827,7 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -853,7 +923,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConsentSubject\": {\n      \"additionalProperties\": false,\n      \"description\": \"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"VID (DID) of the AI agent the conversation would reach.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/Kind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Kind\": {\n      \"description\": \"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"status\": {\n          \"description\": \"`revoked` = the grant was deleted. `notFound` = no grant existed for the subject.\",\n          \"enum\": [\n            \"revoked\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Consent Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/consent/revoke/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An operator revokes a standing consent grant.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Optional operator note recorded in the audit trail.\",\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/ConsentSubject\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"Consent Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ConsentSubject\": {\n      \"additionalProperties\": false,\n      \"description\": \"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"VID (DID) of the AI agent the conversation would reach.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/Kind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Kind\": {\n      \"description\": \"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"status\": {\n          \"description\": \"`revoked` = the grant was deleted. `notFound` = no grant existed for the subject.\",\n          \"enum\": [\n            \"revoked\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Consent Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/consent/revoke/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An operator revokes a standing consent grant.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Optional operator note recorded in the audit trail.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/ConsentSubject\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"Consent Revoke — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

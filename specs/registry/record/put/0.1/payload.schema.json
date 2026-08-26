@@ -24,7 +24,7 @@
       "properties": {
         "ok": { "type": "boolean", "description": "Whether the record was stored." },
         "created": { "type": "boolean", "description": "True when the put created a new record, false when it replaced an existing one." },
-        "message": { "type": "string", "description": "Optional human-readable detail." },
+        "message": { "type": "string", "maxLength": 1024, "description": "Optional human-readable detail." },
         "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
       }
     }

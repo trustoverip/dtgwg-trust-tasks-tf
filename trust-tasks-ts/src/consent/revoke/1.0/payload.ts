@@ -65,6 +65,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Optional operator note recorded in the audit trail."
     },
     "ext": {

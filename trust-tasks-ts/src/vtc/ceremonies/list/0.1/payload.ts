@@ -139,6 +139,7 @@ export const PAYLOAD_SCHEMA = {
         "label": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 256,
           "description": "Human-readable name for an operator UI."
         },
         "wired": {
@@ -231,6 +232,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "label": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 256,
           "description": "Human-readable name for an operator UI."
         },
         "wired": {

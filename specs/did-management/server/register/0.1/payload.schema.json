@@ -10,7 +10,7 @@
     "did": { "type": "string", "minLength": 1 },
     "publicUrl": { "type": "string", "format": "uri" },
     "servedDomains": { "type": "array", "items": { "type": "string" } },
-    "label": { "type": "string" },
+    "label": { "type": "string", "maxLength": 256 },
     "enabledMethods": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },

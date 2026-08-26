@@ -74,7 +74,8 @@ export const PAYLOAD_SCHEMA = {
       }
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 256
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -126,7 +127,8 @@ export const PAYLOAD_SCHEMA = {
           "description": "VID identifying the registered service."
         },
         "label": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 256
         },
         "publicUrl": {
           "type": "string",
@@ -201,7 +203,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "VID identifying the registered service."
         },
         "label": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 256
         },
         "publicUrl": {
           "type": "string",
