@@ -143,7 +143,7 @@ pub trait TransportHandler {
         Ok(ResolvedParties { issuer, recipient })
     }
 
-    /// Build a `trust-task-error/0.1` response for `doc` that satisfies the
+    /// Build a `trust-task-error` response for `doc` that satisfies the
     /// SPEC.md §8.1 routing rules — most importantly, the rule that under
     /// [`RejectReason::IdentityMismatch`] the error MUST address the
     /// transport-authenticated sender and MUST NOT address the contested

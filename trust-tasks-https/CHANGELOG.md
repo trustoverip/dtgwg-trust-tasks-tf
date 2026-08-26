@@ -4,6 +4,49 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.12.0] - 2026-08-26
+
+### Changed
+
+- **`trust-tasks-rs` requirement moved to `0.12`.** That crate's `0.12.0` makes
+  the duplicate-execution record of SPEC §7.2 item 11 and the freshness bound of
+  item 13 part of `consume_inbound`. This crate re-exports its types, so the
+  leading component moves with it.
+
+  This server does **not** yet get the guard: its pipeline runs its own §7.2
+  checks and never reaches `consume_inbound`, so a `ReplayGuard` still has to be
+  threaded through the handler path. Until it is, an HTTPS deployment has no
+  duplicate-execution defence.
+
+## [0.11.1] - 2026-08-26
+
+### Changed
+
+- **The two fallback error documents now carry the `trust-task-error` version
+  the rest of the stack emits.** `synthesise_error` and
+  `suppressed_error_response` spelled `trust-task-error/0.2` out for
+  themselves, while `trust-tasks-rs` and the TypeScript runtime both emitted
+  `0.5` — so the version a producer saw depended on which branch of the
+  rejection path its request hit, and neither README described either number.
+  Both now call `trust_tasks_rs::trust_task_error_type_uri()`, which
+  `trust-tasks-rs` 0.11.18 made public as the single source of truth.
+
+  `0.5` is a forward-minor move from `0.2`; per SPEC §5.2 a `0.2` consumer
+  SHOULD accept it. Every *other* error response this server emits already
+  carried `0.5`, because they are built by `TrustTask::reject_with` in
+  `trust-tasks-rs` — these two branches were the only ones that disagreed.
+
+### Fixed
+
+- `proof_invalid_when_verifier_rejects` asserted that the verifier's own error
+  description reaches the wire. It does not any more, and should not have:
+  SPEC §10.4 makes that a resolver-reachability and DID-document oracle for a
+  sender who is by construction unauthenticated. The test is renamed
+  `proof_invalid_wire_message_withholds_the_verifier_description` and now
+  asserts both halves — the constant on the wire, and the description still
+  present on `RejectReason`'s `Display` for the operator's log. The sanitising
+  itself is in `trust-tasks-rs` 0.11.18.
+
 ## [0.11.0] - 2026-08-26
 
 Security release. **Every item under "Changed" alters the behaviour of an

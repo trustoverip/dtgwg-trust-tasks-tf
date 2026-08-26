@@ -3,6 +3,19 @@
 All notable changes to `trust-tasks-capability-client` are documented in this
 file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.11.0] - 2026-08-26
+
+### Changed
+
+- **`trust-tasks-rs` requirement moved to `0.12`** (SPEC §7.2 item 11 duplicate
+  execution, item 13 freshness). Leading component moves with the re-exported
+  types.
+
+  As a *producer*, this client should no longer reuse a document `id` across
+  attempts: §8.4 defines a retry as a bit-for-bit identical resend, and as of
+  `trust-tasks-rs` 0.12.0 there is a consumer that enforces it — a fresh attempt
+  carrying a reused `id` and altered content is rejected with `idConflict`.
+
 ## [0.10.0] - 2026-08-26
 
 ### Changed

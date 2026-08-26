@@ -94,22 +94,32 @@ and audience binding — are declared *per specification* and cannot be derived
 from the document itself, so every generated module exports the declarations as
 `SPEC` (and `RESPONSE_SPEC`, where the spec defines a response).
 
-`consumeInbound` runs items 4–8 and then calls your handler. Items 1–3
-(framework schema, payload schema, unknown `type`) belong to your parse and
-dispatch, and have already succeeded by the time you hold a typed document.
+`consumeInbound` runs item 2 and items 4–8, the freshness bound, and item 11's
+duplicate-execution record, then calls your handler. Items 1 and 3 (framework
+schema, unknown `type`) belong to your parse and dispatch, and have already
+succeeded by the time you hold a typed document.
 
 ```ts
 import {
+  consequentialChecks,
   consumeInbound,
+  InMemoryReplayGuard,
   respondWith,
   StaticTransport,
   AclGrant_v0_1,
 } from "@openvtc/trust-tasks";
 
+// The guard *is* the duplicate-execution record — one per consumer, held for
+// the process's lifetime. Back it with a shared store if you run replicas.
+const guard = new InMemoryReplayGuard();
+
 const outcome = await consumeInbound<AclGrant_v0_1.Payload, AclGrant_v0_1.Response>({
   transport: new StaticTransport({ issuer: peerVid }), // what the transport authenticated
   spec: AclGrant_v0_1.SPEC,
   proofPolicy: { kind: "verify", verify: myVerifier },
+  payloadPolicy: { kind: "validate", validate: myValidator }, // or acceptUnvalidated
+  // acl/grant is consequential: a replayed envelope must not grant twice.
+  checks: consequentialChecks(guard), // or notConsequentialChecks()
   doc,
   myVid: "did:web:maintainer.example",
   now: Date.now(),
@@ -128,8 +138,22 @@ switch (outcome.kind) {
     // anything here would be an oracle. Log it — silent is the rule, invisible
     // is a footgun.
     return log(outcome.reason);
+  case "duplicate":
+    // §7.2 item 11: this document already executed. Not an error — return the
+    // prior result where there is one, otherwise emit nothing.
+    return outcome.priorResponse === undefined ? undefined : send(outcome.priorResponse);
+  case "accepted":
+    return undefined; // fire-and-forget: nothing to emit
 }
 ```
+
+**Choose the checks deliberately.** `consequentialChecks(guard)` is correct for
+any task whose execution grants access, moves value, discloses a secret, or is
+otherwise irreversible — SPEC §7.2 item 11 makes duplicate-execution protection
+normative for those, and every transport binding delegates it to the consumer.
+`notConsequentialChecks()` keeps no record and is conformant only where the task
+is not consequential, or where the specification declares repeated execution
+safe and intended.
 
 **Choose a proof policy deliberately.** `{ kind: "verify" }` honours in-band
 proofs. `{ kind: "rejectIfPresent" }` is for consumers with integrity from

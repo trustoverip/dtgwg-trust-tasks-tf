@@ -12,11 +12,13 @@ import { describe, it } from "node:test";
 
 import {
   consumeInbound,
+  notConsequentialChecks,
   refuse,
   rejectWithRecipient,
   respondWith,
   StaticTransport,
   UnauthenticatedTransport,
+  type ConsumeChecks,
   type ConsumeOutcome,
   type PayloadPolicy,
   type PayloadValidator,
@@ -116,6 +118,7 @@ function run(
     spec?: SpecPolicy;
     proofPolicy?: ProofPolicy;
     payloadPolicy?: PayloadPolicy;
+    checks?: ConsumeChecks;
     transport?: TransportHandler;
     handlerShouldNotRun?: boolean;
     handlerReturnsNothing?: boolean;
@@ -126,6 +129,7 @@ function run(
     spec: opts.spec ?? REQUIRED_SPEC,
     proofPolicy: opts.proofPolicy ?? { kind: "verify", verify: alwaysValid },
     payloadPolicy: opts.payloadPolicy ?? { kind: "acceptUnvalidated" },
+    checks: opts.checks ?? notConsequentialChecks(),
     doc: doc(over),
     myVid: ME,
     now: Date.parse("2026-01-01T00:00:00Z"),
@@ -283,6 +287,7 @@ describe("§4.8.1 party resolution", () => {
       spec: RELAXED_SPEC,
       proofPolicy: { kind: "rejectIfPresent" },
       payloadPolicy: { kind: "acceptUnvalidated" },
+      checks: notConsequentialChecks(),
       doc: doc({ issuer: undefined, recipient: ME }),
       myVid: ME,
       now: Date.now(),
@@ -342,6 +347,7 @@ describe("handler refusals", () => {
       spec: RELAXED_SPEC,
       proofPolicy: { kind: "rejectIfPresent" },
       payloadPolicy: { kind: "acceptUnvalidated" },
+      checks: notConsequentialChecks(),
       doc: doc({ proof: undefined }),
       myVid: ME,
       now: Date.now(),

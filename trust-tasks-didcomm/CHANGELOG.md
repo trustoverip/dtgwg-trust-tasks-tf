@@ -4,6 +4,20 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.12.0] - 2026-08-26
+
+### Changed
+
+- **`trust-tasks-rs` requirement moved to `0.12`** (SPEC §7.2 item 11 duplicate
+  execution, item 13 freshness). Leading component moves with the re-exported
+  types.
+
+  A mediator redelivering a queued message is the most likely source of an
+  accidental duplicate, so wiring a `ReplayGuard` here matters more than
+  anywhere else. When it is wired, key it on the *document* `id` — §7.2 forbids
+  substituting a transport message identifier such as the DIDComm `@id` or
+  `thid`.
+
 ## [0.11.0] - 2026-08-26
 
 Four fail-open paths in the inbound gate, closed. All of them change what a

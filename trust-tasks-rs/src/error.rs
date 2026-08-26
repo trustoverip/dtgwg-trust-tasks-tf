@@ -436,6 +436,28 @@ pub enum RejectReason {
         expires_at: DateTime<Utc>,
     },
 
+    /// The document falls outside the consumer's acceptance window
+    /// (SPEC.md §7.2, *Bounding the record*) — either because its `issuedAt`
+    /// is older than the window, or because it carries no timestamp the
+    /// consumer can place in one.
+    ///
+    /// Reported as `expired`: §8.3 defines no separate code, and the window is
+    /// the consumer's own bound on when it is still willing to act, which is
+    /// what `expired` means to the producer.
+    #[error("outside the consumer's acceptance window ({detail:?})")]
+    Stale {
+        /// Which of the two window failures occurred. For the operator's log;
+        /// both render the same wire message.
+        detail: crate::freshness::StaleReason,
+    },
+
+    /// The document's `id` matches one the consumer has already accepted, but
+    /// its content differs (SPEC.md §7.2 item 11).
+    ///
+    /// The later document **MUST NOT** be treated as a retry of the original.
+    #[error("id already accepted under different content (SPEC §7.2 item 11)")]
+    IdConflict,
+
     /// A `proof` was required by the spec or consumer policy but was missing.
     #[error("proof required but not present")]
     ProofRequired,
@@ -500,6 +522,8 @@ impl RejectReason {
             RejectReason::UnsupportedType { .. } => StandardCode::UnsupportedType,
             RejectReason::UnsupportedVersion { .. } => StandardCode::UnsupportedVersion,
             RejectReason::Expired { .. } => StandardCode::Expired,
+            RejectReason::Stale { .. } => StandardCode::Expired,
+            RejectReason::IdConflict => StandardCode::IdConflict,
             RejectReason::ProofRequired => StandardCode::ProofRequired,
             RejectReason::ProofInvalid { .. } => StandardCode::ProofInvalid,
             RejectReason::PermissionDenied { .. } => StandardCode::PermissionDenied,
@@ -522,26 +546,102 @@ impl RejectReason {
     /// [`Self::WrongRecipient`], which makes log lines actionable but is
     /// exactly the identity oracle a wire-exposed message must not provide.
     ///
-    /// Variants whose `Display` is already consumer-side-neutral
-    /// (`Expired`, `ProofInvalid`, …) return the same string the `Display`
-    /// would. The variants that *do* leak identity return a sanitised
-    /// constant.
+    /// Variants whose `Display` is already consumer-side-neutral (`Expired`,
+    /// `ProofRequired`, …) return the same string the `Display` would. The
+    /// variants that would otherwise leak consumer-side state return a
+    /// sanitised constant.
+    ///
+    /// # `ProofInvalid` is sanitised
+    ///
+    /// SPEC §10.4 states the rule for `identityMismatch` and then generalises
+    /// it: "the same principle applies to every standard code: error messages
+    /// **SHOULD** be derived from the code identifier and the *Trust Task
+    /// specification*'s public vocabulary, not from consumer-side
+    /// authentication context."
+    ///
+    /// A `ProofInvalid { reason }` built from a verifier's error text is
+    /// exactly that context. Real strings a cryptosuite backend produces
+    /// include `resolve did:web:x: connection refused`, `verificationMethod …
+    /// not present in DID document`, and `verificationMethod is controlled by
+    /// {vm_did}, not the document issuer {issuer}`. Returned on the wire to an
+    /// *unauthenticated* sender — the proof did not verify, so the sender is
+    /// by definition not authenticated — those answer questions the sender
+    /// asked by choosing what to put in `proof`: which DIDs this consumer can
+    /// reach, whether a resolver is up, and what a DID document it fetched
+    /// contains. That is a resolver-reachability and DID-document oracle, free
+    /// of charge and at the sender's chosen rate.
+    ///
+    /// The `reason` remains on the [`Display`](std::fmt::Display) impl, which
+    /// is where the operator reads it.
     pub fn wire_message(&self) -> String {
         match self {
             // Identity-bearing rejections: sanitised constants. The
             // transport-derived and in-band values stay in logs only.
-            RejectReason::IdentityMismatch(_) => {
-                "in-band identity does not match transport-derived identity".to_string()
-            }
-            RejectReason::WrongRecipient { .. } => {
-                "document recipient does not identify this consumer".to_string()
-            }
+            RejectReason::IdentityMismatch(_) => IDENTITY_MISMATCH_WIRE_MESSAGE.to_string(),
+            RejectReason::WrongRecipient { .. } => WRONG_RECIPIENT_WIRE_MESSAGE.to_string(),
+            // Verifier-internal detail: resolver reachability, DID document
+            // content, key-controller relationships. See the note above.
+            RejectReason::ProofInvalid { .. } => PROOF_INVALID_WIRE_MESSAGE.to_string(),
+            // The window is consumer policy; its size is not the producer's
+            // business and stating it invites a probe for the boundary.
+            RejectReason::Stale { .. } => STALE_WIRE_MESSAGE.to_string(),
+            // Names the store, its host, and its failure mode.
+            RejectReason::Unavailable { .. } => UNAVAILABLE_WIRE_MESSAGE.to_string(),
             // All other variants carry no consumer-side authentication
             // context — their `Display` is safe for the wire.
             other => other.to_string(),
         }
     }
+
+    /// Build a `malformedRequest` from a `serde_json` failure without echoing
+    /// the deserializer's pointer into the document.
+    ///
+    /// `serde_json::Error::to_string()` renders as, for example, `missing
+    /// field 'subject' at line 1 column 214` or `unknown field 'admin',
+    /// expected one of …` — the member path, the offset, and sometimes the
+    /// full set of expected members. On the wire that describes the
+    /// consumer's internal type layout to anyone willing to send malformed
+    /// JSON, and the offsets describe how the consumer framed the body.
+    ///
+    /// This maps the error to its *category* — which is what a producer can
+    /// act on — and leaves the detail for the log. Transport bindings that
+    /// deserialize a body themselves should use this rather than
+    /// `format!("{e}")`, so one rule holds across the framework.
+    pub fn malformed_from_serde(err: &serde_json::Error) -> Self {
+        use serde_json::error::Category;
+        let reason = match err.classify() {
+            Category::Syntax => "document is not well-formed JSON",
+            Category::Eof => "document ended before a complete JSON value was read",
+            Category::Data => {
+                "document does not match the schema for its type \
+                 (a member is missing, unexpected, or of the wrong type)"
+            }
+            Category::Io => "document could not be read",
+        };
+        RejectReason::MalformedRequest {
+            reason: reason.to_string(),
+        }
+    }
 }
+
+/// Wire message for `identityMismatch` (SPEC §8.1, §10.4).
+pub const IDENTITY_MISMATCH_WIRE_MESSAGE: &str =
+    "in-band identity does not match transport-derived identity";
+
+/// Wire message for `wrongRecipient` — never naming the consumer's own VID.
+pub const WRONG_RECIPIENT_WIRE_MESSAGE: &str = "document recipient does not identify this consumer";
+
+/// Wire message for `proofInvalid`. Constant by design — see
+/// [`RejectReason::wire_message`].
+pub const PROOF_INVALID_WIRE_MESSAGE: &str = "proof verification failed";
+
+/// Wire message for a document outside the consumer's acceptance window.
+pub const STALE_WIRE_MESSAGE: &str =
+    "document is outside the consumer's acceptance window (SPEC §7.2)";
+
+/// Wire message for `unavailable`. Constant so a backing-store outage does not
+/// name the store on the wire.
+pub const UNAVAILABLE_WIRE_MESSAGE: &str = "temporarily unavailable";
 
 impl From<RejectReason> for ErrorPayload {
     fn from(reason: RejectReason) -> Self {

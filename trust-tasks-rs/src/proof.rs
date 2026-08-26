@@ -94,7 +94,7 @@ pub trait ProofVerifier: Send + Sync {
     /// Returns `Ok(())` when the proof is valid. Implementations should
     /// match the spec's failure-mode taxonomy — see [`VerificationError`]
     /// variants — so the consumer pipeline can map to the right
-    /// [`crate::StandardCode`] in its outbound `trust-task-error/0.1`
+    /// [`crate::StandardCode`] in its outbound `trust-task-error`
     /// response.
     async fn verify<P>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>
     where
@@ -106,7 +106,7 @@ pub trait ProofVerifier: Send + Sync {
 /// Mapping to [`crate::StandardCode`] for the wire:
 /// `UnsupportedCryptosuite` / `MalformedProof` / `IssuerMismatch` →
 /// [`crate::StandardCode::ProofInvalid`]; the consumer composes the
-/// `trust-task-error/0.1` response with that code per SPEC.md §7.2 item 7.
+/// `trust-task-error` response with that code per SPEC.md §7.2 item 7.
 #[derive(Debug, thiserror::Error)]
 pub enum VerificationError {
     /// The proof's `cryptosuite` is not implemented by this verifier.
