@@ -1254,13 +1254,15 @@ The reservation rule of [§6.5](#65-private-and-unpublished-trust-task-specifica
 
 ## 10. Security and Privacy Considerations
 
-*This section is non-normative in the current draft. Future revisions are expected to make portions of it normative as individual Trust Task specifications surface concrete requirements.*
+*This section is non-normative except where a subsection states otherwise. Future revisions are expected to make further portions of it normative as individual Trust Task specifications surface concrete requirements.*
 
 A *Trust Task document* carries no inherent transport security. The framework's default rules for when an integrity proof is required of a document are given in [§4.7.1](#471-when-to-include-a-proof), and each *Trust Task specification* declares its own requirement under [§7.3](#73-specification-requirements). When `proof` is included, it **MUST** conform to the W3C *Data Integrity* format defined in [[VC-DATA-INTEGRITY]] (see [§4.7](#47-proof)); implementations select an appropriate cryptographic suite from the W3C-registered set based on the trust requirements agreed by the parties.
 
 Personal data carried in a *Trust Task document* is visible to every *party* that handles the document. Individual *Trust Task specifications* **SHOULD** minimize personal data in their schemas to that strictly necessary to achieve the task's outcome, and **SHOULD** prefer references (e.g. DID URLs) to direct attribute values where the relying party is able to dereference them.
 
 Because *Trust Task documents* are self-contained, a captured document remains evidence of its content after it has been delivered. Producers **SHOULD** consider whether the document's contents are appropriate for indefinite retention by the consumer.
+
+A *Trust Task document* also names both parties in the clear and carries handles whose purpose is to join documents to one another. The normative rules of [§10.5](#105-identifier-correlation-and-linkability) bound what those handles may be derived from and how widely the party identifiers may be reused.
 
 ### 10.1 Cross-recipient replay
 
@@ -1283,6 +1285,22 @@ This consideration does **not** apply when the schema is embedded with the *cons
 ### 10.4 Error-response identity leakage
 
 A *consumer* emitting an *error response* under [§8](#8-error-responses) treats the error response's `payload.message` as a wire-exposed value. Free-text messages that reveal the *consumer*'s expected transport-authenticated identity, the contested in-band value of a mismatched party, or other consumer-internal state convert each error response into an identity- and reachability-probing oracle for an unauthenticated *producer*. This was guidance in earlier revisions and is now normative for every code, extended codes included: the enumerated prohibitions and the reasoning are in [§8.2.1](#821-what-a-message-may-not-say), and the corresponding bound on `details` is in [§8.2.2](#822-bounding-details). The code-specific rule for `identityMismatch` — which also governs who the response is addressed to — remains in [§8.1](#81-the-trust-task-error-specification).
+
+### 10.5 Identifier correlation and linkability
+
+*This subsection is normative.*
+
+A *Trust Task document* is, by construction, a record that names both parties in clear and survives delivery. [§4.2](#42-top-level-members) carries `issuer` and `recipient` on the document rather than in *payload*; nearly every published *Trust Task specification* declares both **REQUIRED**; and a majority declare `proof` **REQUIRED** under [§7.3](#73-specification-requirements) item 8. The median document on the wire is therefore a signed, retainable statement that a named party asked a named party to do a named thing at a named instant. The preamble to this section observes that such a document is durable evidence of its *content*. This subsection addresses what it is evidence of about the *parties*, which until this version no rule in this framework constrained at all.
+
+1. **Party identifiers SHOULD be relationship-scoped.** The `issuer` and `recipient` of a *Trust Task document* **SHOULD** be *VIDs* scoped to the relationship in which the document is exchanged — *pairwise* identifiers — rather than a single identifier the party presents to every counterparty it deals with. A *Trust Task specification* **MAY** declare a public, cross-relationship identifier for a party where that public identifier is **intrinsic** to what the task asserts — a registry that must be nameable to be resolved, an attesting authority whose statements are worthless unless they can be attributed publicly, a *bearer specification* whose purpose is unspecified consumption ([§4.8.3](#483-bearer-specifications)) — and where it does, it **MUST** state in its prose why. Convenience is not intrinsic. A party that presents one identifier to every counterparty makes every document it has ever issued joinable by any two of those counterparties who compare what they hold, and the framework's own rules make that holding likely: [§4.8.2](#482-audience-binding) puts the counterparty's identifier inside the signature, and [§4.7.1](#471-when-to-include-a-proof) makes the document worth retaining.
+
+2. **The correlators MUST be freshly minted and unguessable.** `id` ([§4.3](#43-the-id-member)), `threadId` ([§4.9](#49-the-threadid-member)) and `ceremony.enactment` ([§4.11](#411-the-ceremony-member)) exist so that documents can be joined to one another — and anything that joins documents for the parties joins them equally for an observer in the middle, for an intermediary, and for any party that retains one of them later. Each of the three **MUST** be a freshly minted value carrying sufficient entropy to be unguessable, and **MUST NOT** be derived — by hashing, encoding, truncation, or any other transformation — from subject data, an account number, a session identifier, a transaction reference, a counter, or any other value that carries meaning outside the document. A *producer* **MUST NOT** carry a `threadId` across exchanges that are not one exchange; `id` is already non-reusable under [§4.3](#43-the-id-member) and `enactment` under [§4.11.2](#4112-the-identifiers-are-orthogonal).
+
+    A random UUIDv4 satisfies both requirements. A UUIDv5 over a subject identifier satisfies neither — it is stable across every document about that subject, so it *is* the subject identifier under an encoding. A sequential counter satisfies neither and additionally discloses the *producer*'s volume to every counterparty. Deriving a correlator from meaningful data is the specific failure this rule forecloses, because it looks like an implementation convenience and produces an identifier that is joinable outside the exchange forever.
+
+3. **`issuedAt` MAY be coarsened.** Where the *Trust Task specification* does not need sub-minute freshness, a *producer* **MAY** round `issuedAt` down to a coarser granularity — the minute, or the hour — provided the value remains a conforming [[RFC3339]] timestamp and remains inside the acceptance window a *consumer* applies under [§7.2](#72-consumer-requirements) item 13. A full-precision timestamp is a fingerprint: two documents bearing unrelated identifiers and the same millisecond were produced by the same process, which is exactly the join the identifier rules above are written to prevent. Coarsening and freshness trade against each other — the coarser the value, the wider the skew tolerance a *consumer* needs in order to accept it — so a specification that expects its producers to coarsen **SHOULD** state by how much.
+
+4. **A ceremony enactment links every counterparty in the flow.** `ceremony.enactment` is shared, by design, across every document of an *enactment*, and the steps of an enactment are typically bilateral exchanges with *different* counterparties ([§4.11.2](#4112-the-identifiers-are-orthogonal)). Carrying the member therefore hands each of those counterparties a handle that joins it to all the others, whether or not they were ever intended to learn of one another. That is the right default for a flow whose participants are already mutually visible and the wrong one for a flow whose participants are not. A *ceremony definition* whose participation must not be linkable across steps declares `enactmentPrivacy: blinded` — the mechanism the `trust-ceremony-receipt` registry entry defines against exactly this exposure — and a flow that cannot accept the enumeration **MUST NOT** instead rely on a receipt simply not being handed out: [§4.8.3](#483-bearer-specifications) governs audience, not distribution.
 
 ## 11. Discovery and capability negotiation
 
@@ -1307,6 +1325,8 @@ A *discovery request* is a *Trust Task document* whose `type` is `https://trustt
 ```
 
 When `patterns` is absent or empty, the *responder* treats the query as `["*"]` — return every supported *Trust Task*.
+
+A *discovery request*'s `patterns` list **SHOULD** be bounded: the specification **SHOULD** declare a maximum number of patterns and a maximum length for each, and a *responder* **MAY** reject a request exceeding either with `malformedRequest`. A pattern list is evaluated against every slug the *responder* supports, so an unbounded list is an unbounded amount of matching work bought for one document — and unlike the free-text bound of [§7.3](#73-specification-requirements) item 19, this one is paid by the party that did not choose it. A discoverer that wants everything sends `["*"]`, which costs one comparison.
 
 ### 11.2 Pattern grammar
 
@@ -1345,6 +1365,22 @@ A *discovery response* is **advisory**. A *Type URI*'s presence is a hint that t
 ### 11.5 Privacy considerations
 
 A discovery response leaks information about which specifications the responder implements. Responders that consider their supported task set sensitive **SHOULD** authenticate the discoverer before responding, and **MAY** return a filtered subset of their true capabilities (or no response at all) when the discoverer is unknown or unauthenticated. See the discovery spec's "Privacy considerations" section for additional discussion.
+
+### 11.6 Authenticity of a discovery response
+
+A *discovery response* is advisory as to *content*, but a discoverer acts on it: it narrows what the discoverer chooses to send, and — through the capability annotations described below — can shape what a *producer* puts in the documents it sends next. An advisory document that is acted upon still has to be attributable.
+
+The `trust-task-discovery` specification declares its `proof` requirement **OPTIONAL**, on the rationale that a discovery exchange takes place between parties that "have already authenticated through the transport". That premise does not hold generally, and the framework has since said why it cannot be assumed from a transport's name: [§9.1.1](#911-permitting-proof-to-be-omitted) requires a *transport binding* to establish the point explicitly, and at least one published binding — the HTTPS binding — states in its own security profile that it provides **no** producer-to-consumer end-to-end guarantee. A discovery exchange over such a binding is one between parties that have authenticated nothing.
+
+Accordingly, from this version:
+
+1. The `proof` requirement applicable to the `trust-task-discovery` specification is **RECOMMENDED**, not **OPTIONAL**. This is a framework default under [§4.7.1](#471-when-to-include-a-proof), so [§7.3](#73-specification-requirements) item 8 forbids the specification's own declaration being weaker; the registry entry is expected to be re-issued to match.
+
+2. A *discoverer* **MUST NOT** act upon a *discovery response* whose origin it can authenticate neither in-band — from a `proof` resolving to an `issuer` it recognizes — nor from the transport. This mirrors the rule the `trust-task-next-step` specification already imposes on a continuation, and for the same reason: an unauthenticated redirection is indistinguishable from an injected one. "Act upon" here means narrowing the task set the discoverer will send, satisfying an advertised requirement, or recording the response as evidence of what a party supports; a discoverer that cannot authenticate the response **MAY** still discard it, log it, or retry.
+
+3. **A responder's advertised requirements are untrusted input.** The expanded form of a `supportedTypes` entry may carry capability annotations — the `requiredExt` namespace list of [§7.2](#72-consumer-requirements) being the one the 0.1 specification defines. Such an annotation is a statement by the responder about the responder's own policy. It **MUST NOT** cause a *producer* to attach to a subsequent *Trust Task document* any data it would not otherwise have sent: a *producer* satisfies an advertised requirement only where it independently holds the data, is willing to disclose it to that party, and would have been willing to do so had the requirement never been advertised. A *producer* that treats an advertised requirement as an instruction has handed the choice of what leaves it to whoever answered the query — which, absent rule 2, is whoever answered it *first*.
+
+    A *producer* unwilling or unable to satisfy an advertised requirement simply does not send the task. The alternative reading turns a discovery response into a data-collection instrument that costs an attacker one unauthenticated reply.
 
 ## 12. Task control
 
