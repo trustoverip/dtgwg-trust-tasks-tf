@@ -765,10 +765,14 @@ fn build_error_response(
             // No request context — synthesise a free-standing error doc.
             // This branch is hit when the body failed to deserialise into
             // a TrustTask at all.
+            // `trust_task_error_type_uri()` rather than a version spelled out
+            // here: this crate emitted `trust-task-error/0.2` on these two
+            // fallback paths while `trust-tasks-rs` and the TypeScript runtime
+            // both emitted `0.5`, so the version a producer saw depended on
+            // which branch of this function it hit. One definition, one answer.
             let mut doc = TrustTask::new(
                 new_id,
-                trust_tasks_rs::TypeUri::canonical("trust-task-error", 0, 2)
-                    .expect("framework type URI"),
+                trust_tasks_rs::trust_task_error_type_uri(),
                 ErrorPayload::from(reason),
             );
             doc.issued_at = Some(chrono::Utc::now());
@@ -794,7 +798,7 @@ fn build_error_response(
 fn suppressed_error_response(new_id: &str) -> ErrorResponse {
     let mut doc = TrustTask::new(
         new_id.to_string(),
-        trust_tasks_rs::TypeUri::canonical("trust-task-error", 0, 2).expect("framework type URI"),
+        trust_tasks_rs::trust_task_error_type_uri(),
         ErrorPayload::from(RejectReason::MalformedRequest {
             reason: String::new(),
         }),

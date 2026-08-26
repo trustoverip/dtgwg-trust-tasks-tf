@@ -545,12 +545,28 @@ async fn happy_path_acl_grant_with_verifier() {
     assert_eq!(resp.recipient.as_deref(), Some("did:web:alice.example"));
 }
 
-/// Verifier returns `Err` → server rejects with `proof_invalid` and
-/// the failure message reaches the wire. Pins both the
-/// `RejectReason::ProofInvalid` mapping and the configured-verifier
-/// failure path on the binding.
+/// Verifier returns `Err` → server rejects with `proofInvalid`, carrying the
+/// constant wire message and **not** the verifier's own description. Pins the
+/// `RejectReason::ProofInvalid` mapping, the configured-verifier failure path
+/// on the binding, and the §10.4 rule that the message says nothing the
+/// verifier learned.
+///
+/// This test asserted the opposite — `msg.contains("signature")` — until
+/// `trust-tasks-rs` 0.11.18, under the name
+/// `proof_invalid_when_verifier_rejects`. A verifier's error text names DIDs
+/// the consumer tried to resolve, whether a resolver answered, and what a
+/// fetched DID document contained; the party reading it is by construction
+/// unauthenticated, because the proof did not verify. SPEC §10.4 states the
+/// rule for `identityMismatch` and generalises it to every standard code:
+/// messages are "derived from the code identifier and the *Trust Task
+/// specification*'s public vocabulary, not from consumer-side authentication
+/// context".
+///
+/// The companion assertion below keeps the original intent — the detail is
+/// still *available*, on `RejectReason`'s `Display`, which is the operator's
+/// log line. Sanitising the wire did not discard it.
 #[tokio::test]
-async fn proof_invalid_when_verifier_rejects() {
+async fn proof_invalid_wire_message_withholds_the_verifier_description() {
     let addr = spawn_server_with(VerifierMode::RejectAll).await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
@@ -587,15 +603,32 @@ async fn proof_invalid_when_verifier_rejects() {
         ClientError::TrustTaskError { http_status, error } => {
             assert_eq!(http_status, 422);
             assert_eq!(error.payload.code, StandardCode::ProofInvalid.into());
-            // The verifier's error description surfaces on the wire.
+
+            // The wire message is the constant, and carries nothing the
+            // verifier learned about this consumer's resolver or the DID
+            // documents it fetched.
             let msg = error.payload.message.as_deref().unwrap_or("");
-            assert!(
-                msg.contains("signature"),
-                "expected signature-error description: {msg}"
-            );
+            assert_eq!(msg, trust_tasks_rs::PROOF_INVALID_WIRE_MESSAGE);
+            for leaked in ["signature", "resolve", "did:web:", "verificationMethod"] {
+                assert!(!msg.contains(leaked), "verifier detail on the wire: {msg}");
+            }
         }
         other => panic!("expected TrustTaskError, got {other:?}"),
     }
+
+    // …and the description is still there for the operator. The binding maps
+    // every `VerificationError` through `RejectReason::ProofInvalid`, whose
+    // `Display` is what a `tracing` layer or a log line renders; only
+    // `wire_message` is sanitised. A change that dropped the reason outright
+    // would pass the assertions above and leave operators debugging blind.
+    let reason = RejectReason::ProofInvalid {
+        reason: VerificationError::SignatureInvalid.to_string(),
+    };
+    assert!(
+        reason.to_string().contains("signature"),
+        "the operator-facing rendering lost the verifier's description: {reason}"
+    );
+    assert_ne!(reason.to_string(), reason.wire_message());
 }
 
 #[tokio::test]

@@ -28,8 +28,8 @@
 //! `id` alone cannot distinguish the retry it must absorb from the conflict it
 //! must reject".
 //!
-//! [`document_digest`] therefore hashes [`canonical_json`](crate::canonical_json)
-//! of the whole document rather than the octets as received. Received bytes
+//! [`document_digest`] therefore hashes [`crate::canonical_json`] of the
+//! whole document rather than the octets as received. Received bytes
 //! are the wrong key: a re-indented body, a member order chosen by an
 //! intermediary, or a transport that re-serializes in transit would each make
 //! a legitimate §8.4 retry look like a *different* document, and the consumer

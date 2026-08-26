@@ -166,10 +166,17 @@ fn sha256(input: &[u8]) -> [u8; 32] {
     }
     message.extend_from_slice(&bit_len.to_be_bytes());
 
-    for chunk in message.chunks_exact(64) {
+    // `as_chunks` rather than `chunks_exact`: the sizes are compile-time
+    // constants, so the compiler can see the block and word shapes.
+    let (blocks, rest) = message.as_chunks::<64>();
+    debug_assert!(
+        rest.is_empty(),
+        "the message was padded to a block multiple"
+    );
+    for chunk in blocks {
         let mut w = [0u32; 64];
-        for (i, word) in chunk.chunks_exact(4).enumerate() {
-            w[i] = u32::from_be_bytes([word[0], word[1], word[2], word[3]]);
+        for (i, word) in chunk.as_chunks::<4>().0.iter().enumerate() {
+            w[i] = u32::from_be_bytes(*word);
         }
         for i in 16..64 {
             let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
