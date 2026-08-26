@@ -31,6 +31,7 @@
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
 
+mod async_dispatch;
 mod canonical;
 mod ceremony;
 mod consume;
@@ -57,6 +58,7 @@ pub mod schema_index;
 #[cfg_attr(docsrs, doc(cfg(feature = "validate")))]
 pub mod validate;
 
+pub use async_dispatch::AsyncDispatcher;
 pub use canonical::{canonical_json, sha256_hex};
 pub use ceremony::{Ceremony, CeremonyPrev};
 pub use consume::{

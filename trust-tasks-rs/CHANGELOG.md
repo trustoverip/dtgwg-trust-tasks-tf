@@ -29,6 +29,35 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.13.3] - 2026-08-26
+
+### Added
+
+- **`AsyncDispatcher<Ctx, R>` — async, context-carrying dispatch.**
+  `Dispatcher::on` takes `Fn(TrustTask<P>) -> R`: synchronous, with nowhere to
+  put request-scoped state. A handler that must `await` a database, a DID
+  resolution or an approval prompt cannot be written against it, so every
+  receiver in the wild hand-rolls its own router instead — and none of them
+  answer `unsupportedVersion` for a known slug at an unknown `MAJOR.MINOR`
+  (SPEC §5.2 / §8.3); they answer `unsupportedType`, telling a producer its spec
+  is unimplemented when the real fix is to downgrade.
+
+  `AsyncDispatcher` is the async sibling: `.on_async::<P, _, _>(|req, ctx| async
+  move { … })`, `.dispatch(doc, ctx).await`, `.dispatch_or_reject(doc, ctx,
+  error_id).await`. It keeps the routing table `Dispatcher` already had, so the
+  `unsupportedType` / `unsupportedVersion` split falls out by construction, and
+  it downcasts `Value → P` once per message rather than once per arm.
+
+  After the downcast — the first point at which the codegen-emitted `Payload`
+  flags are reachable — it applies `TrustTask::enforce_spec_policy` to request
+  documents, covering §7.2 items 5b (`recipient` REQUIRED), 7A (`proof`
+  REQUIRED) and 8 (audience binding). That is the same method `consume_inbound`
+  and the HTTPS server call, so the three cannot drift. `#response`-variant
+  documents route straight through, since those items govern what a consumer
+  demands of a request.
+
+  `Dispatcher` is untouched and remains the right tool for a synchronous match.
+
 ## [0.13.2] - 2026-08-26
 
 ### Changed

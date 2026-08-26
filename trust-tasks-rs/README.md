@@ -28,6 +28,7 @@ The framework specification this crate implements is [`SPEC.md`](../SPEC.md).
 | `handlers::InMemoryHandler` | Simulated transport with configured local+peer VIDs | reference impl |
 | `Payload`, `TrustTask::for_payload` | Ties a Rust struct to its Type URI; auto-fills `type` on construction | trait |
 | `Dispatcher<R>` | Type-URI → handler routing for consumers that implement N specs | open-set match |
+| `AsyncDispatcher<Ctx, R>` | The same routing for `async` handlers, carrying a request-scoped context | open-set match |
 | `specs::<slug>::<version>` | Generated per-spec payload types (one module per registry entry) | generated |
 | `validate` feature | Runtime JSON Schema validation against the embedded `payload.schema.json` | opt-in |
 
@@ -81,6 +82,42 @@ A REST or DIDComm binding implements the same trait — populating
 `derive_parties` from the peer certificate, the DIDComm envelope's verified
 sender, or whatever the transport authenticates — and the rest of the
 validation pipeline stays unchanged.
+
+## Routing to a handler
+
+A consumer that implements several specs registers one handler per Type URI
+rather than writing an `if doc.type_uri == …` chain. `Dispatcher<R>` is the
+synchronous form; `AsyncDispatcher<Ctx, R>` is the same routing for handlers
+that need to `await` and for the request-scoped context they need to do it:
+
+```rust,ignore
+use trust_tasks_rs::{specs::acl, AsyncDispatcher};
+
+let dispatcher = AsyncDispatcher::<Arc<AppState>, Outcome>::new()
+    .on_async::<acl::grant::v0_1::Payload, _, _>(|req, ctx| async move {
+        ctx.db.record_grant(&req.payload.entry).await;      // a real await
+        Outcome::Granted
+    })
+    .on_async::<acl::revoke::v0_1::Payload, _, _>(|req, ctx| async move {
+        ctx.db.revoke(&req.payload.subject).await;
+        Outcome::Revoked
+    });
+
+// `dispatch_or_reject` returns the §8.1-routed `trust-task-error` document
+// for every routing-time failure, so the caller emits one or the other.
+match dispatcher.dispatch_or_reject(inbound, state.clone(), new_id()).await {
+    Ok(outcome) => emit(outcome),
+    Err(error)  => emit(error),
+}
+```
+
+Both dispatchers downcast `Value → P` **once**, and both distinguish
+`unsupportedType` (slug not registered) from `unsupportedVersion` (slug
+registered at a different `MAJOR.MINOR`, SPEC §5.2 / §8.3) — the answer a
+`match` on the whole URI string cannot produce. `AsyncDispatcher` additionally
+applies `TrustTask::enforce_spec_policy` to request documents after the
+downcast, which is where §7.2 items 5b / 7A / 8 (`recipient` REQUIRED, `proof`
+REQUIRED, audience binding) become checkable at all.
 
 ## Request → response → error
 
