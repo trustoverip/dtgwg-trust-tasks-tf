@@ -112,6 +112,22 @@ export interface VaultEntry {
    * Optional cached DID the entry will act AS for DID-shaped flows — mirrors the `did` field of the entry's secret payload when `secretKind` carries one (`did-self-issued`, `didcomm-peer`). Absent for kinds that have no DID concept (`password`, `passkey`, `oauth-tokens`, `bearer-token`, `ssh-key`, `custom`). MAINTAINER-DERIVED, NOT CONSUMER-SUPPLIED: the maintainer MUST recompute this from the canonical secret at every upsert / secret rotation; a producer-supplied value on `vault/upsert/0.1` MUST be ignored (no error, but no honour). Read-only on the wire, present in metadata views so consumers can drive RP-side flows (e.g. fetch `/auth/challenge` keyed on the principal DID before requesting a proxy-login) without releasing the secret.
    */
   principalDid?: string;
+  /**
+   * Archival-lifecycle state of this entry. Absent means `active`, so a maintainer that models no lifecycle omits it and every existing document stays valid. Deliberately carries no JSON Schema `default`: a declared default is materialised by generated bindings, which would make an absent `status` reappear as an explicit `"active"` on re-serialisation and break round-trip idempotence for every existing document. This member is what makes `vault/list`'s `status: "all"` selector usable: that view returns entries in every state by design, and without a state on the entry itself a consumer cannot tell which is which. An `archived` entry is hidden from ordinary listings but intact; a `deleted` entry is a tombstone inside its grace window, still restorable until `graceUntil` passes.
+   */
+  status?: "active" | "archived" | "deleted";
+  /**
+   * When the entry was archived. Present iff `status` is `archived`.
+   */
+  archivedAt?: string;
+  /**
+   * When the entry was soft-deleted. Present iff `status` is `deleted`. A soft delete is reversible: this records when the grace window opened, not when the entry ceased to exist.
+   */
+  deletedAt?: string;
+  /**
+   * Deadline after which a `deleted` entry is irreversibly purged. Present iff `status` is `deleted`. It is the one member a consumer showing a trash view actually needs — "deleted" without a deadline cannot be distinguished from "gone", and the difference is whether the holder can still get their credential back.
+   */
+  graceUntil?: string;
   ext?: Ext;
 }
 export interface WebOrigin {
@@ -545,6 +561,30 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "description": "Optional cached DID the entry will act AS for DID-shaped flows — mirrors the `did` field of the entry's secret payload when `secretKind` carries one (`did-self-issued`, `didcomm-peer`). Absent for kinds that have no DID concept (`password`, `passkey`, `oauth-tokens`, `bearer-token`, `ssh-key`, `custom`). MAINTAINER-DERIVED, NOT CONSUMER-SUPPLIED: the maintainer MUST recompute this from the canonical secret at every upsert / secret rotation; a producer-supplied value on `vault/upsert/0.1` MUST be ignored (no error, but no honour). Read-only on the wire, present in metadata views so consumers can drive RP-side flows (e.g. fetch `/auth/challenge` keyed on the principal DID before requesting a proxy-login) without releasing the secret."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "archived",
+            "deleted"
+          ],
+          "description": "Archival-lifecycle state of this entry. Absent means `active`, so a maintainer that models no lifecycle omits it and every existing document stays valid. Deliberately carries no JSON Schema `default`: a declared default is materialised by generated bindings, which would make an absent `status` reappear as an explicit `\"active\"` on re-serialisation and break round-trip idempotence for every existing document. This member is what makes `vault/list`'s `status: \"all\"` selector usable: that view returns entries in every state by design, and without a state on the entry itself a consumer cannot tell which is which. An `archived` entry is hidden from ordinary listings but intact; a `deleted` entry is a tombstone inside its grace window, still restorable until `graceUntil` passes."
+        },
+        "archivedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the entry was archived. Present iff `status` is `archived`."
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the entry was soft-deleted. Present iff `status` is `deleted`. A soft delete is reversible: this records when the grace window opened, not when the entry ceased to exist."
+        },
+        "graceUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Deadline after which a `deleted` entry is irreversibly purged. Present iff `status` is `deleted`. It is the one member a consumer showing a trash view actually needs — \"deleted\" without a deadline cannot be distinguished from \"gone\", and the difference is whether the holder can still get their credential back."
         },
         "ext": {
           "$ref": "#/$defs/Ext",
