@@ -29,6 +29,24 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.12.1] - 2026-08-26
+
+### Added
+
+- **`keys/create/0.1` gains `keyId`.**
+
+  0.11.17 added `internal`, and an internal key exposed the gap: it derives
+  from no seed, so it has no `derivationPath` for the maintainer to name it
+  after, and the request had no other way to name it. A maintainer offering
+  internal keys therefore had to invent an identifier or refuse every request
+  — and that identifier is the consumer's handle for every later
+  `keys/{show,sign,rename,revoke}` call, so inventing one is a poor answer.
+
+  Optional, because for an ordinary derived key a maintainer MAY default it to
+  `derivationPath`, which is what implementations already do. The specification
+  says a maintainer MUST reject a colliding `keyId` rather than overwrite,
+  since silently replacing a signing key is the worst available outcome.
+
 ## [0.12.0] - 2026-08-26
 
 > ### ⚠ Breaking, and released as a workspace event

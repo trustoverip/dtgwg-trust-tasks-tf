@@ -27,6 +27,10 @@ export interface KeysCreatePayload {
    */
   derivationPath?: string;
   /**
+   * Durable identifier to give the new key. Where the maintainer derives from a seed it MAY default this to `derivationPath`, which is what makes the member optional for an ordinary create. It is **not** optional in practice for `internal: true`: such a key has no derivation path to be named after, so a maintainer that offers internal keys and receives no `keyId` has nothing to call the key and SHOULD reject the request. A maintainer MUST reject a `keyId` that collides with an existing key rather than overwrite it.
+   */
+  keyId?: string;
+  /**
    * Absent is the same as `false`, and this member deliberately declares no JSON Schema `default`: a declared default is materialised by generated bindings, so an absent `internal` would reappear as an explicit `false` on re-serialisation and break round-trip idempotence for every existing request document. Request a key generated from the maintainer's CSPRNG rather than derived from a seed. Such a key is reproducible from nothing: it is not recoverable from a recovery phrase, and a maintainer offering it SHOULD exclude it from backup and export. A consumer asks for this when the key's value lies in being unexportable — the maintainer can sign with it and nothing can take it away — and accepts that losing the maintainer's storage destroys it permanently.
    *
    * A maintainer that cannot mint such a key MUST reject the request rather than silently return a derived one, because the consumer's whole reason for asking is a property the derived key does not have. Consumers MUST confirm the outcome by reading `origin` on the returned record, which is `internal` iff the request was honoured; a maintainer that ignored an unrecognised member returns `derived`, and that difference is the consumer's only reliable signal.
@@ -145,6 +149,11 @@ export const PAYLOAD_SCHEMA = {
     "derivationPath": {
       "type": "string",
       "description": "Hierarchical-deterministic path to derive at. Where the custodian derives from a seed, supplying the path makes the key reproducible from that seed; omitting it leaves the choice to the custodian. MUST NOT be combined with `internal: true`, which derives from no seed and records no path — a request carrying both is contradictory and the maintainer SHOULD reject it."
+    },
+    "keyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Durable identifier to give the new key. Where the maintainer derives from a seed it MAY default this to `derivationPath`, which is what makes the member optional for an ordinary create. It is **not** optional in practice for `internal: true`: such a key has no derivation path to be named after, so a maintainer that offers internal keys and receives no `keyId` has nothing to call the key and SHOULD reject the request. A maintainer MUST reject a `keyId` that collides with an existing key rather than overwrite it."
     },
     "internal": {
       "type": "boolean",
