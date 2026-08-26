@@ -6534,7 +6534,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-https"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "affinidi-secrets-resolver",
  "async-trait",

@@ -4,6 +4,20 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.14.1] - 2026-08-26
+
+### Fixed
+
+- **The end-to-end demo now signs, so it completes.** `acl/grant/0.1`
+  declares `proof` REQUIRED and this server enforces it, so `client_demo`
+  had never succeeded — it returned `422 proofRequired`. It now derives a
+  `did:key` from a fixed seed, sets `issuer`/`recipient`/`issuedAt` before
+  signing, and signs via `ProofExt`; `server_demo` maps the `alice` bearer
+  token to the same `did:key` and verifies with `Verifier::for_did_key()`.
+
+  Examples and dev-dependencies only — no library code changed, and
+  dev-dependencies are stripped at publish.
+
 ## [0.14.0] - 2026-08-26
 
 ### Changed

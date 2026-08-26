@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-https"
-version = "0.14.0"
+version = "0.14.1"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -75,5 +75,7 @@ async-trait = "0.1"
 # example has to actually sign. Dev-deps are stripped at publish, so this
 # introduces no cycle: `trust-tasks-proof` depends on `trust-tasks-rs`, not
 # on this crate.
-trust-tasks-proof = { path = "../trust-tasks-proof", features = ["affinidi"] }
+trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.12", features = [
+  "affinidi",
+] }
 affinidi-secrets-resolver = "0.5"
