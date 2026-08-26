@@ -169,6 +169,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(rename = "deviceId")]
     pub device_id: PayloadDeviceId,
@@ -176,6 +177,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadDeviceId`
 ///
@@ -344,6 +350,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "deviceId")]
     pub device_id: ::std::string::String,
@@ -351,6 +358,150 @@ pub struct Response {
     pub disabled_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        device_id: ::std::result::Result<super::PayloadDeviceId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                device_id: Err("no value supplied for device_id".to_string()),
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDeviceId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_id: value.device_id?,
+                ext: value.ext?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                device_id: Ok(value.device_id),
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        device_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        disabled_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                device_id: Err("no value supplied for device_id".to_string()),
+                disabled_at: Err("no value supplied for disabled_at".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn disabled_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disabled_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disabled_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_id: value.device_id?,
+                disabled_at: value.disabled_at?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                device_id: Ok(value.device_id),
+                disabled_at: Ok(value.disabled_at),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/disable/0.1";
@@ -367,6 +518,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deviceId\": {\n          \"type\": \"string\"\n        },\n        \"disabledAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"disabledAt\"\n      ],\n      \"title\": \"Device Disable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -88,6 +88,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DomainEntry {
     #[serde(rename = "createdAt")]
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -123,6 +124,11 @@ pub struct DomainEntry {
     ///Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.
     pub status: DomainEntryStatus,
 }
+impl DomainEntry {
+    pub fn builder() -> builder::DomainEntry {
+        Default::default()
+    }
+}
 ///Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.
 ///
 /// <details><summary>JSON schema</summary>
@@ -150,6 +156,7 @@ pub struct DomainEntry {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum DomainEntryStatus {
     #[serde(rename = "active")]
     Active,
@@ -331,10 +338,16 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub name: PayloadName,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadName`
 ///
@@ -430,10 +443,275 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub entry: DomainEntry,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct DomainEntry {
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        default_domain: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        disabled_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        name: ::std::result::Result<::std::string::String, ::std::string::String>,
+        purge_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        status: ::std::result::Result<super::DomainEntryStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for DomainEntry {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                default_domain: Ok(Default::default()),
+                disabled_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                label: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+                purge_at: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl DomainEntry {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn default_domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.default_domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for default_domain: {e}"));
+            self
+        }
+        pub fn disabled_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disabled_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disabled_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn purge_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purge_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purge_at: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DomainEntryStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DomainEntry> for super::DomainEntry {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DomainEntry,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                default_domain: value.default_domain?,
+                disabled_at: value.disabled_at?,
+                ext: value.ext?,
+                label: value.label?,
+                name: value.name?,
+                purge_at: value.purge_at?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DomainEntry> for DomainEntry {
+        fn from(value: super::DomainEntry) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                default_domain: Ok(value.default_domain),
+                disabled_at: Ok(value.disabled_at),
+                ext: Ok(value.ext),
+                label: Ok(value.label),
+                name: Ok(value.name),
+                purge_at: Ok(value.purge_at),
+                status: Ok(value.status),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        name: ::std::result::Result<super::PayloadName, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                name: Ok(value.name),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        entry: ::std::result::Result<super::DomainEntry, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                entry: Err("no value supplied for entry".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn entry<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DomainEntry>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                entry: value.entry?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                entry: Ok(value.entry),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/domain/enable/0.1";
@@ -451,6 +729,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"DomainEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"defaultDomain\": {\n          \"description\": \"When `true`, this domain is the host's default — new DIDs created without an explicit domain are hosted here. Exactly one entry SHOULD carry `defaultDomain: true`.\",\n          \"type\": \"boolean\"\n        },\n        \"disabledAt\": {\n          \"description\": \"Present iff `status === \\\"disabled\\\"`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Hosting domain name (e.g. `did.example.com`). Compared case-insensitively; producers SHOULD emit lowercase canonical form.\",\n          \"type\": \"string\"\n        },\n        \"purgeAt\": {\n          \"description\": \"Earliest RFC3339 timestamp at which the host's background sweep is allowed to purge content for a disabled domain. Operators with administrative authority MAY override the wait via `domain/purge`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.\",\n          \"enum\": [\n            \"active\",\n            \"disabled\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"status\",\n        \"createdAt\"\n      ],\n      \"title\": \"DomainEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entry\": {\n          \"$ref\": \"#/$defs/DomainEntry\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"Domain Enable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

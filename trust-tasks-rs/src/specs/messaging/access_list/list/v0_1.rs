@@ -184,6 +184,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Opaque pagination cursor from a previous page's nextCursor. Omitted on the first request; echoed verbatim thereafter. Opaque to the requester.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -199,6 +200,11 @@ pub struct Payload {
     ///Maximum number of entries to return in this page. The mediator MAY apply a smaller server-side bound.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Opaque pagination cursor from a previous page's nextCursor. Omitted on the first request; echoed verbatim thereafter. Opaque to the requester.
 ///
@@ -317,6 +323,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The total number of entries in the account's access list.
     #[serde(rename = "accessListCount")]
@@ -335,6 +342,11 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Opaque cursor to fetch the next page. Present only where further entries remain; omitted on the final page.
 ///
@@ -475,6 +487,206 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        cursor: ::std::result::Result<
+            ::std::option::Option<super::PayloadCursor>,
+            ::std::string::String,
+        >,
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        entries: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                did: Err("no value supplied for did".to_string()),
+                entries: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadCursor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn entries<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                did: value.did?,
+                entries: value.entries?,
+                ext: value.ext?,
+                limit: value.limit?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                did: Ok(value.did),
+                entries: Ok(value.entries),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        access_list_count: ::std::result::Result<u64, ::std::string::String>,
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        entries: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        next_cursor: ::std::result::Result<
+            ::std::option::Option<super::ResponseNextCursor>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                access_list_count: Err("no value supplied for access_list_count".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                entries: Err("no value supplied for entries".to_string()),
+                ext: Ok(Default::default()),
+                next_cursor: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn access_list_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access_list_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access_list_count: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn entries<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn next_cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseNextCursor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_cursor: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                access_list_count: value.access_list_count?,
+                did: value.did?,
+                entries: value.entries?,
+                ext: value.ext?,
+                next_cursor: value.next_cursor?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                access_list_count: Ok(value.access_list_count),
+                did: Ok(value.did),
+                entries: Ok(value.entries),
+                ext: Ok(value.ext),
+                next_cursor: Ok(value.next_cursor),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/access-list/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -489,6 +701,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/access-list/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/list/0.1#response.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"The total number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose access list was enumerated.\"\n        },\n        \"entries\": {\n          \"description\": \"The current page of entries from the account's access list.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Opaque cursor to fetch the next page. Present only where further entries remain; omitted on the final page.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"entries\",\n        \"accessListCount\"\n      ],\n      \"title\": \"Messaging List Access List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

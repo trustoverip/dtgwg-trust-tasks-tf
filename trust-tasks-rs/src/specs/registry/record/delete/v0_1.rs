@@ -176,6 +176,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     pub action: ::std::string::String,
     pub authority_id: ::std::string::String,
@@ -183,6 +184,11 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub resource: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`Response`
 ///
@@ -215,6 +221,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -223,6 +230,177 @@ pub struct Response {
     pub message: ::std::option::Option<::std::string::String>,
     ///Whether the record was deleted.
     pub ok: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        action: ::std::result::Result<::std::string::String, ::std::string::String>,
+        authority_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        entity_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        resource: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                authority_id: Err("no value supplied for authority_id".to_string()),
+                entity_id: Err("no value supplied for entity_id".to_string()),
+                ext: Ok(Default::default()),
+                resource: Err("no value supplied for resource".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn authority_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authority_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authority_id: {e}"));
+            self
+        }
+        pub fn entity_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entity_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entity_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                authority_id: value.authority_id?,
+                entity_id: value.entity_id?,
+                ext: value.ext?,
+                resource: value.resource?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                action: Ok(value.action),
+                authority_id: Ok(value.authority_id),
+                entity_id: Ok(value.entity_id),
+                ext: Ok(value.ext),
+                resource: Ok(value.resource),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        message: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ok: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                message: Ok(Default::default()),
+                ok: Err("no value supplied for ok".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+        pub fn ok<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ok = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ok: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                message: value.message?,
+                ok: value.ok?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                message: Ok(value.message),
+                ok: Ok(value.ok),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/registry/record/delete/0.1";
@@ -240,6 +418,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was deleted.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\"\n      ],\n      \"title\": \"Registry Record Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

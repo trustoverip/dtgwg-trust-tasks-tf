@@ -157,6 +157,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -166,6 +167,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Success response to vta/webvh/servers/list. Type https://trusttasks.org/spec/vta/webvh/servers/list/1.0#response.
@@ -199,11 +205,17 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Hosting servers the VTA is registered with. Carries no credentials — what the VTA holds to authenticate against a server never appears in a response.
     pub servers: ::std::vec::Vec<WebvhServerRecord>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.
 ///
@@ -250,6 +262,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct WebvhServerRecord {
     #[serde(rename = "createdAt")]
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -263,6 +276,216 @@ pub struct WebvhServerRecord {
     pub label: ::std::option::Option<::std::string::String>,
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
+}
+impl WebvhServerRecord {
+    pub fn builder() -> builder::WebvhServerRecord {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        servers:
+            ::std::result::Result<::std::vec::Vec<super::WebvhServerRecord>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                servers: Err("no value supplied for servers".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn servers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::WebvhServerRecord>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.servers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for servers: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                servers: value.servers?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                servers: Ok(value.servers),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct WebvhServerRecord {
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        did: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for WebvhServerRecord {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                label: Ok(Default::default()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+            }
+        }
+    }
+    impl WebvhServerRecord {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<WebvhServerRecord> for super::WebvhServerRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: WebvhServerRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                did: value.did?,
+                ext: value.ext?,
+                id: value.id?,
+                label: value.label?,
+                updated_at: value.updated_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::WebvhServerRecord> for WebvhServerRecord {
+        fn from(value: super::WebvhServerRecord) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                label: Ok(value.label),
+                updated_at: Ok(value.updated_at),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/webvh/servers/list/1.0";
@@ -278,6 +501,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/servers/list. Type https://trusttasks.org/spec/vta/webvh/servers/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"servers\": {\n          \"description\": \"Hosting servers the VTA is registered with. Carries no credentials — what the VTA holds to authenticate against a server never appears in a response.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/WebvhServerRecord\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"servers\"\n      ],\n      \"title\": \"VTA WebVH Servers List — response payload\",\n      \"type\": \"object\"\n    },\n    \"WebvhServerRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The server's own DID, used to authenticate it.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Local id for the server, chosen by the operator.\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"did\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"WebvhServerRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

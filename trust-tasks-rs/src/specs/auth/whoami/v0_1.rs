@@ -159,6 +159,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -169,6 +170,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///The auth service's view of the producer. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/whoami/0.1#response.
@@ -216,6 +222,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -228,6 +235,11 @@ pub struct Response {
     pub scopes: ::std::vec::Vec<ResponseScopesItem>,
     ///Current session state for the producer.
     pub session: Session,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseRolesItem`
 ///
@@ -426,6 +438,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseScopesItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Session {
     ///Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -446,6 +459,11 @@ pub struct Session {
     pub issued_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The authenticated party's VID (typically a DID URL).
     pub subject: SessionSubject,
+}
+impl Session {
+    pub fn builder() -> builder::Session {
+        Default::default()
+    }
 }
 ///`SessionAmrItem`
 ///
@@ -653,6 +671,254 @@ impl<'de> ::serde::Deserialize<'de> for SessionSubject {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        roles:
+            ::std::result::Result<::std::vec::Vec<super::ResponseRolesItem>, ::std::string::String>,
+        scopes: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseScopesItem>,
+            ::std::string::String,
+        >,
+        session: ::std::result::Result<super::Session, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                roles: Ok(Default::default()),
+                scopes: Ok(Default::default()),
+                session: Err("no value supplied for session".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn roles<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseRolesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.roles = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for roles: {e}"));
+            self
+        }
+        pub fn scopes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseScopesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scopes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scopes: {e}"));
+            self
+        }
+        pub fn session<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Session>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                roles: value.roles?,
+                scopes: value.scopes?,
+                session: value.session?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                roles: Ok(value.roles),
+                scopes: Ok(value.scopes),
+                session: Ok(value.session),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Session {
+        acr: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        amr: ::std::result::Result<::std::vec::Vec<super::SessionAmrItem>, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::SessionId, ::std::string::String>,
+        issued_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        subject: ::std::result::Result<super::SessionSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Session {
+        fn default() -> Self {
+            Self {
+                acr: Ok(Default::default()),
+                amr: Ok(Default::default()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Session {
+        pub fn acr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for acr: {e}"));
+            self
+        }
+        pub fn amr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::SessionAmrItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.amr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for amr: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SessionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SessionSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Session> for super::Session {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Session) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acr: value.acr?,
+                amr: value.amr?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                id: value.id?,
+                issued_at: value.issued_at?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Session> for Session {
+        fn from(value: super::Session) -> Self {
+            Self {
+                acr: Ok(value.acr),
+                amr: Ok(value.amr),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/whoami/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -668,6 +934,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The auth service's view of the producer. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/whoami/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"roles\": {\n          \"description\": \"Role assignments the auth service holds for the producer. Ecosystem-defined vocabulary.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"scopes\": {\n          \"description\": \"Capability tags effective on the producer's current session. Mirrors the issued TokenBundle.scope; included here so a producer can reconcile after policy edits without re-issuing tokens.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"Current session state for the producer.\"\n        }\n      },\n      \"required\": [\n        \"session\"\n      ],\n      \"title\": \"Auth Whoami — response payload\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

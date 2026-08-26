@@ -425,6 +425,7 @@ impl<'de> ::serde::Deserialize<'de> for Namespace {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
+#[non_exhaustive]
 pub enum Payload {
     Variant0 {
         ///The VTA context the record is scoped to; the isolation boundary.
@@ -663,6 +664,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1ContextId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Echoed from the request.
     #[serde(rename = "contextId")]
@@ -686,6 +688,11 @@ pub struct Response {
     pub value_bytes: ::std::option::Option<u64>,
     ///The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read.
     pub version: Version,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Echoed from the request.
 ///
@@ -811,6 +818,146 @@ impl ::std::fmt::Display for Version {
         self.0.fmt(f)
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        context_id: ::std::result::Result<super::ResponseContextId, ::std::string::String>,
+        created: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        key: ::std::result::Result<super::Key, ::std::string::String>,
+        namespace: ::std::result::Result<super::Namespace, ::std::string::String>,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        value_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        version: ::std::result::Result<super::Version, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                created: Err("no value supplied for created".to_string()),
+                ext: Ok(Default::default()),
+                key: Err("no value supplied for key".to_string()),
+                namespace: Err("no value supplied for namespace".to_string()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+                value_bytes: Ok(Default::default()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn created<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Key>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn namespace<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Namespace>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.namespace = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for namespace: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn value_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value_bytes: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Version>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                created: value.created?,
+                ext: value.ext?,
+                key: value.key?,
+                namespace: value.namespace?,
+                updated_at: value.updated_at?,
+                value_bytes: value.value_bytes?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                created: Ok(value.created),
+                ext: Ok(value.ext),
+                key: Ok(value.key),
+                namespace: Ok(value.namespace),
+                updated_at: Ok(value.updated_at),
+                value_bytes: Ok(value.value_bytes),
+                version: Ok(value.version),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/app-state/put/1.0";
     const IS_PROOF_REQUIRED: bool = true;
@@ -826,6 +973,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \\\"absent\\\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000]+$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Namespace\": {\n      \"description\": \"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\n      \"title\": \"Namespace\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/app-state/put. Type https://trusttasks.org/spec/vta/app-state/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying vta/app-state/put:versionConflict, whose details carry the maintainer's current version and value.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Echoed from the request.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"created\": {\n          \"description\": \"True when no live record existed at the address beforehand — including when the address held a tombstone, since a tombstone is not a live record.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"namespace\": {\n          \"$ref\": \"#/$defs/Namespace\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the write was applied.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"valueBytes\": {\n          \"description\": \"Size of the stored value in bytes as the maintainer measured it against its per-record cap. Lets a writer see how close it is to the limit before it hits it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read.\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"namespace\",\n        \"key\",\n        \"version\",\n        \"created\",\n        \"updatedAt\"\n      ],\n      \"title\": \"VTA Application State Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

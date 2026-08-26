@@ -164,6 +164,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -172,6 +173,11 @@ pub struct Payload {
 
     The holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject.*/
     pub presentation: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`Response`
 ///
@@ -229,6 +235,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub data: ResponseData,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -236,6 +243,11 @@ pub struct Response {
     ///A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
     #[serde(rename = "sessionId")]
     pub session_id: ResponseSessionId,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseData`
 ///
@@ -273,6 +285,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseData {
     ///Unix-seconds expiry, clamped to min(local default, earliest of the vec/vmc validUntil).
     #[serde(rename = "accessExpiresAt")]
@@ -284,6 +297,11 @@ pub struct ResponseData {
     ///The LOCAL role from cross_community_roles policy — not the foreign role.
     #[serde(rename = "mappedRole")]
     pub mapped_role: ::std::string::String,
+}
+impl ResponseData {
+    pub fn builder() -> builder::ResponseData {
+        Default::default()
+    }
 }
 ///A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
 ///
@@ -356,6 +374,214 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSessionId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        presentation: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                presentation: Err("no value supplied for presentation".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn presentation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.presentation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for presentation: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                presentation: value.presentation?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                presentation: Ok(value.presentation),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        data: ::std::result::Result<super::ResponseData, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        session_id: ::std::result::Result<super::ResponseSessionId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                data: Err("no value supplied for data".to_string()),
+                ext: Ok(Default::default()),
+                session_id: Err("no value supplied for session_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn data<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseData>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.data = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for data: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn session_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseSessionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                data: value.data?,
+                ext: value.ext?,
+                session_id: value.session_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                data: Ok(value.data),
+                ext: Ok(value.ext),
+                session_id: Ok(value.session_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseData {
+        access_expires_at: ::std::result::Result<u64, ::std::string::String>,
+        access_token: ::std::result::Result<::std::string::String, ::std::string::String>,
+        foreign_issuer_did: ::std::result::Result<::std::string::String, ::std::string::String>,
+        mapped_role: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseData {
+        fn default() -> Self {
+            Self {
+                access_expires_at: Err("no value supplied for access_expires_at".to_string()),
+                access_token: Err("no value supplied for access_token".to_string()),
+                foreign_issuer_did: Err("no value supplied for foreign_issuer_did".to_string()),
+                mapped_role: Err("no value supplied for mapped_role".to_string()),
+            }
+        }
+    }
+    impl ResponseData {
+        pub fn access_expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access_expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access_expires_at: {e}"));
+            self
+        }
+        pub fn access_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access_token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access_token: {e}"));
+            self
+        }
+        pub fn foreign_issuer_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.foreign_issuer_did = value.try_into().map_err(|e| {
+                format!("error converting supplied value for foreign_issuer_did: {e}")
+            });
+            self
+        }
+        pub fn mapped_role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mapped_role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mapped_role: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseData> for super::ResponseData {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseData,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                access_expires_at: value.access_expires_at?,
+                access_token: value.access_token?,
+                foreign_issuer_did: value.foreign_issuer_did?,
+                mapped_role: value.mapped_role?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseData> for ResponseData {
+        fn from(value: super::ResponseData) -> Self {
+            Self {
+                access_expires_at: Ok(value.access_expires_at),
+                access_token: Ok(value.access_token),
+                foreign_issuer_did: Ok(value.foreign_issuer_did),
+                mapped_role: Ok(value.mapped_role),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/auth/recognise/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -369,6 +595,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"data\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"accessExpiresAt\": {\n              \"description\": \"Unix-seconds expiry, clamped to min(local default, earliest of the vec/vmc validUntil).\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"accessToken\": {\n              \"type\": \"string\"\n            },\n            \"foreignIssuerDid\": {\n              \"type\": \"string\"\n            },\n            \"mappedRole\": {\n              \"description\": \"The LOCAL role from cross_community_roles policy — not the foreign role.\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"accessToken\",\n            \"accessExpiresAt\",\n            \"foreignIssuerDid\",\n            \"mappedRole\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"description\": \"A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.\",\n          \"pattern\": \"^xc-\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"data\"\n      ],\n      \"title\": \"VTC Auth Recognise — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

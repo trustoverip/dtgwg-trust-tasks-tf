@@ -166,6 +166,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum KeyType {
     #[serde(rename = "ed25519")]
     Ed25519,
@@ -261,6 +262,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Hierarchical-deterministic path to derive at.
     #[serde(rename = "derivationPath")]
@@ -276,6 +278,11 @@ pub struct Payload {
     ///Proof purpose to record in the generated proof. Absent means `assertionMethod`.
     #[serde(rename = "proofPurpose", default = "defaults::payload_proof_purpose")]
     pub proof_purpose: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Hierarchical-deterministic path to derive at.
 ///
@@ -379,6 +386,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDerivationPath {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The document with the Data Integrity `proof` grafted on.
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -387,6 +395,184 @@ pub struct Response {
     ///The `did:key` of the derived signer — the identity the document was signed as, and the DID a verifier resolves the proof's verification method against.
     #[serde(rename = "signerDid")]
     pub signer_did: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        derivation_path: ::std::result::Result<super::PayloadDerivationPath, ::std::string::String>,
+        document: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        key_type: ::std::result::Result<super::KeyType, ::std::string::String>,
+        proof_purpose: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                derivation_path: Err("no value supplied for derivation_path".to_string()),
+                document: Err("no value supplied for document".to_string()),
+                ext: Ok(Default::default()),
+                key_type: Err("no value supplied for key_type".to_string()),
+                proof_purpose: Ok(super::defaults::payload_proof_purpose()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn derivation_path<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDerivationPath>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.derivation_path = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for derivation_path: {e}"));
+            self
+        }
+        pub fn document<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.document = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for document: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn key_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_type: {e}"));
+            self
+        }
+        pub fn proof_purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof_purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof_purpose: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                derivation_path: value.derivation_path?,
+                document: value.document?,
+                ext: value.ext?,
+                key_type: value.key_type?,
+                proof_purpose: value.proof_purpose?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                derivation_path: Ok(value.derivation_path),
+                document: Ok(value.document),
+                ext: Ok(value.ext),
+                key_type: Ok(value.key_type),
+                proof_purpose: Ok(value.proof_purpose),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        document: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        signer_did: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                document: Err("no value supplied for document".to_string()),
+                ext: Ok(Default::default()),
+                signer_did: Err("no value supplied for signer_did".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn document<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.document = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for document: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn signer_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signer_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signer_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                document: value.document?,
+                ext: value.ext?,
+                signer_did: value.signer_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                document: Ok(value.document),
+                ext: Ok(value.ext),
+                signer_did: Ok(value.signer_did),
+            }
+        }
+    }
 }
 /// Generation of default values for serde.
 pub mod defaults {
@@ -410,6 +596,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/derive-and-sign-document request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign-document/0.1#response.\",\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The document with the Data Integrity `proof` grafted on.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"signerDid\": {\n          \"description\": \"The `did:key` of the derived signer — the identity the document was signed as, and the DID a verifier resolves the proof's verification method against.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"signerDid\",\n        \"document\"\n      ],\n      \"title\": \"Keys Derive-and-Sign-Document — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

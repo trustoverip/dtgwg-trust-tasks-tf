@@ -165,6 +165,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Only DIDs in this context.
     #[serde(
@@ -190,6 +191,11 @@ impl ::std::default::Default for Payload {
             ext: Default::default(),
             server_id: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Success response to vta/webvh/dids/list. Type https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response.
@@ -223,11 +229,17 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Matching DIDs the caller may see. An empty array is a successful answer and does not imply the VTA holds none.
     pub dids: ::std::vec::Vec<WebvhDidRecord>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.
 ///
@@ -309,6 +321,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct WebvhDidRecord {
     ///Context this DID belongs to. Deleting that context destroys this DID.
     #[serde(rename = "contextId")]
@@ -343,6 +356,334 @@ pub struct WebvhDidRecord {
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
 }
+impl WebvhDidRecord {
+    pub fn builder() -> builder::WebvhDidRecord {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        server_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                server_id: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                ext: value.ext?,
+                server_id: value.server_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                ext: Ok(value.ext),
+                server_id: Ok(value.server_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        dids: ::std::result::Result<::std::vec::Vec<super::WebvhDidRecord>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                dids: Err("no value supplied for dids".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn dids<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::WebvhDidRecord>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.dids = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for dids: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                dids: value.dids?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                dids: Ok(value.dids),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct WebvhDidRecord {
+        context_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        did: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        log_entry_count: ::std::result::Result<u64, ::std::string::String>,
+        mnemonic: ::std::result::Result<::std::string::String, ::std::string::String>,
+        next_fragment_id: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        portable: ::std::result::Result<bool, ::std::string::String>,
+        pre_rotation_count: ::std::result::Result<u64, ::std::string::String>,
+        scid: ::std::result::Result<::std::string::String, ::std::string::String>,
+        server_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for WebvhDidRecord {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                log_entry_count: Err("no value supplied for log_entry_count".to_string()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+                next_fragment_id: Ok(super::defaults::default_nzu64::<::std::num::NonZeroU64, 1>()),
+                portable: Err("no value supplied for portable".to_string()),
+                pre_rotation_count: Ok(Default::default()),
+                scid: Err("no value supplied for scid".to_string()),
+                server_id: Err("no value supplied for server_id".to_string()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+            }
+        }
+    }
+    impl WebvhDidRecord {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn log_entry_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.log_entry_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for log_entry_count: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+        pub fn next_fragment_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_fragment_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_fragment_id: {e}"));
+            self
+        }
+        pub fn portable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.portable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for portable: {e}"));
+            self
+        }
+        pub fn pre_rotation_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pre_rotation_count = value.try_into().map_err(|e| {
+                format!("error converting supplied value for pre_rotation_count: {e}")
+            });
+            self
+        }
+        pub fn scid<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scid = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scid: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<WebvhDidRecord> for super::WebvhDidRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: WebvhDidRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                created_at: value.created_at?,
+                did: value.did?,
+                ext: value.ext?,
+                log_entry_count: value.log_entry_count?,
+                mnemonic: value.mnemonic?,
+                next_fragment_id: value.next_fragment_id?,
+                portable: value.portable?,
+                pre_rotation_count: value.pre_rotation_count?,
+                scid: value.scid?,
+                server_id: value.server_id?,
+                updated_at: value.updated_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::WebvhDidRecord> for WebvhDidRecord {
+        fn from(value: super::WebvhDidRecord) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                created_at: Ok(value.created_at),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                log_entry_count: Ok(value.log_entry_count),
+                mnemonic: Ok(value.mnemonic),
+                next_fragment_id: Ok(value.next_fragment_id),
+                portable: Ok(value.portable),
+                pre_rotation_count: Ok(value.pre_rotation_count),
+                scid: Ok(value.scid),
+                server_id: Ok(value.server_id),
+                updated_at: Ok(value.updated_at),
+            }
+        }
+    }
+}
 /// Generation of default values for serde.
 pub mod defaults {
     pub(super) fn default_nzu64<T, const V: u64>() -> T
@@ -366,6 +707,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/list. Type https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response.\",\n      \"properties\": {\n        \"dids\": {\n          \"description\": \"Matching DIDs the caller may see. An empty array is a successful answer and does not imply the VTA holds none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/WebvhDidRecord\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"dids\"\n      ],\n      \"title\": \"VTA WebVH DIDs List — response payload\",\n      \"type\": \"object\"\n    },\n    \"WebvhDidRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Context this DID belongs to. Deleting that context destroys this DID.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The DID, e.g. `did:webvh:<scid>:example.com:alice`.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logEntryCount\": {\n          \"description\": \"Number of entries in the log.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"mnemonic\": {\n          \"description\": \"The hosting server's handle for the record. Unrelated to a BIP-39 phrase; the collision of terms is historical.\",\n          \"type\": \"string\"\n        },\n        \"nextFragmentId\": {\n          \"default\": 1,\n          \"description\": \"Next `#key-{n}` fragment id to mint. Monotonic and never decremented, so a fragment is never reused for a different key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"portable\": {\n          \"description\": \"Whether the DID may be moved to another domain without losing its identity. Fixed at creation: a DID created non-portable cannot be made portable later, because portability is a commitment recorded in the log's first entry.\",\n          \"type\": \"boolean\"\n        },\n        \"preRotationCount\": {\n          \"default\": 0,\n          \"description\": \"Pre-rotation keys committed by the most recent entry. `0` means pre-rotation is disabled — a compromise of the current key is then unrecoverable by rotation, because the successor was never committed in advance.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"scid\": {\n          \"description\": \"Self-certifying identifier: the hash committing to the log's first entry. It is what makes the DID's history tamper-evident, and it changes only when the log is re-created — never in place.\",\n          \"type\": \"string\"\n        },\n        \"serverId\": {\n          \"description\": \"Id of the hosting server serving this DID's log. Empty for a serverless DID, whose location comes from the URL it was created with.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"serverId\",\n        \"mnemonic\",\n        \"scid\",\n        \"contextId\",\n        \"portable\",\n        \"logEntryCount\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"WebvhDidRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

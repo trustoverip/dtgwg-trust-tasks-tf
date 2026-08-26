@@ -170,6 +170,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -178,6 +179,11 @@ pub struct Payload {
     pub fields: ::std::option::Option<PayloadFields>,
     ///DID of the member whose directory projection is requested.
     pub subject: PayloadSubject,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Comma-separated narrowing hint. A hint only — never an authorisation.
 ///
@@ -351,6 +357,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -358,6 +365,11 @@ pub struct Response {
     pub fields: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///The projected member's DID.
     pub subject: ResponseSubject,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The projected member's DID.
 ///
@@ -428,6 +440,149 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSubject {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        fields: ::std::result::Result<
+            ::std::option::Option<super::PayloadFields>,
+            ::std::string::String,
+        >,
+        subject: ::std::result::Result<super::PayloadSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                fields: Ok(Default::default()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn fields<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadFields>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.fields = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for fields: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                fields: value.fields?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                fields: Ok(value.fields),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        fields: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        subject: ::std::result::Result<super::ResponseSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                fields: Err("no value supplied for fields".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn fields<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.fields = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for fields: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                fields: value.fields?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                fields: Ok(value.fields),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/directory/query/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -441,6 +596,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fields\": {\n          \"additionalProperties\": true,\n          \"description\": \"The permitted projection. A withheld field is ABSENT, never present-and-null.\",\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"The projected member's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"fields\"\n      ],\n      \"title\": \"VTC Directory Query — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

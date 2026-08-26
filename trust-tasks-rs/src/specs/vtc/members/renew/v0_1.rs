@@ -157,6 +157,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -166,6 +167,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -215,6 +221,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub did: ResponseDid,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -229,6 +236,11 @@ pub struct Response {
     pub role_vec: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///The freshly-issued W3C Verifiable Membership Credential (opaque here).
     pub vmc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseDid`
 ///
@@ -298,6 +310,161 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        personhood: ::std::result::Result<bool, ::std::string::String>,
+        personhood_changed: ::std::result::Result<bool, ::std::string::String>,
+        role_vec: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        vmc: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                personhood: Err("no value supplied for personhood".to_string()),
+                personhood_changed: Err("no value supplied for personhood_changed".to_string()),
+                role_vec: Err("no value supplied for role_vec".to_string()),
+                vmc: Err("no value supplied for vmc".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn personhood<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.personhood = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for personhood: {e}"));
+            self
+        }
+        pub fn personhood_changed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.personhood_changed = value.try_into().map_err(|e| {
+                format!("error converting supplied value for personhood_changed: {e}")
+            });
+            self
+        }
+        pub fn role_vec<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role_vec = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role_vec: {e}"));
+            self
+        }
+        pub fn vmc<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vmc = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vmc: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+                personhood: value.personhood?,
+                personhood_changed: value.personhood_changed?,
+                role_vec: value.role_vec?,
+                vmc: value.vmc?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                personhood: Ok(value.personhood),
+                personhood_changed: Ok(value.personhood_changed),
+                role_vec: Ok(value.role_vec),
+                vmc: Ok(value.vmc),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/members/renew/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -313,6 +480,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"description\": \"Whether the renewed membership carries a personhood assertion.\",\n          \"type\": \"boolean\"\n        },\n        \"personhoodChanged\": {\n          \"description\": \"Whether the personhood state changed on this renewal.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVec\": {\n          \"description\": \"The freshly-issued role Verifiable Endorsement Credential (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"The freshly-issued W3C Verifiable Membership Credential (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"vmc\",\n        \"roleVec\",\n        \"personhood\",\n        \"personhoodChanged\"\n      ],\n      \"title\": \"VTC Members Renew — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

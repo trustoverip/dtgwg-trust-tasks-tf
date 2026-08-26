@@ -176,6 +176,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -186,6 +187,11 @@ pub struct Payload {
     pub resource: PayloadResource,
     ///DID of the member whose grant is being revoked.
     pub subject: PayloadSubject,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The resource of the grant being revoked (`<org>` or `<org>/<repo>`).
 ///
@@ -366,6 +372,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -376,6 +383,194 @@ pub struct Response {
     ///True once the tuple is durably marked unauthorized.
     pub revoked: bool,
     pub subject: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        resource: ::std::result::Result<super::PayloadResource, ::std::string::String>,
+        subject: ::std::result::Result<super::PayloadSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                resource: Err("no value supplied for resource".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadResource>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                resource: value.resource?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                resource: Ok(value.resource),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        message: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        resource: ::std::result::Result<::std::string::String, ::std::string::String>,
+        revoked: ::std::result::Result<bool, ::std::string::String>,
+        subject: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                message: Ok(Default::default()),
+                resource: Err("no value supplied for resource".to_string()),
+                revoked: Err("no value supplied for revoked".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+        pub fn revoked<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revoked = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revoked: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                message: value.message?,
+                resource: value.resource?,
+                revoked: value.revoked?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                message: Ok(value.message),
+                resource: Ok(value.resource),
+                revoked: Ok(value.revoked),
+                subject: Ok(value.subject),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/git-trust/revoke/0.1";
@@ -392,6 +587,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"revoked\": {\n          \"description\": \"True once the tuple is durably marked unauthorized.\",\n          \"type\": \"boolean\"\n        },\n        \"subject\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"resource\",\n        \"revoked\"\n      ],\n      \"title\": \"Git Trust Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

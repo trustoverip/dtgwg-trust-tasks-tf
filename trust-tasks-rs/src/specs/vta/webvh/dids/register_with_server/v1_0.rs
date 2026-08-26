@@ -180,6 +180,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     pub did: PayloadDid,
     ///Domain to publish under, when the server serves more than one.
@@ -193,6 +194,11 @@ pub struct Payload {
     ///Hosting server to register with.
     #[serde(rename = "serverId")]
     pub server_id: PayloadServerId,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadDid`
 ///
@@ -368,6 +374,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadServerId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub did: ::std::string::String,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -377,6 +384,191 @@ pub struct Response {
     pub log_entry_count: u64,
     #[serde(rename = "serverId")]
     pub server_id: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        domain: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        force: ::std::result::Result<bool, ::std::string::String>,
+        server_id: ::std::result::Result<super::PayloadServerId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                domain: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                force: Ok(Default::default()),
+                server_id: Err("no value supplied for server_id".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn force<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.force = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for force: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadServerId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                domain: value.domain?,
+                ext: value.ext?,
+                force: value.force?,
+                server_id: value.server_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                force: Ok(value.force),
+                server_id: Ok(value.server_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        did: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        log_entry_count: ::std::result::Result<u64, ::std::string::String>,
+        server_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                log_entry_count: Err("no value supplied for log_entry_count".to_string()),
+                server_id: Err("no value supplied for server_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn log_entry_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.log_entry_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for log_entry_count: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+                log_entry_count: value.log_entry_count?,
+                server_id: value.server_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                log_entry_count: Ok(value.log_entry_count),
+                server_id: Ok(value.server_id),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =
@@ -395,6 +587,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/register-with-server. Type https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logEntryCount\": {\n          \"description\": \"Entries the server accepted. Compare it with the DID's own log length: a shorter count means the server holds a truncated history and will resolve to an older document.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"serverId\",\n        \"logEntryCount\"\n      ],\n      \"title\": \"VTA WebVH DIDs Register-With-Server — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

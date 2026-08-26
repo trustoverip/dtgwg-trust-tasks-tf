@@ -199,6 +199,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PasskeyVerificationMethod {
     ///The DID this verificationMethod is published on (the DID being augmented).
     pub controller: PasskeyVerificationMethodController,
@@ -223,6 +224,11 @@ pub struct PasskeyVerificationMethod {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub webauthn_transports: ::std::option::Option<Vec<::std::string::String>>,
+}
+impl PasskeyVerificationMethod {
+    pub fn builder() -> builder::PasskeyVerificationMethod {
+        Default::default()
+    }
 }
 ///The DID this verificationMethod is published on (the DID being augmented).
 ///
@@ -666,6 +672,7 @@ impl<'de> ::serde::Deserialize<'de> for PasskeyVerificationMethodWebauthnCredent
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Raw WebAuthn `attestationObject` — base64url-encoded CBOR. The VTA parses `authData` from this to re-derive the authoritative public key.
     #[serde(rename = "attestationObject")]
@@ -699,6 +706,11 @@ pub struct Payload {
     ///Transport hints reported by the authenticator (e.g. `internal`, `hybrid`). Advisory; carried through to the published verificationMethod's `webauthnTransports`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub transports: ::std::option::Option<Vec<::std::string::String>>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Raw WebAuthn `attestationObject` — base64url-encoded CBOR. The VTA parses `authData` from this to re-derive the authoritative public key.
 ///
@@ -1291,6 +1303,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPublicKeyMultibase {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1301,6 +1314,11 @@ pub struct Response {
     ///The WebVH log-entry version that recorded the change (e.g. "3-Qm…").
     #[serde(rename = "webvhVersion")]
     pub webvh_version: ResponseWebvhVersion,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The WebVH log-entry version that recorded the change (e.g. "3-Qm…").
 ///
@@ -1371,6 +1389,407 @@ impl<'de> ::serde::Deserialize<'de> for ResponseWebvhVersion {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct PasskeyVerificationMethod {
+        controller: ::std::result::Result<
+            super::PasskeyVerificationMethodController,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::PasskeyVerificationMethodId, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::PasskeyVerificationMethodLabel>,
+            ::std::string::String,
+        >,
+        public_key_multibase: ::std::result::Result<
+            super::PasskeyVerificationMethodPublicKeyMultibase,
+            ::std::string::String,
+        >,
+        type_: ::std::result::Result<::std::string::String, ::std::string::String>,
+        webauthn_credential_id: ::std::result::Result<
+            super::PasskeyVerificationMethodWebauthnCredentialId,
+            ::std::string::String,
+        >,
+        webauthn_transports: ::std::result::Result<
+            ::std::option::Option<Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for PasskeyVerificationMethod {
+        fn default() -> Self {
+            Self {
+                controller: Err("no value supplied for controller".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                label: Ok(Default::default()),
+                public_key_multibase: Err("no value supplied for public_key_multibase".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+                webauthn_credential_id: Err(
+                    "no value supplied for webauthn_credential_id".to_string()
+                ),
+                webauthn_transports: Ok(Default::default()),
+            }
+        }
+    }
+    impl PasskeyVerificationMethod {
+        pub fn controller<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PasskeyVerificationMethodController>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.controller = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for controller: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PasskeyVerificationMethodId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::PasskeyVerificationMethodLabel>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn public_key_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PasskeyVerificationMethodPublicKeyMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.public_key_multibase = value.try_into().map_err(|e| {
+                format!("error converting supplied value for public_key_multibase: {e}")
+            });
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn webauthn_credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PasskeyVerificationMethodWebauthnCredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.webauthn_credential_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for webauthn_credential_id: {e}")
+            });
+            self
+        }
+        pub fn webauthn_transports<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<::std::string::String>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.webauthn_transports = value.try_into().map_err(|e| {
+                format!("error converting supplied value for webauthn_transports: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PasskeyVerificationMethod> for super::PasskeyVerificationMethod {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PasskeyVerificationMethod,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                controller: value.controller?,
+                id: value.id?,
+                label: value.label?,
+                public_key_multibase: value.public_key_multibase?,
+                type_: value.type_?,
+                webauthn_credential_id: value.webauthn_credential_id?,
+                webauthn_transports: value.webauthn_transports?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PasskeyVerificationMethod> for PasskeyVerificationMethod {
+        fn from(value: super::PasskeyVerificationMethod) -> Self {
+            Self {
+                controller: Ok(value.controller),
+                id: Ok(value.id),
+                label: Ok(value.label),
+                public_key_multibase: Ok(value.public_key_multibase),
+                type_: Ok(value.type_),
+                webauthn_credential_id: Ok(value.webauthn_credential_id),
+                webauthn_transports: Ok(value.webauthn_transports),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        attestation_object:
+            ::std::result::Result<super::PayloadAttestationObject, ::std::string::String>,
+        authenticator_data:
+            ::std::result::Result<super::PayloadAuthenticatorData, ::std::string::String>,
+        ceremony_id: ::std::result::Result<super::PayloadCeremonyId, ::std::string::String>,
+        client_data_json:
+            ::std::result::Result<super::PayloadClientDataJson, ::std::string::String>,
+        cose_algorithm: ::std::result::Result<i64, ::std::string::String>,
+        credential_id: ::std::result::Result<super::PayloadCredentialId, ::std::string::String>,
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::PayloadLabel>,
+            ::std::string::String,
+        >,
+        public_key_multibase:
+            ::std::result::Result<super::PayloadPublicKeyMultibase, ::std::string::String>,
+        transports: ::std::result::Result<
+            ::std::option::Option<Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                attestation_object: Err("no value supplied for attestation_object".to_string()),
+                authenticator_data: Err("no value supplied for authenticator_data".to_string()),
+                ceremony_id: Err("no value supplied for ceremony_id".to_string()),
+                client_data_json: Err("no value supplied for client_data_json".to_string()),
+                cose_algorithm: Err("no value supplied for cose_algorithm".to_string()),
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                label: Ok(Default::default()),
+                public_key_multibase: Err("no value supplied for public_key_multibase".to_string()),
+                transports: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn attestation_object<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadAttestationObject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attestation_object = value.try_into().map_err(|e| {
+                format!("error converting supplied value for attestation_object: {e}")
+            });
+            self
+        }
+        pub fn authenticator_data<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadAuthenticatorData>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authenticator_data = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authenticator_data: {e}")
+            });
+            self
+        }
+        pub fn ceremony_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadCeremonyId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ceremony_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ceremony_id: {e}"));
+            self
+        }
+        pub fn client_data_json<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadClientDataJson>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client_data_json = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for client_data_json: {e}"));
+            self
+        }
+        pub fn cose_algorithm<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<i64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cose_algorithm = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cose_algorithm: {e}"));
+            self
+        }
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadCredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn public_key_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadPublicKeyMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.public_key_multibase = value.try_into().map_err(|e| {
+                format!("error converting supplied value for public_key_multibase: {e}")
+            });
+            self
+        }
+        pub fn transports<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<::std::string::String>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.transports = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for transports: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                attestation_object: value.attestation_object?,
+                authenticator_data: value.authenticator_data?,
+                ceremony_id: value.ceremony_id?,
+                client_data_json: value.client_data_json?,
+                cose_algorithm: value.cose_algorithm?,
+                credential_id: value.credential_id?,
+                did: value.did?,
+                ext: value.ext?,
+                label: value.label?,
+                public_key_multibase: value.public_key_multibase?,
+                transports: value.transports?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                attestation_object: Ok(value.attestation_object),
+                authenticator_data: Ok(value.authenticator_data),
+                ceremony_id: Ok(value.ceremony_id),
+                client_data_json: Ok(value.client_data_json),
+                cose_algorithm: Ok(value.cose_algorithm),
+                credential_id: Ok(value.credential_id),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                label: Ok(value.label),
+                public_key_multibase: Ok(value.public_key_multibase),
+                transports: Ok(value.transports),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        verification_method:
+            ::std::result::Result<super::PasskeyVerificationMethod, ::std::string::String>,
+        webvh_version: ::std::result::Result<super::ResponseWebvhVersion, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                verification_method: Err("no value supplied for verification_method".to_string()),
+                webvh_version: Err("no value supplied for webvh_version".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn verification_method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PasskeyVerificationMethod>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification_method = value.try_into().map_err(|e| {
+                format!("error converting supplied value for verification_method: {e}")
+            });
+            self
+        }
+        pub fn webvh_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseWebvhVersion>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.webvh_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for webvh_version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                verification_method: value.verification_method?,
+                webvh_version: value.webvh_version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                verification_method: Ok(value.verification_method),
+                webvh_version: Ok(value.webvh_version),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -1387,6 +1806,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PasskeyVerificationMethod\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"controller\": {\n          \"description\": \"The DID this verificationMethod is published on (the DID being augmented).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"Optional operator-supplied human-readable label (e.g. \\\"MacBook Touch ID\\\"). Informational; not authoritative and not a security input.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicKeyMultibase\": {\n          \"description\": \"W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"Multikey\",\n          \"description\": \"Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.\",\n          \"type\": \"string\"\n        },\n        \"webauthnCredentialId\": {\n          \"description\": \"The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"webauthnTransports\": {\n          \"description\": \"Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"controller\",\n        \"publicKeyMultibase\",\n        \"webauthnCredentialId\"\n      ],\n      \"title\": \"PasskeyVerificationMethod\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"verificationMethod\": {\n          \"$ref\": \"#/$defs/PasskeyVerificationMethod\",\n          \"description\": \"The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative.\"\n        },\n        \"webvhVersion\": {\n          \"description\": \"The WebVH log-entry version that recorded the change (e.g. \\\"3-Qm…\\\").\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"verificationMethod\",\n        \"webvhVersion\"\n      ],\n      \"title\": \"VTA Passkey-VM Enroll Submit — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

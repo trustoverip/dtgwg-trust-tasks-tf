@@ -175,6 +175,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Floor {
     ///Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.
     #[serde(
@@ -187,6 +188,11 @@ pub struct Floor {
     pub mode: FloorMode,
     ///The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches.
     pub operation: ::std::string::String,
+}
+impl Floor {
+    pub fn builder() -> builder::Floor {
+        Default::default()
+    }
 }
 ///Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegated-any` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.
 ///
@@ -217,6 +223,7 @@ pub struct Floor {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum FloorMode {
     #[serde(rename = "none")]
     None,
@@ -308,6 +315,7 @@ impl ::std::convert::TryFrom<::std::string::String> for FloorMode {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Master switch. `false` (the shipping default) ⇒ step-up is NOT enforced anywhere; every operation proceeds at AAL1 regardless of `floors`, because a freshly-provisioned maintainer has no registered approver and could not otherwise be administered (chicken-and-egg). The maintainer SHOULD surface this 'not enforced' state prominently. `true` ⇒ the `floors` are enforced.
     pub enabled: bool,
@@ -316,6 +324,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The system-wide minimum step-up requirement per operation-class — the maintainer-owned floor. Per-entry `stepUp` settings on an AclEntry MAY raise the requirement for a given subject but MUST NOT lower it (additive-only). The effective requirement for a request is the strictest of (matching floor, caller's per-entry setting).
     pub floors: ::std::vec::Vec<Floor>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.
 ///
@@ -353,6 +366,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The effective master switch the maintainer now holds.
     pub enabled: bool,
@@ -360,6 +374,213 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).
     pub floors: ::std::vec::Vec<Floor>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Floor {
+        allow_aal1_if_non_escalating:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        mode: ::std::result::Result<super::FloorMode, ::std::string::String>,
+        operation: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Floor {
+        fn default() -> Self {
+            Self {
+                allow_aal1_if_non_escalating: Ok(Default::default()),
+                mode: Err("no value supplied for mode".to_string()),
+                operation: Err("no value supplied for operation".to_string()),
+            }
+        }
+    }
+    impl Floor {
+        pub fn allow_aal1_if_non_escalating<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.allow_aal1_if_non_escalating = value.try_into().map_err(|e| {
+                format!("error converting supplied value for allow_aal1_if_non_escalating: {e}")
+            });
+            self
+        }
+        pub fn mode<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::FloorMode>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mode = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mode: {e}"));
+            self
+        }
+        pub fn operation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.operation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for operation: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Floor> for super::Floor {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Floor) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                allow_aal1_if_non_escalating: value.allow_aal1_if_non_escalating?,
+                mode: value.mode?,
+                operation: value.operation?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Floor> for Floor {
+        fn from(value: super::Floor) -> Self {
+            Self {
+                allow_aal1_if_non_escalating: Ok(value.allow_aal1_if_non_escalating),
+                mode: Ok(value.mode),
+                operation: Ok(value.operation),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        enabled: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        floors: ::std::result::Result<::std::vec::Vec<super::Floor>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                enabled: Err("no value supplied for enabled".to_string()),
+                ext: Ok(Default::default()),
+                floors: Err("no value supplied for floors".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn floors<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Floor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.floors = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for floors: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                enabled: value.enabled?,
+                ext: value.ext?,
+                floors: value.floors?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                enabled: Ok(value.enabled),
+                ext: Ok(value.ext),
+                floors: Ok(value.floors),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        enabled: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        floors: ::std::result::Result<::std::vec::Vec<super::Floor>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                enabled: Err("no value supplied for enabled".to_string()),
+                ext: Ok(Default::default()),
+                floors: Err("no value supplied for floors".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn floors<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Floor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.floors = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for floors: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                enabled: value.enabled?,
+                ext: value.ext?,
+                floors: value.floors?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                enabled: Ok(value.enabled),
+                ext: Ok(value.ext),
+                floors: Ok(value.floors),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/step-up/policy/0.1";
@@ -376,6 +597,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Floor\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"allowAal1IfNonEscalating\": {\n          \"description\": \"Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.\",\n          \"type\": \"boolean\"\n        },\n        \"mode\": {\n          \"description\": \"Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegated-any` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.\",\n          \"enum\": [\n            \"none\",\n            \"self\",\n            \"delegated\",\n            \"delegated-any\"\n          ],\n          \"type\": \"string\"\n        },\n        \"operation\": {\n          \"description\": \"The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"mode\"\n      ],\n      \"title\": \"StepUpFloor\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.\",\n      \"properties\": {\n        \"enabled\": {\n          \"description\": \"The effective master switch the maintainer now holds.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"floors\": {\n          \"description\": \"The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Floor\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"enabled\",\n        \"floors\"\n      ],\n      \"title\": \"Auth — Step-up Policy — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

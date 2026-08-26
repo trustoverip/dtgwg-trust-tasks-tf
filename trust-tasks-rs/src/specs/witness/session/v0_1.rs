@@ -171,11 +171,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The relationship DIDs of the exchange to be witnessed — the pairwise values the relationship proposal exchanged, in either order.
     pub parties: [PayloadPartiesItem; 2usize],
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadPartiesItem`
 ///
@@ -282,6 +288,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPartiesItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.
     pub challenge: ResponseChallenge,
@@ -289,6 +296,11 @@ pub struct Response {
     pub domain: ResponseDomain,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.
 ///
@@ -428,6 +440,127 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDomain {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        parties: ::std::result::Result<[super::PayloadPartiesItem; 2usize], ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                parties: Err("no value supplied for parties".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn parties<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<[super::PayloadPartiesItem; 2usize]>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.parties = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for parties: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                parties: value.parties?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                parties: Ok(value.parties),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        challenge: ::std::result::Result<super::ResponseChallenge, ::std::string::String>,
+        domain: ::std::result::Result<super::ResponseDomain, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                challenge: Err("no value supplied for challenge".to_string()),
+                domain: Err("no value supplied for domain".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseDomain>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                challenge: value.challenge?,
+                domain: value.domain?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                challenge: Ok(value.challenge),
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/witness/session/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -442,6 +575,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.\",\n      \"properties\": {\n        \"challenge\": {\n          \"description\": \"A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.\",\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"domain\": {\n          \"description\": \"The domain the presentations bind alongside the challenge, identifying this witness's verification context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"domain\"\n      ],\n      \"title\": \"Witness Session — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

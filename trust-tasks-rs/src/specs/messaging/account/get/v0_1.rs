@@ -89,6 +89,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Account {
     ///Number of entries in the account's access list.
     #[serde(
@@ -137,6 +138,11 @@ pub struct Account {
     )]
     pub send_queue_count: ::std::option::Option<u64>,
 }
+impl Account {
+    pub fn builder() -> builder::Account {
+        Default::default()
+    }
+}
 ///The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
 ///
 /// <details><summary>JSON schema</summary>
@@ -167,6 +173,7 @@ pub struct Account {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum AccountType {
     #[serde(rename = "standard")]
     Standard,
@@ -406,6 +413,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct MediatorAcl {
     ///How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
     #[serde(
@@ -518,6 +526,11 @@ impl ::std::default::Default for MediatorAcl {
         }
     }
 }
+impl MediatorAcl {
+    pub fn builder() -> builder::MediatorAcl {
+        Default::default()
+    }
+}
 ///How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
 ///
 /// <details><summary>JSON schema</summary>
@@ -545,6 +558,7 @@ impl ::std::default::Default for MediatorAcl {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum MediatorAclAccessListMode {
     #[serde(rename = "explicitAllow")]
     ExplicitAllow,
@@ -619,12 +633,18 @@ impl ::std::convert::TryFrom<::std::string::String> for MediatorAclAccessListMod
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The DID of the account to fetch.
     pub did: Vid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.
 ///
@@ -653,6 +673,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct QueueLimits {
     ///Maximum queued receive messages; -1 = unlimited.
     #[serde(
@@ -675,6 +696,11 @@ impl ::std::default::Default for QueueLimits {
             receive_queue_limit: Default::default(),
             send_queue_limit: Default::default(),
         }
+    }
+}
+impl QueueLimits {
+    pub fn builder() -> builder::QueueLimits {
+        Default::default()
     }
 }
 ///The success response to a messaging/account/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/get/0.1#response.
@@ -706,12 +732,18 @@ impl ::std::default::Default for QueueLimits {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The full mediator view of the requested account.
     pub account: Account,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
@@ -783,6 +815,549 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Account {
+        access_list_count: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        account_type: ::std::result::Result<super::AccountType, ::std::string::String>,
+        acl: ::std::result::Result<super::MediatorAcl, ::std::string::String>,
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        queue_limits:
+            ::std::result::Result<::std::option::Option<super::QueueLimits>, ::std::string::String>,
+        receive_queue_bytes:
+            ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        receive_queue_count:
+            ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        send_queue_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        send_queue_count: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Account {
+        fn default() -> Self {
+            Self {
+                access_list_count: Ok(Default::default()),
+                account_type: Err("no value supplied for account_type".to_string()),
+                acl: Err("no value supplied for acl".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                queue_limits: Ok(Default::default()),
+                receive_queue_bytes: Ok(Default::default()),
+                receive_queue_count: Ok(Default::default()),
+                send_queue_bytes: Ok(Default::default()),
+                send_queue_count: Ok(Default::default()),
+            }
+        }
+    }
+    impl Account {
+        pub fn access_list_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access_list_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access_list_count: {e}"));
+            self
+        }
+        pub fn account_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AccountType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.account_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for account_type: {e}"));
+            self
+        }
+        pub fn acl<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::MediatorAcl>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acl = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for acl: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn queue_limits<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::QueueLimits>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.queue_limits = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for queue_limits: {e}"));
+            self
+        }
+        pub fn receive_queue_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.receive_queue_bytes = value.try_into().map_err(|e| {
+                format!("error converting supplied value for receive_queue_bytes: {e}")
+            });
+            self
+        }
+        pub fn receive_queue_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.receive_queue_count = value.try_into().map_err(|e| {
+                format!("error converting supplied value for receive_queue_count: {e}")
+            });
+            self
+        }
+        pub fn send_queue_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.send_queue_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for send_queue_bytes: {e}"));
+            self
+        }
+        pub fn send_queue_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.send_queue_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for send_queue_count: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Account> for super::Account {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Account) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                access_list_count: value.access_list_count?,
+                account_type: value.account_type?,
+                acl: value.acl?,
+                did: value.did?,
+                queue_limits: value.queue_limits?,
+                receive_queue_bytes: value.receive_queue_bytes?,
+                receive_queue_count: value.receive_queue_count?,
+                send_queue_bytes: value.send_queue_bytes?,
+                send_queue_count: value.send_queue_count?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Account> for Account {
+        fn from(value: super::Account) -> Self {
+            Self {
+                access_list_count: Ok(value.access_list_count),
+                account_type: Ok(value.account_type),
+                acl: Ok(value.acl),
+                did: Ok(value.did),
+                queue_limits: Ok(value.queue_limits),
+                receive_queue_bytes: Ok(value.receive_queue_bytes),
+                receive_queue_count: Ok(value.receive_queue_count),
+                send_queue_bytes: Ok(value.send_queue_bytes),
+                send_queue_count: Ok(value.send_queue_count),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct MediatorAcl {
+        access_list_mode: ::std::result::Result<
+            ::std::option::Option<super::MediatorAclAccessListMode>,
+            ::std::string::String,
+        >,
+        anon_receive: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        blocked: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        create_invites: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        didcomm_enabled: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        local: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        receive_forwarded:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        receive_messages: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        self_manage_list: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        self_manage_receive_queue_limit:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        self_manage_send_queue_limit:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        send_forwarded: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        send_messages: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        tsp_enabled: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+    }
+    impl ::std::default::Default for MediatorAcl {
+        fn default() -> Self {
+            Self {
+                access_list_mode: Ok(Default::default()),
+                anon_receive: Ok(Default::default()),
+                blocked: Ok(Default::default()),
+                create_invites: Ok(Default::default()),
+                didcomm_enabled: Ok(Default::default()),
+                local: Ok(Default::default()),
+                receive_forwarded: Ok(Default::default()),
+                receive_messages: Ok(Default::default()),
+                self_manage_list: Ok(Default::default()),
+                self_manage_receive_queue_limit: Ok(Default::default()),
+                self_manage_send_queue_limit: Ok(Default::default()),
+                send_forwarded: Ok(Default::default()),
+                send_messages: Ok(Default::default()),
+                tsp_enabled: Ok(Default::default()),
+            }
+        }
+    }
+    impl MediatorAcl {
+        pub fn access_list_mode<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::MediatorAclAccessListMode>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access_list_mode = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access_list_mode: {e}"));
+            self
+        }
+        pub fn anon_receive<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.anon_receive = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for anon_receive: {e}"));
+            self
+        }
+        pub fn blocked<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.blocked = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for blocked: {e}"));
+            self
+        }
+        pub fn create_invites<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.create_invites = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for create_invites: {e}"));
+            self
+        }
+        pub fn didcomm_enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.didcomm_enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for didcomm_enabled: {e}"));
+            self
+        }
+        pub fn local<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.local = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for local: {e}"));
+            self
+        }
+        pub fn receive_forwarded<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.receive_forwarded = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for receive_forwarded: {e}"));
+            self
+        }
+        pub fn receive_messages<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.receive_messages = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for receive_messages: {e}"));
+            self
+        }
+        pub fn self_manage_list<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.self_manage_list = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for self_manage_list: {e}"));
+            self
+        }
+        pub fn self_manage_receive_queue_limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.self_manage_receive_queue_limit = value.try_into().map_err(|e| {
+                format!("error converting supplied value for self_manage_receive_queue_limit: {e}")
+            });
+            self
+        }
+        pub fn self_manage_send_queue_limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.self_manage_send_queue_limit = value.try_into().map_err(|e| {
+                format!("error converting supplied value for self_manage_send_queue_limit: {e}")
+            });
+            self
+        }
+        pub fn send_forwarded<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.send_forwarded = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for send_forwarded: {e}"));
+            self
+        }
+        pub fn send_messages<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.send_messages = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for send_messages: {e}"));
+            self
+        }
+        pub fn tsp_enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tsp_enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tsp_enabled: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<MediatorAcl> for super::MediatorAcl {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: MediatorAcl,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                access_list_mode: value.access_list_mode?,
+                anon_receive: value.anon_receive?,
+                blocked: value.blocked?,
+                create_invites: value.create_invites?,
+                didcomm_enabled: value.didcomm_enabled?,
+                local: value.local?,
+                receive_forwarded: value.receive_forwarded?,
+                receive_messages: value.receive_messages?,
+                self_manage_list: value.self_manage_list?,
+                self_manage_receive_queue_limit: value.self_manage_receive_queue_limit?,
+                self_manage_send_queue_limit: value.self_manage_send_queue_limit?,
+                send_forwarded: value.send_forwarded?,
+                send_messages: value.send_messages?,
+                tsp_enabled: value.tsp_enabled?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::MediatorAcl> for MediatorAcl {
+        fn from(value: super::MediatorAcl) -> Self {
+            Self {
+                access_list_mode: Ok(value.access_list_mode),
+                anon_receive: Ok(value.anon_receive),
+                blocked: Ok(value.blocked),
+                create_invites: Ok(value.create_invites),
+                didcomm_enabled: Ok(value.didcomm_enabled),
+                local: Ok(value.local),
+                receive_forwarded: Ok(value.receive_forwarded),
+                receive_messages: Ok(value.receive_messages),
+                self_manage_list: Ok(value.self_manage_list),
+                self_manage_receive_queue_limit: Ok(value.self_manage_receive_queue_limit),
+                self_manage_send_queue_limit: Ok(value.self_manage_send_queue_limit),
+                send_forwarded: Ok(value.send_forwarded),
+                send_messages: Ok(value.send_messages),
+                tsp_enabled: Ok(value.tsp_enabled),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct QueueLimits {
+        receive_queue_limit:
+            ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        send_queue_limit: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for QueueLimits {
+        fn default() -> Self {
+            Self {
+                receive_queue_limit: Ok(Default::default()),
+                send_queue_limit: Ok(Default::default()),
+            }
+        }
+    }
+    impl QueueLimits {
+        pub fn receive_queue_limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.receive_queue_limit = value.try_into().map_err(|e| {
+                format!("error converting supplied value for receive_queue_limit: {e}")
+            });
+            self
+        }
+        pub fn send_queue_limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.send_queue_limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for send_queue_limit: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<QueueLimits> for super::QueueLimits {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: QueueLimits,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                receive_queue_limit: value.receive_queue_limit?,
+                send_queue_limit: value.send_queue_limit?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::QueueLimits> for QueueLimits {
+        fn from(value: super::QueueLimits) -> Self {
+            Self {
+                receive_queue_limit: Ok(value.receive_queue_limit),
+                send_queue_limit: Ok(value.send_queue_limit),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        account: ::std::result::Result<super::Account, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                account: Err("no value supplied for account".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn account<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Account>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.account = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for account: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                account: value.account?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                account: Ok(value.account),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/account/get/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -796,6 +1371,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Account\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's view of one served account.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"Number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\"\n        },\n        \"acl\": {\n          \"$ref\": \"#/$defs/MediatorAcl\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept.\"\n        },\n        \"queueLimits\": {\n          \"$ref\": \"#/$defs/QueueLimits\"\n        },\n        \"receiveQueueBytes\": {\n          \"description\": \"Current byte size of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"receiveQueueCount\": {\n          \"description\": \"Current count of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueBytes\": {\n          \"description\": \"Current byte size of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueCount\": {\n          \"description\": \"Current count of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\",\n        \"acl\"\n      ],\n      \"title\": \"Account\",\n      \"type\": \"object\"\n    },\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorAcl\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\n      \"properties\": {\n        \"accessListMode\": {\n          \"description\": \"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\n          \"enum\": [\n            \"explicitAllow\",\n            \"explicitDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"anonReceive\": {\n          \"description\": \"Accepts anonymous (no authenticated sender) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"blocked\": {\n          \"description\": \"The account is blocked from authenticating and transacting.\",\n          \"type\": \"boolean\"\n        },\n        \"createInvites\": {\n          \"description\": \"May create out-of-band invitations.\",\n          \"type\": \"boolean\"\n        },\n        \"didcommEnabled\": {\n          \"description\": \"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\n          \"type\": \"boolean\"\n        },\n        \"local\": {\n          \"description\": \"Messages for this account may be stored locally at this mediator for pickup.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveForwarded\": {\n          \"description\": \"May be the next hop of a forwarded message.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveMessages\": {\n          \"description\": \"May receive direct messages.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageList\": {\n          \"description\": \"May self-manage its own access list.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageReceiveQueueLimit\": {\n          \"description\": \"May self-manage its own receive-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageSendQueueLimit\": {\n          \"description\": \"May self-manage its own send-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"sendForwarded\": {\n          \"description\": \"May send routing/forward (relay) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"sendMessages\": {\n          \"description\": \"May send direct messages through the mediator.\",\n          \"type\": \"boolean\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"MediatorAcl\",\n      \"type\": \"object\"\n    },\n    \"QueueLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.\",\n      \"properties\": {\n        \"receiveQueueLimit\": {\n          \"description\": \"Maximum queued receive messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"sendQueueLimit\": {\n          \"description\": \"Maximum queued send messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"QueueLimits\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/account/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/get/0.1#response.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/Account\",\n          \"description\": \"The full mediator view of the requested account.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"Messaging Get Account — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

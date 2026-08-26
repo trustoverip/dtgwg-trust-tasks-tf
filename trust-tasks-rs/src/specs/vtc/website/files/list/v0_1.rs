@@ -167,6 +167,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a prior page.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -184,6 +185,11 @@ impl ::std::default::Default for Payload {
             ext: Default::default(),
             limit: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -248,6 +254,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -259,6 +266,11 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::string::String>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseItemsItem`
 ///
@@ -298,6 +310,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseItemsItem {
     ///An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -312,6 +325,11 @@ pub struct ResponseItemsItem {
     pub path: ResponseItemsItemPath,
     ///File size in bytes.
     pub size: u64,
+}
+impl ResponseItemsItem {
+    pub fn builder() -> builder::ResponseItemsItem {
+        Default::default()
+    }
 }
 ///An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.
 ///
@@ -451,6 +469,241 @@ impl<'de> ::serde::Deserialize<'de> for ResponseItemsItemPath {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                ext: value.ext?,
+                limit: value.limit?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        items:
+            ::std::result::Result<::std::vec::Vec<super::ResponseItemsItem>, ::std::string::String>,
+        next_cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                items: Err("no value supplied for items".to_string()),
+                next_cursor: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn items<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseItemsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.items = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for items: {e}"));
+            self
+        }
+        pub fn next_cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_cursor: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                items: value.items?,
+                next_cursor: value.next_cursor?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                items: Ok(value.items),
+                next_cursor: Ok(value.next_cursor),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseItemsItem {
+        etag: ::std::result::Result<
+            ::std::option::Option<super::ResponseItemsItemEtag>,
+            ::std::string::String,
+        >,
+        modified_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        path: ::std::result::Result<super::ResponseItemsItemPath, ::std::string::String>,
+        size: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseItemsItem {
+        fn default() -> Self {
+            Self {
+                etag: Ok(Default::default()),
+                modified_at: Ok(Default::default()),
+                path: Err("no value supplied for path".to_string()),
+                size: Err("no value supplied for size".to_string()),
+            }
+        }
+    }
+    impl ResponseItemsItem {
+        pub fn etag<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseItemsItemEtag>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.etag = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for etag: {e}"));
+            self
+        }
+        pub fn modified_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.modified_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for modified_at: {e}"));
+            self
+        }
+        pub fn path<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseItemsItemPath>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.path = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for path: {e}"));
+            self
+        }
+        pub fn size<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.size = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for size: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseItemsItem> for super::ResponseItemsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseItemsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                etag: value.etag?,
+                modified_at: value.modified_at?,
+                path: value.path?,
+                size: value.size?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseItemsItem> for ResponseItemsItem {
+        fn from(value: super::ResponseItemsItem) -> Self {
+            Self {
+                etag: Ok(value.etag),
+                modified_at: Ok(value.modified_at),
+                path: Ok(value.path),
+                size: Ok(value.size),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/website/files/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -465,6 +718,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"description\": \"Files under the site root, excluding hidden files and blocklisted extensions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"etag\": {\n                \"description\": \"An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"modifiedAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"path\": {\n                \"description\": \"Path relative to the site root.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"size\": {\n                \"description\": \"File size in bytes.\",\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"path\",\n              \"size\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Website Files List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

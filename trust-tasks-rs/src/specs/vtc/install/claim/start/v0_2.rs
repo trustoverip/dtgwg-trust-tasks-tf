@@ -170,6 +170,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     /**
     A short code the operator receives **out of band**, alongside the install URL but through a separate channel.
@@ -188,6 +189,11 @@ pub struct Payload {
     ///The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
     #[serde(rename = "installToken")]
     pub install_token: PayloadInstallToken,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 /**
 A short code the operator receives **out of band**, alongside the install URL but through a separate channel.
@@ -365,6 +371,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstallToken {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -373,6 +380,11 @@ pub struct Response {
     ///Echoes the install token's jti (a UUID); pass it back to claim/finish.
     #[serde(rename = "registrationId")]
     pub registration_id: ResponseRegistrationId,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Echoes the install token's jti (a UUID); pass it back to claim/finish.
 ///
@@ -443,6 +455,150 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRegistrationId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        claim_secret: ::std::result::Result<
+            ::std::option::Option<super::PayloadClaimSecret>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        install_token: ::std::result::Result<super::PayloadInstallToken, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                claim_secret: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                install_token: Err("no value supplied for install_token".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn claim_secret<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadClaimSecret>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claim_secret = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claim_secret: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn install_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadInstallToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.install_token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for install_token: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claim_secret: value.claim_secret?,
+                ext: value.ext?,
+                install_token: value.install_token?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                claim_secret: Ok(value.claim_secret),
+                ext: Ok(value.ext),
+                install_token: Ok(value.install_token),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        options: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        registration_id:
+            ::std::result::Result<super::ResponseRegistrationId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                options: Err("no value supplied for options".to_string()),
+                registration_id: Err("no value supplied for registration_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn options<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.options = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for options: {e}"));
+            self
+        }
+        pub fn registration_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRegistrationId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registration_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registration_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                options: value.options?,
+                registration_id: value.registration_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                options: Ok(value.options),
+                registration_id: Ok(value.registration_id),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/install/claim/start/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -457,6 +613,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"options\": {\n          \"description\": \"WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}].\",\n          \"type\": \"object\"\n        },\n        \"registrationId\": {\n          \"description\": \"Echoes the install token's jti (a UUID); pass it back to claim/finish.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registrationId\",\n        \"options\"\n      ],\n      \"title\": \"VTC Install Claim Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

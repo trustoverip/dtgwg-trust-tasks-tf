@@ -120,6 +120,7 @@ So reads get this and updates keep CommunityProfile. The split is the point — 
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CommunityProfileView {
     ///The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update.
     #[serde(rename = "communityDid")]
@@ -174,6 +175,11 @@ pub struct CommunityProfileView {
     )]
     pub relationship_identifier_default:
         ::std::option::Option<CommunityProfileViewRelationshipIdentifierDefault>,
+}
+impl CommunityProfileView {
+    pub fn builder() -> builder::CommunityProfileView {
+        Default::default()
+    }
 }
 ///The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update.
 ///
@@ -407,6 +413,7 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileViewName {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CommunityProfileViewRegistryStatus {
     #[serde(rename = "active")]
     Active,
@@ -480,6 +487,7 @@ impl ::std::convert::TryFrom<::std::string::String> for CommunityProfileViewRegi
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CommunityProfileViewRelationshipIdentifierDefault {
     #[serde(rename = "attributed")]
     Attributed,
@@ -658,6 +666,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -667,6 +676,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 /**
@@ -715,6 +729,7 @@ Every member is a declaration, not an enforcement: what a community actually acc
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PersonhoodGovernance {
     ///DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
     #[serde(
@@ -753,6 +768,11 @@ impl ::std::default::Default for PersonhoodGovernance {
             real_human: Default::default(),
             single_membership: Default::default(),
         }
+    }
+}
+impl PersonhoodGovernance {
+    pub fn builder() -> builder::PersonhoodGovernance {
+        Default::default()
     }
 }
 ///`PersonhoodGovernanceAcceptedIdvpsItem`
@@ -850,11 +870,427 @@ impl<'de> ::serde::Deserialize<'de> for PersonhoodGovernanceAcceptedIdvpsItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The community's profile as read, including the immutable `communityDid` an update cannot set.
     pub profile: CommunityProfileView,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct CommunityProfileView {
+        community_did:
+            ::std::result::Result<super::CommunityProfileViewCommunityDid, ::std::string::String>,
+        contact_email: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        created_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        description: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        extensions: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        language: ::std::result::Result<super::CommunityProfileViewLanguage, ::std::string::String>,
+        logo_url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        name: ::std::result::Result<super::CommunityProfileViewName, ::std::string::String>,
+        personhood: ::std::result::Result<
+            ::std::option::Option<super::PersonhoodGovernance>,
+            ::std::string::String,
+        >,
+        public_url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        registry_status: ::std::result::Result<
+            ::std::option::Option<super::CommunityProfileViewRegistryStatus>,
+            ::std::string::String,
+        >,
+        relationship_identifier_default: ::std::result::Result<
+            ::std::option::Option<super::CommunityProfileViewRelationshipIdentifierDefault>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for CommunityProfileView {
+        fn default() -> Self {
+            Self {
+                community_did: Err("no value supplied for community_did".to_string()),
+                contact_email: Ok(Default::default()),
+                created_at: Ok(Default::default()),
+                description: Ok(Default::default()),
+                extensions: Ok(Default::default()),
+                language: Err("no value supplied for language".to_string()),
+                logo_url: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+                personhood: Ok(Default::default()),
+                public_url: Ok(Default::default()),
+                registry_status: Ok(Default::default()),
+                relationship_identifier_default: Ok(Default::default()),
+            }
+        }
+    }
+    impl CommunityProfileView {
+        pub fn community_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CommunityProfileViewCommunityDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.community_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for community_did: {e}"));
+            self
+        }
+        pub fn contact_email<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.contact_email = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for contact_email: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn extensions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extensions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extensions: {e}"));
+            self
+        }
+        pub fn language<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CommunityProfileViewLanguage>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.language = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for language: {e}"));
+            self
+        }
+        pub fn logo_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.logo_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for logo_url: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CommunityProfileViewName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn personhood<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PersonhoodGovernance>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.personhood = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for personhood: {e}"));
+            self
+        }
+        pub fn public_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.public_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for public_url: {e}"));
+            self
+        }
+        pub fn registry_status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::CommunityProfileViewRegistryStatus>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registry_status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registry_status: {e}"));
+            self
+        }
+        pub fn relationship_identifier_default<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::CommunityProfileViewRelationshipIdentifierDefault>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.relationship_identifier_default = value.try_into().map_err(|e| {
+                format!("error converting supplied value for relationship_identifier_default: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CommunityProfileView> for super::CommunityProfileView {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CommunityProfileView,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                community_did: value.community_did?,
+                contact_email: value.contact_email?,
+                created_at: value.created_at?,
+                description: value.description?,
+                extensions: value.extensions?,
+                language: value.language?,
+                logo_url: value.logo_url?,
+                name: value.name?,
+                personhood: value.personhood?,
+                public_url: value.public_url?,
+                registry_status: value.registry_status?,
+                relationship_identifier_default: value.relationship_identifier_default?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CommunityProfileView> for CommunityProfileView {
+        fn from(value: super::CommunityProfileView) -> Self {
+            Self {
+                community_did: Ok(value.community_did),
+                contact_email: Ok(value.contact_email),
+                created_at: Ok(value.created_at),
+                description: Ok(value.description),
+                extensions: Ok(value.extensions),
+                language: Ok(value.language),
+                logo_url: Ok(value.logo_url),
+                name: Ok(value.name),
+                personhood: Ok(value.personhood),
+                public_url: Ok(value.public_url),
+                registry_status: Ok(value.registry_status),
+                relationship_identifier_default: Ok(value.relationship_identifier_default),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PersonhoodGovernance {
+        accepted_idvps: ::std::result::Result<
+            ::std::vec::Vec<super::PersonhoodGovernanceAcceptedIdvpsItem>,
+            ::std::string::String,
+        >,
+        governance_framework_url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        real_human: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        single_membership:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+    }
+    impl ::std::default::Default for PersonhoodGovernance {
+        fn default() -> Self {
+            Self {
+                accepted_idvps: Ok(Default::default()),
+                governance_framework_url: Ok(Default::default()),
+                real_human: Ok(Default::default()),
+                single_membership: Ok(Default::default()),
+            }
+        }
+    }
+    impl PersonhoodGovernance {
+        pub fn accepted_idvps<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::vec::Vec<super::PersonhoodGovernanceAcceptedIdvpsItem>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.accepted_idvps = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for accepted_idvps: {e}"));
+            self
+        }
+        pub fn governance_framework_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.governance_framework_url = value.try_into().map_err(|e| {
+                format!("error converting supplied value for governance_framework_url: {e}")
+            });
+            self
+        }
+        pub fn real_human<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.real_human = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for real_human: {e}"));
+            self
+        }
+        pub fn single_membership<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.single_membership = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for single_membership: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PersonhoodGovernance> for super::PersonhoodGovernance {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PersonhoodGovernance,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                accepted_idvps: value.accepted_idvps?,
+                governance_framework_url: value.governance_framework_url?,
+                real_human: value.real_human?,
+                single_membership: value.single_membership?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PersonhoodGovernance> for PersonhoodGovernance {
+        fn from(value: super::PersonhoodGovernance) -> Self {
+            Self {
+                accepted_idvps: Ok(value.accepted_idvps),
+                governance_framework_url: Ok(value.governance_framework_url),
+                real_human: Ok(value.real_human),
+                single_membership: Ok(value.single_membership),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        profile: ::std::result::Result<super::CommunityProfileView, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                profile: Err("no value supplied for profile".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn profile<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CommunityProfileView>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.profile = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for profile: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                profile: value.profile?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                profile: Ok(value.profile),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/community/profile/show/0.1";
@@ -870,6 +1306,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CommunityProfileView\": {\n      \"$anchor\": \"communityProfileView\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\\n\\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community's identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community's credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\\n\\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Immutable, like `communityDid`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personhood\": {\n          \"$ref\": \"#/$defs/PersonhoodGovernance\",\n          \"description\": \"What this community's governance asserts about the personhood of its members.\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability. Populated on reads; not settable.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileView\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonhoodGovernance\": {\n      \"$anchor\": \"personhoodGovernance\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\n      \"properties\": {\n        \"acceptedIdvps\": {\n          \"description\": \"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the governance framework these assertions refer to can be read.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"realHuman\": {\n          \"description\": \"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\n          \"type\": \"boolean\"\n        },\n        \"singleMembership\": {\n          \"description\": \"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"PersonhoodGovernance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/CommunityProfileView\",\n          \"description\": \"The community's profile as read, including the immutable `communityDid` an update cannot set.\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"VTC Community Profile Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

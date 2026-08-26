@@ -68,6 +68,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DrainEntry {
     ///RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.
     #[serde(rename = "drainsUntil")]
@@ -79,6 +80,11 @@ pub struct DrainEntry {
     ///The mediator being drained.
     #[serde(rename = "mediatorDid")]
     pub mediator_did: DrainEntryMediatorDid,
+}
+impl DrainEntry {
+    pub fn builder() -> builder::DrainEntry {
+        Default::default()
+    }
 }
 ///The mediator being drained.
 ///
@@ -278,6 +284,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -287,6 +294,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.
@@ -320,11 +332,189 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.
     pub entries: ::std::vec::Vec<DrainEntry>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct DrainEntry {
+        drains_until:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        endpoint: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        mediator_did: ::std::result::Result<super::DrainEntryMediatorDid, ::std::string::String>,
+    }
+    impl ::std::default::Default for DrainEntry {
+        fn default() -> Self {
+            Self {
+                drains_until: Err("no value supplied for drains_until".to_string()),
+                endpoint: Err("no value supplied for endpoint".to_string()),
+                ext: Ok(Default::default()),
+                mediator_did: Err("no value supplied for mediator_did".to_string()),
+            }
+        }
+    }
+    impl DrainEntry {
+        pub fn drains_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.drains_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for drains_until: {e}"));
+            self
+        }
+        pub fn endpoint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.endpoint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for endpoint: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn mediator_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DrainEntryMediatorDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mediator_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mediator_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DrainEntry> for super::DrainEntry {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DrainEntry,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                drains_until: value.drains_until?,
+                endpoint: value.endpoint?,
+                ext: value.ext?,
+                mediator_did: value.mediator_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DrainEntry> for DrainEntry {
+        fn from(value: super::DrainEntry) -> Self {
+            Self {
+                drains_until: Ok(value.drains_until),
+                endpoint: Ok(value.endpoint),
+                ext: Ok(value.ext),
+                mediator_did: Ok(value.mediator_did),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        entries: ::std::result::Result<::std::vec::Vec<super::DrainEntry>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                entries: Err("no value supplied for entries".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn entries<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::DrainEntry>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                entries: value.entries?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                entries: Ok(value.entries),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/drain/list/1.0";
@@ -340,6 +530,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"DrainEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.\",\n      \"properties\": {\n        \"drainsUntil\": {\n          \"description\": \"RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endpoint\": {\n          \"description\": \"Where it is still reachable for the remainder of the drain.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator being drained.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mediatorDid\",\n        \"endpoint\",\n        \"drainsUntil\"\n      ],\n      \"title\": \"DrainEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DrainEntry\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entries\"\n      ],\n      \"title\": \"VTA Services Drain — List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

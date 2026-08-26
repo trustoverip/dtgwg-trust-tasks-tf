@@ -88,6 +88,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum ConsumerKind {
     ///Companion
     #[serde(rename = "companion")]
@@ -129,6 +130,7 @@ pub enum ConsumerKind {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ConsumerKindFormFactor {
     #[serde(rename = "browser")]
     Browser,
@@ -206,6 +208,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ConsumerKindFormFactor {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ConsumerKindServiceKind {
     #[serde(rename = "mediator")]
     Mediator,
@@ -495,6 +498,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional — when supplied, evaluate as if this Rego source were active (e.g. preview a pending upsert). The candidate is layered into the evaluator at the priority specified by `candidatePriority` (default 1000) for this call only.
     #[serde(
@@ -513,6 +517,11 @@ pub struct Payload {
     #[serde(rename = "includeTrace", default)]
     pub include_trace: bool,
     pub input: PolicyInput,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PolicyDecision`
 ///
@@ -607,6 +616,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyDecision {
     pub decision: PolicyDecisionDecision,
     ///Human-readable explanation for diagnostic display.
@@ -634,6 +644,11 @@ pub struct PolicyDecision {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds_cap: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl PolicyDecision {
+    pub fn builder() -> builder::PolicyDecision {
+        Default::default()
+    }
 }
 ///`PolicyDecisionDecision`
 ///
@@ -663,6 +678,7 @@ pub struct PolicyDecision {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PolicyDecisionDecision {
     #[serde(rename = "allow")]
     Allow,
@@ -744,6 +760,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyDecisionDecision {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PolicyDecisionMode {
     #[serde(rename = "proxy")]
     Proxy,
@@ -824,6 +841,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyDecisionMode {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyDecisionRequireConsent {
     ///Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).
     #[serde(rename = "approverSet")]
@@ -837,6 +855,11 @@ pub struct PolicyDecisionRequireConsent {
         default = "defaults::default_nzu64::<::std::num::NonZeroU64, 1>"
     )]
     pub min_approvals: ::std::num::NonZeroU64,
+}
+impl PolicyDecisionRequireConsent {
+    pub fn builder() -> builder::PolicyDecisionRequireConsent {
+        Default::default()
+    }
 }
 ///When decision == "requireStepUp", which method to demand.
 ///
@@ -869,6 +892,7 @@ pub struct PolicyDecisionRequireConsent {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyDecisionStepUp {
     pub method: PolicyDecisionStepUpMethod,
     #[serde(
@@ -877,6 +901,11 @@ pub struct PolicyDecisionStepUp {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl PolicyDecisionStepUp {
+    pub fn builder() -> builder::PolicyDecisionStepUp {
+        Default::default()
+    }
 }
 ///`PolicyDecisionStepUpMethod`
 ///
@@ -905,6 +934,7 @@ pub struct PolicyDecisionStepUp {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PolicyDecisionStepUpMethod {
     #[serde(rename = "webauthnUv")]
     WebauthnUv,
@@ -1075,12 +1105,18 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyDecisionStepUpMeth
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyInput {
     pub consumer: PolicyInputConsumer,
     #[serde(rename = "contextId")]
     pub context_id: PolicyInputContextId,
     pub request: PolicyInputRequest,
     pub site: SiteTarget,
+}
+impl PolicyInput {
+    pub fn builder() -> builder::PolicyInput {
+        Default::default()
+    }
 }
 ///`PolicyInputConsumer`
 ///
@@ -1123,6 +1159,7 @@ pub struct PolicyInput {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyInputConsumer {
     #[serde(
         rename = "deviceId",
@@ -1145,6 +1182,11 @@ pub struct PolicyInputConsumer {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network_class: ::std::option::Option<PolicyInputConsumerNetworkClass>,
+}
+impl PolicyInputConsumer {
+    pub fn builder() -> builder::PolicyInputConsumer {
+        Default::default()
+    }
 }
 ///`PolicyInputConsumerNetworkClass`
 ///
@@ -1175,6 +1217,7 @@ pub struct PolicyInputConsumer {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PolicyInputConsumerNetworkClass {
     #[serde(rename = "unknown")]
     Unknown,
@@ -1368,6 +1411,7 @@ impl<'de> ::serde::Deserialize<'de> for PolicyInputContextId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyInputRequest {
     pub exposure: PolicyInputRequestExposure,
     ///Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.
@@ -1389,6 +1433,11 @@ pub struct PolicyInputRequest {
     ///Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).
     #[serde(rename = "typeUri")]
     pub type_uri: ::std::string::String,
+}
+impl PolicyInputRequest {
+    pub fn builder() -> builder::PolicyInputRequest {
+        Default::default()
+    }
 }
 ///Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.
 ///
@@ -1421,10 +1470,16 @@ pub struct PolicyInputRequest {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyInputRequestExposure {
     #[serde(rename = "actsAsSubject")]
     pub acts_as_subject: bool,
     pub discloses: PolicyInputRequestExposureDiscloses,
+}
+impl PolicyInputRequestExposure {
+    pub fn builder() -> builder::PolicyInputRequestExposure {
+        Default::default()
+    }
 }
 ///`PolicyInputRequestExposureDiscloses`
 ///
@@ -1453,6 +1508,7 @@ pub struct PolicyInputRequestExposure {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PolicyInputRequestExposureDiscloses {
     #[serde(rename = "none")]
     None,
@@ -1531,6 +1587,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyInputRequestExposu
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PolicyInputRequestSideEffects {
     #[serde(rename = "none")]
     None,
@@ -1621,6 +1678,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyInputRequestSideEf
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub decision: PolicyDecision,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1635,6 +1693,11 @@ pub struct Response {
     ///Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub trace: ::std::vec::Vec<::std::string::String>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
 ///
@@ -1746,6 +1809,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum SiteTarget {
     ///WebOrigin
     #[serde(rename = "webOrigin")]
@@ -2155,6 +2219,808 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetTeamId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        candidate_module: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        candidate_priority: ::std::result::Result<i64, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        include_trace: ::std::result::Result<bool, ::std::string::String>,
+        input: ::std::result::Result<super::PolicyInput, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                candidate_module: Ok(Default::default()),
+                candidate_priority: Ok(super::defaults::default_u64::<i64, 1000>()),
+                ext: Ok(Default::default()),
+                include_trace: Ok(Default::default()),
+                input: Err("no value supplied for input".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn candidate_module<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.candidate_module = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for candidate_module: {e}"));
+            self
+        }
+        pub fn candidate_priority<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<i64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.candidate_priority = value.try_into().map_err(|e| {
+                format!("error converting supplied value for candidate_priority: {e}")
+            });
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn include_trace<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.include_trace = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for include_trace: {e}"));
+            self
+        }
+        pub fn input<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyInput>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.input = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for input: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                candidate_module: value.candidate_module?,
+                candidate_priority: value.candidate_priority?,
+                ext: value.ext?,
+                include_trace: value.include_trace?,
+                input: value.input?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                candidate_module: Ok(value.candidate_module),
+                candidate_priority: Ok(value.candidate_priority),
+                ext: Ok(value.ext),
+                include_trace: Ok(value.include_trace),
+                input: Ok(value.input),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyDecision {
+        decision: ::std::result::Result<super::PolicyDecisionDecision, ::std::string::String>,
+        explanation: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        mode: ::std::result::Result<
+            ::std::option::Option<super::PolicyDecisionMode>,
+            ::std::string::String,
+        >,
+        require_consent: ::std::result::Result<
+            ::std::option::Option<super::PolicyDecisionRequireConsent>,
+            ::std::string::String,
+        >,
+        step_up: ::std::result::Result<
+            ::std::option::Option<super::PolicyDecisionStepUp>,
+            ::std::string::String,
+        >,
+        ttl_seconds_cap: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for PolicyDecision {
+        fn default() -> Self {
+            Self {
+                decision: Err("no value supplied for decision".to_string()),
+                explanation: Ok(Default::default()),
+                mode: Ok(Default::default()),
+                require_consent: Ok(Default::default()),
+                step_up: Ok(Default::default()),
+                ttl_seconds_cap: Ok(Default::default()),
+            }
+        }
+    }
+    impl PolicyDecision {
+        pub fn decision<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyDecisionDecision>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decision = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decision: {e}"));
+            self
+        }
+        pub fn explanation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.explanation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for explanation: {e}"));
+            self
+        }
+        pub fn mode<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PolicyDecisionMode>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mode = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mode: {e}"));
+            self
+        }
+        pub fn require_consent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PolicyDecisionRequireConsent>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.require_consent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for require_consent: {e}"));
+            self
+        }
+        pub fn step_up<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PolicyDecisionStepUp>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.step_up = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for step_up: {e}"));
+            self
+        }
+        pub fn ttl_seconds_cap<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ttl_seconds_cap = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ttl_seconds_cap: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyDecision> for super::PolicyDecision {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyDecision,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                decision: value.decision?,
+                explanation: value.explanation?,
+                mode: value.mode?,
+                require_consent: value.require_consent?,
+                step_up: value.step_up?,
+                ttl_seconds_cap: value.ttl_seconds_cap?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyDecision> for PolicyDecision {
+        fn from(value: super::PolicyDecision) -> Self {
+            Self {
+                decision: Ok(value.decision),
+                explanation: Ok(value.explanation),
+                mode: Ok(value.mode),
+                require_consent: Ok(value.require_consent),
+                step_up: Ok(value.step_up),
+                ttl_seconds_cap: Ok(value.ttl_seconds_cap),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyDecisionRequireConsent {
+        approver_set: ::std::result::Result<::std::string::String, ::std::string::String>,
+        exclude_requester: ::std::result::Result<bool, ::std::string::String>,
+        min_approvals: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for PolicyDecisionRequireConsent {
+        fn default() -> Self {
+            Self {
+                approver_set: Err("no value supplied for approver_set".to_string()),
+                exclude_requester: Ok(Default::default()),
+                min_approvals: Ok(super::defaults::default_nzu64::<::std::num::NonZeroU64, 1>()),
+            }
+        }
+    }
+    impl PolicyDecisionRequireConsent {
+        pub fn approver_set<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approver_set = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approver_set: {e}"));
+            self
+        }
+        pub fn exclude_requester<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.exclude_requester = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for exclude_requester: {e}"));
+            self
+        }
+        pub fn min_approvals<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.min_approvals = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for min_approvals: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyDecisionRequireConsent> for super::PolicyDecisionRequireConsent {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyDecisionRequireConsent,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                approver_set: value.approver_set?,
+                exclude_requester: value.exclude_requester?,
+                min_approvals: value.min_approvals?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyDecisionRequireConsent> for PolicyDecisionRequireConsent {
+        fn from(value: super::PolicyDecisionRequireConsent) -> Self {
+            Self {
+                approver_set: Ok(value.approver_set),
+                exclude_requester: Ok(value.exclude_requester),
+                min_approvals: Ok(value.min_approvals),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyDecisionStepUp {
+        method: ::std::result::Result<super::PolicyDecisionStepUpMethod, ::std::string::String>,
+        ttl_seconds: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for PolicyDecisionStepUp {
+        fn default() -> Self {
+            Self {
+                method: Err("no value supplied for method".to_string()),
+                ttl_seconds: Ok(Default::default()),
+            }
+        }
+    }
+    impl PolicyDecisionStepUp {
+        pub fn method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyDecisionStepUpMethod>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.method = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for method: {e}"));
+            self
+        }
+        pub fn ttl_seconds<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ttl_seconds = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ttl_seconds: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyDecisionStepUp> for super::PolicyDecisionStepUp {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyDecisionStepUp,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                method: value.method?,
+                ttl_seconds: value.ttl_seconds?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyDecisionStepUp> for PolicyDecisionStepUp {
+        fn from(value: super::PolicyDecisionStepUp) -> Self {
+            Self {
+                method: Ok(value.method),
+                ttl_seconds: Ok(value.ttl_seconds),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyInput {
+        consumer: ::std::result::Result<super::PolicyInputConsumer, ::std::string::String>,
+        context_id: ::std::result::Result<super::PolicyInputContextId, ::std::string::String>,
+        request: ::std::result::Result<super::PolicyInputRequest, ::std::string::String>,
+        site: ::std::result::Result<super::SiteTarget, ::std::string::String>,
+    }
+    impl ::std::default::Default for PolicyInput {
+        fn default() -> Self {
+            Self {
+                consumer: Err("no value supplied for consumer".to_string()),
+                context_id: Err("no value supplied for context_id".to_string()),
+                request: Err("no value supplied for request".to_string()),
+                site: Err("no value supplied for site".to_string()),
+            }
+        }
+    }
+    impl PolicyInput {
+        pub fn consumer<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyInputConsumer>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumer = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consumer: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyInputContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn request<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyInputRequest>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.request = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for request: {e}"));
+            self
+        }
+        pub fn site<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SiteTarget>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.site = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for site: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyInput> for super::PolicyInput {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyInput,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                consumer: value.consumer?,
+                context_id: value.context_id?,
+                request: value.request?,
+                site: value.site?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyInput> for PolicyInput {
+        fn from(value: super::PolicyInput) -> Self {
+            Self {
+                consumer: Ok(value.consumer),
+                context_id: Ok(value.context_id),
+                request: Ok(value.request),
+                site: Ok(value.site),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyInputConsumer {
+        device_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        did: ::std::result::Result<::std::string::String, ::std::string::String>,
+        kind: ::std::result::Result<
+            ::std::option::Option<super::ConsumerKind>,
+            ::std::string::String,
+        >,
+        last_user_verification_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        network_class: ::std::result::Result<
+            ::std::option::Option<super::PolicyInputConsumerNetworkClass>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for PolicyInputConsumer {
+        fn default() -> Self {
+            Self {
+                device_id: Ok(Default::default()),
+                did: Err("no value supplied for did".to_string()),
+                kind: Ok(Default::default()),
+                last_user_verification_at: Ok(Default::default()),
+                network_class: Ok(Default::default()),
+            }
+        }
+    }
+    impl PolicyInputConsumer {
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ConsumerKind>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn last_user_verification_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_user_verification_at = value.try_into().map_err(|e| {
+                format!("error converting supplied value for last_user_verification_at: {e}")
+            });
+            self
+        }
+        pub fn network_class<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::PolicyInputConsumerNetworkClass>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.network_class = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for network_class: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyInputConsumer> for super::PolicyInputConsumer {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyInputConsumer,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_id: value.device_id?,
+                did: value.did?,
+                kind: value.kind?,
+                last_user_verification_at: value.last_user_verification_at?,
+                network_class: value.network_class?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyInputConsumer> for PolicyInputConsumer {
+        fn from(value: super::PolicyInputConsumer) -> Self {
+            Self {
+                device_id: Ok(value.device_id),
+                did: Ok(value.did),
+                kind: Ok(value.kind),
+                last_user_verification_at: Ok(value.last_user_verification_at),
+                network_class: Ok(value.network_class),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyInputRequest {
+        exposure: ::std::result::Result<super::PolicyInputRequestExposure, ::std::string::String>,
+        kind: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        payload_digest: ::std::result::Result<
+            ::std::option::Option<super::DigestMultibase>,
+            ::std::string::String,
+        >,
+        side_effects:
+            ::std::result::Result<super::PolicyInputRequestSideEffects, ::std::string::String>,
+        subject: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        type_uri: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for PolicyInputRequest {
+        fn default() -> Self {
+            Self {
+                exposure: Err("no value supplied for exposure".to_string()),
+                kind: Ok(Default::default()),
+                payload_digest: Ok(Default::default()),
+                side_effects: Err("no value supplied for side_effects".to_string()),
+                subject: Ok(Default::default()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+            }
+        }
+    }
+    impl PolicyInputRequest {
+        pub fn exposure<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyInputRequestExposure>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.exposure = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for exposure: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn payload_digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DigestMultibase>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.payload_digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for payload_digest: {e}"));
+            self
+        }
+        pub fn side_effects<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyInputRequestSideEffects>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.side_effects = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for side_effects: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyInputRequest> for super::PolicyInputRequest {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyInputRequest,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                exposure: value.exposure?,
+                kind: value.kind?,
+                payload_digest: value.payload_digest?,
+                side_effects: value.side_effects?,
+                subject: value.subject?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyInputRequest> for PolicyInputRequest {
+        fn from(value: super::PolicyInputRequest) -> Self {
+            Self {
+                exposure: Ok(value.exposure),
+                kind: Ok(value.kind),
+                payload_digest: Ok(value.payload_digest),
+                side_effects: Ok(value.side_effects),
+                subject: Ok(value.subject),
+                type_uri: Ok(value.type_uri),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyInputRequestExposure {
+        acts_as_subject: ::std::result::Result<bool, ::std::string::String>,
+        discloses: ::std::result::Result<
+            super::PolicyInputRequestExposureDiscloses,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for PolicyInputRequestExposure {
+        fn default() -> Self {
+            Self {
+                acts_as_subject: Err("no value supplied for acts_as_subject".to_string()),
+                discloses: Err("no value supplied for discloses".to_string()),
+            }
+        }
+    }
+    impl PolicyInputRequestExposure {
+        pub fn acts_as_subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acts_as_subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for acts_as_subject: {e}"));
+            self
+        }
+        pub fn discloses<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyInputRequestExposureDiscloses>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.discloses = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for discloses: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyInputRequestExposure> for super::PolicyInputRequestExposure {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyInputRequestExposure,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acts_as_subject: value.acts_as_subject?,
+                discloses: value.discloses?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyInputRequestExposure> for PolicyInputRequestExposure {
+        fn from(value: super::PolicyInputRequestExposure) -> Self {
+            Self {
+                acts_as_subject: Ok(value.acts_as_subject),
+                discloses: Ok(value.discloses),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        decision: ::std::result::Result<super::PolicyDecision, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        matched_policies:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        trace: ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                decision: Err("no value supplied for decision".to_string()),
+                ext: Ok(Default::default()),
+                matched_policies: Ok(Default::default()),
+                trace: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn decision<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyDecision>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decision = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decision: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn matched_policies<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.matched_policies = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for matched_policies: {e}"));
+            self
+        }
+        pub fn trace<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.trace = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for trace: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                decision: value.decision?,
+                ext: value.ext?,
+                matched_policies: value.matched_policies?,
+                trace: value.trace?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                decision: Ok(value.decision),
+                ext: Ok(value.ext),
+                matched_policies: Ok(value.matched_policies),
+                trace: Ok(value.trace),
+            }
+        }
+    }
+}
 /// Generation of default values for serde.
 pub mod defaults {
     pub(super) fn default_u64<T, const V: u64>() -> T
@@ -2185,6 +3051,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ConsumerKind\": {\n      \"description\": \"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"formFactor\": {\n              \"enum\": [\n                \"browser\",\n                \"mobile\",\n                \"desktop\"\n              ],\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"companion\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"formFactor\"\n          ],\n          \"title\": \"Companion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"service\"\n            },\n            \"serviceKind\": {\n              \"enum\": [\n                \"mediator\",\n                \"aiAgent\",\n                \"daemon\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"serviceKind\"\n          ],\n          \"title\": \"Service\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ConsumerKind\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PolicyDecision\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"decision\": {\n          \"enum\": [\n            \"allow\",\n            \"deny\",\n            \"requireStepUp\",\n            \"requireConsent\"\n          ],\n          \"type\": \"string\"\n        },\n        \"explanation\": {\n          \"description\": \"Human-readable explanation for diagnostic display.\",\n          \"type\": \"string\"\n        },\n        \"mode\": {\n          \"description\": \"Vault-flow-specific. When decision == \\\"allow\\\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.\",\n          \"enum\": [\n            \"proxy\",\n            \"fill\"\n          ],\n          \"type\": \"string\"\n        },\n        \"requireConsent\": {\n          \"additionalProperties\": false,\n          \"description\": \"When decision == \\\"requireConsent\\\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.\",\n          \"properties\": {\n            \"approverSet\": {\n              \"description\": \"Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).\",\n              \"type\": \"string\"\n            },\n            \"excludeRequester\": {\n              \"default\": false,\n              \"description\": \"When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.\",\n              \"type\": \"boolean\"\n            },\n            \"minApprovals\": {\n              \"default\": 1,\n              \"description\": \"Number of distinct approvers from the set required before the task may execute.\",\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"approverSet\"\n          ],\n          \"type\": \"object\"\n        },\n        \"stepUp\": {\n          \"additionalProperties\": false,\n          \"description\": \"When decision == \\\"requireStepUp\\\", which method to demand.\",\n          \"properties\": {\n            \"method\": {\n              \"enum\": [\n                \"webauthnUv\",\n                \"pushApproval\",\n                \"totp\"\n              ],\n              \"type\": \"string\"\n            },\n            \"ttlSeconds\": {\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"method\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ttlSecondsCap\": {\n          \"description\": \"When decision == \\\"allow\\\", maximum lifetime of any issued session blob / released secret.\",\n          \"maximum\": 86400,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"decision\"\n      ],\n      \"title\": \"PolicyDecision\",\n      \"type\": \"object\"\n    },\n    \"PolicyInput\": {\n      \"additionalProperties\": false,\n      \"description\": \"The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.\",\n      \"properties\": {\n        \"consumer\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"deviceId\": {\n              \"type\": \"string\"\n            },\n            \"did\": {\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"$ref\": \"#/$defs/ConsumerKind\"\n            },\n            \"lastUserVerificationAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"networkClass\": {\n              \"enum\": [\n                \"unknown\",\n                \"home\",\n                \"corp\",\n                \"public\",\n                \"vpn\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"did\"\n          ],\n          \"type\": \"object\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"exposure\": {\n              \"additionalProperties\": false,\n              \"description\": \"Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.\",\n              \"properties\": {\n                \"actsAsSubject\": {\n                  \"type\": \"boolean\"\n                },\n                \"discloses\": {\n                  \"enum\": [\n                    \"none\",\n                    \"metadata\",\n                    \"secret\"\n                  ],\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"discloses\",\n                \"actsAsSubject\"\n              ],\n              \"type\": \"object\"\n            },\n            \"kind\": {\n              \"description\": \"Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.\",\n              \"type\": \"string\"\n            },\n            \"payloadDigest\": {\n              \"$ref\": \"#/$defs/DigestMultibase\",\n              \"description\": \"Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.\"\n            },\n            \"sideEffects\": {\n              \"description\": \"Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.\",\n              \"enum\": [\n                \"none\",\n                \"mutating\",\n                \"destructive\"\n              ],\n              \"type\": \"string\"\n            },\n            \"subject\": {\n              \"description\": \"The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).\",\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"description\": \"Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"typeUri\",\n            \"sideEffects\",\n            \"exposure\"\n          ],\n          \"type\": \"object\"\n        },\n        \"site\": {\n          \"$ref\": \"#/$defs/SiteTarget\"\n        }\n      },\n      \"required\": [\n        \"request\",\n        \"site\",\n        \"contextId\",\n        \"consumer\"\n      ],\n      \"title\": \"PolicyInput\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"decision\": {\n          \"$ref\": \"#/$defs/PolicyDecision\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"matchedPolicies\": {\n          \"description\": \"Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"trace\": {\n          \"description\": \"Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"decision\"\n      ],\n      \"title\": \"Policy Evaluate — response payload\",\n      \"type\": \"object\"\n    },\n    \"SiteTarget\": {\n      \"description\": \"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"webOrigin\"\n            },\n            \"origin\": {\n              \"description\": \"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"origin\"\n          ],\n          \"title\": \"WebOrigin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"did\": {\n              \"description\": \"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"did\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"did\"\n          ],\n          \"title\": \"Did\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"bundleId\": {\n              \"description\": \"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"iosApp\"\n            },\n            \"teamId\": {\n              \"description\": \"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Z0-9]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"bundleId\"\n          ],\n          \"title\": \"IosApp\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"androidApp\"\n            },\n            \"packageName\": {\n              \"description\": \"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\n              \"type\": \"string\"\n            },\n            \"sha256CertFingerprints\": {\n              \"description\": \"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\n              \"items\": {\n                \"pattern\": \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"packageName\",\n            \"sha256CertFingerprints\"\n          ],\n          \"title\": \"AndroidApp\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SiteTarget\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -240,6 +240,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The id of the credential to revoke (as returned by vta/credentials/issue).
     #[serde(rename = "credentialId")]
@@ -250,6 +251,11 @@ pub struct Payload {
     ///Optional human-readable rationale, recorded for audit.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.
 ///
@@ -290,6 +296,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "credentialId")]
     pub credential_id: CredentialId,
@@ -307,6 +314,164 @@ pub struct Response {
     )]
     pub status_list_index: ::std::option::Option<u64>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        credential_id: ::std::result::Result<super::CredentialId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential_id: value.credential_id?,
+                ext: value.ext?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                credential_id: Ok(value.credential_id),
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        credential_id: ::std::result::Result<super::CredentialId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        revoked_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        status_list_index: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                ext: Ok(Default::default()),
+                revoked_at: Err("no value supplied for revoked_at".to_string()),
+                status_list_index: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn revoked_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revoked_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revoked_at: {e}"));
+            self
+        }
+        pub fn status_list_index<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status_list_index = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status_list_index: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential_id: value.credential_id?,
+                ext: value.ext?,
+                revoked_at: value.revoked_at?,
+                status_list_index: value.status_list_index?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                credential_id: Ok(value.credential_id),
+                ext: Ok(value.ext),
+                revoked_at: Ok(value.revoked_at),
+                status_list_index: Ok(value.status_list_index),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/credentials/revoke/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -323,6 +488,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"VTA Credentials Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -341,6 +341,7 @@ A verifier evaluates the definition's completion rule itself over the enumerated
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     /**
     Whether the recorder considers the enactment complete.
@@ -373,6 +374,11 @@ pub struct Payload {
     pub salt: ::std::option::Option<PayloadSalt>,
     ///Every step of the enactment, in the order the recorder observed them. A set containing no step marked `terminal` is a PREFIX, not a completed enactment — which is what makes truncation detectable, since the marker cannot be minted without the terminal step issuer's key.
     pub steps: ::std::vec::Vec<PayloadStepsItem>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The enactment this receipt reports on — the value every enumerated step carries in its `ceremony.enactment` member. Globally unique and never reused (SPEC §4.11).
 ///
@@ -642,6 +648,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSalt {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadStepsItem {
     ///Salted digest of the step document, computed as the specification's Conformance section defines. A verifier holding the document recomputes it; a verifier that does not hold the document still learns that the recorder committed to a specific one.
     #[serde(rename = "digestMultibase")]
@@ -661,6 +668,11 @@ pub struct PayloadStepsItem {
     ///The Type URI the step enacted, including any fragment. Checked against the definition's declared type for that step.
     #[serde(rename = "typeUri")]
     pub type_uri: ::std::string::String,
+}
+impl PayloadStepsItem {
+    pub fn builder() -> builder::PayloadStepsItem {
+        Default::default()
+    }
 }
 ///The step document's `id` (SPEC §4.3) — globally unique and never reused, so it names one instance where the step name names a position in the flow, and so a verifier can locate the document the digest is over.
 ///
@@ -867,6 +879,277 @@ impl<'de> ::serde::Deserialize<'de> for PayloadStepsItemStep {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        complete: ::std::result::Result<bool, ::std::string::String>,
+        definition: ::std::result::Result<::std::string::String, ::std::string::String>,
+        definition_digest: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        enactment: ::std::result::Result<super::PayloadEnactment, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        parent_enactment: ::std::result::Result<
+            ::std::option::Option<super::PayloadParentEnactment>,
+            ::std::string::String,
+        >,
+        salt:
+            ::std::result::Result<::std::option::Option<super::PayloadSalt>, ::std::string::String>,
+        steps:
+            ::std::result::Result<::std::vec::Vec<super::PayloadStepsItem>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                complete: Err("no value supplied for complete".to_string()),
+                definition: Err("no value supplied for definition".to_string()),
+                definition_digest: Err("no value supplied for definition_digest".to_string()),
+                enactment: Err("no value supplied for enactment".to_string()),
+                ext: Ok(Default::default()),
+                parent_enactment: Ok(Default::default()),
+                salt: Ok(Default::default()),
+                steps: Err("no value supplied for steps".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn complete<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.complete = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for complete: {e}"));
+            self
+        }
+        pub fn definition<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.definition = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for definition: {e}"));
+            self
+        }
+        pub fn definition_digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.definition_digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for definition_digest: {e}"));
+            self
+        }
+        pub fn enactment<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadEnactment>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enactment = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enactment: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn parent_enactment<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadParentEnactment>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.parent_enactment = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for parent_enactment: {e}"));
+            self
+        }
+        pub fn salt<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadSalt>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.salt = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for salt: {e}"));
+            self
+        }
+        pub fn steps<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadStepsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.steps = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for steps: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                complete: value.complete?,
+                definition: value.definition?,
+                definition_digest: value.definition_digest?,
+                enactment: value.enactment?,
+                ext: value.ext?,
+                parent_enactment: value.parent_enactment?,
+                salt: value.salt?,
+                steps: value.steps?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                complete: Ok(value.complete),
+                definition: Ok(value.definition),
+                definition_digest: Ok(value.definition_digest),
+                enactment: Ok(value.enactment),
+                ext: Ok(value.ext),
+                parent_enactment: Ok(value.parent_enactment),
+                salt: Ok(value.salt),
+                steps: Ok(value.steps),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadStepsItem {
+        digest_multibase: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        id: ::std::result::Result<super::PayloadStepsItemId, ::std::string::String>,
+        issuer: ::std::result::Result<super::PayloadStepsItemIssuer, ::std::string::String>,
+        round: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        step: ::std::result::Result<super::PayloadStepsItemStep, ::std::string::String>,
+        terminal: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        type_uri: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for PayloadStepsItem {
+        fn default() -> Self {
+            Self {
+                digest_multibase: Err("no value supplied for digest_multibase".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                issuer: Err("no value supplied for issuer".to_string()),
+                round: Ok(Default::default()),
+                step: Err("no value supplied for step".to_string()),
+                terminal: Ok(Default::default()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+            }
+        }
+    }
+    impl PayloadStepsItem {
+        pub fn digest_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.digest_multibase = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for digest_multibase: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadStepsItemId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issuer<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadStepsItemIssuer>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issuer = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issuer: {e}"));
+            self
+        }
+        pub fn round<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.round = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for round: {e}"));
+            self
+        }
+        pub fn step<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadStepsItemStep>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.step = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for step: {e}"));
+            self
+        }
+        pub fn terminal<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.terminal = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for terminal: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadStepsItem> for super::PayloadStepsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadStepsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                digest_multibase: value.digest_multibase?,
+                id: value.id?,
+                issuer: value.issuer?,
+                round: value.round?,
+                step: value.step?,
+                terminal: value.terminal?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadStepsItem> for PayloadStepsItem {
+        fn from(value: super::PayloadStepsItem) -> Self {
+            Self {
+                digest_multibase: Ok(value.digest_multibase),
+                id: Ok(value.id),
+                issuer: Ok(value.issuer),
+                round: Ok(value.round),
+                step: Ok(value.step),
+                terminal: Ok(value.terminal),
+                type_uri: Ok(value.type_uri),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

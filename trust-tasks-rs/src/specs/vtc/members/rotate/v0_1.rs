@@ -186,6 +186,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -202,6 +203,11 @@ pub struct Payload {
     ///From a prior rotate-challenge.
     #[serde(rename = "rotationId")]
     pub rotation_id: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadNewDid`
 ///
@@ -526,6 +532,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadOldSignature {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -537,6 +544,11 @@ pub struct Response {
     pub role_vec: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Membership credential re-issued to the new DID (opaque here).
     pub vmc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseMethod`
 ///
@@ -564,6 +576,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseMethod {
     #[serde(rename = "did:key")]
     DidKey,
@@ -678,6 +691,221 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNewDid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        new_did: ::std::result::Result<super::PayloadNewDid, ::std::string::String>,
+        new_signature: ::std::result::Result<super::PayloadNewSignature, ::std::string::String>,
+        old_did: ::std::result::Result<super::PayloadOldDid, ::std::string::String>,
+        old_signature: ::std::result::Result<super::PayloadOldSignature, ::std::string::String>,
+        rotation_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                new_did: Err("no value supplied for new_did".to_string()),
+                new_signature: Err("no value supplied for new_signature".to_string()),
+                old_did: Err("no value supplied for old_did".to_string()),
+                old_signature: Err("no value supplied for old_signature".to_string()),
+                rotation_id: Err("no value supplied for rotation_id".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn new_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadNewDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.new_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for new_did: {e}"));
+            self
+        }
+        pub fn new_signature<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadNewSignature>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.new_signature = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for new_signature: {e}"));
+            self
+        }
+        pub fn old_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadOldDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.old_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for old_did: {e}"));
+            self
+        }
+        pub fn old_signature<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadOldSignature>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.old_signature = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for old_signature: {e}"));
+            self
+        }
+        pub fn rotation_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rotation_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rotation_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                new_did: value.new_did?,
+                new_signature: value.new_signature?,
+                old_did: value.old_did?,
+                old_signature: value.old_signature?,
+                rotation_id: value.rotation_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                new_did: Ok(value.new_did),
+                new_signature: Ok(value.new_signature),
+                old_did: Ok(value.old_did),
+                old_signature: Ok(value.old_signature),
+                rotation_id: Ok(value.rotation_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        method: ::std::result::Result<super::ResponseMethod, ::std::string::String>,
+        new_did: ::std::result::Result<super::ResponseNewDid, ::std::string::String>,
+        role_vec: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        vmc: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                method: Err("no value supplied for method".to_string()),
+                new_did: Err("no value supplied for new_did".to_string()),
+                role_vec: Err("no value supplied for role_vec".to_string()),
+                vmc: Err("no value supplied for vmc".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseMethod>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.method = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for method: {e}"));
+            self
+        }
+        pub fn new_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseNewDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.new_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for new_did: {e}"));
+            self
+        }
+        pub fn role_vec<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role_vec = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role_vec: {e}"));
+            self
+        }
+        pub fn vmc<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vmc = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vmc: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                method: value.method?,
+                new_did: value.new_did?,
+                role_vec: value.role_vec?,
+                vmc: value.vmc?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                method: Ok(value.method),
+                new_did: Ok(value.new_did),
+                role_vec: Ok(value.role_vec),
+                vmc: Ok(value.vmc),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/members/rotate/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -693,6 +921,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"method\": {\n          \"enum\": [\n            \"did:key\",\n            \"did:webvh\"\n          ],\n          \"type\": \"string\"\n        },\n        \"newDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"roleVec\": {\n          \"description\": \"Role credential re-issued to the new DID (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Membership credential re-issued to the new DID (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"newDid\",\n        \"method\",\n        \"vmc\",\n        \"roleVec\"\n      ],\n      \"title\": \"VTC Members Rotate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -90,6 +90,7 @@ This is deliberately **not** the stored record. A consumer also retains the orig
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DeferredPresentation {
     ///When the deferral was recorded.
     #[serde(rename = "createdAt")]
@@ -106,6 +107,11 @@ pub struct DeferredPresentation {
     ///The verifier that asked. An approved presentation binds to this audience, so approving is a decision about *this* party and not a standing permission.
     #[serde(rename = "verifierDid")]
     pub verifier_did: DeferredPresentationVerifierDid,
+}
+impl DeferredPresentation {
+    pub fn builder() -> builder::DeferredPresentation {
+        Default::default()
+    }
 }
 ///Approval handle for this deferral — the value `pending/approve` and `pending/deny` act on.
 ///
@@ -443,6 +449,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -452,6 +459,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///One held credential a deferred query asked for, and the claims of it that would be disclosed.
@@ -495,6 +507,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct RequestedCredential {
     ///The claims the query asks to disclose from this credential. An empty array means the query matched the credential without naming claims — a consumer SHOULD treat that as a request for the whole credential and present it to the approver as such.
     pub claims: ::std::vec::Vec<RequestedCredentialClaimsItem>,
@@ -504,6 +517,11 @@ pub struct RequestedCredential {
     ///The DCQL `credential_query_id` this held credential satisfied.
     #[serde(rename = "credentialQueryId")]
     pub credential_query_id: RequestedCredentialCredentialQueryId,
+}
+impl RequestedCredential {
+    pub fn builder() -> builder::RequestedCredential {
+        Default::default()
+    }
 }
 ///`RequestedCredentialClaimsItem`
 ///
@@ -741,11 +759,300 @@ impl<'de> ::serde::Deserialize<'de> for RequestedCredentialCredentialQueryId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The actionable deferrals. A consumer MUST omit records that are already terminal or past their `expiresAt` — they cannot be approved, so listing them would offer the approver a decision that is guaranteed to fail. An empty array means nothing is awaiting a decision.
     pub pending: ::std::vec::Vec<DeferredPresentation>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct DeferredPresentation {
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        id: ::std::result::Result<super::DeferredPresentationId, ::std::string::String>,
+        purpose: ::std::result::Result<super::DeferredPresentationPurpose, ::std::string::String>,
+        requested: ::std::result::Result<
+            ::std::vec::Vec<super::RequestedCredential>,
+            ::std::string::String,
+        >,
+        verifier_did:
+            ::std::result::Result<super::DeferredPresentationVerifierDid, ::std::string::String>,
+    }
+    impl ::std::default::Default for DeferredPresentation {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                purpose: Err("no value supplied for purpose".to_string()),
+                requested: Err("no value supplied for requested".to_string()),
+                verifier_did: Err("no value supplied for verifier_did".to_string()),
+            }
+        }
+    }
+    impl DeferredPresentation {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DeferredPresentationId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DeferredPresentationPurpose>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+        pub fn requested<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RequestedCredential>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requested = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for requested: {e}"));
+            self
+        }
+        pub fn verifier_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DeferredPresentationVerifierDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verifier_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verifier_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DeferredPresentation> for super::DeferredPresentation {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DeferredPresentation,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                expires_at: value.expires_at?,
+                id: value.id?,
+                purpose: value.purpose?,
+                requested: value.requested?,
+                verifier_did: value.verifier_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DeferredPresentation> for DeferredPresentation {
+        fn from(value: super::DeferredPresentation) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                expires_at: Ok(value.expires_at),
+                id: Ok(value.id),
+                purpose: Ok(value.purpose),
+                requested: Ok(value.requested),
+                verifier_did: Ok(value.verifier_did),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RequestedCredential {
+        claims: ::std::result::Result<
+            ::std::vec::Vec<super::RequestedCredentialClaimsItem>,
+            ::std::string::String,
+        >,
+        credential_id:
+            ::std::result::Result<super::RequestedCredentialCredentialId, ::std::string::String>,
+        credential_query_id: ::std::result::Result<
+            super::RequestedCredentialCredentialQueryId,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for RequestedCredential {
+        fn default() -> Self {
+            Self {
+                claims: Err("no value supplied for claims".to_string()),
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                credential_query_id: Err("no value supplied for credential_query_id".to_string()),
+            }
+        }
+    }
+    impl RequestedCredential {
+        pub fn claims<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RequestedCredentialClaimsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claims = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claims: {e}"));
+            self
+        }
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RequestedCredentialCredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn credential_query_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RequestedCredentialCredentialQueryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_query_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for credential_query_id: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RequestedCredential> for super::RequestedCredential {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RequestedCredential,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claims: value.claims?,
+                credential_id: value.credential_id?,
+                credential_query_id: value.credential_query_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RequestedCredential> for RequestedCredential {
+        fn from(value: super::RequestedCredential) -> Self {
+            Self {
+                claims: Ok(value.claims),
+                credential_id: Ok(value.credential_id),
+                credential_query_id: Ok(value.credential_query_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        pending: ::std::result::Result<
+            ::std::vec::Vec<super::DeferredPresentation>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                pending: Err("no value supplied for pending".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn pending<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::DeferredPresentation>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pending = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pending: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                pending: value.pending?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                pending: Ok(value.pending),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =
@@ -764,6 +1071,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"DeferredPresentation\": {\n      \"$anchor\": \"deferredPresentation\",\n      \"additionalProperties\": false,\n      \"description\": \"One presentation request awaiting the holder's decision, as the approver sees it.\\n\\nThis is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer \\\"should I disclose this\\\": who is asking, why, and precisely which claims of which held credentials would leave the wallet.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When the deferral was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Approval handle for this deferral — the value `pending/approve` and `pending/deny` act on.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requested\": {\n          \"description\": \"Every held credential the query would disclose, resolved against what the holder actually holds. This is the authorization surface: the approver is consenting to these claims leaving the wallet, not to the query in the abstract.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RequestedCredential\"\n          },\n          \"type\": \"array\"\n        },\n        \"verifierDid\": {\n          \"description\": \"The verifier that asked. An approved presentation binds to this audience, so approving is a decision about *this* party and not a standing permission.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"verifierDid\",\n        \"requested\",\n        \"purpose\",\n        \"createdAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"DeferredPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RequestedCredential\": {\n      \"$anchor\": \"requestedCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"One held credential a deferred query asked for, and the claims of it that would be disclosed.\",\n      \"properties\": {\n        \"claims\": {\n          \"description\": \"The claims the query asks to disclose from this credential. An empty array means the query matched the credential without naming claims — a consumer SHOULD treat that as a request for the whole credential and present it to the approver as such.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"credentialId\": {\n          \"description\": \"The held credential that would satisfy it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"credentialQueryId\": {\n          \"description\": \"The DCQL `credential_query_id` this held credential satisfied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialQueryId\",\n        \"credentialId\",\n        \"claims\"\n      ],\n      \"title\": \"RequestedCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"pending\": {\n          \"description\": \"The actionable deferrals. A consumer MUST omit records that are already terminal or past their `expiresAt` — they cannot be approved, so listing them would offer the approver a decision that is guaranteed to fail. An empty array means nothing is awaiting a decision.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DeferredPresentation\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"pending\"\n      ],\n      \"title\": \"Credential Exchange Pending List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

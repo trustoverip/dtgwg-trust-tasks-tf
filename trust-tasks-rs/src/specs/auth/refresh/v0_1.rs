@@ -175,6 +175,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -185,6 +186,11 @@ pub struct Payload {
     ///Optional capability tags requested on the new access token. MAY be narrower than the original session's scope; consumers MUST NOT widen scope on refresh.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub scope: ::std::vec::Vec<PayloadScopeItem>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The refresh token previously issued in a TokenBundle. Consumers verify it server-side; producers treat it as opaque.
 ///
@@ -356,6 +362,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadScopeItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -365,6 +372,11 @@ pub struct Response {
     pub session: ::std::option::Option<Session>,
     ///New access token. If the consumer's policy rotates refresh tokens on each use, a new refreshToken is included; otherwise the producer continues using the previously-issued one.
     pub tokens: TokenBundle,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
 ///
@@ -427,6 +439,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Session {
     ///Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -447,6 +460,11 @@ pub struct Session {
     pub issued_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The authenticated party's VID (typically a DID URL).
     pub subject: SessionSubject,
+}
+impl Session {
+    pub fn builder() -> builder::Session {
+        Default::default()
+    }
 }
 ///`SessionAmrItem`
 ///
@@ -714,6 +732,7 @@ impl<'de> ::serde::Deserialize<'de> for SessionSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct TokenBundle {
     ///Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.
     #[serde(rename = "accessToken")]
@@ -744,6 +763,11 @@ pub struct TokenBundle {
     ///Token presentation scheme. Almost always "Bearer"; reserved for future schemes.
     #[serde(rename = "tokenType")]
     pub token_type: TokenBundleTokenType,
+}
+impl TokenBundle {
+    pub fn builder() -> builder::TokenBundle {
+        Default::default()
+    }
 }
 ///Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.
 ///
@@ -1020,6 +1044,403 @@ impl<'de> ::serde::Deserialize<'de> for TokenBundleTokenType {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        refresh_token: ::std::result::Result<super::PayloadRefreshToken, ::std::string::String>,
+        scope:
+            ::std::result::Result<::std::vec::Vec<super::PayloadScopeItem>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                refresh_token: Err("no value supplied for refresh_token".to_string()),
+                scope: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn refresh_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadRefreshToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.refresh_token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for refresh_token: {e}"));
+            self
+        }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadScopeItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                refresh_token: value.refresh_token?,
+                scope: value.scope?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                refresh_token: Ok(value.refresh_token),
+                scope: Ok(value.scope),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        session:
+            ::std::result::Result<::std::option::Option<super::Session>, ::std::string::String>,
+        tokens: ::std::result::Result<super::TokenBundle, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                session: Ok(Default::default()),
+                tokens: Err("no value supplied for tokens".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn session<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Session>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session: {e}"));
+            self
+        }
+        pub fn tokens<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TokenBundle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tokens = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tokens: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                session: value.session?,
+                tokens: value.tokens?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                session: Ok(value.session),
+                tokens: Ok(value.tokens),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Session {
+        acr: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        amr: ::std::result::Result<::std::vec::Vec<super::SessionAmrItem>, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::SessionId, ::std::string::String>,
+        issued_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        subject: ::std::result::Result<super::SessionSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Session {
+        fn default() -> Self {
+            Self {
+                acr: Ok(Default::default()),
+                amr: Ok(Default::default()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Session {
+        pub fn acr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for acr: {e}"));
+            self
+        }
+        pub fn amr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::SessionAmrItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.amr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for amr: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SessionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SessionSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Session> for super::Session {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Session) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acr: value.acr?,
+                amr: value.amr?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                id: value.id?,
+                issued_at: value.issued_at?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Session> for Session {
+        fn from(value: super::Session) -> Self {
+            Self {
+                acr: Ok(value.acr),
+                amr: Ok(value.amr),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct TokenBundle {
+        access_token: ::std::result::Result<super::TokenBundleAccessToken, ::std::string::String>,
+        expires_in: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        refresh_expires_in: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        refresh_token: ::std::result::Result<
+            ::std::option::Option<super::TokenBundleRefreshToken>,
+            ::std::string::String,
+        >,
+        scope: ::std::result::Result<
+            ::std::vec::Vec<super::TokenBundleScopeItem>,
+            ::std::string::String,
+        >,
+        token_type: ::std::result::Result<super::TokenBundleTokenType, ::std::string::String>,
+    }
+    impl ::std::default::Default for TokenBundle {
+        fn default() -> Self {
+            Self {
+                access_token: Err("no value supplied for access_token".to_string()),
+                expires_in: Err("no value supplied for expires_in".to_string()),
+                ext: Ok(Default::default()),
+                refresh_expires_in: Ok(Default::default()),
+                refresh_token: Ok(Default::default()),
+                scope: Ok(Default::default()),
+                token_type: Err("no value supplied for token_type".to_string()),
+            }
+        }
+    }
+    impl TokenBundle {
+        pub fn access_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TokenBundleAccessToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access_token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access_token: {e}"));
+            self
+        }
+        pub fn expires_in<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_in = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_in: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn refresh_expires_in<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.refresh_expires_in = value.try_into().map_err(|e| {
+                format!("error converting supplied value for refresh_expires_in: {e}")
+            });
+            self
+        }
+        pub fn refresh_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::TokenBundleRefreshToken>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.refresh_token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for refresh_token: {e}"));
+            self
+        }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::TokenBundleScopeItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
+        pub fn token_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TokenBundleTokenType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.token_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for token_type: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<TokenBundle> for super::TokenBundle {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: TokenBundle,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                access_token: value.access_token?,
+                expires_in: value.expires_in?,
+                ext: value.ext?,
+                refresh_expires_in: value.refresh_expires_in?,
+                refresh_token: value.refresh_token?,
+                scope: value.scope?,
+                token_type: value.token_type?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::TokenBundle> for TokenBundle {
+        fn from(value: super::TokenBundle) -> Self {
+            Self {
+                access_token: Ok(value.access_token),
+                expires_in: Ok(value.expires_in),
+                ext: Ok(value.ext),
+                refresh_expires_in: Ok(value.refresh_expires_in),
+                refresh_token: Ok(value.refresh_token),
+                scope: Ok(value.scope),
+                token_type: Ok(value.token_type),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/refresh/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -1033,6 +1454,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Issued by the auth service when the presented refresh token is valid. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/refresh/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"Optional session snapshot. Consumers SHOULD include it so the producer can refresh client-side state (acr changes after step-up, scope changes after policy edits) without a separate whoami call.\"\n        },\n        \"tokens\": {\n          \"$ref\": \"#/$defs/TokenBundle\",\n          \"description\": \"New access token. If the consumer's policy rotates refresh tokens on each use, a new refreshToken is included; otherwise the producer continues using the previously-issued one.\"\n        }\n      },\n      \"required\": [\n        \"tokens\"\n      ],\n      \"title\": \"Auth Refresh — response payload\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    },\n    \"TokenBundle\": {\n      \"$anchor\": \"tokenBundle\",\n      \"additionalProperties\": false,\n      \"description\": \"An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.\",\n      \"properties\": {\n        \"accessToken\": {\n          \"description\": \"Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresIn\": {\n          \"description\": \"Seconds from issuance until the access token expires.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"refreshExpiresIn\": {\n          \"description\": \"Seconds from issuance until the refresh token expires, when one was issued.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"refreshToken\": {\n          \"description\": \"Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"scope\": {\n          \"description\": \"Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"tokenType\": {\n          \"description\": \"Token presentation scheme. Almost always \\\"Bearer\\\"; reserved for future schemes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"accessToken\",\n        \"tokenType\",\n        \"expiresIn\"\n      ],\n      \"title\": \"TokenBundle\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

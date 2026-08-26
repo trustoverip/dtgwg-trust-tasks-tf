@@ -169,6 +169,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -187,6 +188,11 @@ impl ::std::default::Default for Payload {
             purpose: Default::default(),
             subject: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Producer-declared intent (e.g. "login", "step-up", "sign-out"). Consumers MAY surface this in audit logs or use it to scope the issued nonce. Free-form; ecosystems define the vocabulary.
@@ -369,6 +375,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign.
     pub challenge: ResponseChallenge,
@@ -381,6 +388,11 @@ pub struct Response {
     ///Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque.
     #[serde(rename = "sessionId")]
     pub session_id: ResponseSessionId,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign.
 ///
@@ -520,6 +532,162 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSessionId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        purpose: ::std::result::Result<
+            ::std::option::Option<super::PayloadPurpose>,
+            ::std::string::String,
+        >,
+        subject: ::std::result::Result<
+            ::std::option::Option<super::PayloadSubject>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                purpose: Ok(Default::default()),
+                subject: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadPurpose>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadSubject>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                purpose: value.purpose?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                purpose: Ok(value.purpose),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        challenge: ::std::result::Result<super::ResponseChallenge, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        session_id: ::std::result::Result<super::ResponseSessionId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                challenge: Err("no value supplied for challenge".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                ext: Ok(Default::default()),
+                session_id: Err("no value supplied for session_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn session_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseSessionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                challenge: value.challenge?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                session_id: value.session_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                challenge: Ok(value.challenge),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                session_id: Ok(value.session_id),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/challenge/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -533,6 +701,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.\",\n      \"properties\": {\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign.\",\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"sessionId\": {\n          \"description\": \"Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"sessionId\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth Challenge — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

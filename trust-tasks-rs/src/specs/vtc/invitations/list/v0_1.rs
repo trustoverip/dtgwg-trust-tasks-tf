@@ -196,6 +196,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct InvitationSummary {
     ///VIC identifier; the revoke target.
     pub id: InvitationSummaryId,
@@ -225,6 +226,11 @@ pub struct InvitationSummary {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+}
+impl InvitationSummary {
+    pub fn builder() -> builder::InvitationSummary {
+        Default::default()
+    }
 }
 ///VIC identifier; the revoke target.
 ///
@@ -522,6 +528,7 @@ impl<'de> ::serde::Deserialize<'de> for InvitationSummarySubjectDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -531,6 +538,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -563,11 +575,246 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every issued invitation, live and revoked. Never includes credential material.
     pub invitations: ::std::vec::Vec<InvitationSummary>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct InvitationSummary {
+        id: ::std::result::Result<super::InvitationSummaryId, ::std::string::String>,
+        issued_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        issued_by: ::std::result::Result<super::InvitationSummaryIssuedBy, ::std::string::String>,
+        revoked_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        role: ::std::result::Result<
+            ::std::option::Option<super::InvitationSummaryRole>,
+            ::std::string::String,
+        >,
+        subject_did:
+            ::std::result::Result<super::InvitationSummarySubjectDid, ::std::string::String>,
+        valid_until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for InvitationSummary {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                issued_by: Err("no value supplied for issued_by".to_string()),
+                revoked_at: Ok(Default::default()),
+                role: Ok(Default::default()),
+                subject_did: Err("no value supplied for subject_did".to_string()),
+                valid_until: Ok(Default::default()),
+            }
+        }
+    }
+    impl InvitationSummary {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::InvitationSummaryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn issued_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::InvitationSummaryIssuedBy>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_by: {e}"));
+            self
+        }
+        pub fn revoked_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revoked_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revoked_at: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::InvitationSummaryRole>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+        pub fn subject_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::InvitationSummarySubjectDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject_did: {e}"));
+            self
+        }
+        pub fn valid_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.valid_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for valid_until: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<InvitationSummary> for super::InvitationSummary {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: InvitationSummary,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                issued_at: value.issued_at?,
+                issued_by: value.issued_by?,
+                revoked_at: value.revoked_at?,
+                role: value.role?,
+                subject_did: value.subject_did?,
+                valid_until: value.valid_until?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::InvitationSummary> for InvitationSummary {
+        fn from(value: super::InvitationSummary) -> Self {
+            Self {
+                id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
+                issued_by: Ok(value.issued_by),
+                revoked_at: Ok(value.revoked_at),
+                role: Ok(value.role),
+                subject_did: Ok(value.subject_did),
+                valid_until: Ok(value.valid_until),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        invitations:
+            ::std::result::Result<::std::vec::Vec<super::InvitationSummary>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                invitations: Err("no value supplied for invitations".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn invitations<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::InvitationSummary>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.invitations = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for invitations: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                invitations: value.invitations?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                invitations: Ok(value.invitations),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/invitations/list/0.1";
@@ -582,6 +829,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InvitationSummary\": {\n      \"$anchor\": \"invitationSummary\",\n      \"additionalProperties\": false,\n      \"description\": \"Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.\",\n      \"properties\": {\n        \"id\": {\n          \"description\": \"VIC identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When it was issued.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedBy\": {\n          \"description\": \"DID of the operator who issued it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When it was revoked; absent while live.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Role granted on redemption, when the invitation names one.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID the invitation admits.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"Expiry, when the invitation is time-bounded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subjectDid\",\n        \"issuedBy\",\n        \"issuedAt\"\n      ],\n      \"title\": \"InvitationSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invitations\": {\n          \"description\": \"Every issued invitation, live and revoked. Never includes credential material.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/InvitationSummary\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"invitations\"\n      ],\n      \"title\": \"VTC Invitations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

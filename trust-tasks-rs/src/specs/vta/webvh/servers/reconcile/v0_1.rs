@@ -64,6 +64,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AgentOnlyDid {
     ///Agent-local grouping the DID belongs to, where the agent has one. Reported so an operator can tell which part of their deployment the divergence is in.
     #[serde(
@@ -77,6 +78,11 @@ pub struct AgentOnlyDid {
     ///The slot the agent believes the DID occupies on that server.
     #[serde(rename = "slotId")]
     pub slot_id: AgentOnlyDidSlotId,
+}
+impl AgentOnlyDid {
+    pub fn builder() -> builder::AgentOnlyDid {
+        Default::default()
+    }
 }
 ///Agent-local grouping the DID belongs to, where the agent has one. Reported so an operator can tell which part of their deployment the divergence is in.
 ///
@@ -432,6 +438,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct HostOnlyDid {
     ///The DID served at that slot, where the slot has been published to. Absent for a reserved-but-unpublished slot.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -445,6 +452,11 @@ pub struct HostOnlyDid {
     ///The hosting server's identifier for the slot — what the server's own management API addresses it by. This is the comparison key, not `did`: a slot that was reserved but never published to has no DID at all, and is as unreconciled as one that was.
     #[serde(rename = "slotId")]
     pub slot_id: HostOnlyDidSlotId,
+}
+impl HostOnlyDid {
+    pub fn builder() -> builder::HostOnlyDid {
+        Default::default()
+    }
 }
 ///The DID served at that slot, where the slot has been published to. Absent for a reserved-but-unpublished slot.
 ///
@@ -683,6 +695,7 @@ impl<'de> ::serde::Deserialize<'de> for HostOnlyDidSlotId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -690,6 +703,11 @@ pub struct Payload {
     ///Identifier of the registered hosting server to compare against. Required for the same reason as on `vta/webvh/servers/domains/0.1`: an agent may hold registrations with several servers, and a comparison that merged them would place every DID in a report without saying which host it was — or was not — on.
     #[serde(rename = "serverId")]
     pub server_id: PayloadServerId,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Identifier of the registered hosting server to compare against. Required for the same reason as on `vta/webvh/servers/domains/0.1`: an agent may hold registrations with several servers, and a comparison that merged them would place every DID in a report without saying which host it was — or was not — on.
 ///
@@ -811,6 +829,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadServerId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///DIDs the agent records as hosted on this server, which the server does not have.
     #[serde(rename = "agentOnly")]
@@ -826,6 +845,11 @@ pub struct Response {
     ///The server compared against, echoed so a stored report is self-describing.
     #[serde(rename = "serverId")]
     pub server_id: ResponseServerId,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The server compared against, echoed so a stored report is self-describing.
 ///
@@ -896,6 +920,316 @@ impl<'de> ::serde::Deserialize<'de> for ResponseServerId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AgentOnlyDid {
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::AgentOnlyDidContextId>,
+            ::std::string::String,
+        >,
+        did: ::std::result::Result<super::AgentOnlyDidDid, ::std::string::String>,
+        slot_id: ::std::result::Result<super::AgentOnlyDidSlotId, ::std::string::String>,
+    }
+    impl ::std::default::Default for AgentOnlyDid {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                did: Err("no value supplied for did".to_string()),
+                slot_id: Err("no value supplied for slot_id".to_string()),
+            }
+        }
+    }
+    impl AgentOnlyDid {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AgentOnlyDidContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AgentOnlyDidDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn slot_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AgentOnlyDidSlotId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.slot_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for slot_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AgentOnlyDid> for super::AgentOnlyDid {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AgentOnlyDid,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                did: value.did?,
+                slot_id: value.slot_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AgentOnlyDid> for AgentOnlyDid {
+        fn from(value: super::AgentOnlyDid) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                did: Ok(value.did),
+                slot_id: Ok(value.slot_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct HostOnlyDid {
+        did: ::std::result::Result<
+            ::std::option::Option<super::HostOnlyDidDid>,
+            ::std::string::String,
+        >,
+        disabled: ::std::result::Result<bool, ::std::string::String>,
+        domain: ::std::result::Result<
+            ::std::option::Option<super::HostOnlyDidDomain>,
+            ::std::string::String,
+        >,
+        slot_id: ::std::result::Result<super::HostOnlyDidSlotId, ::std::string::String>,
+    }
+    impl ::std::default::Default for HostOnlyDid {
+        fn default() -> Self {
+            Self {
+                did: Ok(Default::default()),
+                disabled: Ok(Default::default()),
+                domain: Ok(Default::default()),
+                slot_id: Err("no value supplied for slot_id".to_string()),
+            }
+        }
+    }
+    impl HostOnlyDid {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::HostOnlyDidDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn disabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disabled: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::HostOnlyDidDomain>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn slot_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::HostOnlyDidSlotId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.slot_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for slot_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<HostOnlyDid> for super::HostOnlyDid {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: HostOnlyDid,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                disabled: value.disabled?,
+                domain: value.domain?,
+                slot_id: value.slot_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::HostOnlyDid> for HostOnlyDid {
+        fn from(value: super::HostOnlyDid) -> Self {
+            Self {
+                did: Ok(value.did),
+                disabled: Ok(value.disabled),
+                domain: Ok(value.domain),
+                slot_id: Ok(value.slot_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        server_id: ::std::result::Result<super::PayloadServerId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                server_id: Err("no value supplied for server_id".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadServerId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                server_id: value.server_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                server_id: Ok(value.server_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        agent_only:
+            ::std::result::Result<::std::vec::Vec<super::AgentOnlyDid>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        host_only:
+            ::std::result::Result<::std::vec::Vec<super::HostOnlyDid>, ::std::string::String>,
+        in_both: ::std::result::Result<u64, ::std::string::String>,
+        server_id: ::std::result::Result<super::ResponseServerId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                agent_only: Err("no value supplied for agent_only".to_string()),
+                ext: Ok(Default::default()),
+                host_only: Err("no value supplied for host_only".to_string()),
+                in_both: Err("no value supplied for in_both".to_string()),
+                server_id: Err("no value supplied for server_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn agent_only<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AgentOnlyDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.agent_only = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for agent_only: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn host_only<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::HostOnlyDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.host_only = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for host_only: {e}"));
+            self
+        }
+        pub fn in_both<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.in_both = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for in_both: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseServerId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                agent_only: value.agent_only?,
+                ext: value.ext?,
+                host_only: value.host_only?,
+                in_both: value.in_both?,
+                server_id: value.server_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                agent_only: Ok(value.agent_only),
+                ext: Ok(value.ext),
+                host_only: Ok(value.host_only),
+                in_both: Ok(value.in_both),
+                server_id: Ok(value.server_id),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -910,6 +1244,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AgentOnlyDid\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Agent-local grouping the DID belongs to, where the agent has one. Reported so an operator can tell which part of their deployment the divergence is in.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The DID the agent holds a record for.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"slotId\": {\n          \"description\": \"The slot the agent believes the DID occupies on that server.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"slotId\"\n      ],\n      \"title\": \"A DID the agent records as hosted on this server, which the server does not have\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"HostOnlyDid\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID served at that slot, where the slot has been published to. Absent for a reserved-but-unpublished slot.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disabled\": {\n          \"default\": false,\n          \"description\": \"Whether the hosting server currently has the slot disabled. A disabled slot is still unreconciled — the agent holds no key for it either way.\",\n          \"type\": \"boolean\"\n        },\n        \"domain\": {\n          \"description\": \"Hosting domain the slot belongs to, as the server reported it. Absent where the server reports none.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"slotId\": {\n          \"description\": \"The hosting server's identifier for the slot — what the server's own management API addresses it by. This is the comparison key, not `did`: a slot that was reserved but never published to has no DID at all, and is as unreconciled as one that was.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"slotId\"\n      ],\n      \"title\": \"A DID the hosting server serves and the agent has no record of\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The comparison. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1#response.\",\n      \"properties\": {\n        \"agentOnly\": {\n          \"description\": \"DIDs the agent records as hosted on this server, which the server does not have.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AgentOnlyDid\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"hostOnly\": {\n          \"description\": \"Slots the hosting server serves that the agent has no record of. The agent holds no update key for these, so no further version of them can be signed by it.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/HostOnlyDid\"\n          },\n          \"type\": \"array\"\n        },\n        \"inBoth\": {\n          \"description\": \"How many the two agree on. Required, and required even when both arrays are empty: it is what distinguishes 'compared them, all matched' from 'compared nothing'. A consumer that rendered only the divergences would show an identical screen for a clean estate and for a listing that silently returned no rows.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverId\": {\n          \"description\": \"The server compared against, echoed so a stored report is self-describing.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverId\",\n        \"hostOnly\",\n        \"agentOnly\",\n        \"inBoth\"\n      ],\n      \"title\": \"WebVH Servers — Reconcile — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

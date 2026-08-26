@@ -71,6 +71,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AttachmentRef {
     ///OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -90,6 +91,11 @@ pub struct AttachmentRef {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size_bytes: ::std::option::Option<u64>,
+}
+impl AttachmentRef {
+    pub fn builder() -> builder::AttachmentRef {
+        Default::default()
+    }
 }
 ///Opaque attachment id, resolvable via the bridge's attachment fetch.
 ///
@@ -257,11 +263,17 @@ impl<'de> ::serde::Deserialize<'de> for AttachmentRefMediaType {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ChainLink {
     ///Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the previous document, so a gap, reorder, or removal in the chain is detectable. The algorithm travels in the multihash rather than being fixed here.
     pub digest: DigestMultibase,
     ///The `id` of the previous `chat/message` Trust Task document in this conversation.
     pub id: ChainLinkId,
+}
+impl ChainLink {
+    pub fn builder() -> builder::ChainLink {
+        Default::default()
+    }
 }
 ///The `id` of the previous `chat/message` Trust Task document in this conversation.
 ///
@@ -569,6 +581,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Mention {
     ///OPTIONAL. Human-readable name the source platform supplied for the participant. A non-authoritative rendering hint — never used for identity. Absent when the platform exposes no name in the mention.
     #[serde(
@@ -583,6 +596,11 @@ pub struct Mention {
     pub participant: MentionParticipant,
     ///Source-platform native start offset of the sentinel span in `text`. Advisory: offset units differ across platforms, so the authoritative binding is positional (Nth U+FFFC → Nth mention), not by offset.
     pub start: u64,
+}
+impl Mention {
+    pub fn builder() -> builder::Mention {
+        Default::default()
+    }
 }
 ///Opaque, bridge-issued handle for the mentioned participant. MUST NOT be a raw platform address; like `conversationId` it carries no platform-native identifier (phone number, UUID, member id) upstream.
 ///
@@ -737,6 +755,7 @@ impl<'de> ::serde::Deserialize<'de> for MentionParticipant {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///OPTIONAL. Attachments carried by reference, never inline.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -784,6 +803,11 @@ pub struct Payload {
     ///OPTIONAL. Plain-text body. Absent for attachment-only messages.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub text: ::std::option::Option<::std::string::String>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Opaque, bridge-issued conversation handle. MUST NOT be a raw platform address (phone number, chat id).
 ///
@@ -881,6 +905,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadConversationId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadDirection {
     #[serde(rename = "inbound")]
     Inbound,
@@ -1063,6 +1088,451 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReplyToId {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AttachmentRef {
+        digest: ::std::result::Result<
+            ::std::option::Option<super::DigestMultibase>,
+            ::std::string::String,
+        >,
+        filename: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::AttachmentRefId, ::std::string::String>,
+        media_type: ::std::result::Result<super::AttachmentRefMediaType, ::std::string::String>,
+        size_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for AttachmentRef {
+        fn default() -> Self {
+            Self {
+                digest: Ok(Default::default()),
+                filename: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                media_type: Err("no value supplied for media_type".to_string()),
+                size_bytes: Ok(Default::default()),
+            }
+        }
+    }
+    impl AttachmentRef {
+        pub fn digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DigestMultibase>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for digest: {e}"));
+            self
+        }
+        pub fn filename<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.filename = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for filename: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AttachmentRefId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn media_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AttachmentRefMediaType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.media_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for media_type: {e}"));
+            self
+        }
+        pub fn size_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.size_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for size_bytes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AttachmentRef> for super::AttachmentRef {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AttachmentRef,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                digest: value.digest?,
+                filename: value.filename?,
+                id: value.id?,
+                media_type: value.media_type?,
+                size_bytes: value.size_bytes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AttachmentRef> for AttachmentRef {
+        fn from(value: super::AttachmentRef) -> Self {
+            Self {
+                digest: Ok(value.digest),
+                filename: Ok(value.filename),
+                id: Ok(value.id),
+                media_type: Ok(value.media_type),
+                size_bytes: Ok(value.size_bytes),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ChainLink {
+        digest: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        id: ::std::result::Result<super::ChainLinkId, ::std::string::String>,
+    }
+    impl ::std::default::Default for ChainLink {
+        fn default() -> Self {
+            Self {
+                digest: Err("no value supplied for digest".to_string()),
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl ChainLink {
+        pub fn digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for digest: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ChainLinkId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ChainLink> for super::ChainLink {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ChainLink,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                digest: value.digest?,
+                id: value.id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ChainLink> for ChainLink {
+        fn from(value: super::ChainLink) -> Self {
+            Self {
+                digest: Ok(value.digest),
+                id: Ok(value.id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Mention {
+        display_name: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        length: ::std::result::Result<u64, ::std::string::String>,
+        participant: ::std::result::Result<super::MentionParticipant, ::std::string::String>,
+        start: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for Mention {
+        fn default() -> Self {
+            Self {
+                display_name: Ok(Default::default()),
+                length: Err("no value supplied for length".to_string()),
+                participant: Err("no value supplied for participant".to_string()),
+                start: Err("no value supplied for start".to_string()),
+            }
+        }
+    }
+    impl Mention {
+        pub fn display_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.display_name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for display_name: {e}"));
+            self
+        }
+        pub fn length<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.length = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for length: {e}"));
+            self
+        }
+        pub fn participant<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::MentionParticipant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.participant = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for participant: {e}"));
+            self
+        }
+        pub fn start<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.start = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for start: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Mention> for super::Mention {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Mention) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                display_name: value.display_name?,
+                length: value.length?,
+                participant: value.participant?,
+                start: value.start?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Mention> for Mention {
+        fn from(value: super::Mention) -> Self {
+            Self {
+                display_name: Ok(value.display_name),
+                length: Ok(value.length),
+                participant: Ok(value.participant),
+                start: Ok(value.start),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        attachments:
+            ::std::result::Result<::std::vec::Vec<super::AttachmentRef>, ::std::string::String>,
+        conversation_id: ::std::result::Result<super::PayloadConversationId, ::std::string::String>,
+        direction: ::std::result::Result<super::PayloadDirection, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        is_group: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        is_mention: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        mentions: ::std::result::Result<::std::vec::Vec<super::Mention>, ::std::string::String>,
+        platform: ::std::result::Result<
+            ::std::option::Option<super::PayloadPlatform>,
+            ::std::string::String,
+        >,
+        prev: ::std::result::Result<::std::option::Option<super::ChainLink>, ::std::string::String>,
+        reply_to_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadReplyToId>,
+            ::std::string::String,
+        >,
+        sent_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        text: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                attachments: Ok(Default::default()),
+                conversation_id: Err("no value supplied for conversation_id".to_string()),
+                direction: Err("no value supplied for direction".to_string()),
+                ext: Ok(Default::default()),
+                is_group: Ok(Default::default()),
+                is_mention: Ok(Default::default()),
+                mentions: Ok(Default::default()),
+                platform: Ok(Default::default()),
+                prev: Ok(Default::default()),
+                reply_to_id: Ok(Default::default()),
+                sent_at: Err("no value supplied for sent_at".to_string()),
+                text: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn attachments<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AttachmentRef>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attachments = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for attachments: {e}"));
+            self
+        }
+        pub fn conversation_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadConversationId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.conversation_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for conversation_id: {e}"));
+            self
+        }
+        pub fn direction<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDirection>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.direction = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for direction: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn is_group<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.is_group = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for is_group: {e}"));
+            self
+        }
+        pub fn is_mention<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.is_mention = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for is_mention: {e}"));
+            self
+        }
+        pub fn mentions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Mention>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mentions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mentions: {e}"));
+            self
+        }
+        pub fn platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadPlatform>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for platform: {e}"));
+            self
+        }
+        pub fn prev<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ChainLink>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.prev = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for prev: {e}"));
+            self
+        }
+        pub fn reply_to_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReplyToId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reply_to_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reply_to_id: {e}"));
+            self
+        }
+        pub fn sent_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sent_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for sent_at: {e}"));
+            self
+        }
+        pub fn text<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.text = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for text: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                attachments: value.attachments?,
+                conversation_id: value.conversation_id?,
+                direction: value.direction?,
+                ext: value.ext?,
+                is_group: value.is_group?,
+                is_mention: value.is_mention?,
+                mentions: value.mentions?,
+                platform: value.platform?,
+                prev: value.prev?,
+                reply_to_id: value.reply_to_id?,
+                sent_at: value.sent_at?,
+                text: value.text?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                attachments: Ok(value.attachments),
+                conversation_id: Ok(value.conversation_id),
+                direction: Ok(value.direction),
+                ext: Ok(value.ext),
+                is_group: Ok(value.is_group),
+                is_mention: Ok(value.is_mention),
+                mentions: Ok(value.mentions),
+                platform: Ok(value.platform),
+                prev: Ok(value.prev),
+                reply_to_id: Ok(value.reply_to_id),
+                sent_at: Ok(value.sent_at),
+                text: Ok(value.text),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

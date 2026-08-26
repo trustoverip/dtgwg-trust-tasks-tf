@@ -165,11 +165,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Foreign DID to probe.
     pub did: PayloadDid,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Foreign DID to probe.
 ///
@@ -285,6 +291,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The probed DID, echoed.
     pub did: ResponseDid,
@@ -298,6 +305,11 @@ pub struct Response {
     ///Whether a trust registry backs the answer. False makes `recognised` indeterminate, not negative.
     #[serde(rename = "registryConfigured")]
     pub registry_configured: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The probed DID, echoed.
 ///
@@ -368,6 +380,158 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
+        error: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        recognised: ::std::result::Result<bool, ::std::string::String>,
+        registry_configured: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                error: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                recognised: Err("no value supplied for recognised".to_string()),
+                registry_configured: Err("no value supplied for registry_configured".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn error<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.error = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for error: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn recognised<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recognised = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recognised: {e}"));
+            self
+        }
+        pub fn registry_configured<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registry_configured = value.try_into().map_err(|e| {
+                format!("error converting supplied value for registry_configured: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                error: value.error?,
+                ext: value.ext?,
+                recognised: value.recognised?,
+                registry_configured: value.registry_configured?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                did: Ok(value.did),
+                error: Ok(value.error),
+                ext: Ok(value.ext),
+                recognised: Ok(value.recognised),
+                registry_configured: Ok(value.registry_configured),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/recognition/check/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -381,6 +545,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The probed DID, echoed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"error\": {\n          \"description\": \"Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"recognised\": {\n          \"description\": \"Whether the community recognises this DID. Meaningless unless registryConfigured is true.\",\n          \"type\": \"boolean\"\n        },\n        \"registryConfigured\": {\n          \"description\": \"Whether a trust registry backs the answer. False makes `recognised` indeterminate, not negative.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"recognised\",\n        \"registryConfigured\"\n      ],\n      \"title\": \"VTC Recognition Check — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

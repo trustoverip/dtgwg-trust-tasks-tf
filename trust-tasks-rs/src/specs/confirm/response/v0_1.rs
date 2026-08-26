@@ -184,6 +184,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Echoed from the matching confirm-request. The relying party verifies it equals the bound challenge.
     pub challenge: PayloadChallenge,
@@ -199,6 +200,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///Echoed from the matching confirm-request.
     pub subject: PayloadSubject,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Echoed from the matching confirm-request. The relying party verifies it equals the bound challenge.
 ///
@@ -295,6 +301,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadDecision {
     #[serde(rename = "approved")]
     Approved,
@@ -445,6 +452,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -452,6 +460,11 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseStatus`
 ///
@@ -479,6 +492,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "recorded")]
     Recorded,
@@ -525,6 +539,175 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        challenge: ::std::result::Result<super::PayloadChallenge, ::std::string::String>,
+        decision: ::std::result::Result<super::PayloadDecision, ::std::string::String>,
+        denied_reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        subject: ::std::result::Result<super::PayloadSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                challenge: Err("no value supplied for challenge".to_string()),
+                decision: Err("no value supplied for decision".to_string()),
+                denied_reason: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn decision<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDecision>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decision = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decision: {e}"));
+            self
+        }
+        pub fn denied_reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.denied_reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for denied_reason: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                challenge: value.challenge?,
+                decision: value.decision?,
+                denied_reason: value.denied_reason?,
+                ext: value.ext?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                challenge: Ok(value.challenge),
+                decision: Ok(value.decision),
+                denied_reason: Ok(value.denied_reason),
+                ext: Ok(value.ext),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                status: Ok(value.status),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/confirm/response/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -540,6 +723,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement the relying party returns after processing the user decision. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/response/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Present when status is `rejected` (e.g. \\\"challenge expired\\\").\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"recorded\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Confirm Response — relying party ack\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

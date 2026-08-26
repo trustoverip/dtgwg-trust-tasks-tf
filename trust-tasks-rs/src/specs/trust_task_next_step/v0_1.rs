@@ -228,6 +228,7 @@ This specification declares no response anchor: a producer answers a next step b
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///What happens once an expected task completes. `resubmit` (the default) means the expected task is a PREREQUISITE and the producer re-issues the originating request to continue — a new document with a fresh id and the same threadId, which SPEC §8.4 distinguishes from a retry, since a retry is bit-for-bit identical and is not what happens here; this matches the established pattern of task-consent/granted, where the requester re-submits once approval lands. `proceed` means the expected task IS the continuation and the originating request is not re-issued, as in an offer answered by a request.
     #[serde(default = "defaults::payload_continuation")]
@@ -245,6 +246,11 @@ pub struct Payload {
     ///Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub message: ::std::option::Option<::std::string::String>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///What happens once an expected task completes. `resubmit` (the default) means the expected task is a PREREQUISITE and the producer re-issues the originating request to continue — a new document with a fresh id and the same threadId, which SPEC §8.4 distinguishes from a retry, since a retry is bit-for-bit identical and is not what happens here; this matches the established pattern of task-consent/granted, where the requester re-submits once approval lands. `proceed` means the expected task IS the continuation and the originating request is not re-issued, as in an offer answered by a request.
 ///
@@ -274,6 +280,7 @@ pub struct Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadContinuation {
     #[serde(rename = "resubmit")]
     Resubmit,
@@ -357,6 +364,7 @@ impl ::std::default::Default for PayloadContinuation {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadExpectsItem {
     ///Optional structured data the producer MAY use when composing the expected document — a challenge to echo, an identifier to quote, a presentation definition to satisfy. Its shape is governed by the specification named in typeUri, not by this one. A producer MUST NOT treat a hint as authoritative for any value it can determine itself.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
@@ -367,6 +375,11 @@ pub struct PayloadExpectsItem {
     ///The Type URI of the Trust Task the recipient expects next, including any #request fragment. A suggestion only: it confers no authorization to perform that task, and the producer applies its own policy before acting (see the specification's Security & Privacy section).
     #[serde(rename = "typeUri")]
     pub type_uri: ::std::string::String,
+}
+impl PayloadExpectsItem {
+    pub fn builder() -> builder::PayloadExpectsItem {
+        Default::default()
+    }
 }
 ///Identifies the Trust Task document this next step answers. SHOULD be populated, for the reason SPEC §8.2 gives for the identical member on an error response: threadId correlates the exchange only for a party that already saw the request, so a retained next step otherwise names neither the task it interrupted nor the instance.
 ///
@@ -398,6 +411,7 @@ pub struct PayloadExpectsItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadInResponseTo {
     ///The id of the specific document being answered (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -405,6 +419,11 @@ pub struct PayloadInResponseTo {
     ///The Type URI of the document being answered, including any fragment it carried.
     #[serde(rename = "typeUri")]
     pub type_uri: ::std::string::String,
+}
+impl PayloadInResponseTo {
+    pub fn builder() -> builder::PayloadInResponseTo {
+        Default::default()
+    }
 }
 ///The id of the specific document being answered (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange.
 ///
@@ -473,6 +492,245 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInResponseToId {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        continuation: ::std::result::Result<super::PayloadContinuation, ::std::string::String>,
+        expects: ::std::result::Result<
+            ::std::vec::Vec<super::PayloadExpectsItem>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        in_response_to: ::std::result::Result<
+            ::std::option::Option<super::PayloadInResponseTo>,
+            ::std::string::String,
+        >,
+        message: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                continuation: Ok(super::defaults::payload_continuation()),
+                expects: Err("no value supplied for expects".to_string()),
+                ext: Ok(Default::default()),
+                in_response_to: Ok(Default::default()),
+                message: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn continuation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadContinuation>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.continuation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for continuation: {e}"));
+            self
+        }
+        pub fn expects<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadExpectsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expects = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expects: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn in_response_to<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadInResponseTo>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.in_response_to = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for in_response_to: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                continuation: value.continuation?,
+                expects: value.expects?,
+                ext: value.ext?,
+                in_response_to: value.in_response_to?,
+                message: value.message?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                continuation: Ok(value.continuation),
+                expects: Ok(value.expects),
+                ext: Ok(value.ext),
+                in_response_to: Ok(value.in_response_to),
+                message: Ok(value.message),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadExpectsItem {
+        hint: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        type_uri: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for PayloadExpectsItem {
+        fn default() -> Self {
+            Self {
+                hint: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+            }
+        }
+    }
+    impl PayloadExpectsItem {
+        pub fn hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for hint: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadExpectsItem> for super::PayloadExpectsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadExpectsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                hint: value.hint?,
+                reason: value.reason?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadExpectsItem> for PayloadExpectsItem {
+        fn from(value: super::PayloadExpectsItem) -> Self {
+            Self {
+                hint: Ok(value.hint),
+                reason: Ok(value.reason),
+                type_uri: Ok(value.type_uri),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadInResponseTo {
+        id: ::std::result::Result<
+            ::std::option::Option<super::PayloadInResponseToId>,
+            ::std::string::String,
+        >,
+        type_uri: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for PayloadInResponseTo {
+        fn default() -> Self {
+            Self {
+                id: Ok(Default::default()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+            }
+        }
+    }
+    impl PayloadInResponseTo {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadInResponseToId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadInResponseTo> for super::PayloadInResponseTo {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadInResponseTo,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadInResponseTo> for PayloadInResponseTo {
+        fn from(value: super::PayloadInResponseTo) -> Self {
+            Self {
+                id: Ok(value.id),
+                type_uri: Ok(value.type_uri),
+            }
+        }
     }
 }
 /// Generation of default values for serde.

@@ -176,6 +176,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Admin DID the install URL grants a passkey for.
     pub did: PayloadDid,
@@ -191,6 +192,11 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Admin DID the install URL grants a passkey for.
 ///
@@ -381,6 +387,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///True when the target DID had no ACL entry and one was created.
     #[serde(rename = "aclEntryCreated")]
@@ -398,6 +405,11 @@ pub struct Response {
     pub install_url: ResponseInstallUrl,
     ///Invite identifier; the revoke target.
     pub jti: ResponseJti,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Secret that authorises the enrolment. Returned once.
 ///
@@ -606,6 +618,204 @@ impl<'de> ::serde::Deserialize<'de> for ResponseJti {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::PayloadLabel>,
+            ::std::string::String,
+        >,
+        ttl_seconds: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                label: Ok(Default::default()),
+                ttl_seconds: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn ttl_seconds<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ttl_seconds = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ttl_seconds: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+                label: value.label?,
+                ttl_seconds: value.ttl_seconds?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                label: Ok(value.label),
+                ttl_seconds: Ok(value.ttl_seconds),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        acl_entry_created: ::std::result::Result<bool, ::std::string::String>,
+        claim_code: ::std::result::Result<super::ResponseClaimCode, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        install_url: ::std::result::Result<super::ResponseInstallUrl, ::std::string::String>,
+        jti: ::std::result::Result<super::ResponseJti, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                acl_entry_created: Err("no value supplied for acl_entry_created".to_string()),
+                claim_code: Err("no value supplied for claim_code".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                ext: Ok(Default::default()),
+                install_url: Err("no value supplied for install_url".to_string()),
+                jti: Err("no value supplied for jti".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn acl_entry_created<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acl_entry_created = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for acl_entry_created: {e}"));
+            self
+        }
+        pub fn claim_code<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseClaimCode>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claim_code = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claim_code: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn install_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseInstallUrl>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.install_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for install_url: {e}"));
+            self
+        }
+        pub fn jti<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseJti>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.jti = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for jti: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acl_entry_created: value.acl_entry_created?,
+                claim_code: value.claim_code?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                install_url: value.install_url?,
+                jti: value.jti?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                acl_entry_created: Ok(value.acl_entry_created),
+                claim_code: Ok(value.claim_code),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                install_url: Ok(value.install_url),
+                jti: Ok(value.jti),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/admin/invites/create/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -622,6 +832,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"aclEntryCreated\": {\n          \"description\": \"True when the target DID had no ACL entry and one was created.\",\n          \"type\": \"boolean\"\n        },\n        \"claimCode\": {\n          \"description\": \"Secret that authorises the enrolment. Returned once.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the invite lapses.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"installUrl\": {\n          \"description\": \"One-shot enrolment URL. Returned once and never retrievable again.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"jti\": {\n          \"description\": \"Invite identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jti\",\n        \"installUrl\",\n        \"claimCode\",\n        \"expiresAt\",\n        \"aclEntryCreated\"\n      ],\n      \"title\": \"VTC Admin Invites Create — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -166,11 +166,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A key -> value map of overrides to write. Keys are configuration keys; values are the desired new values. Wrapped in an object (rather than being the top-level payload) so the payload keeps a fixed, additionalProperties:false envelope. Each entry is validated independently — an invalid or unknown key is reported under `rejected` and does not block the rest.
     pub overrides: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///A key a patch declined to apply, with the reason.
 ///
@@ -203,10 +209,16 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct RejectedKey {
     pub key: RejectedKeyKey,
     ///Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
     pub reason: RejectedKeyReason,
+}
+impl RejectedKey {
+    pub fn builder() -> builder::RejectedKey {
+        Default::default()
+    }
 }
 ///`RejectedKeyKey`
 ///
@@ -395,6 +407,7 @@ impl<'de> ::serde::Deserialize<'de> for RejectedKeyReason {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Keys whose new value is now in effect.
     pub applied: Vec<ResponseAppliedItem>,
@@ -405,6 +418,11 @@ pub struct Response {
     pub pending_restart: Vec<ResponsePendingRestartItem>,
     ///Keys that were not applied, each with a reason. Empty when every override succeeded.
     pub rejected: ::std::vec::Vec<RejectedKey>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseAppliedItem`
 ///
@@ -542,6 +560,201 @@ impl<'de> ::serde::Deserialize<'de> for ResponsePendingRestartItem {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        overrides: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                overrides: Err("no value supplied for overrides".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn overrides<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.overrides = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for overrides: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                overrides: value.overrides?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                overrides: Ok(value.overrides),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RejectedKey {
+        key: ::std::result::Result<super::RejectedKeyKey, ::std::string::String>,
+        reason: ::std::result::Result<super::RejectedKeyReason, ::std::string::String>,
+    }
+    impl ::std::default::Default for RejectedKey {
+        fn default() -> Self {
+            Self {
+                key: Err("no value supplied for key".to_string()),
+                reason: Err("no value supplied for reason".to_string()),
+            }
+        }
+    }
+    impl RejectedKey {
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RejectedKeyKey>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RejectedKeyReason>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RejectedKey> for super::RejectedKey {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RejectedKey,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                key: value.key?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RejectedKey> for RejectedKey {
+        fn from(value: super::RejectedKey) -> Self {
+            Self {
+                key: Ok(value.key),
+                reason: Ok(value.reason),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        applied: ::std::result::Result<Vec<super::ResponseAppliedItem>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        pending_restart:
+            ::std::result::Result<Vec<super::ResponsePendingRestartItem>, ::std::string::String>,
+        rejected: ::std::result::Result<::std::vec::Vec<super::RejectedKey>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                applied: Err("no value supplied for applied".to_string()),
+                ext: Ok(Default::default()),
+                pending_restart: Err("no value supplied for pending_restart".to_string()),
+                rejected: Err("no value supplied for rejected".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn applied<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::ResponseAppliedItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.applied = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for applied: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn pending_restart<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::ResponsePendingRestartItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pending_restart = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pending_restart: {e}"));
+            self
+        }
+        pub fn rejected<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RejectedKey>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rejected = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rejected: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                applied: value.applied?,
+                ext: value.ext?,
+                pending_restart: value.pending_restart?,
+                rejected: value.rejected?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                applied: Ok(value.applied),
+                ext: Ok(value.ext),
+                pending_restart: Ok(value.pending_restart),
+                rejected: Ok(value.rejected),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/config/patch/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -557,6 +770,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RejectedKey\": {\n      \"$anchor\": \"rejectedKey\",\n      \"additionalProperties\": false,\n      \"description\": \"A key a patch declined to apply, with the reason.\",\n      \"properties\": {\n        \"key\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"reason\"\n      ],\n      \"title\": \"RejectedKey\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"applied\": {\n          \"description\": \"Keys whose new value is now in effect.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"pendingRestart\": {\n          \"description\": \"Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true).\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"rejected\": {\n          \"description\": \"Keys that were not applied, each with a reason. Empty when every override succeeded.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RejectedKey\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"applied\",\n        \"pendingRestart\",\n        \"rejected\"\n      ],\n      \"title\": \"Config Patch — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

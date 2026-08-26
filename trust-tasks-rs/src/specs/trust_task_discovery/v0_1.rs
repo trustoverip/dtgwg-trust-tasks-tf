@@ -57,6 +57,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task. Bounded at 16 entries as parser hardening (SPEC.md §10.2), not as a capability limit: matching an unbounded pattern list against every published slug is work a responder does on an unauthenticated request, and a discoverer wanting more asks for '*' and filters locally.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -67,6 +68,11 @@ impl ::std::default::Default for Payload {
         Self {
             patterns: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.
@@ -203,6 +209,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPatternsItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.
     #[serde(
@@ -214,6 +221,11 @@ pub struct Response {
     ///Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.
     #[serde(rename = "supportedTypes")]
     pub supported_types: ::std::vec::Vec<ResponseSupportedTypesItem>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.
 ///
@@ -332,6 +344,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseFrameworkVersion {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
+#[non_exhaustive]
 pub enum ResponseSupportedTypesItem {
     Uri(::std::string::String),
     Object {
@@ -425,6 +438,108 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSupportedTypesItemObjectRequired
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        patterns: ::std::result::Result<
+            ::std::vec::Vec<super::PayloadPatternsItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                patterns: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn patterns<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadPatternsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.patterns = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for patterns: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                patterns: value.patterns?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                patterns: Ok(value.patterns),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        framework_version: ::std::result::Result<
+            ::std::option::Option<super::ResponseFrameworkVersion>,
+            ::std::string::String,
+        >,
+        supported_types: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseSupportedTypesItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                framework_version: Ok(Default::default()),
+                supported_types: Err("no value supplied for supported_types".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn framework_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseFrameworkVersion>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.framework_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for framework_version: {e}"));
+            self
+        }
+        pub fn supported_types<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseSupportedTypesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.supported_types = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for supported_types: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                framework_version: value.framework_version?,
+                supported_types: value.supported_types?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                framework_version: Ok(value.framework_version),
+                supported_types: Ok(value.supported_types),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/trust-task-discovery/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -438,6 +553,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.\",\n      \"properties\": {\n        \"frameworkVersion\": {\n          \"description\": \"MAJOR.MINOR version of the Trust Tasks framework specification (SPEC.md) the responder targets. Lets a discoverer at framework version X reason about forward-minor compatibility (SPEC.md §5.2). Optional in 0.1; RECOMMENDED in future revisions.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        },\n        \"supportedTypes\": {\n          \"description\": \"Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.\",\n          \"items\": {\n            \"description\": \"An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`).\",\n            \"oneOf\": [\n              {\n                \"description\": \"Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.\",\n                \"format\": \"uri\",\n                \"type\": \"string\"\n              },\n              {\n                \"additionalProperties\": false,\n                \"description\": \"Object form: lists a Type URI together with optional capability annotations.\",\n                \"properties\": {\n                  \"requiredExt\": {\n                    \"description\": \"Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.\",\n                    \"items\": {\n                      \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n                      \"type\": \"string\"\n                    },\n                    \"minItems\": 1,\n                    \"type\": \"array\",\n                    \"uniqueItems\": true\n                  },\n                  \"type\": {\n                    \"description\": \"A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.\",\n                    \"format\": \"uri\",\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"type\"\n                ],\n                \"type\": \"object\"\n              }\n            ]\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"supportedTypes\"\n      ],\n      \"title\": \"Trust Task Discovery — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

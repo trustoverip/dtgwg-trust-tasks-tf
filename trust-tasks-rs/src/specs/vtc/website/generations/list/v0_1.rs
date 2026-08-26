@@ -157,6 +157,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -166,6 +167,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -223,10 +229,16 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub generations: ::std::vec::Vec<ResponseGenerationsItem>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseGenerationsItem`
 ///
@@ -266,6 +278,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseGenerationsItem {
     ///True for the generation current resolves to.
     pub current: bool,
@@ -285,6 +298,11 @@ pub struct ResponseGenerationsItem {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size_bytes: ::std::option::Option<u64>,
+}
+impl ResponseGenerationsItem {
+    pub fn builder() -> builder::ResponseGenerationsItem {
+        Default::default()
+    }
 }
 ///Generation label (e.g. gen-5).
 ///
@@ -355,6 +373,186 @@ impl<'de> ::serde::Deserialize<'de> for ResponseGenerationsItemGeneration {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        generations: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseGenerationsItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                generations: Err("no value supplied for generations".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn generations<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseGenerationsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.generations = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for generations: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                generations: value.generations?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                generations: Ok(value.generations),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseGenerationsItem {
+        current: ::std::result::Result<bool, ::std::string::String>,
+        deployed_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        generation:
+            ::std::result::Result<super::ResponseGenerationsItemGeneration, ::std::string::String>,
+        size_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseGenerationsItem {
+        fn default() -> Self {
+            Self {
+                current: Err("no value supplied for current".to_string()),
+                deployed_at: Ok(Default::default()),
+                generation: Err("no value supplied for generation".to_string()),
+                size_bytes: Ok(Default::default()),
+            }
+        }
+    }
+    impl ResponseGenerationsItem {
+        pub fn current<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.current = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for current: {e}"));
+            self
+        }
+        pub fn deployed_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.deployed_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for deployed_at: {e}"));
+            self
+        }
+        pub fn generation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseGenerationsItemGeneration>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.generation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for generation: {e}"));
+            self
+        }
+        pub fn size_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.size_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for size_bytes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseGenerationsItem> for super::ResponseGenerationsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseGenerationsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                current: value.current?,
+                deployed_at: value.deployed_at?,
+                generation: value.generation?,
+                size_bytes: value.size_bytes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseGenerationsItem> for ResponseGenerationsItem {
+        fn from(value: super::ResponseGenerationsItem) -> Self {
+            Self {
+                current: Ok(value.current),
+                deployed_at: Ok(value.deployed_at),
+                generation: Ok(value.generation),
+                size_bytes: Ok(value.size_bytes),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/website/generations/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -369,6 +567,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"generations\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"current\": {\n                \"description\": \"True for the generation current resolves to.\",\n                \"type\": \"boolean\"\n              },\n              \"deployedAt\": {\n                \"description\": \"When this generation was deployed. A rollback target is chosen by *when* far more often than by number.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"generation\": {\n                \"description\": \"Generation label (e.g. gen-5).\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"sizeBytes\": {\n                \"description\": \"Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it.\",\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"generation\",\n              \"current\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"generations\"\n      ],\n      \"title\": \"VTC Website Generations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

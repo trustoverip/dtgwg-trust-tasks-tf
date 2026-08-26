@@ -167,6 +167,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum InviteStatus {
     #[serde(rename = "issued")]
     Issued,
@@ -262,6 +263,7 @@ impl ::std::convert::TryFrom<::std::string::String> for InviteStatus {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct InviteSummary {
     ///When the invite was redeemed, if it was.
     #[serde(
@@ -287,6 +289,11 @@ pub struct InviteSummary {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub target_did: ::std::option::Option<InviteSummaryTargetDid>,
+}
+impl InviteSummary {
+    pub fn builder() -> builder::InviteSummary {
+        Default::default()
+    }
 }
 ///Unique invite identifier; the revoke target.
 ///
@@ -446,6 +453,7 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummaryTargetDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -455,6 +463,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -487,11 +500,216 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every invite the community holds, outstanding and terminal.
     pub invites: ::std::vec::Vec<InviteSummary>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct InviteSummary {
+        consumed_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        jti: ::std::result::Result<super::InviteSummaryJti, ::std::string::String>,
+        status: ::std::result::Result<super::InviteStatus, ::std::string::String>,
+        target_did: ::std::result::Result<
+            ::std::option::Option<super::InviteSummaryTargetDid>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for InviteSummary {
+        fn default() -> Self {
+            Self {
+                consumed_at: Ok(Default::default()),
+                expires_at: Ok(Default::default()),
+                jti: Err("no value supplied for jti".to_string()),
+                status: Err("no value supplied for status".to_string()),
+                target_did: Ok(Default::default()),
+            }
+        }
+    }
+    impl InviteSummary {
+        pub fn consumed_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumed_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consumed_at: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn jti<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::InviteSummaryJti>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.jti = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for jti: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::InviteStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn target_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::InviteSummaryTargetDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<InviteSummary> for super::InviteSummary {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: InviteSummary,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                consumed_at: value.consumed_at?,
+                expires_at: value.expires_at?,
+                jti: value.jti?,
+                status: value.status?,
+                target_did: value.target_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::InviteSummary> for InviteSummary {
+        fn from(value: super::InviteSummary) -> Self {
+            Self {
+                consumed_at: Ok(value.consumed_at),
+                expires_at: Ok(value.expires_at),
+                jti: Ok(value.jti),
+                status: Ok(value.status),
+                target_did: Ok(value.target_did),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        invites:
+            ::std::result::Result<::std::vec::Vec<super::InviteSummary>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                invites: Err("no value supplied for invites".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn invites<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::InviteSummary>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.invites = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for invites: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                invites: value.invites?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                invites: Ok(value.invites),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/admin/invites/list/0.1";
@@ -507,6 +725,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InviteStatus\": {\n      \"$anchor\": \"inviteStatus\",\n      \"description\": \"`issued` is outstanding and revocable; `consumed` and `expired` are terminal.\",\n      \"enum\": [\n        \"issued\",\n        \"consumed\",\n        \"expired\"\n      ],\n      \"title\": \"InviteStatus\",\n      \"type\": \"string\"\n    },\n    \"InviteSummary\": {\n      \"$anchor\": \"inviteSummary\",\n      \"additionalProperties\": false,\n      \"description\": \"One outstanding or historical admin invite. Consumed rows are retained as audit history and cannot be revoked.\",\n      \"properties\": {\n        \"consumedAt\": {\n          \"description\": \"When the invite was redeemed, if it was.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When an `issued` invite lapses.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"jti\": {\n          \"description\": \"Unique invite identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/InviteStatus\"\n        },\n        \"targetDid\": {\n          \"description\": \"The admin DID this invite enrols a passkey for.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jti\",\n        \"status\"\n      ],\n      \"title\": \"InviteSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invites\": {\n          \"description\": \"Every invite the community holds, outstanding and terminal.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/InviteSummary\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"invites\"\n      ],\n      \"title\": \"VTC Admin Invites List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

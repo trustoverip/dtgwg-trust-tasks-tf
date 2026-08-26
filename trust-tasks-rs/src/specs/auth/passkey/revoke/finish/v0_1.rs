@@ -97,6 +97,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AssertionResponse {
     #[serde(
         rename = "authenticatorAttachment",
@@ -116,6 +117,11 @@ pub struct AssertionResponse {
     pub response: AssertionResponseResponse,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl AssertionResponse {
+    pub fn builder() -> builder::AssertionResponse {
+        Default::default()
+    }
 }
 ///`AssertionResponseAuthenticatorAttachment`
 ///
@@ -142,6 +148,7 @@ pub struct AssertionResponse {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum AssertionResponseAuthenticatorAttachment {
     #[serde(rename = "platform")]
     Platform,
@@ -223,6 +230,7 @@ impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthent
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AssertionResponseResponse {
     #[serde(rename = "authenticatorData")]
     pub authenticator_data: ::std::string::String,
@@ -235,6 +243,11 @@ pub struct AssertionResponseResponse {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_handle: ::std::option::Option<::std::string::String>,
+}
+impl AssertionResponseResponse {
+    pub fn builder() -> builder::AssertionResponseResponse {
+        Default::default()
+    }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
@@ -379,6 +392,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -389,6 +403,11 @@ pub struct Payload {
     ///AuthenticatorAssertionResponse as returned by navigator.credentials.get over the uvOptions from start. Binary fields base64url-encoded.
     #[serde(rename = "uvCredential")]
     pub uv_credential: AssertionResponse,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.
 ///
@@ -501,6 +520,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRevocationId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.
     #[serde(rename = "credentialId")]
@@ -513,6 +533,11 @@ pub struct Response {
     ///When the credential was unbound.
     #[serde(rename = "revokedAt")]
     pub revoked_at: ::chrono::DateTime<::chrono::offset::Utc>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.
 ///
@@ -583,6 +608,361 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCredentialId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AssertionResponse {
+        authenticator_attachment: ::std::result::Result<
+            ::std::option::Option<super::AssertionResponseAuthenticatorAttachment>,
+            ::std::string::String,
+        >,
+        client_extension_results: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        raw_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        response: ::std::result::Result<super::AssertionResponseResponse, ::std::string::String>,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for AssertionResponse {
+        fn default() -> Self {
+            Self {
+                authenticator_attachment: Ok(Default::default()),
+                client_extension_results: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                raw_id: Err("no value supplied for raw_id".to_string()),
+                response: Err("no value supplied for response".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl AssertionResponse {
+        pub fn authenticator_attachment<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::AssertionResponseAuthenticatorAttachment>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authenticator_attachment = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authenticator_attachment: {e}")
+            });
+            self
+        }
+        pub fn client_extension_results<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client_extension_results = value.try_into().map_err(|e| {
+                format!("error converting supplied value for client_extension_results: {e}")
+            });
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn raw_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.raw_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for raw_id: {e}"));
+            self
+        }
+        pub fn response<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AssertionResponseResponse>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.response = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for response: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AssertionResponse> for super::AssertionResponse {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AssertionResponse,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                authenticator_attachment: value.authenticator_attachment?,
+                client_extension_results: value.client_extension_results?,
+                id: value.id?,
+                raw_id: value.raw_id?,
+                response: value.response?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AssertionResponse> for AssertionResponse {
+        fn from(value: super::AssertionResponse) -> Self {
+            Self {
+                authenticator_attachment: Ok(value.authenticator_attachment),
+                client_extension_results: Ok(value.client_extension_results),
+                id: Ok(value.id),
+                raw_id: Ok(value.raw_id),
+                response: Ok(value.response),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AssertionResponseResponse {
+        authenticator_data: ::std::result::Result<::std::string::String, ::std::string::String>,
+        client_data_json: ::std::result::Result<::std::string::String, ::std::string::String>,
+        signature: ::std::result::Result<::std::string::String, ::std::string::String>,
+        user_handle: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AssertionResponseResponse {
+        fn default() -> Self {
+            Self {
+                authenticator_data: Err("no value supplied for authenticator_data".to_string()),
+                client_data_json: Err("no value supplied for client_data_json".to_string()),
+                signature: Err("no value supplied for signature".to_string()),
+                user_handle: Ok(Default::default()),
+            }
+        }
+    }
+    impl AssertionResponseResponse {
+        pub fn authenticator_data<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authenticator_data = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authenticator_data: {e}")
+            });
+            self
+        }
+        pub fn client_data_json<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client_data_json = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for client_data_json: {e}"));
+            self
+        }
+        pub fn signature<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signature = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signature: {e}"));
+            self
+        }
+        pub fn user_handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user_handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user_handle: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AssertionResponseResponse> for super::AssertionResponseResponse {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AssertionResponseResponse,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                authenticator_data: value.authenticator_data?,
+                client_data_json: value.client_data_json?,
+                signature: value.signature?,
+                user_handle: value.user_handle?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AssertionResponseResponse> for AssertionResponseResponse {
+        fn from(value: super::AssertionResponseResponse) -> Self {
+            Self {
+                authenticator_data: Ok(value.authenticator_data),
+                client_data_json: Ok(value.client_data_json),
+                signature: Ok(value.signature),
+                user_handle: Ok(value.user_handle),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        revocation_id: ::std::result::Result<super::PayloadRevocationId, ::std::string::String>,
+        uv_credential: ::std::result::Result<super::AssertionResponse, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                revocation_id: Err("no value supplied for revocation_id".to_string()),
+                uv_credential: Err("no value supplied for uv_credential".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn revocation_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadRevocationId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revocation_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revocation_id: {e}"));
+            self
+        }
+        pub fn uv_credential<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AssertionResponse>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.uv_credential = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for uv_credential: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                revocation_id: value.revocation_id?,
+                uv_credential: value.uv_credential?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                revocation_id: Ok(value.revocation_id),
+                uv_credential: Ok(value.uv_credential),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        credential_id: ::std::result::Result<super::ResponseCredentialId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        remaining: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        revoked_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                ext: Ok(Default::default()),
+                remaining: Err("no value supplied for remaining".to_string()),
+                revoked_at: Err("no value supplied for revoked_at".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseCredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn remaining<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.remaining = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for remaining: {e}"));
+            self
+        }
+        pub fn revoked_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revoked_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revoked_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential_id: value.credential_id?,
+                ext: value.ext?,
+                remaining: value.remaining?,
+                revoked_at: value.revoked_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                credential_id: Ok(value.credential_id),
+                ext: Ok(value.ext),
+                remaining: Ok(value.remaining),
+                revoked_at: Ok(value.revoked_at),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -599,6 +979,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"remaining\": {\n          \"description\": \"How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the credential was unbound.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\",\n        \"remaining\"\n      ],\n      \"title\": \"Auth Passkey Revoke Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

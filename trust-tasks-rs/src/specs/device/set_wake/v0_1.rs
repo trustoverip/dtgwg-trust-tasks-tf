@@ -180,6 +180,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -215,6 +216,11 @@ impl ::std::default::Default for Payload {
         }
     }
 }
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
+}
 ///OPTIONAL, advisory. The abstract platform behind the handle, for device/list visibility only. The VTA never sees the token; this is a non-authoritative hint.
 ///
 /// <details><summary>JSON schema</summary>
@@ -243,6 +249,7 @@ impl ::std::default::Default for Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadPushPlatform {
     #[serde(rename = "apns")]
     Apns,
@@ -392,6 +399,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSuggestedTriggersItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -405,6 +413,11 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trigger_policy: ::std::option::Option<WakeTriggerPolicy>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.
 ///
@@ -437,11 +450,17 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct WakeHandle {
     ///The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.
     pub gateway: WakeHandleGateway,
     ///Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.
     pub handle: WakeHandleHandle,
+}
+impl WakeHandle {
+    pub fn builder() -> builder::WakeHandle {
+        Default::default()
+    }
 }
 ///The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.
 ///
@@ -610,10 +629,16 @@ impl<'de> ::serde::Deserialize<'de> for WakeHandleHandle {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct WakeTriggerPolicy {
     ///DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
     #[serde(rename = "allowedTriggers")]
     pub allowed_triggers: Vec<WakeTriggerPolicyAllowedTriggersItem>,
+}
+impl WakeTriggerPolicy {
+    pub fn builder() -> builder::WakeTriggerPolicy {
+        Default::default()
+    }
 }
 ///`WakeTriggerPolicyAllowedTriggersItem`
 ///
@@ -683,6 +708,264 @@ impl<'de> ::serde::Deserialize<'de> for WakeTriggerPolicyAllowedTriggersItem {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        push_platform: ::std::result::Result<
+            ::std::option::Option<super::PayloadPushPlatform>,
+            ::std::string::String,
+        >,
+        suggested_triggers: ::std::result::Result<
+            ::std::option::Option<Vec<super::PayloadSuggestedTriggersItem>>,
+            ::std::string::String,
+        >,
+        wake_handle:
+            ::std::result::Result<::std::option::Option<super::WakeHandle>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                push_platform: Ok(Default::default()),
+                suggested_triggers: Ok(Default::default()),
+                wake_handle: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn push_platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadPushPlatform>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.push_platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for push_platform: {e}"));
+            self
+        }
+        pub fn suggested_triggers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<Vec<super::PayloadSuggestedTriggersItem>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.suggested_triggers = value.try_into().map_err(|e| {
+                format!("error converting supplied value for suggested_triggers: {e}")
+            });
+            self
+        }
+        pub fn wake_handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::WakeHandle>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.wake_handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for wake_handle: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                push_platform: value.push_platform?,
+                suggested_triggers: value.suggested_triggers?,
+                wake_handle: value.wake_handle?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                push_platform: Ok(value.push_platform),
+                suggested_triggers: Ok(value.suggested_triggers),
+                wake_handle: Ok(value.wake_handle),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        push_capable: ::std::result::Result<bool, ::std::string::String>,
+        trigger_policy: ::std::result::Result<
+            ::std::option::Option<super::WakeTriggerPolicy>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                push_capable: Err("no value supplied for push_capable".to_string()),
+                trigger_policy: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn push_capable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.push_capable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for push_capable: {e}"));
+            self
+        }
+        pub fn trigger_policy<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::WakeTriggerPolicy>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.trigger_policy = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for trigger_policy: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                push_capable: value.push_capable?,
+                trigger_policy: value.trigger_policy?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                push_capable: Ok(value.push_capable),
+                trigger_policy: Ok(value.trigger_policy),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct WakeHandle {
+        gateway: ::std::result::Result<super::WakeHandleGateway, ::std::string::String>,
+        handle: ::std::result::Result<super::WakeHandleHandle, ::std::string::String>,
+    }
+    impl ::std::default::Default for WakeHandle {
+        fn default() -> Self {
+            Self {
+                gateway: Err("no value supplied for gateway".to_string()),
+                handle: Err("no value supplied for handle".to_string()),
+            }
+        }
+    }
+    impl WakeHandle {
+        pub fn gateway<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WakeHandleGateway>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.gateway = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for gateway: {e}"));
+            self
+        }
+        pub fn handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WakeHandleHandle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for handle: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<WakeHandle> for super::WakeHandle {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: WakeHandle,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                gateway: value.gateway?,
+                handle: value.handle?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::WakeHandle> for WakeHandle {
+        fn from(value: super::WakeHandle) -> Self {
+            Self {
+                gateway: Ok(value.gateway),
+                handle: Ok(value.handle),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct WakeTriggerPolicy {
+        allowed_triggers: ::std::result::Result<
+            Vec<super::WakeTriggerPolicyAllowedTriggersItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for WakeTriggerPolicy {
+        fn default() -> Self {
+            Self {
+                allowed_triggers: Err("no value supplied for allowed_triggers".to_string()),
+            }
+        }
+    }
+    impl WakeTriggerPolicy {
+        pub fn allowed_triggers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::WakeTriggerPolicyAllowedTriggersItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.allowed_triggers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for allowed_triggers: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<WakeTriggerPolicy> for super::WakeTriggerPolicy {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: WakeTriggerPolicy,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                allowed_triggers: value.allowed_triggers?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::WakeTriggerPolicy> for WakeTriggerPolicy {
+        fn from(value: super::WakeTriggerPolicy) -> Self {
+            Self {
+                allowed_triggers: Ok(value.allowed_triggers),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/set-wake/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -698,6 +981,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"pushCapable\": {\n          \"description\": \"Whether the device now has a usable wake channel (true after a successful set, false after a clear).\",\n          \"type\": \"boolean\"\n        },\n        \"triggerPolicy\": {\n          \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n          \"description\": \"The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared.\"\n        }\n      },\n      \"required\": [\n        \"pushCapable\"\n      ],\n      \"title\": \"Device Set Wake — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeHandle\": {\n      \"additionalProperties\": false,\n      \"description\": \"An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.\",\n      \"properties\": {\n        \"gateway\": {\n          \"description\": \"The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"handle\": {\n          \"description\": \"Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"gateway\",\n        \"handle\"\n      ],\n      \"title\": \"WakeHandle\",\n      \"type\": \"object\"\n    },\n    \"WakeTriggerPolicy\": {\n      \"additionalProperties\": false,\n      \"description\": \"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\n      \"properties\": {\n        \"allowedTriggers\": {\n          \"description\": \"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"allowedTriggers\"\n      ],\n      \"title\": \"WakeTriggerPolicy\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

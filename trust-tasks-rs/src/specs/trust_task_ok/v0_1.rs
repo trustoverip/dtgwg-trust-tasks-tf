@@ -85,6 +85,7 @@ This specification declares no response anchor. An acknowledgement is not answer
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer of this document controls.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
@@ -106,6 +107,11 @@ impl ::std::default::Default for Payload {
             message: Default::default(),
             refs: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`PayloadRefsItem`
@@ -136,11 +142,17 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadRefsItem {
     ///What this reference is, in the consumer's own vocabulary. Not drawn from any registry, and not interoperable — a producer that does not recognize a name ignores it.
     pub name: PayloadRefsItemName,
     ///The reference itself, opaque to this framework.
     pub value: ::std::string::String,
+}
+impl PayloadRefsItem {
+    pub fn builder() -> builder::PayloadRefsItem {
+        Default::default()
+    }
 }
 ///What this reference is, in the consumer's own vocabulary. Not drawn from any registry, and not interoperable — a producer that does not recognize a name ignores it.
 ///
@@ -209,6 +221,137 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRefsItemName {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        message: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        refs: ::std::result::Result<::std::vec::Vec<super::PayloadRefsItem>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                message: Ok(Default::default()),
+                refs: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+        pub fn refs<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadRefsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.refs = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for refs: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                message: value.message?,
+                refs: value.refs?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                message: Ok(value.message),
+                refs: Ok(value.refs),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadRefsItem {
+        name: ::std::result::Result<super::PayloadRefsItemName, ::std::string::String>,
+        value: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for PayloadRefsItem {
+        fn default() -> Self {
+            Self {
+                name: Err("no value supplied for name".to_string()),
+                value: Err("no value supplied for value".to_string()),
+            }
+        }
+    }
+    impl PayloadRefsItem {
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadRefsItemName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadRefsItem> for super::PayloadRefsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadRefsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                name: value.name?,
+                value: value.value?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadRefsItem> for PayloadRefsItem {
+        fn from(value: super::PayloadRefsItem) -> Self {
+            Self {
+                name: Ok(value.name),
+                value: Ok(value.value),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

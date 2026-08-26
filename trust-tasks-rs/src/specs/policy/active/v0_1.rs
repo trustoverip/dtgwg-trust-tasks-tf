@@ -63,6 +63,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ActiveBinding {
     ///Present when the binding is context-scoped.
     #[serde(
@@ -73,6 +74,11 @@ pub struct ActiveBinding {
     pub context_id: ::std::option::Option<ActiveBindingContextId>,
     pub policy: PolicyModule,
     pub purpose: ActiveBindingPurpose,
+}
+impl ActiveBinding {
+    pub fn builder() -> builder::ActiveBinding {
+        Default::default()
+    }
 }
 ///Present when the binding is context-scoped.
 ///
@@ -350,6 +356,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Restrict to bindings in this trust context, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope, or all contexts.
     #[serde(
@@ -371,6 +378,11 @@ impl ::std::default::Default for Payload {
             ext: Default::default(),
             purpose: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Restrict to bindings in this trust context, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope, or all contexts.
@@ -591,6 +603,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPurpose {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyModule {
     ///List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).
     #[serde(
@@ -618,6 +631,11 @@ pub struct PolicyModule {
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub version: u64,
+}
+impl PolicyModule {
+    pub fn builder() -> builder::PolicyModule {
+        Default::default()
+    }
 }
 ///`PolicyModuleDescription`
 ///
@@ -927,11 +945,404 @@ impl<'de> ::serde::Deserialize<'de> for PolicyModuleName {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The active (contextId, purpose) -> policy bindings that matched the request. Zero entries when the requested purpose has no active policy; the full set when purpose is omitted. Unpaginated — the active set has one entry per purpose, which is small by construction.
     pub bindings: ::std::vec::Vec<ActiveBinding>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ActiveBinding {
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::ActiveBindingContextId>,
+            ::std::string::String,
+        >,
+        policy: ::std::result::Result<super::PolicyModule, ::std::string::String>,
+        purpose: ::std::result::Result<super::ActiveBindingPurpose, ::std::string::String>,
+    }
+    impl ::std::default::Default for ActiveBinding {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                policy: Err("no value supplied for policy".to_string()),
+                purpose: Err("no value supplied for purpose".to_string()),
+            }
+        }
+    }
+    impl ActiveBinding {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ActiveBindingContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn policy<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyModule>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ActiveBindingPurpose>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ActiveBinding> for super::ActiveBinding {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ActiveBinding,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                policy: value.policy?,
+                purpose: value.purpose?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ActiveBinding> for ActiveBinding {
+        fn from(value: super::ActiveBinding) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                policy: Ok(value.policy),
+                purpose: Ok(value.purpose),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadContextId>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        purpose: ::std::result::Result<
+            ::std::option::Option<super::PayloadPurpose>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                purpose: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadPurpose>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                ext: value.ext?,
+                purpose: value.purpose?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                ext: Ok(value.ext),
+                purpose: Ok(value.purpose),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyModule {
+        applies_to: ::std::result::Result<
+            ::std::option::Option<Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        description: ::std::result::Result<
+            ::std::option::Option<super::PolicyModuleDescription>,
+            ::std::string::String,
+        >,
+        enabled: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::PolicyModuleId, ::std::string::String>,
+        module: ::std::result::Result<super::PolicyModuleModule, ::std::string::String>,
+        name: ::std::result::Result<super::PolicyModuleName, ::std::string::String>,
+        priority: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        version: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for PolicyModule {
+        fn default() -> Self {
+            Self {
+                applies_to: Ok(Default::default()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                description: Ok(Default::default()),
+                enabled: Ok(super::defaults::default_bool::<true>()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                module: Err("no value supplied for module".to_string()),
+                name: Err("no value supplied for name".to_string()),
+                priority: Ok(Default::default()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl PolicyModule {
+        pub fn applies_to<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<::std::string::String>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.applies_to = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for applies_to: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PolicyModuleDescription>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyModuleId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn module<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyModuleModule>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.module = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for module: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyModuleName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn priority<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.priority = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for priority: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyModule> for super::PolicyModule {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyModule,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                applies_to: value.applies_to?,
+                created_at: value.created_at?,
+                description: value.description?,
+                enabled: value.enabled?,
+                ext: value.ext?,
+                id: value.id?,
+                module: value.module?,
+                name: value.name?,
+                priority: value.priority?,
+                updated_at: value.updated_at?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyModule> for PolicyModule {
+        fn from(value: super::PolicyModule) -> Self {
+            Self {
+                applies_to: Ok(value.applies_to),
+                created_at: Ok(value.created_at),
+                description: Ok(value.description),
+                enabled: Ok(value.enabled),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                module: Ok(value.module),
+                name: Ok(value.name),
+                priority: Ok(value.priority),
+                updated_at: Ok(value.updated_at),
+                version: Ok(value.version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        bindings:
+            ::std::result::Result<::std::vec::Vec<super::ActiveBinding>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                bindings: Err("no value supplied for bindings".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn bindings<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ActiveBinding>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.bindings = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for bindings: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                bindings: value.bindings?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                bindings: Ok(value.bindings),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 /// Generation of default values for serde.
 pub mod defaults {
@@ -952,6 +1363,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ActiveBinding\": {\n      \"$anchor\": \"activeBinding\",\n      \"additionalProperties\": false,\n      \"description\": \"One active-policy binding: the policy currently authoritative for a (contextId, purpose) decision slot.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Present when the binding is context-scoped.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"$ref\": \"#/$defs/PolicyModule\"\n        },\n        \"purpose\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"purpose\",\n        \"policy\"\n      ],\n      \"title\": \"ActiveBinding\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PolicyModule\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"appliesTo\": {\n          \"description\": \"List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"default\": true,\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"description\": \"Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name (e.g. \\\"default vault policy\\\", \\\"bank-site step-up\\\").\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"priority\": {\n          \"description\": \"When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.\",\n          \"maximum\": 1000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"module\",\n        \"version\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"PolicyModule\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bindings\": {\n          \"description\": \"The active (contextId, purpose) -> policy bindings that matched the request. Zero entries when the requested purpose has no active policy; the full set when purpose is omitted. Unpaginated — the active set has one entry per purpose, which is small by construction.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ActiveBinding\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"bindings\"\n      ],\n      \"title\": \"Policy Active — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

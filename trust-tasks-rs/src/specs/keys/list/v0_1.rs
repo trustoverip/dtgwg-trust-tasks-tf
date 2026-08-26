@@ -167,6 +167,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum KeyOrigin {
     #[serde(rename = "derived")]
     Derived,
@@ -294,6 +295,7 @@ impl ::std::default::Default for KeyOrigin {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct KeyRecord {
     ///Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.
     #[serde(
@@ -342,6 +344,11 @@ pub struct KeyRecord {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+}
+impl KeyRecord {
+    pub fn builder() -> builder::KeyRecord {
+        Default::default()
+    }
 }
 ///Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.
 ///
@@ -509,6 +516,7 @@ impl<'de> ::serde::Deserialize<'de> for KeyRecordPublicKey {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum KeyStatus {
     #[serde(rename = "active")]
     Active,
@@ -584,6 +592,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyStatus {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum KeyType {
     #[serde(rename = "ed25519")]
     Ed25519,
@@ -673,6 +682,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Return only keys filed under this scope.
     #[serde(
@@ -703,6 +713,11 @@ impl ::std::default::Default for Payload {
             offset: Default::default(),
             status: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///The success response to a keys/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/list/0.1#response.
@@ -754,6 +769,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -765,6 +781,419 @@ pub struct Response {
     pub offset: u64,
     ///How many records matched the filters in total. Required so a short page is never mistaken for the end of the set — the failure that makes a key audit or rotation sweep look complete when it is not.
     pub total: u64,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct KeyRecord {
+        context_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        derivation_path: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        key_id: ::std::result::Result<super::KeyRecordKeyId, ::std::string::String>,
+        key_type: ::std::result::Result<super::KeyType, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        origin:
+            ::std::result::Result<::std::option::Option<super::KeyOrigin>, ::std::string::String>,
+        public_key: ::std::result::Result<super::KeyRecordPublicKey, ::std::string::String>,
+        seed_id: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        status: ::std::result::Result<super::KeyStatus, ::std::string::String>,
+        updated_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for KeyRecord {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                derivation_path: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                key_id: Err("no value supplied for key_id".to_string()),
+                key_type: Err("no value supplied for key_type".to_string()),
+                label: Ok(Default::default()),
+                origin: Ok(Default::default()),
+                public_key: Err("no value supplied for public_key".to_string()),
+                seed_id: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+                updated_at: Ok(Default::default()),
+            }
+        }
+    }
+    impl KeyRecord {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn derivation_path<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.derivation_path = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for derivation_path: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyRecordKeyId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_id: {e}"));
+            self
+        }
+        pub fn key_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_type: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn origin<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyOrigin>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.origin = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for origin: {e}"));
+            self
+        }
+        pub fn public_key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyRecordPublicKey>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.public_key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for public_key: {e}"));
+            self
+        }
+        pub fn seed_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.seed_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for seed_id: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<KeyRecord> for super::KeyRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: KeyRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                created_at: value.created_at?,
+                derivation_path: value.derivation_path?,
+                ext: value.ext?,
+                key_id: value.key_id?,
+                key_type: value.key_type?,
+                label: value.label?,
+                origin: value.origin?,
+                public_key: value.public_key?,
+                seed_id: value.seed_id?,
+                status: value.status?,
+                updated_at: value.updated_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::KeyRecord> for KeyRecord {
+        fn from(value: super::KeyRecord) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                created_at: Ok(value.created_at),
+                derivation_path: Ok(value.derivation_path),
+                ext: Ok(value.ext),
+                key_id: Ok(value.key_id),
+                key_type: Ok(value.key_type),
+                label: Ok(value.label),
+                origin: Ok(value.origin),
+                public_key: Ok(value.public_key),
+                seed_id: Ok(value.seed_id),
+                status: Ok(value.status),
+                updated_at: Ok(value.updated_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        offset: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        status:
+            ::std::result::Result<::std::option::Option<super::KeyStatus>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+                offset: Ok(Default::default()),
+                status: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+        pub fn offset<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.offset = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for offset: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyStatus>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                ext: value.ext?,
+                limit: value.limit?,
+                offset: value.offset?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+                offset: Ok(value.offset),
+                status: Ok(value.status),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        keys: ::std::result::Result<::std::vec::Vec<super::KeyRecord>, ::std::string::String>,
+        limit: ::std::result::Result<u64, ::std::string::String>,
+        offset: ::std::result::Result<u64, ::std::string::String>,
+        total: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                keys: Err("no value supplied for keys".to_string()),
+                limit: Err("no value supplied for limit".to_string()),
+                offset: Err("no value supplied for offset".to_string()),
+                total: Err("no value supplied for total".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn keys<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::KeyRecord>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.keys = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for keys: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+        pub fn offset<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.offset = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for offset: {e}"));
+            self
+        }
+        pub fn total<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.total = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for total: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                keys: value.keys?,
+                limit: value.limit?,
+                offset: value.offset?,
+                total: value.total?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                keys: Ok(value.keys),
+                limit: Ok(value.limit),
+                offset: Ok(value.offset),
+                total: Ok(value.total),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/keys/list/0.1";
@@ -779,6 +1208,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339 timestamp at which the key was created or imported.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"derivationPath\": {\n          \"description\": \"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        },\n        \"publicKey\": {\n          \"description\": \"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"seedId\": {\n          \"description\": \"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"status\",\n        \"publicKey\",\n        \"createdAt\"\n      ],\n      \"title\": \"KeyRecord\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/list/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keys\": {\n          \"description\": \"The page of records, in the custodian's own order.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/KeyRecord\"\n          },\n          \"type\": \"array\"\n        },\n        \"limit\": {\n          \"description\": \"The page size actually applied, which MAY be smaller than the one requested.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"offset\": {\n          \"description\": \"The offset this page starts at.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"total\": {\n          \"description\": \"How many records matched the filters in total. Required so a short page is never mistaken for the end of the set — the failure that makes a key audit or rotation sweep look complete when it is not.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"keys\",\n        \"total\",\n        \"offset\",\n        \"limit\"\n      ],\n      \"title\": \"Keys List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

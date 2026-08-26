@@ -168,12 +168,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub name: PayloadName,
     #[serde(rename = "purgeServers", default)]
     pub purge_servers: bool,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadName`
 ///
@@ -297,6 +303,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -305,6 +312,11 @@ pub struct Response {
     pub name: ::std::string::String,
     #[serde(rename = "purgedAt")]
     pub purged_at: ::chrono::DateTime<::chrono::offset::Utc>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseFanoutItem`
 ///
@@ -335,10 +347,16 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseFanoutItem {
     #[serde(rename = "instanceId")]
     pub instance_id: ::std::string::String,
     pub status: ResponseFanoutItemStatus,
+}
+impl ResponseFanoutItem {
+    pub fn builder() -> builder::ResponseFanoutItem {
+        Default::default()
+    }
 }
 ///`ResponseFanoutItemStatus`
 ///
@@ -366,6 +384,7 @@ pub struct ResponseFanoutItem {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseFanoutItemStatus {
     #[serde(rename = "queued")]
     Queued,
@@ -412,6 +431,213 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseFanoutItemStatus
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        name: ::std::result::Result<super::PayloadName, ::std::string::String>,
+        purge_servers: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+                purge_servers: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn purge_servers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purge_servers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purge_servers: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                name: value.name?,
+                purge_servers: value.purge_servers?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                name: Ok(value.name),
+                purge_servers: Ok(value.purge_servers),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        fanout: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseFanoutItem>,
+            ::std::string::String,
+        >,
+        name: ::std::result::Result<::std::string::String, ::std::string::String>,
+        purged_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                fanout: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+                purged_at: Err("no value supplied for purged_at".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn fanout<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseFanoutItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.fanout = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for fanout: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn purged_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purged_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purged_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                fanout: value.fanout?,
+                name: value.name?,
+                purged_at: value.purged_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                fanout: Ok(value.fanout),
+                name: Ok(value.name),
+                purged_at: Ok(value.purged_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseFanoutItem {
+        instance_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        status: ::std::result::Result<super::ResponseFanoutItemStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseFanoutItem {
+        fn default() -> Self {
+            Self {
+                instance_id: Err("no value supplied for instance_id".to_string()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl ResponseFanoutItem {
+        pub fn instance_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.instance_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for instance_id: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseFanoutItemStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseFanoutItem> for super::ResponseFanoutItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseFanoutItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                instance_id: value.instance_id?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseFanoutItem> for ResponseFanoutItem {
+        fn from(value: super::ResponseFanoutItem) -> Self {
+            Self {
+                instance_id: Ok(value.instance_id),
+                status: Ok(value.status),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/domain/purge/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -428,6 +654,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fanout\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"instanceId\": {\n                \"type\": \"string\"\n              },\n              \"status\": {\n                \"enum\": [\n                  \"queued\",\n                  \"failed\"\n                ],\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"instanceId\",\n              \"status\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"type\": \"string\"\n        },\n        \"purgedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"purgedAt\"\n      ],\n      \"title\": \"Domain Purge — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

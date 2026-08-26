@@ -174,6 +174,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The target account's DID whose access list is being checked.
     pub did: Vid,
@@ -182,6 +183,11 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The success response to a messaging/access-list/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/get/0.1#response.
 ///
@@ -228,6 +234,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The supplied entries that are not present in the account's access list.
     pub absent: ::std::vec::Vec<Vid>,
@@ -238,6 +245,11 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///The supplied entries that are present in the account's access list.
     pub present: ::std::vec::Vec<Vid>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
@@ -309,6 +321,155 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        entries: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                entries: Err("no value supplied for entries".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn entries<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                entries: value.entries?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                entries: Ok(value.entries),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        absent: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        present: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                absent: Err("no value supplied for absent".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                present: Err("no value supplied for present".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn absent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.absent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for absent: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn present<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.present = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for present: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                absent: value.absent?,
+                did: value.did?,
+                ext: value.ext?,
+                present: value.present?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                absent: Ok(value.absent),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                present: Ok(value.present),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/access-list/get/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -323,6 +484,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/access-list/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/get/0.1#response.\",\n      \"properties\": {\n        \"absent\": {\n          \"description\": \"The supplied entries that are not present in the account's access list.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose access list was checked.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"present\": {\n          \"description\": \"The supplied entries that are present in the account's access list.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"present\",\n        \"absent\"\n      ],\n      \"title\": \"Messaging Check Access List Membership — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

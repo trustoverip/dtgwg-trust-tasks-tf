@@ -175,6 +175,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -187,6 +188,11 @@ pub struct Payload {
     ///Whether the proposing party asks that the exchange be witnessed. A request, not a fact: it is answered by the same member on the response, and which witness and on what terms is settled under the witness/* specifications, as a separate exchange nested via parentThreadId. Absent means unwitnessed.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub witnessed: ::std::option::Option<bool>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect.
 ///
@@ -366,6 +372,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.
     pub accept: ::serde_json::Value,
@@ -377,6 +384,11 @@ pub struct Response {
     ///The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub witnessed: ::std::option::Option<bool>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.
 ///
@@ -449,6 +461,174 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRelationshipDid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+        relationship_did:
+            ::std::result::Result<super::PayloadRelationshipDid, ::std::string::String>,
+        witnessed: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                relationship_did: Err("no value supplied for relationship_did".to_string()),
+                witnessed: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn relationship_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadRelationshipDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.relationship_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for relationship_did: {e}"));
+            self
+        }
+        pub fn witnessed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.witnessed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for witnessed: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                relationship_did: value.relationship_did?,
+                witnessed: value.witnessed?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                relationship_did: Ok(value.relationship_did),
+                witnessed: Ok(value.witnessed),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        accept: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        relationship_did:
+            ::std::result::Result<super::ResponseRelationshipDid, ::std::string::String>,
+        witnessed: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                accept: Err("no value supplied for accept".to_string()),
+                ext: Ok(Default::default()),
+                relationship_did: Err("no value supplied for relationship_did".to_string()),
+                witnessed: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn accept<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.accept = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for accept: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn relationship_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRelationshipDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.relationship_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for relationship_did: {e}"));
+            self
+        }
+        pub fn witnessed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.witnessed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for witnessed: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                accept: value.accept?,
+                ext: value.ext?,
+                relationship_did: value.relationship_did?,
+                witnessed: value.witnessed?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                accept: Ok(value.accept),
+                ext: Ok(value.ext),
+                relationship_did: Ok(value.relationship_did),
+                witnessed: Ok(value.witnessed),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vrc/relationships/propose/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -463,6 +643,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.\",\n      \"properties\": {\n        \"accept\": {\n          \"const\": true,\n          \"description\": \"Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"relationshipDid\": {\n          \"description\": \"The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"witnessed\": {\n          \"description\": \"The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"accept\",\n        \"relationshipDid\"\n      ],\n      \"title\": \"VRC Relationships Propose — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -158,6 +158,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -167,6 +168,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Success response to vta/services/list. Type https://trusttasks.org/spec/vta/services/list/1.0#response.
@@ -200,11 +206,17 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every transport the agent knows about, advertised or not. A kind absent from this array has never been configured — distinct from one present with `enabled: false`.
     pub services: ::std::vec::Vec<ServiceState>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
 ///
@@ -236,6 +248,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ServiceKind {
     #[serde(rename = "didcomm")]
     Didcomm,
@@ -334,6 +347,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceKind {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ServiceState {
     ///RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.
     #[serde(
@@ -358,6 +372,222 @@ pub struct ServiceState {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
 }
+impl ServiceState {
+    pub fn builder() -> builder::ServiceState {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        services:
+            ::std::result::Result<::std::vec::Vec<super::ServiceState>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                services: Err("no value supplied for services".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn services<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ServiceState>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.services = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for services: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                services: value.services?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                services: Ok(value.services),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ServiceState {
+        drains_until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        enabled: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        kind: ::std::result::Result<super::ServiceKind, ::std::string::String>,
+        mediator_did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ServiceState {
+        fn default() -> Self {
+            Self {
+                drains_until: Ok(Default::default()),
+                enabled: Err("no value supplied for enabled".to_string()),
+                ext: Ok(Default::default()),
+                kind: Err("no value supplied for kind".to_string()),
+                mediator_did: Ok(Default::default()),
+                url: Ok(Default::default()),
+            }
+        }
+    }
+    impl ServiceState {
+        pub fn drains_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.drains_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for drains_until: {e}"));
+            self
+        }
+        pub fn enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ServiceKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn mediator_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mediator_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mediator_did: {e}"));
+            self
+        }
+        pub fn url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for url: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ServiceState> for super::ServiceState {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ServiceState,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                drains_until: value.drains_until?,
+                enabled: value.enabled?,
+                ext: value.ext?,
+                kind: value.kind?,
+                mediator_did: value.mediator_did?,
+                url: value.url?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ServiceState> for ServiceState {
+        fn from(value: super::ServiceState) -> Self {
+            Self {
+                drains_until: Ok(value.drains_until),
+                enabled: Ok(value.enabled),
+                ext: Ok(value.ext),
+                kind: Ok(value.kind),
+                mediator_did: Ok(value.mediator_did),
+                url: Ok(value.url),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/list/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -371,6 +601,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/list. Type https://trusttasks.org/spec/vta/services/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"services\": {\n          \"description\": \"Every transport the agent knows about, advertised or not. A kind absent from this array has never been configured — distinct from one present with `enabled: false`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ServiceState\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"services\"\n      ],\n      \"title\": \"VTA Services — List — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceState\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.\",\n      \"properties\": {\n        \"drainsUntil\": {\n          \"description\": \"RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"Whether the agent currently advertises this transport in its DID document.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/ServiceKind\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator this transport routes through. Present for `didcomm` and `tsp`.\",\n          \"type\": \"string\"\n        },\n        \"url\": {\n          \"description\": \"The advertised endpoint. Present for `rest` and `webauthn`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"enabled\"\n      ],\n      \"title\": \"ServiceState\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

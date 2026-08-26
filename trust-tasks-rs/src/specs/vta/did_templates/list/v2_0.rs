@@ -115,6 +115,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DidTemplateRecord {
     ///UTC unix-epoch seconds the template was first stored.
     #[serde(rename = "createdAt")]
@@ -150,6 +151,11 @@ pub struct DidTemplateRecord {
     ///UTC unix-epoch seconds of the last write.
     #[serde(rename = "updatedAt")]
     pub updated_at: i64,
+}
+impl DidTemplateRecord {
+    pub fn builder() -> builder::DidTemplateRecord {
+        Default::default()
+    }
 }
 ///`DidTemplateRecordKind`
 ///
@@ -432,6 +438,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Scope selector. Absent: the global scope. Present: the context whose templates are listed; the caller MUST have access to that context.
     #[serde(
@@ -450,6 +457,11 @@ impl ::std::default::Default for Payload {
             context_id: Default::default(),
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Scope selector. Absent: the global scope. Present: the context whose templates are listed; the caller MUST have access to that context.
@@ -553,12 +565,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every stored template in the selected scope, sorted by name; empty when none exist.
     pub templates: ::std::vec::Vec<DidTemplateRecord>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Where a stored template lives. Tagged by `type`.
 ///
@@ -620,6 +638,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "type", content = "contextId")]
+#[non_exhaustive]
 pub enum Scope {
     #[serde(rename = "builtin")]
     Builtin,
@@ -702,6 +721,345 @@ impl<'de> ::serde::Deserialize<'de> for ScopeContextId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct DidTemplateRecord {
+        created_at: ::std::result::Result<i64, ::std::string::String>,
+        created_by: ::std::result::Result<::std::string::String, ::std::string::String>,
+        defaults: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        description: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        document: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        kind: ::std::result::Result<super::DidTemplateRecordKind, ::std::string::String>,
+        methods:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        name: ::std::result::Result<super::DidTemplateRecordName, ::std::string::String>,
+        optional_vars: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        required_vars:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        schema_version: ::std::result::Result<i64, ::std::string::String>,
+        scope: ::std::result::Result<super::Scope, ::std::string::String>,
+        updated_at: ::std::result::Result<i64, ::std::string::String>,
+    }
+    impl ::std::default::Default for DidTemplateRecord {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                created_by: Err("no value supplied for created_by".to_string()),
+                defaults: Ok(Default::default()),
+                description: Ok(Default::default()),
+                document: Err("no value supplied for document".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                methods: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+                optional_vars: Ok(Default::default()),
+                required_vars: Ok(Default::default()),
+                schema_version: Err("no value supplied for schema_version".to_string()),
+                scope: Err("no value supplied for scope".to_string()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+            }
+        }
+    }
+    impl DidTemplateRecord {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<i64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn created_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_by: {e}"));
+            self
+        }
+        pub fn defaults<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.defaults = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for defaults: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn document<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.document = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for document: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DidTemplateRecordKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn methods<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.methods = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for methods: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DidTemplateRecordName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn optional_vars<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.optional_vars = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for optional_vars: {e}"));
+            self
+        }
+        pub fn required_vars<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.required_vars = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for required_vars: {e}"));
+            self
+        }
+        pub fn schema_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<i64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.schema_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for schema_version: {e}"));
+            self
+        }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Scope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<i64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DidTemplateRecord> for super::DidTemplateRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DidTemplateRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                created_by: value.created_by?,
+                defaults: value.defaults?,
+                description: value.description?,
+                document: value.document?,
+                kind: value.kind?,
+                methods: value.methods?,
+                name: value.name?,
+                optional_vars: value.optional_vars?,
+                required_vars: value.required_vars?,
+                schema_version: value.schema_version?,
+                scope: value.scope?,
+                updated_at: value.updated_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DidTemplateRecord> for DidTemplateRecord {
+        fn from(value: super::DidTemplateRecord) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                created_by: Ok(value.created_by),
+                defaults: Ok(value.defaults),
+                description: Ok(value.description),
+                document: Ok(value.document),
+                kind: Ok(value.kind),
+                methods: Ok(value.methods),
+                name: Ok(value.name),
+                optional_vars: Ok(value.optional_vars),
+                required_vars: Ok(value.required_vars),
+                schema_version: Ok(value.schema_version),
+                scope: Ok(value.scope),
+                updated_at: Ok(value.updated_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadContextId>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        templates:
+            ::std::result::Result<::std::vec::Vec<super::DidTemplateRecord>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                templates: Err("no value supplied for templates".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn templates<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::DidTemplateRecord>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.templates = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for templates: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                templates: value.templates?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                templates: Ok(value.templates),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/did-templates/list/2.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -716,6 +1074,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"DidTemplateRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"UTC unix-epoch seconds the template was first stored.\",\n          \"type\": \"integer\"\n        },\n        \"createdBy\": {\n          \"description\": \"DID of the admin who last wrote the template.\",\n          \"type\": \"string\"\n        },\n        \"defaults\": {\n          \"additionalProperties\": true,\n          \"type\": \"object\"\n        },\n        \"description\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"document\": {\n          \"type\": \"object\"\n        },\n        \"kind\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"methods\": {\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        },\n        \"optionalVars\": {\n          \"additionalProperties\": true,\n          \"type\": \"object\"\n        },\n        \"requiredVars\": {\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"schemaVersion\": {\n          \"const\": 1,\n          \"type\": \"integer\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/Scope\",\n          \"description\": \"Resolved scope of the stored template.\"\n        },\n        \"updatedAt\": {\n          \"description\": \"UTC unix-epoch seconds of the last write.\",\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"name\",\n        \"kind\",\n        \"document\",\n        \"scope\",\n        \"createdAt\",\n        \"updatedAt\",\n        \"createdBy\"\n      ],\n      \"title\": \"DidTemplateRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Every stored template in the selected scope, in an array.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"templates\": {\n          \"description\": \"Every stored template in the selected scope, sorted by name; empty when none exist.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DidTemplateRecord\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"templates\"\n      ],\n      \"title\": \"VTA DID-Template List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Scope\": {\n      \"description\": \"Where a stored template lives. Tagged by `type`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"builtin\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"Builtin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"global\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"Global\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"contextId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"context\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"contextId\"\n          ],\n          \"title\": \"Context\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Scope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

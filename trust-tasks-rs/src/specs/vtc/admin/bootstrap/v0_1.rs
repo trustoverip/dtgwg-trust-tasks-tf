@@ -165,12 +165,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The setup-session JWT (aud=vtc-install-session) minted by install/claim/finish.
     #[serde(rename = "setupSessionToken")]
     pub setup_session_token: PayloadSetupSessionToken,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The setup-session JWT (aud=vtc-install-session) minted by install/claim/finish.
 ///
@@ -275,6 +281,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSetupSessionToken {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The admin DID just written to the ACL.
     #[serde(rename = "adminDid")]
@@ -284,6 +291,11 @@ pub struct Response {
     pub event_id: ResponseEventId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The admin DID just written to the ACL.
 ///
@@ -425,6 +437,128 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEventId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        setup_session_token:
+            ::std::result::Result<super::PayloadSetupSessionToken, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                setup_session_token: Err("no value supplied for setup_session_token".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn setup_session_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSetupSessionToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.setup_session_token = value.try_into().map_err(|e| {
+                format!("error converting supplied value for setup_session_token: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                setup_session_token: value.setup_session_token?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                setup_session_token: Ok(value.setup_session_token),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        admin_did: ::std::result::Result<super::ResponseAdminDid, ::std::string::String>,
+        event_id: ::std::result::Result<super::ResponseEventId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                admin_did: Err("no value supplied for admin_did".to_string()),
+                event_id: Err("no value supplied for event_id".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn admin_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseAdminDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admin_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for admin_did: {e}"));
+            self
+        }
+        pub fn event_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseEventId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.event_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for event_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                admin_did: value.admin_did?,
+                event_id: value.event_id?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                admin_did: Ok(value.admin_did),
+                event_id: Ok(value.event_id),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -438,6 +572,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"adminDid\": {\n          \"description\": \"The admin DID just written to the ACL.\",\n          \"pattern\": \"^did:key:z\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"description\": \"event_id of the persisted CommunityInstalled audit envelope (a UUID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"adminDid\",\n        \"eventId\"\n      ],\n      \"title\": \"VTC Admin Bootstrap — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

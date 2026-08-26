@@ -189,6 +189,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
+#[non_exhaustive]
 pub enum Payload {
     Variant0 {
         ///A cleartext OID4VCI Credential Response, carried verbatim. Format-agnostic: the `credential` within is a JSON string (SD-JWT-VC compact serialization) or a JSON object (a W3C Data-Integrity VC with its proof), and the holder infers the format from the value's shape rather than a separate discriminator. snake_case member names are OID4VCI's own.

@@ -142,6 +142,7 @@ The holder can always fetch the credential itself by `credentialId`, and a verif
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialReference {
     #[serde(rename = "credentialId")]
     pub credential_id: CredentialId,
@@ -159,6 +160,11 @@ pub struct CredentialReference {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+}
+impl CredentialReference {
+    pub fn builder() -> builder::CredentialReference {
+        Default::default()
+    }
 }
 ///`Endorsement`
 ///
@@ -221,6 +227,7 @@ pub struct CredentialReference {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Endorsement {
     ///The attested claim body, validated against the endorsement type's claimSchema when it declares one.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
@@ -246,6 +253,11 @@ pub struct Endorsement {
     ///The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
     #[serde(rename = "typeUri")]
     pub type_uri: EndorsementTypeUri,
+}
+impl Endorsement {
+    pub fn builder() -> builder::Endorsement {
+        Default::default()
+    }
 }
 ///Community-scoped identifier for this endorsement row.
 ///
@@ -614,6 +626,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one.
     pub claim: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -632,6 +645,11 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub validity_seconds: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///DID of the endorsement's subject (becomes credentialSubject.id).
 ///
@@ -808,12 +826,407 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTypeUri {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub endorsement: Endorsement,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct CredentialReference {
+        credential_id: ::std::result::Result<super::CredentialId, ::std::string::String>,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        issued_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for CredentialReference {
+        fn default() -> Self {
+            Self {
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                expires_at: Ok(Default::default()),
+                issued_at: Ok(Default::default()),
+            }
+        }
+    }
+    impl CredentialReference {
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialReference> for super::CredentialReference {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialReference,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential_id: value.credential_id?,
+                expires_at: value.expires_at?,
+                issued_at: value.issued_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialReference> for CredentialReference {
+        fn from(value: super::CredentialReference) -> Self {
+            Self {
+                credential_id: Ok(value.credential_id),
+                expires_at: Ok(value.expires_at),
+                issued_at: Ok(value.issued_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Endorsement {
+        claim: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        endorsement_id:
+            ::std::result::Result<super::EndorsementEndorsementId, ::std::string::String>,
+        issued: ::std::result::Result<super::CredentialReference, ::std::string::String>,
+        revoked_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        status_list_index: ::std::result::Result<u64, ::std::string::String>,
+        subject_did: ::std::result::Result<super::EndorsementSubjectDid, ::std::string::String>,
+        type_uri: ::std::result::Result<super::EndorsementTypeUri, ::std::string::String>,
+    }
+    impl ::std::default::Default for Endorsement {
+        fn default() -> Self {
+            Self {
+                claim: Ok(Default::default()),
+                endorsement_id: Err("no value supplied for endorsement_id".to_string()),
+                issued: Err("no value supplied for issued".to_string()),
+                revoked_at: Ok(Default::default()),
+                status_list_index: Err("no value supplied for status_list_index".to_string()),
+                subject_did: Err("no value supplied for subject_did".to_string()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+            }
+        }
+    }
+    impl Endorsement {
+        pub fn claim<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claim = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claim: {e}"));
+            self
+        }
+        pub fn endorsement_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EndorsementEndorsementId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.endorsement_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for endorsement_id: {e}"));
+            self
+        }
+        pub fn issued<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialReference>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued: {e}"));
+            self
+        }
+        pub fn revoked_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revoked_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revoked_at: {e}"));
+            self
+        }
+        pub fn status_list_index<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status_list_index = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status_list_index: {e}"));
+            self
+        }
+        pub fn subject_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EndorsementSubjectDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject_did: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EndorsementTypeUri>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Endorsement> for super::Endorsement {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: Endorsement,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claim: value.claim?,
+                endorsement_id: value.endorsement_id?,
+                issued: value.issued?,
+                revoked_at: value.revoked_at?,
+                status_list_index: value.status_list_index?,
+                subject_did: value.subject_did?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Endorsement> for Endorsement {
+        fn from(value: super::Endorsement) -> Self {
+            Self {
+                claim: Ok(value.claim),
+                endorsement_id: Ok(value.endorsement_id),
+                issued: Ok(value.issued),
+                revoked_at: Ok(value.revoked_at),
+                status_list_index: Ok(value.status_list_index),
+                subject_did: Ok(value.subject_did),
+                type_uri: Ok(value.type_uri),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        claim: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        subject_did: ::std::result::Result<super::PayloadSubjectDid, ::std::string::String>,
+        type_uri: ::std::result::Result<super::PayloadTypeUri, ::std::string::String>,
+        validity_seconds: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                claim: Err("no value supplied for claim".to_string()),
+                ext: Ok(Default::default()),
+                subject_did: Err("no value supplied for subject_did".to_string()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+                validity_seconds: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn claim<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claim = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claim: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn subject_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSubjectDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject_did: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadTypeUri>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+        pub fn validity_seconds<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.validity_seconds = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for validity_seconds: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claim: value.claim?,
+                ext: value.ext?,
+                subject_did: value.subject_did?,
+                type_uri: value.type_uri?,
+                validity_seconds: value.validity_seconds?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                claim: Ok(value.claim),
+                ext: Ok(value.ext),
+                subject_did: Ok(value.subject_did),
+                type_uri: Ok(value.type_uri),
+                validity_seconds: Ok(value.validity_seconds),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        credential: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        endorsement: ::std::result::Result<super::Endorsement, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                credential: Err("no value supplied for credential".to_string()),
+                endorsement: Err("no value supplied for endorsement".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn credential<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential: {e}"));
+            self
+        }
+        pub fn endorsement<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Endorsement>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.endorsement = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for endorsement: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential: value.credential?,
+                endorsement: value.endorsement?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                credential: Ok(value.credential),
+                endorsement: Ok(value.endorsement),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/endorsements/issue/0.1";
@@ -831,6 +1244,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"CredentialReference\": {\n      \"$anchor\": \"credentialReference\",\n      \"additionalProperties\": false,\n      \"description\": \"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When it lapses, or null when it does not.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"CredentialReference\",\n      \"type\": \"object\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/CredentialReference\",\n          \"description\": \"A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.\",\n          \"type\": \"object\"\n        },\n        \"endorsement\": {\n          \"$ref\": \"#/$defs/Endorsement\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsement\",\n        \"credential\"\n      ],\n      \"title\": \"VTC Endorsements Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

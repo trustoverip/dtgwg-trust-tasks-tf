@@ -172,6 +172,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///DID the name is bound to.
     pub did: PayloadDid,
@@ -179,6 +180,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The name, without the host — the full form is `<host>/@<name>`.
     pub name: PayloadName,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///DID the name is bound to.
 ///
@@ -360,6 +366,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Whether the name can be taken **now**. It is a snapshot, not a hold: another caller may take it between this answer and the attempt.
     pub available: bool,
@@ -370,6 +377,174 @@ pub struct Response {
     pub name: ::std::string::String,
     ///Whether the name is withheld by the host's own policy rather than taken by a DID. A reserved name is not available and will not become so by waiting.
     pub reserved: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        name: ::std::result::Result<super::PayloadName, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                name: Ok(value.name),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        available: ::std::result::Result<bool, ::std::string::String>,
+        domain: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        name: ::std::result::Result<::std::string::String, ::std::string::String>,
+        reserved: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                available: Err("no value supplied for available".to_string()),
+                domain: Err("no value supplied for domain".to_string()),
+                ext: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+                reserved: Err("no value supplied for reserved".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn available<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.available = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for available: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn reserved<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reserved = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reserved: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                available: value.available?,
+                domain: value.domain?,
+                ext: value.ext?,
+                name: value.name?,
+                reserved: value.reserved?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                available: Ok(value.available),
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                name: Ok(value.name),
+                reserved: Ok(value.reserved),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0";
@@ -385,6 +560,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/agent-name/check. Type https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0#response.\",\n      \"properties\": {\n        \"available\": {\n          \"description\": \"Whether the name can be taken **now**. It is a snapshot, not a hold: another caller may take it between this answer and the attempt.\",\n          \"type\": \"boolean\"\n        },\n        \"domain\": {\n          \"description\": \"Host the name would live under. A name is only unique within its host.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"name\": {\n          \"type\": \"string\"\n        },\n        \"reserved\": {\n          \"description\": \"Whether the name is withheld by the host's own policy rather than taken by a DID. A reserved name is not available and will not become so by waiting.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"domain\",\n        \"available\",\n        \"reserved\"\n      ],\n      \"title\": \"VTA WebVH Agent-Name Check — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

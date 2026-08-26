@@ -70,6 +70,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ConfigField {
     ///The configuration key, e.g. `server.port` or `log.level`.
     pub key: ConfigFieldKey,
@@ -80,6 +81,11 @@ pub struct ConfigField {
     pub source: ConfigFieldSource,
     ///The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.
     pub value: ::serde_json::Value,
+}
+impl ConfigField {
+    pub fn builder() -> builder::ConfigField {
+        Default::default()
+    }
 }
 ///The configuration key, e.g. `server.port` or `log.level`.
 ///
@@ -357,6 +363,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -370,6 +377,11 @@ impl ::std::default::Default for Payload {
             ext: Default::default(),
             keys: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`PayloadKeysItem`
@@ -470,11 +482,209 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeysItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The effective value of each requested (or every) configuration key.
     pub fields: ::std::vec::Vec<ConfigField>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ConfigField {
+        key: ::std::result::Result<super::ConfigFieldKey, ::std::string::String>,
+        requires_restart: ::std::result::Result<bool, ::std::string::String>,
+        source: ::std::result::Result<super::ConfigFieldSource, ::std::string::String>,
+        value: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for ConfigField {
+        fn default() -> Self {
+            Self {
+                key: Err("no value supplied for key".to_string()),
+                requires_restart: Err("no value supplied for requires_restart".to_string()),
+                source: Err("no value supplied for source".to_string()),
+                value: Err("no value supplied for value".to_string()),
+            }
+        }
+    }
+    impl ConfigField {
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ConfigFieldKey>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn requires_restart<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requires_restart = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for requires_restart: {e}"));
+            self
+        }
+        pub fn source<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ConfigFieldSource>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.source = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for source: {e}"));
+            self
+        }
+        pub fn value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ConfigField> for super::ConfigField {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ConfigField,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                key: value.key?,
+                requires_restart: value.requires_restart?,
+                source: value.source?,
+                value: value.value?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ConfigField> for ConfigField {
+        fn from(value: super::ConfigField) -> Self {
+            Self {
+                key: Ok(value.key),
+                requires_restart: Ok(value.requires_restart),
+                source: Ok(value.source),
+                value: Ok(value.value),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        keys: ::std::result::Result<
+            ::std::option::Option<Vec<super::PayloadKeysItem>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                keys: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn keys<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::PayloadKeysItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.keys = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for keys: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                keys: value.keys?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                keys: Ok(value.keys),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        fields: ::std::result::Result<::std::vec::Vec<super::ConfigField>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                fields: Err("no value supplied for fields".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn fields<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ConfigField>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.fields = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for fields: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                fields: value.fields?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                fields: Ok(value.fields),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/config/show/0.1";
@@ -489,6 +699,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ConfigField\": {\n      \"$anchor\": \"configField\",\n      \"additionalProperties\": false,\n      \"description\": \"One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.\",\n      \"properties\": {\n        \"key\": {\n          \"description\": \"The configuration key, e.g. `server.port` or `log.level`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requiresRestart\": {\n          \"description\": \"True when a change to this key takes effect only after a restart, rather than on the next read.\",\n          \"type\": \"boolean\"\n        },\n        \"source\": {\n          \"description\": \"Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"value\",\n        \"source\",\n        \"requiresRestart\"\n      ],\n      \"title\": \"ConfigField\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fields\": {\n          \"description\": \"The effective value of each requested (or every) configuration key.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigField\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"fields\"\n      ],\n      \"title\": \"Config Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

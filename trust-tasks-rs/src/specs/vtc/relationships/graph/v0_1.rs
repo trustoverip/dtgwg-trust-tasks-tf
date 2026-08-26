@@ -180,6 +180,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct GraphEdge {
     ///When the relationship was published.
     #[serde(rename = "createdAt")]
@@ -192,6 +193,11 @@ pub struct GraphEdge {
     ///The vouched-for party.
     #[serde(rename = "subjectDid")]
     pub subject_did: GraphEdgeSubjectDid,
+}
+impl GraphEdge {
+    pub fn builder() -> builder::GraphEdge {
+        Default::default()
+    }
 }
 ///Relationship credential identifier.
 ///
@@ -425,9 +431,15 @@ impl<'de> ::serde::Deserialize<'de> for GraphEdgeSubjectDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct GraphNode {
     ///A DID participating in at least one live relationship.
     pub did: GraphNodeDid,
+}
+impl GraphNode {
+    pub fn builder() -> builder::GraphNode {
+        Default::default()
+    }
 }
 ///A DID participating in at least one live relationship.
 ///
@@ -518,6 +530,7 @@ impl<'de> ::serde::Deserialize<'de> for GraphNodeDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -527,6 +540,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -567,6 +585,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///One per unrevoked relationship credential, directed issuer -> subject.
     pub edges: ::std::vec::Vec<GraphEdge>,
@@ -574,6 +593,233 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///One per distinct DID appearing in a live edge. No isolated nodes.
     pub nodes: ::std::vec::Vec<GraphNode>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct GraphEdge {
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        id: ::std::result::Result<super::GraphEdgeId, ::std::string::String>,
+        issuer_did: ::std::result::Result<super::GraphEdgeIssuerDid, ::std::string::String>,
+        subject_did: ::std::result::Result<super::GraphEdgeSubjectDid, ::std::string::String>,
+    }
+    impl ::std::default::Default for GraphEdge {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                issuer_did: Err("no value supplied for issuer_did".to_string()),
+                subject_did: Err("no value supplied for subject_did".to_string()),
+            }
+        }
+    }
+    impl GraphEdge {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GraphEdgeId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issuer_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GraphEdgeIssuerDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issuer_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issuer_did: {e}"));
+            self
+        }
+        pub fn subject_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GraphEdgeSubjectDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<GraphEdge> for super::GraphEdge {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: GraphEdge,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                id: value.id?,
+                issuer_did: value.issuer_did?,
+                subject_did: value.subject_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::GraphEdge> for GraphEdge {
+        fn from(value: super::GraphEdge) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                id: Ok(value.id),
+                issuer_did: Ok(value.issuer_did),
+                subject_did: Ok(value.subject_did),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct GraphNode {
+        did: ::std::result::Result<super::GraphNodeDid, ::std::string::String>,
+    }
+    impl ::std::default::Default for GraphNode {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+            }
+        }
+    }
+    impl GraphNode {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GraphNodeDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<GraphNode> for super::GraphNode {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: GraphNode,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { did: value.did? })
+        }
+    }
+    impl ::std::convert::From<super::GraphNode> for GraphNode {
+        fn from(value: super::GraphNode) -> Self {
+            Self { did: Ok(value.did) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        edges: ::std::result::Result<::std::vec::Vec<super::GraphEdge>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        nodes: ::std::result::Result<::std::vec::Vec<super::GraphNode>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                edges: Err("no value supplied for edges".to_string()),
+                ext: Ok(Default::default()),
+                nodes: Err("no value supplied for nodes".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn edges<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::GraphEdge>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.edges = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for edges: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn nodes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::GraphNode>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.nodes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for nodes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                edges: value.edges?,
+                ext: value.ext?,
+                nodes: value.nodes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                edges: Ok(value.edges),
+                ext: Ok(value.ext),
+                nodes: Ok(value.nodes),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/relationships/graph/0.1";
@@ -589,6 +835,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GraphEdge\": {\n      \"$anchor\": \"graphEdge\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When the relationship was published.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Relationship credential identifier.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuerDid\": {\n          \"description\": \"The vouching party.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"subjectDid\": {\n          \"description\": \"The vouched-for party.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"issuerDid\",\n        \"subjectDid\",\n        \"createdAt\"\n      ],\n      \"title\": \"GraphEdge\",\n      \"type\": \"object\"\n    },\n    \"GraphNode\": {\n      \"$anchor\": \"graphNode\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"A DID participating in at least one live relationship.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\"\n      ],\n      \"title\": \"GraphNode\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"edges\": {\n          \"description\": \"One per unrevoked relationship credential, directed issuer -> subject.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphEdge\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nodes\": {\n          \"description\": \"One per distinct DID appearing in a live edge. No isolated nodes.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphNode\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"nodes\",\n        \"edges\"\n      ],\n      \"title\": \"VTC Relationships Graph — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

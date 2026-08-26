@@ -99,6 +99,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct BackupEnvelope {
     ///base64url(AEAD(JSON(payload))).
     pub ciphertext: BackupEnvelopeCiphertext,
@@ -124,6 +125,11 @@ pub struct BackupEnvelope {
     pub source_version: BackupEnvelopeSourceVersion,
     ///Envelope schema version.
     pub version: ::std::num::NonZeroU64,
+}
+impl BackupEnvelope {
+    pub fn builder() -> builder::BackupEnvelope {
+        Default::default()
+    }
 }
 ///base64url(AEAD(JSON(payload))).
 ///
@@ -363,11 +369,17 @@ impl<'de> ::serde::Deserialize<'de> for BackupEnvelopeSourceVersion {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct EncryptionParams {
     ///AEAD identifier, e.g. `aes-256-gcm`.
     pub algorithm: EncryptionParamsAlgorithm,
     ///base64url, 12 bytes.
     pub nonce: EncryptionParamsNonce,
+}
+impl EncryptionParams {
+    pub fn builder() -> builder::EncryptionParams {
+        Default::default()
+    }
 }
 ///AEAD identifier, e.g. `aes-256-gcm`.
 ///
@@ -664,6 +676,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct KdfParams {
     ///KDF identifier, e.g. `argon2id`.
     pub algorithm: KdfParamsAlgorithm,
@@ -678,6 +691,11 @@ pub struct KdfParams {
     ///Argon2id time cost (iterations).
     #[serde(rename = "tCost")]
     pub t_cost: ::std::num::NonZeroU64,
+}
+impl KdfParams {
+    pub fn builder() -> builder::KdfParams {
+        Default::default()
+    }
 }
 ///KDF identifier, e.g. `argon2id`.
 ///
@@ -850,6 +868,7 @@ impl<'de> ::serde::Deserialize<'de> for KdfParamsSalt {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -858,6 +877,11 @@ pub struct Payload {
     pub include_audit: bool,
     ///Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.
     pub password: PayloadPassword,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.
 ///
@@ -955,11 +979,445 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPassword {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The encrypted full-state backup.
     pub envelope: BackupEnvelope,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct BackupEnvelope {
+        ciphertext: ::std::result::Result<super::BackupEnvelopeCiphertext, ::std::string::String>,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        encryption: ::std::result::Result<super::EncryptionParams, ::std::string::String>,
+        format: ::std::result::Result<super::BackupEnvelopeFormat, ::std::string::String>,
+        includes_audit: ::std::result::Result<bool, ::std::string::String>,
+        kdf: ::std::result::Result<super::KdfParams, ::std::string::String>,
+        source_did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        source_version:
+            ::std::result::Result<super::BackupEnvelopeSourceVersion, ::std::string::String>,
+        version: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for BackupEnvelope {
+        fn default() -> Self {
+            Self {
+                ciphertext: Err("no value supplied for ciphertext".to_string()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                encryption: Err("no value supplied for encryption".to_string()),
+                format: Err("no value supplied for format".to_string()),
+                includes_audit: Err("no value supplied for includes_audit".to_string()),
+                kdf: Err("no value supplied for kdf".to_string()),
+                source_did: Ok(Default::default()),
+                source_version: Err("no value supplied for source_version".to_string()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl BackupEnvelope {
+        pub fn ciphertext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BackupEnvelopeCiphertext>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ciphertext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ciphertext: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn encryption<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EncryptionParams>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.encryption = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for encryption: {e}"));
+            self
+        }
+        pub fn format<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BackupEnvelopeFormat>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.format = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for format: {e}"));
+            self
+        }
+        pub fn includes_audit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.includes_audit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for includes_audit: {e}"));
+            self
+        }
+        pub fn kdf<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KdfParams>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kdf = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kdf: {e}"));
+            self
+        }
+        pub fn source_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.source_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for source_did: {e}"));
+            self
+        }
+        pub fn source_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BackupEnvelopeSourceVersion>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.source_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for source_version: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<BackupEnvelope> for super::BackupEnvelope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: BackupEnvelope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ciphertext: value.ciphertext?,
+                created_at: value.created_at?,
+                encryption: value.encryption?,
+                format: value.format?,
+                includes_audit: value.includes_audit?,
+                kdf: value.kdf?,
+                source_did: value.source_did?,
+                source_version: value.source_version?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::BackupEnvelope> for BackupEnvelope {
+        fn from(value: super::BackupEnvelope) -> Self {
+            Self {
+                ciphertext: Ok(value.ciphertext),
+                created_at: Ok(value.created_at),
+                encryption: Ok(value.encryption),
+                format: Ok(value.format),
+                includes_audit: Ok(value.includes_audit),
+                kdf: Ok(value.kdf),
+                source_did: Ok(value.source_did),
+                source_version: Ok(value.source_version),
+                version: Ok(value.version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct EncryptionParams {
+        algorithm: ::std::result::Result<super::EncryptionParamsAlgorithm, ::std::string::String>,
+        nonce: ::std::result::Result<super::EncryptionParamsNonce, ::std::string::String>,
+    }
+    impl ::std::default::Default for EncryptionParams {
+        fn default() -> Self {
+            Self {
+                algorithm: Err("no value supplied for algorithm".to_string()),
+                nonce: Err("no value supplied for nonce".to_string()),
+            }
+        }
+    }
+    impl EncryptionParams {
+        pub fn algorithm<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EncryptionParamsAlgorithm>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.algorithm = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for algorithm: {e}"));
+            self
+        }
+        pub fn nonce<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EncryptionParamsNonce>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.nonce = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for nonce: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<EncryptionParams> for super::EncryptionParams {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: EncryptionParams,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                algorithm: value.algorithm?,
+                nonce: value.nonce?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::EncryptionParams> for EncryptionParams {
+        fn from(value: super::EncryptionParams) -> Self {
+            Self {
+                algorithm: Ok(value.algorithm),
+                nonce: Ok(value.nonce),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct KdfParams {
+        algorithm: ::std::result::Result<super::KdfParamsAlgorithm, ::std::string::String>,
+        m_cost: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        p_cost: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        salt: ::std::result::Result<super::KdfParamsSalt, ::std::string::String>,
+        t_cost: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for KdfParams {
+        fn default() -> Self {
+            Self {
+                algorithm: Err("no value supplied for algorithm".to_string()),
+                m_cost: Err("no value supplied for m_cost".to_string()),
+                p_cost: Err("no value supplied for p_cost".to_string()),
+                salt: Err("no value supplied for salt".to_string()),
+                t_cost: Err("no value supplied for t_cost".to_string()),
+            }
+        }
+    }
+    impl KdfParams {
+        pub fn algorithm<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KdfParamsAlgorithm>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.algorithm = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for algorithm: {e}"));
+            self
+        }
+        pub fn m_cost<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.m_cost = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for m_cost: {e}"));
+            self
+        }
+        pub fn p_cost<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.p_cost = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for p_cost: {e}"));
+            self
+        }
+        pub fn salt<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KdfParamsSalt>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.salt = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for salt: {e}"));
+            self
+        }
+        pub fn t_cost<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.t_cost = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for t_cost: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<KdfParams> for super::KdfParams {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: KdfParams,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                algorithm: value.algorithm?,
+                m_cost: value.m_cost?,
+                p_cost: value.p_cost?,
+                salt: value.salt?,
+                t_cost: value.t_cost?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::KdfParams> for KdfParams {
+        fn from(value: super::KdfParams) -> Self {
+            Self {
+                algorithm: Ok(value.algorithm),
+                m_cost: Ok(value.m_cost),
+                p_cost: Ok(value.p_cost),
+                salt: Ok(value.salt),
+                t_cost: Ok(value.t_cost),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        include_audit: ::std::result::Result<bool, ::std::string::String>,
+        password: ::std::result::Result<super::PayloadPassword, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                include_audit: Ok(Default::default()),
+                password: Err("no value supplied for password".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn include_audit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.include_audit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for include_audit: {e}"));
+            self
+        }
+        pub fn password<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadPassword>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.password = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for password: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                include_audit: value.include_audit?,
+                password: value.password?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                include_audit: Ok(value.include_audit),
+                password: Ok(value.password),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        envelope: ::std::result::Result<super::BackupEnvelope, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                envelope: Err("no value supplied for envelope".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn envelope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BackupEnvelope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.envelope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for envelope: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                envelope: value.envelope?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                envelope: Ok(value.envelope),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/backup/export/0.1";
@@ -976,6 +1434,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"BackupEnvelope\": {\n      \"$anchor\": \"backupEnvelope\",\n      \"additionalProperties\": false,\n      \"description\": \"Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"base64url(AEAD(JSON(payload))).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the export was taken.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"encryption\": {\n          \"$ref\": \"#/$defs/EncryptionParams\"\n        },\n        \"format\": {\n          \"description\": \"Envelope format tag, e.g. `vtc-backup-v1`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"includesAudit\": {\n          \"description\": \"Whether the audit log and its signed checkpoints are inside `ciphertext`.\",\n          \"type\": \"boolean\"\n        },\n        \"kdf\": {\n          \"$ref\": \"#/$defs/KdfParams\"\n        },\n        \"sourceDid\": {\n          \"description\": \"DID of the community exported from, when it has one. An import cross-checks this against the running community.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"sourceVersion\": {\n          \"description\": \"Version of the software that produced the envelope.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Envelope schema version.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"format\",\n        \"createdAt\",\n        \"sourceVersion\",\n        \"kdf\",\n        \"encryption\",\n        \"includesAudit\",\n        \"ciphertext\"\n      ],\n      \"title\": \"BackupEnvelope\",\n      \"type\": \"object\"\n    },\n    \"EncryptionParams\": {\n      \"$anchor\": \"encryptionParams\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"AEAD identifier, e.g. `aes-256-gcm`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"base64url, 12 bytes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"nonce\"\n      ],\n      \"title\": \"EncryptionParams\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KdfParams\": {\n      \"$anchor\": \"kdfParams\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"KDF identifier, e.g. `argon2id`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"mCost\": {\n          \"description\": \"Argon2id memory cost (KiB).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"pCost\": {\n          \"description\": \"Argon2id parallelism.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"salt\": {\n          \"description\": \"base64url, 32 bytes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tCost\": {\n          \"description\": \"Argon2id time cost (iterations).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"salt\",\n        \"mCost\",\n        \"tCost\",\n        \"pCost\"\n      ],\n      \"title\": \"KdfParams\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"envelope\": {\n          \"$ref\": \"#/$defs/BackupEnvelope\",\n          \"description\": \"The encrypted full-state backup.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"envelope\"\n      ],\n      \"title\": \"VTC Backup Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

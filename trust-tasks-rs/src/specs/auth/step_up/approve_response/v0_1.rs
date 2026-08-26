@@ -97,6 +97,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AssertionResponse {
     #[serde(
         rename = "authenticatorAttachment",
@@ -116,6 +117,11 @@ pub struct AssertionResponse {
     pub response: AssertionResponseResponse,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl AssertionResponse {
+    pub fn builder() -> builder::AssertionResponse {
+        Default::default()
+    }
 }
 ///`AssertionResponseAuthenticatorAttachment`
 ///
@@ -142,6 +148,7 @@ pub struct AssertionResponse {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum AssertionResponseAuthenticatorAttachment {
     #[serde(rename = "platform")]
     Platform,
@@ -223,6 +230,7 @@ impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthent
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AssertionResponseResponse {
     #[serde(rename = "authenticatorData")]
     pub authenticator_data: ::std::string::String,
@@ -235,6 +243,11 @@ pub struct AssertionResponseResponse {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_handle: ::std::option::Option<::std::string::String>,
+}
+impl AssertionResponseResponse {
+    pub fn builder() -> builder::AssertionResponseResponse {
+        Default::default()
+    }
 }
 ///Tagged union over `kind` describing the cryptographic factor the approver presents to back the elevation. Pluggable so new factor kinds can be added without disturbing existing consumers (SPEC §4.5.1 ext rules apply to unknown kinds at the producer's discretion).
 ///
@@ -284,6 +297,7 @@ pub struct AssertionResponseResponse {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", content = "assertion")]
+#[non_exhaustive]
 pub enum Evidence {
     #[serde(rename = "did-signed")]
     DidSigned,
@@ -466,6 +480,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.
     pub challenge: PayloadChallenge,
@@ -495,6 +510,11 @@ pub struct Payload {
     pub session_id: PayloadSessionId,
     ///Echoed from the matching approve-request. The relying party verifies it equals the session's subject.
     pub subject: PayloadSubject,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.
 ///
@@ -592,6 +612,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadDecision {
     #[serde(rename = "approved")]
     Approved,
@@ -815,6 +836,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -825,6 +847,11 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub session: ::std::option::Option<Session>,
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseStatus`
 ///
@@ -852,6 +879,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "elevated")]
     Elevated,
@@ -959,6 +987,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Session {
     ///Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -979,6 +1008,11 @@ pub struct Session {
     pub issued_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The authenticated party's VID (typically a DID URL).
     pub subject: SessionSubject,
+}
+impl Session {
+    pub fn builder() -> builder::Session {
+        Default::default()
+    }
 }
 ///`SessionAmrItem`
 ///
@@ -1186,6 +1220,568 @@ impl<'de> ::serde::Deserialize<'de> for SessionSubject {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AssertionResponse {
+        authenticator_attachment: ::std::result::Result<
+            ::std::option::Option<super::AssertionResponseAuthenticatorAttachment>,
+            ::std::string::String,
+        >,
+        client_extension_results: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        raw_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        response: ::std::result::Result<super::AssertionResponseResponse, ::std::string::String>,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for AssertionResponse {
+        fn default() -> Self {
+            Self {
+                authenticator_attachment: Ok(Default::default()),
+                client_extension_results: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                raw_id: Err("no value supplied for raw_id".to_string()),
+                response: Err("no value supplied for response".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl AssertionResponse {
+        pub fn authenticator_attachment<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::AssertionResponseAuthenticatorAttachment>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authenticator_attachment = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authenticator_attachment: {e}")
+            });
+            self
+        }
+        pub fn client_extension_results<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client_extension_results = value.try_into().map_err(|e| {
+                format!("error converting supplied value for client_extension_results: {e}")
+            });
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn raw_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.raw_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for raw_id: {e}"));
+            self
+        }
+        pub fn response<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AssertionResponseResponse>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.response = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for response: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AssertionResponse> for super::AssertionResponse {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AssertionResponse,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                authenticator_attachment: value.authenticator_attachment?,
+                client_extension_results: value.client_extension_results?,
+                id: value.id?,
+                raw_id: value.raw_id?,
+                response: value.response?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AssertionResponse> for AssertionResponse {
+        fn from(value: super::AssertionResponse) -> Self {
+            Self {
+                authenticator_attachment: Ok(value.authenticator_attachment),
+                client_extension_results: Ok(value.client_extension_results),
+                id: Ok(value.id),
+                raw_id: Ok(value.raw_id),
+                response: Ok(value.response),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AssertionResponseResponse {
+        authenticator_data: ::std::result::Result<::std::string::String, ::std::string::String>,
+        client_data_json: ::std::result::Result<::std::string::String, ::std::string::String>,
+        signature: ::std::result::Result<::std::string::String, ::std::string::String>,
+        user_handle: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AssertionResponseResponse {
+        fn default() -> Self {
+            Self {
+                authenticator_data: Err("no value supplied for authenticator_data".to_string()),
+                client_data_json: Err("no value supplied for client_data_json".to_string()),
+                signature: Err("no value supplied for signature".to_string()),
+                user_handle: Ok(Default::default()),
+            }
+        }
+    }
+    impl AssertionResponseResponse {
+        pub fn authenticator_data<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authenticator_data = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authenticator_data: {e}")
+            });
+            self
+        }
+        pub fn client_data_json<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client_data_json = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for client_data_json: {e}"));
+            self
+        }
+        pub fn signature<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signature = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signature: {e}"));
+            self
+        }
+        pub fn user_handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user_handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user_handle: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AssertionResponseResponse> for super::AssertionResponseResponse {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AssertionResponseResponse,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                authenticator_data: value.authenticator_data?,
+                client_data_json: value.client_data_json?,
+                signature: value.signature?,
+                user_handle: value.user_handle?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AssertionResponseResponse> for AssertionResponseResponse {
+        fn from(value: super::AssertionResponseResponse) -> Self {
+            Self {
+                authenticator_data: Ok(value.authenticator_data),
+                client_data_json: Ok(value.client_data_json),
+                signature: Ok(value.signature),
+                user_handle: Ok(value.user_handle),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        challenge: ::std::result::Result<super::PayloadChallenge, ::std::string::String>,
+        decision: ::std::result::Result<super::PayloadDecision, ::std::string::String>,
+        denied_reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        evidence:
+            ::std::result::Result<::std::option::Option<super::Evidence>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        granted_acr: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        session_id: ::std::result::Result<super::PayloadSessionId, ::std::string::String>,
+        subject: ::std::result::Result<super::PayloadSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                challenge: Err("no value supplied for challenge".to_string()),
+                decision: Err("no value supplied for decision".to_string()),
+                denied_reason: Ok(Default::default()),
+                evidence: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                granted_acr: Ok(Default::default()),
+                session_id: Err("no value supplied for session_id".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn decision<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDecision>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decision = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decision: {e}"));
+            self
+        }
+        pub fn denied_reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.denied_reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for denied_reason: {e}"));
+            self
+        }
+        pub fn evidence<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Evidence>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.evidence = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for evidence: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn granted_acr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.granted_acr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for granted_acr: {e}"));
+            self
+        }
+        pub fn session_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSessionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session_id: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                challenge: value.challenge?,
+                decision: value.decision?,
+                denied_reason: value.denied_reason?,
+                evidence: value.evidence?,
+                ext: value.ext?,
+                granted_acr: value.granted_acr?,
+                session_id: value.session_id?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                challenge: Ok(value.challenge),
+                decision: Ok(value.decision),
+                denied_reason: Ok(value.denied_reason),
+                evidence: Ok(value.evidence),
+                ext: Ok(value.ext),
+                granted_acr: Ok(value.granted_acr),
+                session_id: Ok(value.session_id),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        session:
+            ::std::result::Result<::std::option::Option<super::Session>, ::std::string::String>,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                session: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn session<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Session>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                session: value.session?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                session: Ok(value.session),
+                status: Ok(value.status),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Session {
+        acr: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        amr: ::std::result::Result<::std::vec::Vec<super::SessionAmrItem>, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::SessionId, ::std::string::String>,
+        issued_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        subject: ::std::result::Result<super::SessionSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Session {
+        fn default() -> Self {
+            Self {
+                acr: Ok(Default::default()),
+                amr: Ok(Default::default()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Session {
+        pub fn acr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for acr: {e}"));
+            self
+        }
+        pub fn amr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::SessionAmrItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.amr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for amr: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SessionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SessionSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Session> for super::Session {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Session) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acr: value.acr?,
+                amr: value.amr?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                id: value.id?,
+                issued_at: value.issued_at?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Session> for Session {
+        fn from(value: super::Session) -> Self {
+            Self {
+                acr: Ok(value.acr),
+                amr: Ok(value.amr),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/step-up/approve-response/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -1200,6 +1796,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"Evidence\": {\n      \"$anchor\": \"evidence\",\n      \"description\": \"Tagged union over `kind` describing the cryptographic factor the approver presents to back the elevation. Pluggable so new factor kinds can be added without disturbing existing consumers (SPEC §4.5.1 ext rules apply to unknown kinds at the producer's discretion).\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The elevation is gated by the document's framework `proof` — a Data Integrity signature from a key the subject controls (SPEC §4.7). This is the default when `evidence` is omitted. `amr` reflects \\\"vta\\\"/\\\"did\\\".\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"did-signed\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"title\": \"DidSigned\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"assertion\": {\n              \"$ref\": \"#/$defs/AssertionResponse\",\n              \"description\": \"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API (`navigator.credentials.get` / ASAuthorization / Credential Manager). Its `clientDataJSON` challenge MUST equal the step-up `challenge`. The relying party verifies it per WebAuthn Level 2 §7.2 exactly as auth/passkey/login/finish does; the assertion is the gate and `amr` reflects \\\"passkey\\\".\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"assertion\"\n          ],\n          \"title\": \"WebAuthn\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Step-up Evidence\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Present when status is `rejected` (e.g. \\\"challenge expired\\\", \\\"session not found\\\", \\\"acr ceiling exceeded\\\").\",\n          \"type\": \"string\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"Present when status is `elevated`. The session's updated amr/acr after the approval was applied.\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"elevated\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Response — relying party ack\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -222,6 +222,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub buckets: ::std::vec::Vec<PayloadBucketsItem>,
@@ -231,6 +232,11 @@ pub struct Payload {
     pub instance_id: PayloadInstanceId,
     #[serde(rename = "perMnemonic")]
     pub per_mnemonic: ::std::vec::Vec<PayloadPerMnemonicItem>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadBucketsItem`
 ///
@@ -269,11 +275,17 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadBucketsItem {
     pub epoch: u64,
     pub mnemonic: PayloadBucketsItemMnemonic,
     pub r: u64,
     pub u: u64,
+}
+impl PayloadBucketsItem {
+    pub fn builder() -> builder::PayloadBucketsItem {
+        Default::default()
+    }
 }
 ///`PayloadBucketsItemMnemonic`
 ///
@@ -443,10 +455,16 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadPerMnemonicItem {
     pub mnemonic: PayloadPerMnemonicItemMnemonic,
     pub resolves: u64,
     pub updates: u64,
+}
+impl PayloadPerMnemonicItem {
+    pub fn builder() -> builder::PayloadPerMnemonicItem {
+        Default::default()
+    }
 }
 ///`PayloadPerMnemonicItemMnemonic`
 ///
@@ -547,12 +565,324 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPerMnemonicItemMnemonic {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub accepted: u64,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "instanceId")]
     pub instance_id: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        buckets: ::std::result::Result<
+            ::std::vec::Vec<super::PayloadBucketsItem>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        instance_id: ::std::result::Result<super::PayloadInstanceId, ::std::string::String>,
+        per_mnemonic: ::std::result::Result<
+            ::std::vec::Vec<super::PayloadPerMnemonicItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                buckets: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                instance_id: Err("no value supplied for instance_id".to_string()),
+                per_mnemonic: Err("no value supplied for per_mnemonic".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn buckets<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadBucketsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.buckets = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for buckets: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn instance_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadInstanceId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.instance_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for instance_id: {e}"));
+            self
+        }
+        pub fn per_mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadPerMnemonicItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.per_mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for per_mnemonic: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                buckets: value.buckets?,
+                ext: value.ext?,
+                instance_id: value.instance_id?,
+                per_mnemonic: value.per_mnemonic?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                buckets: Ok(value.buckets),
+                ext: Ok(value.ext),
+                instance_id: Ok(value.instance_id),
+                per_mnemonic: Ok(value.per_mnemonic),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadBucketsItem {
+        epoch: ::std::result::Result<u64, ::std::string::String>,
+        mnemonic: ::std::result::Result<super::PayloadBucketsItemMnemonic, ::std::string::String>,
+        r: ::std::result::Result<u64, ::std::string::String>,
+        u: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for PayloadBucketsItem {
+        fn default() -> Self {
+            Self {
+                epoch: Err("no value supplied for epoch".to_string()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+                r: Err("no value supplied for r".to_string()),
+                u: Err("no value supplied for u".to_string()),
+            }
+        }
+    }
+    impl PayloadBucketsItem {
+        pub fn epoch<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.epoch = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for epoch: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadBucketsItemMnemonic>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+        pub fn r<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.r = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for r: {e}"));
+            self
+        }
+        pub fn u<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.u = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for u: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadBucketsItem> for super::PayloadBucketsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadBucketsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                epoch: value.epoch?,
+                mnemonic: value.mnemonic?,
+                r: value.r?,
+                u: value.u?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadBucketsItem> for PayloadBucketsItem {
+        fn from(value: super::PayloadBucketsItem) -> Self {
+            Self {
+                epoch: Ok(value.epoch),
+                mnemonic: Ok(value.mnemonic),
+                r: Ok(value.r),
+                u: Ok(value.u),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadPerMnemonicItem {
+        mnemonic:
+            ::std::result::Result<super::PayloadPerMnemonicItemMnemonic, ::std::string::String>,
+        resolves: ::std::result::Result<u64, ::std::string::String>,
+        updates: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for PayloadPerMnemonicItem {
+        fn default() -> Self {
+            Self {
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+                resolves: Err("no value supplied for resolves".to_string()),
+                updates: Err("no value supplied for updates".to_string()),
+            }
+        }
+    }
+    impl PayloadPerMnemonicItem {
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadPerMnemonicItemMnemonic>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+        pub fn resolves<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resolves = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resolves: {e}"));
+            self
+        }
+        pub fn updates<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updates = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updates: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadPerMnemonicItem> for super::PayloadPerMnemonicItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadPerMnemonicItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                mnemonic: value.mnemonic?,
+                resolves: value.resolves?,
+                updates: value.updates?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadPerMnemonicItem> for PayloadPerMnemonicItem {
+        fn from(value: super::PayloadPerMnemonicItem) -> Self {
+            Self {
+                mnemonic: Ok(value.mnemonic),
+                resolves: Ok(value.resolves),
+                updates: Ok(value.updates),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        accepted: ::std::result::Result<u64, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        instance_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                accepted: Err("no value supplied for accepted".to_string()),
+                ext: Ok(Default::default()),
+                instance_id: Err("no value supplied for instance_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn accepted<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.accepted = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for accepted: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn instance_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.instance_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for instance_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                accepted: value.accepted?,
+                ext: value.ext?,
+                instance_id: value.instance_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                accepted: Ok(value.accepted),
+                ext: Ok(value.ext),
+                instance_id: Ok(value.instance_id),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =
@@ -569,6 +899,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\"\n      ],\n      \"title\": \"Server Stats Sync — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -199,6 +199,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The did:webvh being updated. The agent MUST verify it speaks for this subject.
     pub did: PayloadDid,
@@ -233,6 +234,11 @@ pub struct Payload {
     ///New witness configuration. Omit to keep the current one.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub witnesses: ::std::option::Option<::serde_json::Value>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The did:webvh being updated. The agent MUST verify it speaks for this subject.
 ///
@@ -425,6 +431,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadExpectedVersionId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub did: ::std::string::String,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -463,6 +470,323 @@ pub struct Response {
     )]
     pub update_keys_count: ::std::option::Option<u64>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        document: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        expected_version_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadExpectedVersionId>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        pre_rotation_count:
+            ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        ttl: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        watchers:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        witnesses: ::std::result::Result<
+            ::std::option::Option<::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                document: Ok(Default::default()),
+                expected_version_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                label: Ok(Default::default()),
+                pre_rotation_count: Ok(Default::default()),
+                ttl: Ok(Default::default()),
+                watchers: Ok(Default::default()),
+                witnesses: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn document<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.document = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for document: {e}"));
+            self
+        }
+        pub fn expected_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadExpectedVersionId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expected_version_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for expected_version_id: {e}")
+            });
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn pre_rotation_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pre_rotation_count = value.try_into().map_err(|e| {
+                format!("error converting supplied value for pre_rotation_count: {e}")
+            });
+            self
+        }
+        pub fn ttl<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ttl = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ttl: {e}"));
+            self
+        }
+        pub fn watchers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.watchers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for watchers: {e}"));
+            self
+        }
+        pub fn witnesses<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.witnesses = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for witnesses: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                document: value.document?,
+                expected_version_id: value.expected_version_id?,
+                ext: value.ext?,
+                label: value.label?,
+                pre_rotation_count: value.pre_rotation_count?,
+                ttl: value.ttl?,
+                watchers: value.watchers?,
+                witnesses: value.witnesses?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                document: Ok(value.document),
+                expected_version_id: Ok(value.expected_version_id),
+                ext: Ok(value.ext),
+                label: Ok(value.label),
+                pre_rotation_count: Ok(value.pre_rotation_count),
+                ttl: Ok(value.ttl),
+                watchers: Ok(value.watchers),
+                witnesses: Ok(value.witnesses),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        did: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        new_log_entry: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        new_scid: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        new_version_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        pre_rotation_key_count:
+            ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        serverless: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        update_keys_count: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                new_log_entry: Ok(Default::default()),
+                new_scid: Ok(Default::default()),
+                new_version_id: Err("no value supplied for new_version_id".to_string()),
+                pre_rotation_key_count: Ok(Default::default()),
+                serverless: Ok(Default::default()),
+                update_keys_count: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn new_log_entry<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.new_log_entry = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for new_log_entry: {e}"));
+            self
+        }
+        pub fn new_scid<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.new_scid = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for new_scid: {e}"));
+            self
+        }
+        pub fn new_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.new_version_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for new_version_id: {e}"));
+            self
+        }
+        pub fn pre_rotation_key_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pre_rotation_key_count = value.try_into().map_err(|e| {
+                format!("error converting supplied value for pre_rotation_key_count: {e}")
+            });
+            self
+        }
+        pub fn serverless<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.serverless = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for serverless: {e}"));
+            self
+        }
+        pub fn update_keys_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.update_keys_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for update_keys_count: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+                new_log_entry: value.new_log_entry?,
+                new_scid: value.new_scid?,
+                new_version_id: value.new_version_id?,
+                pre_rotation_key_count: value.pre_rotation_key_count?,
+                serverless: value.serverless?,
+                update_keys_count: value.update_keys_count?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                new_log_entry: Ok(value.new_log_entry),
+                new_scid: Ok(value.new_scid),
+                new_version_id: Ok(value.new_version_id),
+                pre_rotation_key_count: Ok(value.pre_rotation_key_count),
+                serverless: Ok(value.serverless),
+                update_keys_count: Ok(value.update_keys_count),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0";
     const IS_PROOF_REQUIRED: bool = true;
@@ -478,6 +802,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newLogEntry\": {\n          \"description\": \"The appended log entry, as JSON text.\",\n          \"type\": \"string\"\n        },\n        \"newScid\": {\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`.\",\n          \"type\": \"string\"\n        },\n        \"preRotationKeyCount\": {\n          \"description\": \"Pre-rotation commitments published by this entry.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverless\": {\n          \"description\": \"True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`.\",\n          \"type\": \"boolean\"\n        },\n        \"updateKeysCount\": {\n          \"description\": \"Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newVersionId\"\n      ],\n      \"title\": \"WebVH DID Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

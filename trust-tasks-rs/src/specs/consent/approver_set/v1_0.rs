@@ -186,6 +186,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///VID of the operator authorized to decide consent.
     pub approver: PayloadApprover,
@@ -205,6 +206,11 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub route_hint: ::std::option::Option<::std::string::String>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///VID of the operator authorized to decide consent.
 ///
@@ -443,11 +449,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPlatform {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The binding was upserted.
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The binding was upserted.
 ///
@@ -475,6 +487,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "set")]
     Set,
@@ -544,6 +557,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum Route {
     #[serde(rename = "wake")]
     Wake,
@@ -590,6 +604,172 @@ impl ::std::convert::TryFrom<::std::string::String> for Route {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        approver: ::std::result::Result<super::PayloadApprover, ::std::string::String>,
+        context: ::std::result::Result<super::PayloadContext, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        platform: ::std::result::Result<super::PayloadPlatform, ::std::string::String>,
+        route: ::std::result::Result<::std::option::Option<super::Route>, ::std::string::String>,
+        route_hint: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                approver: Err("no value supplied for approver".to_string()),
+                context: Err("no value supplied for context".to_string()),
+                ext: Ok(Default::default()),
+                platform: Err("no value supplied for platform".to_string()),
+                route: Ok(Default::default()),
+                route_hint: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn approver<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadApprover>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approver = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approver: {e}"));
+            self
+        }
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadContext>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadPlatform>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for platform: {e}"));
+            self
+        }
+        pub fn route<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Route>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.route = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for route: {e}"));
+            self
+        }
+        pub fn route_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.route_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for route_hint: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                approver: value.approver?,
+                context: value.context?,
+                ext: value.ext?,
+                platform: value.platform?,
+                route: value.route?,
+                route_hint: value.route_hint?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                approver: Ok(value.approver),
+                context: Ok(value.context),
+                ext: Ok(value.ext),
+                platform: Ok(value.platform),
+                route: Ok(value.route),
+                route_hint: Ok(value.route_hint),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                status: Ok(value.status),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/consent/approver-set/1.0";
     const IS_PROOF_REQUIRED: bool = true;
@@ -605,6 +785,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"status\": {\n          \"description\": \"The binding was upserted.\",\n          \"enum\": [\n            \"set\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Consent Set Approver — response payload\",\n      \"type\": \"object\"\n    },\n    \"Route\": {\n      \"description\": \"How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.\",\n      \"enum\": [\n        \"wake\",\n        \"bridge-relay\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

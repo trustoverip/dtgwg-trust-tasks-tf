@@ -249,6 +249,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Add a DIDComm mediator service entry to the document.
     #[serde(
@@ -364,6 +365,11 @@ pub struct Payload {
     ///Where the log will be served, for the serverless case. The DID's identity derives from this location, so changing it later is only possible for a `portable` DID.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID.
 ///
@@ -508,6 +514,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "contextId")]
     pub context_id: ::std::string::String,
@@ -549,6 +556,11 @@ pub struct Response {
     pub server_id: ::std::option::Option<::std::string::String>,
     #[serde(rename = "signingKeyId")]
     pub signing_key_id: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.
 ///
@@ -606,6 +618,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "mode", content = "path")]
+#[non_exhaustive]
 pub enum WebvhPathMode {
     #[serde(rename = "wellKnown")]
     WellKnown,
@@ -687,6 +700,600 @@ impl<'de> ::serde::Deserialize<'de> for WebvhPathModePath {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        add_mediator_service:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        add_tsp_service: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        additional_services: ::std::result::Result<
+            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        context_id: ::std::result::Result<super::PayloadContextId, ::std::string::String>,
+        did_document: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        did_log: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        domain: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        ka_key_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        path: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        path_mode: ::std::result::Result<
+            ::std::option::Option<super::WebvhPathMode>,
+            ::std::string::String,
+        >,
+        portable: ::std::result::Result<bool, ::std::string::String>,
+        pre_rotation_count:
+            ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        server_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        set_primary: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        signing_key_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        template: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        template_context: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        template_vars: ::std::result::Result<
+            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            ::std::string::String,
+        >,
+        url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                add_mediator_service: Ok(Default::default()),
+                add_tsp_service: Ok(Default::default()),
+                additional_services: Ok(Default::default()),
+                context_id: Err("no value supplied for context_id".to_string()),
+                did_document: Ok(Default::default()),
+                did_log: Ok(Default::default()),
+                domain: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                ka_key_id: Ok(Default::default()),
+                label: Ok(Default::default()),
+                path: Ok(Default::default()),
+                path_mode: Ok(Default::default()),
+                portable: Ok(Default::default()),
+                pre_rotation_count: Ok(Default::default()),
+                server_id: Ok(Default::default()),
+                set_primary: Ok(Default::default()),
+                signing_key_id: Ok(Default::default()),
+                template: Ok(Default::default()),
+                template_context: Ok(Default::default()),
+                template_vars: Ok(Default::default()),
+                url: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn add_mediator_service<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.add_mediator_service = value.try_into().map_err(|e| {
+                format!("error converting supplied value for add_mediator_service: {e}")
+            });
+            self
+        }
+        pub fn add_tsp_service<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.add_tsp_service = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for add_tsp_service: {e}"));
+            self
+        }
+        pub fn additional_services<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.additional_services = value.try_into().map_err(|e| {
+                format!("error converting supplied value for additional_services: {e}")
+            });
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn did_document<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did_document = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did_document: {e}"));
+            self
+        }
+        pub fn did_log<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did_log = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did_log: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn ka_key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ka_key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ka_key_id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn path<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.path = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for path: {e}"));
+            self
+        }
+        pub fn path_mode<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::WebvhPathMode>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.path_mode = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for path_mode: {e}"));
+            self
+        }
+        pub fn portable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.portable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for portable: {e}"));
+            self
+        }
+        pub fn pre_rotation_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pre_rotation_count = value.try_into().map_err(|e| {
+                format!("error converting supplied value for pre_rotation_count: {e}")
+            });
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+        pub fn set_primary<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.set_primary = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for set_primary: {e}"));
+            self
+        }
+        pub fn signing_key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signing_key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signing_key_id: {e}"));
+            self
+        }
+        pub fn template<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.template = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for template: {e}"));
+            self
+        }
+        pub fn template_context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.template_context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for template_context: {e}"));
+            self
+        }
+        pub fn template_vars<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.template_vars = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for template_vars: {e}"));
+            self
+        }
+        pub fn url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for url: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                add_mediator_service: value.add_mediator_service?,
+                add_tsp_service: value.add_tsp_service?,
+                additional_services: value.additional_services?,
+                context_id: value.context_id?,
+                did_document: value.did_document?,
+                did_log: value.did_log?,
+                domain: value.domain?,
+                ext: value.ext?,
+                ka_key_id: value.ka_key_id?,
+                label: value.label?,
+                path: value.path?,
+                path_mode: value.path_mode?,
+                portable: value.portable?,
+                pre_rotation_count: value.pre_rotation_count?,
+                server_id: value.server_id?,
+                set_primary: value.set_primary?,
+                signing_key_id: value.signing_key_id?,
+                template: value.template?,
+                template_context: value.template_context?,
+                template_vars: value.template_vars?,
+                url: value.url?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                add_mediator_service: Ok(value.add_mediator_service),
+                add_tsp_service: Ok(value.add_tsp_service),
+                additional_services: Ok(value.additional_services),
+                context_id: Ok(value.context_id),
+                did_document: Ok(value.did_document),
+                did_log: Ok(value.did_log),
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                ka_key_id: Ok(value.ka_key_id),
+                label: Ok(value.label),
+                path: Ok(value.path),
+                path_mode: Ok(value.path_mode),
+                portable: Ok(value.portable),
+                pre_rotation_count: Ok(value.pre_rotation_count),
+                server_id: Ok(value.server_id),
+                set_primary: Ok(value.set_primary),
+                signing_key_id: Ok(value.signing_key_id),
+                template: Ok(value.template),
+                template_context: Ok(value.template_context),
+                template_vars: Ok(value.template_vars),
+                url: Ok(value.url),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        context_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        did: ::std::result::Result<::std::string::String, ::std::string::String>,
+        did_document: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        ka_key_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        log_entry: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        mnemonic: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        portable: ::std::result::Result<bool, ::std::string::String>,
+        pre_rotation_key_count: ::std::result::Result<u64, ::std::string::String>,
+        scid: ::std::result::Result<::std::string::String, ::std::string::String>,
+        server_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        signing_key_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                did_document: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                ka_key_id: Err("no value supplied for ka_key_id".to_string()),
+                log_entry: Ok(Default::default()),
+                mnemonic: Ok(Default::default()),
+                portable: Err("no value supplied for portable".to_string()),
+                pre_rotation_key_count: Err(
+                    "no value supplied for pre_rotation_key_count".to_string()
+                ),
+                scid: Err("no value supplied for scid".to_string()),
+                server_id: Ok(Default::default()),
+                signing_key_id: Err("no value supplied for signing_key_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn did_document<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did_document = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did_document: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn ka_key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ka_key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ka_key_id: {e}"));
+            self
+        }
+        pub fn log_entry<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.log_entry = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for log_entry: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+        pub fn portable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.portable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for portable: {e}"));
+            self
+        }
+        pub fn pre_rotation_key_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pre_rotation_key_count = value.try_into().map_err(|e| {
+                format!("error converting supplied value for pre_rotation_key_count: {e}")
+            });
+            self
+        }
+        pub fn scid<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scid = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scid: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+        pub fn signing_key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signing_key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signing_key_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                created_at: value.created_at?,
+                did: value.did?,
+                did_document: value.did_document?,
+                ext: value.ext?,
+                ka_key_id: value.ka_key_id?,
+                log_entry: value.log_entry?,
+                mnemonic: value.mnemonic?,
+                portable: value.portable?,
+                pre_rotation_key_count: value.pre_rotation_key_count?,
+                scid: value.scid?,
+                server_id: value.server_id?,
+                signing_key_id: value.signing_key_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                created_at: Ok(value.created_at),
+                did: Ok(value.did),
+                did_document: Ok(value.did_document),
+                ext: Ok(value.ext),
+                ka_key_id: Ok(value.ka_key_id),
+                log_entry: Ok(value.log_entry),
+                mnemonic: Ok(value.mnemonic),
+                portable: Ok(value.portable),
+                pre_rotation_key_count: Ok(value.pre_rotation_key_count),
+                scid: Ok(value.scid),
+                server_id: Ok(value.server_id),
+                signing_key_id: Ok(value.signing_key_id),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/webvh/dids/create/1.0";
     const IS_PROOF_REQUIRED: bool = true;
@@ -702,6 +1309,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.0#response.\",\n      \"properties\": {\n        \"contextId\": {\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"didDocument\": {\n          \"description\": \"The published document, when the VTA composed one.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kaKeyId\": {\n          \"type\": \"string\"\n        },\n        \"logEntry\": {\n          \"description\": \"The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do.\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"The hosting server's handle for the record. Absent for a serverless DID.\",\n          \"type\": \"string\"\n        },\n        \"portable\": {\n          \"type\": \"boolean\"\n        },\n        \"preRotationKeyCount\": {\n          \"description\": \"Successor keys committed. `0` means pre-rotation is off for this DID.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"scid\": {\n          \"description\": \"Self-certifying identifier committing to the log's first entry.\",\n          \"type\": \"string\"\n        },\n        \"serverId\": {\n          \"type\": \"string\"\n        },\n        \"signingKeyId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"contextId\",\n        \"scid\",\n        \"portable\",\n        \"signingKeyId\",\n        \"kaKeyId\",\n        \"preRotationKeyCount\",\n        \"createdAt\"\n      ],\n      \"title\": \"VTA WebVH DIDs Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"WebvhPathMode\": {\n      \"description\": \"Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"wellKnown\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"explicit\"\n            },\n            \"path\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"mode\",\n            \"path\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"autoAssign\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"WebvhPathMode\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {
