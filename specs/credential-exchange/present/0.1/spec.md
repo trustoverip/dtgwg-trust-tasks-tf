@@ -19,9 +19,11 @@ parties:
   - role: Holder
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: Verifier
     requirement: REQUIRED
     member: recipient
+    identifierScope: public
 proofRequirement:
   requirement: REQUIRED
   rationale: The `vp_token` already carries holder binding over the verifier's nonce and audience, and that remains the proof that establishes the presentation — an envelope proof does not strengthen it. The envelope proof is required for a different reason. Execution exercises the subject's own authority and the response discloses secret material the caller retains, so the exchange is one a third party may later be asked to rely on, which is the case §4.7.1 makes a MUST. Without a document proof the transaction as a whole is repudiable even though the presentation inside it is not, and an intermediary can relay a genuine `vp_token` under an envelope of its own.
@@ -30,8 +32,12 @@ sideEffects:
   rationale: Presenting asserts; it does not mutate the verifier. Any record the verifier keeps is its own.
 exposure:
   discloses: secret
+  ingests: personal
   actsAsSubject: true
-  rationale: The body is a disclosure of the holder's own claims to a named audience. It is the point at which private attributes leave the wallet, and it cannot be undone.
+  rationale: "The body is a disclosure of the holder's own claims to a named audience. It is the point at which private attributes leave the wallet, and it cannot be undone. Read from the verifier's side the same member is an ingest: the `vp_token` carries attributes of an identifiable natural person into the verifier, which is what the verifier then has to protect and minimise."
+retention:
+  class: durable
+  rationale: "Durable as a matter of fact rather than entitlement. The claims are in the verifier's hands and cannot be recalled, so the effect of this document outlives any exchange whatever the verifier's policy says; and where the verifier relies on the presentation it retains the `vp_token` itself as the evidence that the reliance was justified — deleting it leaves an audit with a decision and no basis for it. The stated `purpose` from the query is the only limit on that retention, and it is a limit on *reuse*, not a deletion schedule."
 errorCodes:
   - code: credential-exchange/present:staleNonce
     meaning: The presentation is bound to a nonce the verifier no longer considers fresh.
@@ -81,6 +87,86 @@ The authorization decision is the *consumer*'s alone. This section describes the
 
 ## Security & Privacy
 
-`exposure.discloses` is `secret` and `actsAsSubject` is true: this is the moment private claims leave the wallet, to a named audience, irreversibly. Every other task in this family exists to make sure this one happens only when it should.
+### Data carried
 
-A verifier MUST NOT retain more than its stated purpose requires. The holder consented to a disclosure for a reason; retention beyond it is outside what was agreed, and this task's `purpose` binding is the record of what that was.
+One member, and it is the disclosure itself. `vp_token` carries the holder's own claims
+to a named audience: as a string, an SD-JWT-VC presentation consisting of exactly the
+consented disclosures plus a key-binding JWT over the verifier's nonce and audience; as
+an object, a W3C Data-Integrity VP carrying the same nonce and `domain`. This is the
+moment private attributes leave the wallet, and every other task in this family exists
+to make sure it happens only when it should.
+
+The two shapes are not equivalent in what they can withhold, and the asymmetry is a
+data-minimisation problem rather than a formatting one. Plain `eddsa-jcs-2022` has no
+claim-level selective disclosure: presenting a credential that way discloses all of it,
+including claims the query never asked for and the approver never saw. A holder
+**MUST** refuse to present on that path unless the credential's claims are a subset of
+what was consented to. Nothing in the wire format signals the over-disclosure — the
+presentation verifies perfectly — so this check is the only thing standing between a
+consented request and a silent release of everything the credential happens to contain.
+
+A holder **MUST NOT** put anything in `ext` alongside a presentation. The verifier is
+about to store this document as evidence, and material that rides in beside the
+`vp_token` is retained on the strength of a consent decision that was made about the
+claims, not about it.
+
+### Correlation
+
+The verifier's identifier is bound into the presentation and is therefore load-bearing:
+the key-binding JWT's audience, or the Data-Integrity proof's `domain`, is what stops a
+presentation captured by one verifier being forwarded to another and accepted. That
+binding only works if the holder and the verifier mean the same identifier, and if the
+verifier can be recognised as the same party the query came from and the trust list
+names — which is why the Verifier party declares `identifierScope: public`. A pairwise
+verifier identifier would leave audience binding checking a value with no external
+meaning.
+
+The Holder declares `identifierScope: pairwise` for the opposite reason, and it is the
+strongest privacy lever available in this task. Holder binding proves control of a key;
+it does not require that key, or the DID naming it, be the same one shown to the last
+verifier. A holder that reuses one identifier across verifiers hands every one of them
+a join key, and colluding verifiers can then assemble a disclosure history the holder
+never consented to as a whole. Pairwise identifiers make that join unavailable — but
+only up to the credential itself: an underlying credential whose `credentialSubject.id`
+or `cnf` is stable across presentations reintroduces the linkage inside the very token
+the pairwise envelope was protecting, and the holder cannot fix that here. It has to be
+fixed at issuance.
+
+What remains joinable regardless is the disclosure itself. Claims are correlating data
+by nature — a date of birth and a postcode narrow a population sharply — so the subset
+rule above is a correlation control as much as a minimisation one.
+
+### Retention
+
+The verifier holds what it received, permanently, whatever anyone's policy says: there
+is no revocation of a disclosure. `retention.class` is `durable` because that is the
+honest description of the effect, not because the specification grants an entitlement.
+Where a verifier relies on the presentation it will keep the `vp_token` as the evidence
+that the reliance was justified; deleting it leaves an audit trail with a decision and
+no basis for it.
+
+The stated `purpose` carried by the [query](../../query/0.1/) is the limit that applies,
+and it limits *reuse* rather than setting a deletion date. A verifier **MUST NOT**
+retain more than its stated purpose requires, and **MUST NOT** repurpose what it holds:
+the holder consented to a disclosure for a reason, and the purpose binding is the only
+record of what that reason was. A verifier that needed only to check a predicate — over
+eighteen, resident in this jurisdiction — **SHOULD** record the predicate's outcome and
+not the claims that established it.
+
+### Consent/purpose
+
+The basis for this document is a decision already taken: either the holder's policy
+pre-trusted the verifier and auto-consented, or a human answered
+[`pending/approve`](../../pending/approve/0.1/). By the time a `present` exists the
+consent question is settled, which is why this task has no consent machinery of its own
+and why it carries no `purpose` member — the purpose lives on the query it answers, and
+duplicating it here would create a second, editable copy of the thing the decision was
+made against.
+
+The rule that follows is the subset rule: the holder discloses exactly the consented
+claims and no more. A presentation that verifies cryptographically may still be one a
+verifier should not accept, and equally a presentation the holder can technically mint
+may be one it should not send. Whether a verifier's stated purpose justifies the claims
+it asked for is a judgement made before this task runs, at the holder's policy or in
+front of a person; this specification describes what moves once that judgement is made
+and takes no position on how it should be reached.

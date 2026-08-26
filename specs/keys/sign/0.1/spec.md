@@ -30,8 +30,12 @@ sideEffects:
   rationale: "No stored state changes. The signature itself is a durable, externally-verifiable artefact, so the operation is not repeatable-without-consequence in the way a read is."
 exposure:
   discloses: none
+  ingests: metadata
   actsAsSubject: true
-  rationale: The custodian exercises the named key's private half, producing a signature that verifies as that key's identity. Nothing is disclosed to the caller beyond the signature, but the artefact is attributable to the key's holder.
+  rationale: The custodian exercises the named key's private half, producing a signature that verifies as that key's identity. Nothing is disclosed to the caller beyond the signature, but the artefact is attributable to the key's holder. What the request carries in is `payload` — bytes the custodian signs verbatim without parsing them, so it cannot classify their contents; `metadata` records what this specification can honestly claim about them, and a producer whose bytes are personal or secret is responsible for the transport that carries them.
+retention:
+  class: transient
+  rationale: The custodian changes no stored state — it reads a key record, produces a signature, and returns it. Nothing about the request needs to survive the exchange except whatever audit line the deployment chooses to keep, and the `payload` bytes in particular are handled in flight and not stored. The signature itself is durable, but it is durable in the hands of whoever relies on it rather than in the custodian's.
 errorCodes:
   - code: keys:invalidArgument
     meaning: A payload member is well-formed against the schema but unusable for this request. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
@@ -128,11 +132,77 @@ Failures (`permissionDenied`, `keys/sign:failedPrecondition`, `keys:invalidArgum
 
 ## Security & Privacy
 
-**The bytes are opaque to the custodian, so naming a key is equivalent to using it.** A custodian cannot tell a login challenge from a payment authorization from a software release manifest — it sees base64url. Every constraint therefore has to live in *which producers may name which keys*, and a deployment that authorizes broadly has, in effect, handed out the key.
+### Data carried
 
-Two consequences worth stating plainly:
+**The bytes are opaque to the custodian, so naming a key is equivalent to using
+it.** A custodian cannot tell a login challenge from a payment authorization from
+a software release manifest — it sees base64url in `payload` and signs it verbatim,
+without parsing, canonicalizing, or wrapping it. Every constraint therefore has to
+live in *which producers may name which keys*, and a deployment that authorizes
+broadly has, in effect, handed out the key.
 
-* **Scope keys to purposes, not to convenience.** A producer that signs for two unrelated purposes with one key gives anyone who can obtain one signature the ability to obtain the other. Separate keys are the only enforceable boundary, because the custodian cannot enforce a boundary it cannot see.
-* **A revoked key must stay revoked.** Records for revoked keys are retained so historic signatures remain attributable; a custodian that allowed reactivation would make the audit trail unfalsifiable in the wrong direction.
+That opacity cuts both ways, and the privacy consequence is the one usually
+missed. Because the custodian cannot classify the bytes, it cannot apply a policy
+to their contents, cannot redact them from a debug log, and cannot warn a producer
+that it has just been handed a document containing someone's medical history.
+This specification declares `ingests: metadata` because that is the most it can
+honestly say about a member whose contents it never inspects; a producer signing
+personal or confidential bytes is carrying personal or confidential data to the
+custodian and is responsible for choosing a transport that reflects that.
+Confidentiality of the `payload` bytes is the producer's concern and **SHOULD** be
+enforced at the transport layer where those bytes are sensitive.
 
-The request and response are individually low-disclosure — neither carries key material — but a signature is durable and verifiable by anyone. Confidentiality of the *payload bytes* is the producer's concern and **SHOULD** be enforced at the transport layer where those bytes are sensitive.
+Neither leg carries key material. The request names a `keyId` and an `algorithm`;
+the response returns `signature`, `algorithm`, and an echoed `keyId` — echoed
+specifically so that a response separated from its request is still attributable.
+The smallest conforming request is already the whole request: all three members
+are required and none is padding.
+
+### Correlation
+
+A signature is the most durable correlator in this family, and unlike the request
+it is not addressed to anybody. Anyone holding the public half can verify it, at
+any time, forever, and every signature made under one key is thereby linked to
+every other. The custodian's records and the producer's authorization can both be
+revoked; the linkage between a key and everything it ever signed cannot.
+
+**Scope keys to purposes, not to convenience.** A producer that signs for two
+unrelated purposes with one key gives anyone who can obtain one signature the
+ability to obtain the other, and gives every verifier of either the ability to
+join them. Separate keys are the only enforceable boundary, because the custodian
+cannot enforce a boundary it cannot see — and they are the only unlinkability
+boundary for the same reason.
+
+On the custodian's side, the sequence of requests is its own trace: which keys a
+producer names, how often, and when is a behavioural record of what that producer
+is doing, available to the custodian without ever reading a byte of `payload`.
+
+### Retention
+
+Transient at the custodian. Nothing is stored — the operation reads a key record,
+produces a signature, and returns it — and a custodian **SHOULD NOT** retain
+`payload` beyond the moment it has been signed, since keeping bytes it cannot
+classify is keeping an unbounded liability it cannot inventory. What a deployment
+*does* keep is the audit line, and there the same rule applies in reverse:
+recording that key *K* signed a digest at time *T* is proportionate; recording the
+bytes is not.
+
+The retained state that does persist belongs to the key rather than to the
+request. **A revoked key must stay revoked.** Records for revoked keys are kept so
+historic signatures remain attributable; a custodian that allowed reactivation
+would make the audit trail unfalsifiable in the wrong direction.
+
+### Consent/purpose
+
+The purpose is exercise of an existing custody relationship: a producer already
+authorized over a key asks the custodian to use it. The `proof` is the record of
+the basis and is REQUIRED rather than delegated to the transport, because where
+the transport does not authenticate the producer it is the only thing standing
+between the key and anyone who can reach the endpoint.
+
+Nothing in this payload states what the signature is *for*, and no member could —
+the custodian cannot read the bytes to check. The purpose limitation therefore has
+to be expressed structurally, at creation time, by the scope a key was created in
+and the set of producers permitted to name it. A deployment that wants a key
+usable only for one purpose gets that by making it the only key that purpose can
+reach, not by anything this task can assert.

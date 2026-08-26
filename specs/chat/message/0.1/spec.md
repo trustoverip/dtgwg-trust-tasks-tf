@@ -20,9 +20,11 @@ parties:
   - role: Message author
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: Counterparty
     requirement: REQUIRED
     member: recipient
+    identifierScope: pairwise
 proofRequirement:
   requirement: REQUIRED
   rationale: Chat messages form an evidentiary chain that must be verifiable after the transport has closed. For audit and dispute resolution a third party must verify each message's author and its position in the conversation independently of the (ephemeral, authcrypted) DIDComm session that carried it — transport authentication alone is not portable.
@@ -31,7 +33,26 @@ sideEffects:
   rationale: "Appends a signed, hash-linked message to the conversation chain; persisted history."
 exposure:
   discloses: none
+  ingests: personal
   actsAsSubject: false
+  rationale: >-
+    The document is the message. `text` is an unconstrained plain-text body — the
+    actual words of a human conversation — and it arrives alongside
+    `mentions[].displayName`, a real-world name the source platform supplied, and
+    `attachments[].filename`, which routinely describes what a file contains.
+    `isGroup`, `isMention`, `sentAt` and `replyToId` add signed conversational
+    context. Being fire-and-forget the task discloses nothing back, but the
+    counterparty receives all of it and appends it to a chain built to be kept.
+retention:
+  class: durable
+  rationale: >-
+    The chain is the deliverable. Each message is hash-linked to its predecessor
+    so an auditor or dispute arbiter can verify authorship and ordering long after
+    the transport closed, and evidence discarded is evidence that never existed —
+    a consumer that drops history loses the ability to answer the questions the
+    `proof` and `prev` members are there to answer. The corollary is deliberate
+    and stated in the body: the same construction is what makes deleting an
+    individual message costly.
 errorCodes:
   - code: chat/message:unknownConversation
     meaning: No conversation matches `conversationId` at this consumer.
@@ -265,25 +286,118 @@ binds to it positionally:
 
 ## Security & Privacy
 
-**Portable, transport-independent evidence.** The value of this task is that the
-`proof` survives the transport. authcrypt authenticates the sender to the
-recipient at unpack time, but leaves nothing a third party can check later; the
-`eddsa-jcs-2022` document proof lets an auditor or arbiter verify authorship and
-ordering long after the session closed. This is why `proofRequirement` is
-`REQUIRED`.
+### Data carried
 
-**Ordered, tamper-evident chain.** `prev` binds each message to the digest of
-its predecessor, so a removed, reordered, or forged-in-the-middle message breaks
-the chain and is detectable (`chat/message:brokenChain`). Producers SHOULD
-compute the digest over the JCS-canonical previous document.
+This task carries human conversation, and it is worth being blunt about that
+rather than describing it as a message envelope. `text` is declared as a bare
+string with no length bound, no pattern, and no structure: whatever a person
+typed arrives verbatim. `mentions[].displayName` is a real-world human name the
+source platform supplied. `attachments` are carried by reference rather than
+inline, which keeps the bytes off this wire, but the reference itself is
+descriptive — `filename` routinely says what a document is, `mediaType` and
+`sizeBytes` narrow it further, and `digest` is a stable content fingerprint that
+lets any party holding a candidate file confirm it is the one that was sent.
+Around all of that sit `isGroup`, `isMention`, `replyToId` and `sentAt`, which
+are deliberately part of the signed record so the chain captures where and when
+a message was sent and not merely its words.
 
-**Opaque handles.** `conversationId` and any contact reference — including a
-mention's `participant` — are bridge-issued handles, never raw platform
-addresses; upstream parties never learn the phone number, UUID, or chat id. A
-mention's `displayName` is an optional, non-authoritative rendering hint and
-MUST NOT be treated as an identity. Surfacing a real-world identity (e.g. for a
-human approval step) is out of band and out of scope for this task.
+The one genuine minimisation the design does achieve is at the identifier layer.
+`conversationId` and `mentions[].participant` are opaque, bridge-issued handles;
+the schema forbids raw platform addresses in either, so no upstream party — the
+agent, any intermediary, any later auditor — learns a phone number, a chat id, or
+a platform member id. `displayName` is explicitly non-authoritative and
+consumers **MUST NOT** treat it as an identity; resolving a handle to a real
+person is deliberately out of band.
 
-**Confidentiality is the transport's job.** This task is about *authenticity and
-ordering*, not secrecy. Carry it over a confidential binding (DIDComm authcrypt)
-when message contents are sensitive; the document proof does not encrypt.
+Beyond that, minimisation is the producer's to do and the specification cannot do
+it for them. Only `conversationId`, `direction` and `sentAt` are REQUIRED. Every
+member that carries content — `text`, `mentions`, `attachments`, `platform` — is
+OPTIONAL, so a producer bridging a platform **SHOULD** carry the smallest form
+that still makes the message intelligible to its counterparty, and **SHOULD NOT**
+populate `attachments[].filename` where the media type and digest already suffice.
+
+Confidentiality is not this task's job. The document proof authenticates and
+orders; it does not encrypt. A deployment carrying sensitive conversation
+**SHOULD** run it over a confidential binding such as DIDComm authcrypt, and
+should understand that doing so protects the message in flight and not the chain
+at rest.
+
+### Correlation
+
+`conversationId` is stable for the life of a conversation by construction — it is
+what makes a chain a chain — and `mentions[].participant` is stable for a
+participant across every conversation the same bridge terminates. Neither reveals
+a platform address, but both are perfectly good correlation keys within a
+bridge's scope: a bridge, or anyone who obtains its records, can reconstruct who
+spoke to whom, how often, in which groups, and at what hours, from
+`participant`, `isGroup` and `sentAt` alone, without reading a single `text`.
+Handles protect against upstream leakage of platform identity; they do not make
+the traffic pattern private.
+
+The chain adds a second kind of joinability that a message store does not have.
+`prev` fixes each message's position relative to every other, so the sequence
+itself is evidence: an arbiter can prove not just that a sentence was written but
+that it was written *after* another one and *before* a third, with no gaps in
+between. That is precisely the property the task is for, and it is also why the
+history cannot be partially disavowed later.
+
+Both parties declare `identifierScope: pairwise`. Nothing in the mechanism asks
+the agent's or the bridge's DID to be recognisable outside their own
+relationship — the counterparty check in *Authorization* is "is this the expected
+author for this conversation and direction", which is a lookup local to the pair.
+There is a real tension in that, and implementers should see it: the task's stated
+purpose is third-party audit and dispute resolution, and a pairwise identifier
+means an arbiter arriving later can verify that a specific key signed a specific
+message without being able, from the chain alone, to say whose key it was. Binding
+a pairwise DID to a responsible party is an out-of-band step that the deployment
+must provide. A `public` scope would remove that step, at the cost of making every
+conversation a bridge carries linkable to that party's activity everywhere else —
+which is the wrong trade for a messaging data plane, and the reason it is not
+declared here.
+
+### Retention
+
+Durable, and this is the hard part of the design rather than an afterthought.
+Messages are meant to be kept: the value of the `proof` is that it survives the
+transport, and the value of `prev` is that it survives reordering, so a chain a
+consumer does not retain proves nothing at all.
+
+The cost lands on deletion. `prev.digest` is taken over the JCS canonicalization
+of the *whole preceding document*, payload included. Removing a message, or
+editing a word of its `text`, therefore breaks the link for every message that
+follows it — a consumer verifying the chain gets `chat/message:brokenChain`, which
+is indistinguishable from tampering, because at the level of the mechanism it *is*
+tampering. A conversation chain cannot honour a request to erase one message and
+remain verifiable. The two properties are the same property viewed from opposite
+sides, and no amount of implementation care reconciles them.
+
+This specification does not resolve that, and implementers **MUST NOT** assume it
+has. The choices a deployment actually has are to retain whole conversations for a
+bounded, published period and then drop them entire — dropping a prefix of a chain
+costs nothing, since verification runs backwards from the head — or to segment
+conversations so a chain's span is small enough to discard as a unit, or to accept
+that the chain is permanent and be honest with participants about it. What a
+deployment **SHOULD NOT** do is offer per-message deletion and quietly leave the
+chain broken, since the next verifier will read that as evidence of interference.
+
+### Consent/purpose
+
+The purpose is a governed messaging data plane in which an agent can converse
+through a platform without ever holding that platform's credentials, and in which
+what was said can later be established. The authority to append is narrow and
+stated in *Authorization*: being the expected author for this `conversationId` and
+`direction`. A valid signature from any other party is an authenticated message
+and not an authorised one.
+
+Two limits follow, and both are about reuse rather than access. First, the
+evidentiary purpose is what justifies retaining the content at all; a consumer
+that holds conversation history because dispute resolution may need it **SHOULD
+NOT** mine the same history for unrelated ends — profiling participants,
+enriching a contact graph, or training a model — since none of those is the reason
+the participants' words were kept. Second, the human participants on the platform
+side are not parties to this document and never see it: they are conversing on
+Signal or WhatsApp, not consenting to a Trust Task chain. Whether they are told
+that an agent is present, that the conversation is being attested, and that the
+record is durable, is a deployment obligation that lives entirely outside this
+payload — and per [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 13
+this specification states the fact and declines to prescribe the gate.

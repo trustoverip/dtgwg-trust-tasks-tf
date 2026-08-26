@@ -11,6 +11,13 @@ on:
       - "trust-tasks-codegen/**"
       - "trust-tasks-https/**"
       - "trust-tasks-didcomm/**"
+      # These three were missing, so a change to one of them ran no Rust CI at
+      # all. It matters more now: `publication-order` reads every publishable
+      # crate's manifest, and a dev-dependency added in an unwatched crate is
+      # exactly the edit that guard exists to catch.
+      - "trust-tasks-didcomm-v1/**"
+      - "trust-tasks-capability-client/**"
+      - "trust-tasks-ceremony/**"
       - "trust-tasks-proof/**"
       - "trust-tasks-tsp/**"
       - "Cargo.toml"
@@ -82,56 +89,98 @@ jobs:
       - name: clippy (--all-features)
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-  # A crate that changes and does not move its version never reaches crates.io:
-  # `cargo publish` skips a version already published, so the change sits on main
-  # while consumers keep resolving the old tarball. main and crates.io then hold
-  # the SAME version with DIFFERENT contents, which is worse than an unreleased
-  # change because the version number gives no hint.
+  # ── Where the per-PR version-bump gate used to be ───────────────────────
   #
-  # This guard originally watched only `trust-tasks-rs/src/specs`, and that was
-  # too narrow: moving the sibling crates' `trust-tasks-rs` requirement to 0.11
-  # changed what each of them publishes, without touching a single line of their
-  # source. Six crates merged that way and none republished, so downstream
-  # consumers pulled tarballs still built against 0.9 and hit E0308 on a
-  # duplicated `TrustTask`. Any change to a crate's manifest or source counts.
-  version-bump:
-    name: version bumped with the crate
+  # A job here required every changed publishable crate to move its version in
+  # the same PR, because publishing was a side effect of merging: a change that
+  # merged without a bump would sit on main while crates.io kept serving the
+  # old tarball under the same number.
+  #
+  # release-plz removes the premise. `main` is now legitimately AHEAD of the
+  # registry between releases, and the version each crate lands on is decided
+  # by the Release PR from the conventional commits that accumulated — not by
+  # whoever merged last. The gate would now fail every ordinary PR and force
+  # exactly the early release decision this repo moved away from. See
+  # RELEASING.md.
+  #
+  # What replaced its guarantee: release-plz releases every crate whose files
+  # changed since its last release tag, so "changed but never republished" is
+  # no longer something a human has to remember.
+
+  # The topological publication-order guard, kept.
+  #
+  # It exists because a dev-dependency edge broke a release: #284 made
+  # trust-tasks-proof a DEV-dependency of trust-tasks-https, and although
+  # dev-dependencies are stripped for consumers, `cargo publish` still resolves
+  # any dev-dependency that carries a `version` field — so it constrains
+  # publication order exactly as a normal dependency does. trust-tasks-rs
+  # 0.14.0 uploaded and the run then died on
+  #   failed to select a version for the requirement `trust-tasks-proof = "^0.13"`.
+  #
+  # release-plz publishes in dependency order, but its documentation does not
+  # state whether that order counts dev-dependencies, and the closest prior art
+  # in the ecosystem (cargo-workspaces) explicitly does NOT count them, on the
+  # incorrect premise that `cargo publish` ignores them. Rather than guess, this
+  # keeps a tripwire: it asserts the intra-workspace graph INCLUDING versioned
+  # dev-dependencies is acyclic — the necessary and sufficient condition for any
+  # valid publication order to exist — and prints the order it derives, so a
+  # failed release can be compared against it.
+  #
+  # If a release ever fails on ordering, the permanent fix is to drop the
+  # `version` field from that dev-dependency: a path-only dev-dependency is
+  # stripped at publish time and stops constraining the order at all.
+  publication-order:
+    name: publication order is satisfiable
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Require a version bump for every changed publishable crate
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Derive the publication order from cargo metadata
         run: |
-          miss=0
-          # Publishable workspace members, as cargo sees them.
-          cargo metadata --format-version 1 --no-deps \
-            | jq -r '.packages[] | select(.publish != []) | "\(.name)\t\(.version)\t\(.manifest_path)"' \
-            > /tmp/crates.tsv
-          while IFS=$'\t' read -r name version manifest; do
-            dir=$(dirname "${manifest#$PWD/}")
-            git diff --quiet "$BASE"...HEAD -- "$dir" && continue
-            before=$(git show "$BASE:$dir/Cargo.toml" 2>/dev/null \
-                     | sed -n 's/^version = "\(.*\)"/\1/p' | head -1)
-            if [ -z "$before" ]; then
-              echo "  new  $name ($version)"
-              continue
-            fi
-            if [ "$before" = "$version" ]; then
-              echo "  MISS $name: changed but version still $version"
-              miss=1
-            else
-              echo "  ok   $name: $before -> $version"
-            fi
-          done < /tmp/crates.tsv
-          if [ "$miss" = "1" ]; then
-            echo "::error::Some changed publishable crates were not version-bumped. cargo publish skips a version already on crates.io, so those changes would never reach a consumer while the registry and main disagree about what that version contains."
-            exit 1
-          fi
-          echo "every changed publishable crate moved its version"
+          python3 - <<'PY'
+          import json, subprocess, sys
+          meta = json.loads(subprocess.run(
+              ["cargo", "metadata", "--no-deps", "--format-version", "1"],
+              capture_output=True, text=True, check=True).stdout)
+          # publish = [] means publish=false; anything else is publishable.
+          pkgs = {p["name"]: p for p in meta["packages"] if p.get("publish") != []}
+
+          # Edges: pkg -> the workspace crates it must be published AFTER.
+          # Every dependency kind counts, including dev — see the comment above.
+          edges = {}
+          kinds = {}
+          for name, p in pkgs.items():
+              deps = set()
+              for d in p["dependencies"]:
+                  if d["name"] in pkgs:
+                      deps.add(d["name"])
+                      kinds.setdefault((name, d["name"]), d.get("kind") or "normal")
+              edges[name] = deps
+
+          order, seen = [], {}
+          def visit(n, stack):
+              state = seen.get(n)
+              if state == "done":
+                  return
+              if state == "open":
+                  cycle = " -> ".join(stack[stack.index(n):] + [n])
+                  print(f"::error::Cycle in the publication graph: {cycle}. "
+                        f"No publication order exists; cargo publish cannot succeed. "
+                        f"Break it by dropping the `version` field from the dev-dependency in the cycle.")
+                  sys.exit(1)
+              seen[n] = "open"
+              for d in sorted(edges[n]):
+                  visit(d, stack + [n])
+              seen[n] = "done"
+              order.append(n)
+          for n in sorted(edges):
+              visit(n, [])
+
+          print("Publication order (dependencies first):")
+          for i, n in enumerate(order, 1):
+              after = ", ".join(f"{d} [{kinds[(n, d)]}]" for d in sorted(edges[n])) or "-"
+              print(f"  {i}. {n:<32} after: {after}")
+          PY
 
   codegen-drift:
     name: trust-tasks-codegen drift

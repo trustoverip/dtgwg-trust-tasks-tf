@@ -37,45 +37,23 @@ jobs:
       - name: Check for drift
         run: |
           if ! git diff --quiet trust-tasks-ts/src; then
-            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff (and bump @openvtc/trust-tasks per CONTRIBUTING-SPECS.md)."
+            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff. Do NOT bump @openvtc/trust-tasks — the Release PR does that; see RELEASING.md."
             git diff trust-tasks-ts/src
             exit 1
           fi
 
-  # The published package is what consumers actually get, and it is only
-  # rebuilt when the version changes — the publish workflow skips a version
-  # already on npm. So a PR that regenerates `trust-tasks-ts/src` without
-  # bumping the version leaves main and npm holding the SAME version number
-  # with DIFFERENT contents, and a consumer installing it gets a
-  # module-not-found for a spec that is merged, documented and on the website.
+  # ── Where the per-PR version-bump gate used to be ───────────────────────
   #
-  # That has now happened twice: #240's families were stranded until #242, and
-  # #243's until this PR. `bindings-drift` above already tells authors to bump
-  # in its failure text; this makes it fail rather than advise.
-  version-bump:
-    name: version bumped with the bindings
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Require a version bump when the generated bindings change
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          if git diff --quiet "$BASE"...HEAD -- trust-tasks-ts/src; then
-            echo "generated bindings unchanged — no bump required"
-            exit 0
-          fi
-          before=$(git show "$BASE":trust-tasks-ts/package.json | jq -r .version)
-          after=$(jq -r .version trust-tasks-ts/package.json)
-          if [ "$before" = "$after" ]; then
-            echo "::error::trust-tasks-ts/src changed but @openvtc/trust-tasks is still $after. The publish workflow skips a version already on npm, so these bindings would never reach a consumer while npm and main disagree about what $after contains. Bump trust-tasks-ts/package.json (minor for new families, patch for a description-only regeneration)."
-            git diff --stat "$BASE"...HEAD -- trust-tasks-ts/src
-            exit 1
-          fi
-          echo "bindings changed and version moved $before → $after"
+  # A job here required `trust-tasks-ts/package.json` to move whenever the
+  # generated bindings changed, because publishing was a side effect of
+  # merging: main and npm would otherwise hold the same version number with
+  # different contents.
+  #
+  # That is no longer how the package is released. `scripts/release-ts-pr.sh`
+  # keeps a Release PR open with the bump the merged commits imply, and merging
+  # it is what publishes — so main is legitimately ahead of npm between
+  # releases, and a contributor bumping the version by hand would collide with
+  # every other open PR. See RELEASING.md.
 
   typecheck:
     name: tsc --noEmit
