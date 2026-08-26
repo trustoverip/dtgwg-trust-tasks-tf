@@ -21,9 +21,11 @@ parties:
   - role: device
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: push gateway
     requirement: REQUIRED
     member: recipient
+    identifierScope: public
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Over the DIDComm binding the authcrypt sender authenticates the registering device intrinsically, so a document proof is redundant. Over the HTTPS binding a caller MAY carry a did-signed proof. Registration is low-stakes — the issued handle is opaque and useless until the device's VTA provisions a trigger allowlist for it (push/provision) — so proof is RECOMMENDED, not REQUIRED.
@@ -32,7 +34,25 @@ sideEffects:
   rationale: "Registers a device's push token and mints an opaque WakeHandle."
 exposure:
   discloses: none
+  ingests: secret
   actsAsSubject: false
+  rationale: >-
+    The response hands back only the opaque `wakeHandle`, which reveals no
+    token, so nothing confidential is disclosed. Inbound is the exception in
+    this family: `registration` is the raw platform push channel — an APNs
+    device token with its topic, an FCM registration token, or an RFC 8030 Web
+    Push endpoint with its `p256dh` and `auth` secrets. That is credential-grade
+    material the gateway must protect on the device's behalf for the life of the
+    handle, which is exactly what `ingests: secret` denotes.
+retention:
+  class: durable
+  rationale: >-
+    Holding the token *is* the service. The gateway retains the registration
+    behind the handle for as long as the handle is live, because a wake it
+    cannot deliver is no wake at all. The deletion path is rotation rather than
+    expiry: when the platform issues a new token the device re-registers, and a
+    gateway that retained superseded registrations instead of dropping them
+    would accumulate a dated history of the device's reinstalls and restores.
 errorCodes:
   - code: push/register:unsupportedPlatform
     meaning: The gateway does not implement the registration's `platform`. The device falls back to queue-and-wait (no push).
@@ -105,8 +125,98 @@ checked.
 
 ## Security & Privacy
 
-**Token isolation.** The platform push token lives at the gateway alone, behind the opaque handle. No other party — not the VTA, not the mediator — ever holds it.
+### Data carried
 
-**Handle is not authority.** A handle lets a party *request* a wake, but the gateway fires one only for a DID on the handle's VTA-provisioned allowlist. A leaked handle yields, at worst, a refused wake.
+This is the one task in the push family where the platform push token actually
+crosses a wire, and it crosses exactly once, to exactly one party. `registration`
+is a tagged union over `platform`: for `apns`, the Apple-issued device `token`
+with its `topic` and `environment`; for `fcm`, the Firebase registration
+`token`; for `webpush`, an RFC 8030 subscription `endpoint` together with the
+RFC 8291 `keys.p256dh` and `keys.auth` secrets. Every variant is credential-grade
+— a party holding an APNs token and the matching provider credential can push to
+that device, and a party holding a Web Push endpoint with its keys can encrypt to
+it — which is why the gateway is being asked to *protect* this rather than merely
+to record it.
 
-**Contentless downstream.** The wake the gateway eventually delivers to the device is the [push binding](../../../../bindings/push/0.1/spec.md)'s contentless doorbell — it carries no Trust Task content. This task only sets up the channel.
+Two members leak more than their purpose requires, and neither is avoidable. An
+APNs `topic` is conventionally the application's bundle identifier, and a Web
+Push `endpoint` names the browser vendor's push service by hostname, so the
+registration tells the gateway which application and which browser the device
+runs before any wake has ever been delivered. `controllerVtaDid` is not secret,
+but it tells the gateway which VTA this device answers to.
+
+The response is deliberately thin: only `wakeHandle`, a pair of `gateway` and an
+opaque `handle` that reveals no token. The exchange exists to make that trade —
+a secret in, an opaque reference out — so that every downstream party in the
+architecture can talk about this device's push channel without holding the
+means to push to it. The platform token lives at the gateway alone; no other
+party, not the VTA and not the mediator, ever holds it.
+
+### Correlation
+
+The gateway is the correlation point of the entire push design, and it is the
+only one. It alone holds both the platform token and the handle, so it alone can
+join "this handle" to "this physical device on this vendor's push network".
+Every other arrangement in the architecture — the VTA holding a handle without a
+token, a mediator triggering by handle — exists so that no second party can make
+that join. `controllerVtaDid` gives the gateway a coarser join as well: handles
+naming the same controller form a cluster, so a gateway can see that several
+devices belong to one principal's VTA without learning whose.
+
+The push gateway party declares `identifierScope: public`, and this is the place
+in the family where a public identifier is required rather than merely
+convenient. Three mutually unrelated parties must address the same gateway by
+the same value: the device registering here, the controller VTA that later calls
+[`push/provision`](../../provision/0.2/spec.md), and whichever trigger calls
+[`push/wake`](../../wake/0.2/spec.md). `wakeHandle.gateway` is that value, and it
+travels onward through `device/set-wake` to parties that never spoke to the
+device. A pairwise gateway identifier would break the handoff outright: the VTA
+would receive a `gateway` it could not resolve to the service the device
+actually registered with, and a trigger would have no way to establish it was
+talking to the right gateway at all.
+
+That choice is taken with its cost understood. A public gateway identifier makes
+the population of devices using a given gateway a visible group, and a device's
+*choice* of gateway is itself a signal — a self-hosted gateway distinguishes its
+users from the crowd on a large shared one, which is the familiar anonymity-set
+trade rather than a defect in this task.
+
+The device declares `identifierScope: pairwise`. Nothing downstream names the
+device by its DID; the handle is what later tasks carry, and proof on this
+request is only RECOMMENDED, so the gateway has no need to recognise this device
+anywhere else.
+
+### Retention
+
+Durable, because retention is the service being purchased. The gateway holds the
+registration for as long as the handle is live; a token it discarded would leave
+the handle pointing at nothing.
+
+Rotation, not expiry, is the deletion path. When the platform issues a new token
+the device re-registers and receives a fresh handle, and the gateway **SHOULD**
+drop the superseded registration rather than keep it — a gateway that accumulated
+them would hold a dated sequence of a device's reinstalls, restores, and OS
+migrations, which no part of this task needs.
+
+The device retains only its handle. The controller VTA never receives the token
+at all, so there is nothing there to retain, expire, or leak: the strongest
+retention limit in this specification is the one implemented by not sending the
+data.
+
+### Consent/purpose
+
+The token is handed over for one purpose — so that the gateway can deliver a
+contentless doorbell when an authorised trigger asks for one. The
+[push binding](../../../../bindings/push/0.1/spec.md) is explicit that the
+delivered wake carries no Trust Task content; this task only sets up the
+channel. A gateway that used a registered token to deliver anything else would
+be acting outside the purpose the material was given for, and the device would
+have no way to detect it. That is why the choice of gateway is a trust decision
+rather than a configuration detail.
+
+Registration does not, by itself, make the device wakeable, and the handle it
+returns is not authority. A handle lets a party *request* a wake; the gateway
+fires one only for a DID on the allowlist the controller VTA provisions
+separately, so a leaked handle yields at worst a refused wake, and a device that
+registers here but whose VTA never calls `push/provision` cannot be woken by
+anyone.

@@ -19,6 +19,7 @@ parties:
   - role: device
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: vault maintainer
     requirement: REQUIRED
     member: recipient
@@ -30,6 +31,7 @@ sideEffects:
   rationale: "Claims a device record on the maintainer; revocable via disable/wipe."
 exposure:
   discloses: metadata
+  ingests: personal
   actsAsSubject: false
   rationale: >-
     The response is not an acknowledgement: it returns the whole
@@ -38,6 +40,22 @@ exposure:
     attestation, the key-custody tier, and the capability set the maintainer
     granted it. Descriptive data about one device rather than released credential
     material, which is what separates `metadata` from `secret` here.
+    Inbound, the request carries `displayName` — free text whose conventional
+    value names its owner, as the shared schema's own examples ("Glenn's MacBook
+    — Chrome") show — alongside a `platform` descriptor and a platform-issued
+    `attestation` blob. That is data about an identifiable person's hardware, not
+    merely about a resource, which is why `ingests` is `personal` and not
+    `metadata`.
+retention:
+  class: durable
+  rationale: >-
+    The DeviceBinding this task creates is the maintainer's permanent record of
+    which device holds which capabilities. It survives decommissioning by design
+    — `device/disable` and `device/wipe` stamp `disabledAt` and `wipedAt` rather
+    than removing the row, and `deviceId` is never re-used — so that an action
+    attributed to a device years ago is still attributable. A consumer that
+    deleted the binding would keep the audit line and lose the only thing that
+    resolves it to a device.
 errorCodes:
   - code: device/register:noPendingEnrolment
     meaning: The producer's DID is not the result of a recent provision-integration + acl/swap-key flow. Registration cannot proceed without first being granted via the maintainer's normal enrolment path.
@@ -99,12 +117,113 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 ## Security & Privacy
 
-**Bootstrap chain integrity.** The security of the device-registration path rests on provision-integration: only an existing admin can introduce a new device into the ACL. If provision-integration is compromised, device-register is also compromised. The maintainer SHOULD log every provision-integration and every subsequent register so the chain is traceable.
+### Data carried
 
-**Attestation as policy input, not gate.** A failed or absent attestation does not automatically deny registration — the maintainer's policy decides. Strict deployments REQUIRE attestation; permissive deployments accept `none` and downgrade the device's policy class (shorter sessions, more frequent step-up).
+The request is a device fingerprint assembled by the device about itself.
+`displayName` is the personal member: it is free text bounded only at 128
+characters, and the convention the shared schema documents — "Glenn's MacBook —
+Chrome", "iPhone 17" — attaches a person's given name to a hardware model, which
+is what turns a device record into a record about a human. Nothing in this
+specification requires that; a producer that names a device by its role rather
+than its owner registers a conforming device and discloses one fact less.
+`platform` is a free-form build string ("macOS 16 / Chrome 142") and
+`attestation` carries a platform-issued identifier whose shape depends on `kind`
+— a WebAuthn `aaguid` naming the authenticator model, an Apple App Attest
+`keyId`, a Play Integrity `token`, a TPM or Nitro `quote`. `keyCustody` states
+the tier and algorithms of the device's private keys but never the keys;
+`hpkePublicKey` is a public X25519 key and carries no secret.
 
-**Key custody as policy input.** `keyCustody.tier` tells the maintainer whether the device's private keys are hardware-bound (`hardware`) or software-held (`software`). On mobile, hardware custody is only achievable with **P-256** keys (the iOS Secure Enclave is P-256-only); Ed25519/X25519 holders are necessarily `software`. A maintainer MAY treat `software` like a weak/absent attestation — register but apply a stricter policy class. Per the [Mobile Key-Custody Profile](../../../../docs/design-notes/mobile-key-custody-profile.md), a mobile holder's keys SHOULD be P-256 once the supporting libraries land, and onboarding SHOULD warn when a device is on `software` tier but the platform could support `hardware`.
+The schema makes only `consumerKind` and `displayName` mandatory, so
+`platform`, `attestation`, and `keyCustody` are each a producer's choice to
+narrow itself further, and each is a policy input rather than an entry
+requirement. The response returns the whole `DeviceBinding`, which is a
+superset of the request: the maintainer-assigned `deviceId`, the `consumerDid`,
+the granted `capabilities`, and the enrolment timestamps.
 
-**Display-name spoofing.** The `displayName` is producer-supplied and not authoritative. Other Companions seeing this device in a device/list response SHOULD treat the name as informational only and rely on `deviceId` for any security decision.
+Attestation statements deserve a rule of their own. `attestationStatement`,
+`token`, and `quote` exist to be *verified*, once, at registration. A maintainer
+**SHOULD** retain the verdict and discard the statement: keeping the raw blob
+keeps a platform-issued device identifier alive long after the only question it
+could answer has been answered.
 
-**Replay.** The `id` is the maintainer's idempotency key; a retry of the same id within the idempotency window returns the same DeviceBinding without re-creating it.
+### Correlation
+
+`deviceId` is the durable join key of this entire family. The shared schema is
+explicit that it is stable for the device's lifetime and **never re-used** after
+disable or wipe, so every later `device/heartbeat`, `device/list` entry, ACL row,
+and audit line about this device resolves to the same value. `consumerDid` joins
+just as widely, because it is the key the device authenticates with on every
+subsequent exchange with this maintainer — a registration is therefore the point
+at which a hardware device acquires a permanent identity in the maintainer's
+records.
+
+The registration is also joinable *backwards*. This task is step three of a
+three-step bootstrap, and steps one and two name the existing administrator who
+minted the device's key through `provision-integration` and swapped it in through
+`acl/swap-key`. The chain is deliberately traceable — the maintainer **SHOULD**
+log every provision-integration and every subsequent register precisely so it
+is — and the cost of that traceability is that the record says not only which
+device this is but who introduced it.
+
+Two members correlate beyond the maintainer. `displayName` is echoed to every
+other Companion that calls `device/list`, so a name chosen for one audience
+reaches a wider one; it is also producer-supplied and unauthenticated, so a
+consumer **SHOULD** treat it as informational and rely on `deviceId` for any
+security decision. `attestation.aaguid` identifies an authenticator *model*
+rather than a unit, which does not single out a device on its own but does
+narrow the population, and combined with `platform` it is a serviceable browser-
+and-hardware fingerprint.
+
+The device party declares `identifierScope: pairwise`. Its `consumerDid` is a
+VTA-derived long-term key minted for this one maintainer relationship, and
+nothing in the task asks any third party to recognise it; a device that reused
+one identifier across several maintainers would let them join their records of
+it, which this design does not need and does not want.
+
+### Retention
+
+Durable, and the durability is the design rather than a side effect. The
+`DeviceBinding` outlives the device it describes: `device/disable` and
+`device/wipe` stamp `disabledAt` and `wipedAt` on the record instead of removing
+it, and `deviceId` is never recycled, so an action attributed to a device
+remains attributable after the device is gone. A maintainer that deleted
+bindings on decommissioning would keep its audit trail and lose the only thing
+that resolves the entries in it.
+
+What does *not* need to be durable is the material that only mattered once. The
+attestation statement is verified at registration and never again; the same is
+true of any platform token inside it. Retaining the verdict preserves the policy
+decision, and retaining the blob preserves a device identifier that no longer
+serves a purpose.
+
+One item is retained on a short clock rather than a long one: the document `id`
+is the maintainer's idempotency key, so a retry of the same id inside the
+idempotency window returns the same `DeviceBinding` rather than creating a
+second one. That window is the only part of this exchange a maintainer is
+expected to forget.
+
+### Consent/purpose
+
+The data moves so that a maintainer can recognise this device on its next
+connection and decide what policy class it belongs to. That is the whole
+purpose, and it bounds the reuse: `attestation` and `keyCustody` are policy
+*input*, not gates. A failed or absent attestation does not deny registration —
+the maintainer's policy decides, with strict deployments requiring attestation
+and permissive ones accepting `kind: none` and applying a stricter class
+instead (shorter sessions, more frequent step-up). `keyCustody.tier` reads the
+same way: on mobile, hardware custody is only reachable with **P-256** keys
+because the iOS Secure Enclave is P-256-only, so an Ed25519/X25519 holder is
+necessarily `software`, and a maintainer **MAY** treat `software` as it treats a
+weak attestation. Per the [Mobile Key-Custody Profile](../../../../docs/design-notes/mobile-key-custody-profile.md)
+a mobile holder's keys **SHOULD** be P-256 once the supporting libraries land,
+and onboarding **SHOULD** warn when a device sits on `software` tier that its
+platform could have hardened.
+
+The basis on which the device is admitted at all is the prior authorisation
+recorded in the bootstrap chain: an existing administrator granted this key
+before the device ever sent this document, and `device/register:noPendingEnrolment`
+is the refusal when that basis is missing. `displayName` serves a different
+purpose entirely — helping a human pick their own laptop out of a list — and
+**MUST NOT** be repurposed as a security input by any consumer that renders it.
+Whether a human is prompted before a device joins is a maintainer policy
+question on which this specification takes no position.
