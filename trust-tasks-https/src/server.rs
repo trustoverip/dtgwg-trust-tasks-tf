@@ -69,8 +69,8 @@ use trust_tasks_rs::{
     discovery::DiscoveryRegistry, document_digest, erase_verifier,
     specs::trust_task_discovery::v0_1 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
     ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
-    ReplayGuard, ReplayVerdict, ResolvedParties, StaleReason, StandardCode, TransportHandler,
-    TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
+    ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason, StandardCode,
+    TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 use uuid::Uuid;
 
@@ -120,11 +120,20 @@ pub struct RequestContext {
 /// A spec-specific handler stored type-erased in the dispatch table.
 ///
 /// Inputs: the parsed (but untyped) inbound document and the request
-/// context. Output: either the JSON body of a success response (a
-/// fully-formed `#response` document), or a [`RejectReason`] the server
-/// will convert into a `trust-task-error` response via §8.1 routing.
-type DispatchFn =
-    Box<dyn Fn(TrustTask<Value>, &RequestContext) -> Result<Value, RejectReason> + Send + Sync>;
+/// context. Output: the JSON body of a success response (a fully-formed
+/// `#response` document); `None` where the specification defines no success
+/// response and the handler acknowledged instead; or a [`RejectReason`] the
+/// server converts into a `trust-task-error` response via §8.1 routing.
+///
+/// `Option` rather than an empty `Value`: SPEC §4.4.1 distinguishes "a
+/// `#response` document whose payload happens to be empty" from "this
+/// specification defines no response at all", and the two earn different
+/// statuses (200 with a body, 204 without). Collapsing them would make a
+/// fire-and-forget acknowledgement indistinguishable on the wire from a
+/// `#response` carrying `{}`.
+type DispatchFn = Box<
+    dyn Fn(TrustTask<Value>, &RequestContext) -> Result<Option<Value>, RejectReason> + Send + Sync,
+>;
 
 struct Route {
     dispatch: DispatchFn,
@@ -216,11 +225,14 @@ impl HttpsServerBuilder {
     /// [`RejectReason`] (which the server wraps in a `trust-task-error`
     /// document via [`TransportHandler::reject`], applying SPEC §8.1
     /// routing).
-    pub fn on<P, Resp, F>(mut self, handler: F) -> Self
+    pub fn on<P, F>(mut self, handler: F) -> Self
     where
-        P: Payload + 'static,
-        Resp: Payload + Serialize + 'static,
-        F: Fn(&TrustTask<P>, &RequestContext) -> Result<Resp, RejectReason> + Send + Sync + 'static,
+        P: RequestPayload + 'static,
+        P::Response: Serialize + 'static,
+        F: Fn(&TrustTask<P>, &RequestContext) -> Result<P::Response, RejectReason>
+            + Send
+            + Sync
+            + 'static,
     {
         let dispatch: DispatchFn = Box::new(move |doc: TrustTask<Value>, ctx: &RequestContext| {
             // Downcast payload to P.
@@ -240,7 +252,42 @@ impl HttpsServerBuilder {
             let response_payload = handler(&typed, ctx)?;
             let new_id = format!("urn:uuid:{}", Uuid::new_v4());
             let response_doc = typed.respond_with(new_id, response_payload);
-            Ok(serde_json::to_value(&response_doc).expect("response serialises (typed structs)"))
+            Ok(Some(
+                serde_json::to_value(&response_doc).expect("response serialises (typed structs)"),
+            ))
+        });
+
+        let key = P::type_uri().for_routing().to_string();
+        self.routes.insert(key, Route { dispatch });
+        self
+    }
+
+    /// Register a handler for a **fire-and-forget** specification — one that
+    /// defines no success response.
+    ///
+    /// SPEC §4.4.1: such a specification's consumer signals success by the
+    /// absence of a `trust-task-error`, and **MUST NOT** emit a
+    /// `#response`-variant document. There is therefore no response payload
+    /// for the handler to return, and [`Self::on`] cannot be used — those
+    /// specifications get no [`RequestPayload`] impl precisely so that the
+    /// mistake is a compile error rather than a runtime surprise.
+    ///
+    /// The handler returns `Ok(())` to acknowledge or a [`RejectReason`] to
+    /// refuse; an acknowledgement is answered `204 No Content`, matching the
+    /// status the binding already uses for a duplicate of a completed
+    /// fire-and-forget execution ([§5.1](https://trusttasks.org/binding/https/0.2)).
+    pub fn on_ack<P, F>(mut self, handler: F) -> Self
+    where
+        P: Payload + 'static,
+        F: Fn(&TrustTask<P>, &RequestContext) -> Result<(), RejectReason> + Send + Sync + 'static,
+    {
+        let dispatch: DispatchFn = Box::new(move |doc: TrustTask<Value>, ctx: &RequestContext| {
+            let typed = downcast::<P>(doc)?;
+            // Same §7.2 items 5b/7A/8 gate as `on`; a fire-and-forget task is
+            // no less consequential for having nothing to say back.
+            typed.enforce_spec_policy()?;
+            handler(&typed, ctx)?;
+            Ok(None)
         });
 
         let key = P::type_uri().for_routing().to_string();
@@ -443,7 +490,7 @@ impl HttpsServerBuilder {
     /// [`Self::enable_discovery`].
     pub fn with_discovery(self, registry: DiscoveryRegistry) -> Self {
         let public = Arc::clone(&self.public_discovery);
-        self.on::<discovery::Payload, discovery::Response, _>(move |req, ctx| {
+        self.on::<discovery::Payload, _>(move |req, ctx| {
             if !public.load(Ordering::Relaxed) && ctx.authenticated_sender.is_none() {
                 // Deliberately the same generic wording any other permission
                 // failure uses — a discovery-specific message would itself
@@ -465,8 +512,8 @@ impl HttpsServerBuilder {
     /// let server = HttpsServer::builder()
     ///     .local_vid("did:web:server.example")
     ///     .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
-    ///     .on::<grant::Payload, grant::Response, _>(handle_grant)
-    ///     .on::<revoke::Payload, revoke::Response, _>(handle_revoke)
+    ///     .on::<grant::Payload, _>(handle_grant)
+    ///     .on::<revoke::Payload, _>(handle_revoke)
     ///     .enable_discovery() // ← advertises grant + revoke
     ///     .build();
     /// ```
@@ -894,10 +941,20 @@ async fn dispatch_handler(
                     // which is what item 11 needs — is already written, so a
                     // duplicate is still absorbed; all that is lost is the
                     // ability to hand back the same body.
-                    let _ = guard.record_response(&doc.id, Some(&success_body)).await;
+                    // `None` records that the execution completed with no
+                    // response to hand back — a later duplicate is absorbed
+                    // and answered 204, not re-executed.
+                    let _ = guard.record_response(&doc.id, success_body.as_ref()).await;
                 }
             }
-            success_response(success_body)
+            match success_body {
+                Some(body) => success_response(body),
+                // SPEC §4.4.1 fire-and-forget: nothing to return, and the
+                // absence of a `trust-task-error` is itself the success
+                // signal. 204 is the same answer the binding gives a
+                // duplicate of a completed fire-and-forget execution.
+                None => StatusCode::NO_CONTENT.into_response(),
+            }
         }
         Err(reason) => {
             // Nothing was executed, so nothing may be remembered as executed.

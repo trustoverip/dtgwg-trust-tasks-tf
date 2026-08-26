@@ -24,9 +24,10 @@ use tokio::net::TcpListener;
 use trust_tasks_https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks_rs::{
     specs::acl::{grant, list, revoke, show},
+    specs::task_consent::granted::v0_1 as granted,
     specs::trust_task_discovery::v0_1 as discovery,
-    DocumentDigest, FreshnessPolicy, InMemoryReplayGuard, Proof, ProofVerifier, RejectReason,
-    ReplayGuard, ReplayGuardError, ReplayVerdict, StandardCode, TrustTask, TypeUri,
+    DocumentDigest, FreshnessPolicy, InMemoryReplayGuard, Payload, Proof, ProofVerifier,
+    RejectReason, ReplayGuard, ReplayGuardError, ReplayVerdict, StandardCode, TrustTask, TypeUri,
     VerificationError,
 };
 
@@ -85,13 +86,13 @@ async fn spawn_server_with(verifier: VerifierMode) -> SocketAddr {
     let mut builder = HttpsServer::builder()
         .local_vid(SERVER_VID)
         .with_auth(auth)
-        .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, _ctx| {
+        .on::<grant::v0_1::Payload, _>(|req, _ctx| {
             Ok(grant::v0_1::Response::builder()
                 .entry(req.payload.entry.clone())
                 .try_into()
                 .expect("acl grant response builder"))
         })
-        .on::<revoke::v0_1::Payload, revoke::v0_1::Response, _>(|_req, _ctx| {
+        .on::<revoke::v0_1::Payload, _>(|_req, _ctx| {
             Ok(revoke::v0_1::Response::builder()
                 .entry(Option::<revoke::v0_1::AclEntry>::None)
                 .try_into()
@@ -104,7 +105,11 @@ async fn spawn_server_with(verifier: VerifierMode) -> SocketAddr {
         // is on the ACL, so an authenticated eve is refused *by the
         // handler* (as distinct from the attribution gate upstream,
         // which refuses an unattributable caller before this runs).
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, ctx| {
+        // A fire-and-forget spec (`sync/event` defines no `$defs.Response`)
+        // registered through `on_ack`. `on` cannot take it — those specs get
+        // no `RequestPayload` impl — which is the whole point of the split.
+        .on_ack::<granted::Payload, _>(|_req, _ctx| Ok(()))
+        .on::<list::v0_1::Payload, _>(|_req, ctx| {
             if ctx.authenticated_sender.as_deref() != Some("did:web:alice.example") {
                 return Err(RejectReason::PermissionDenied {
                     reason: "list is restricted".into(),
@@ -275,6 +280,9 @@ async fn discovery_advertises_registered_handlers() {
             "https://trusttasks.org/spec/acl/grant/0.1",
             "https://trusttasks.org/spec/acl/list/0.1",
             "https://trusttasks.org/spec/acl/revoke/0.1",
+            // Registered via `on_ack` — a fire-and-forget handler is a
+            // handler, so discovery advertises it like any other.
+            "https://trusttasks.org/spec/task-consent/granted/0.1",
             "https://trusttasks.org/spec/trust-task-discovery/0.1",
         ],
         "enable_discovery() should advertise the registered acl/* handlers plus discovery itself"
@@ -765,7 +773,7 @@ async fn spawn_spy_server(require_attribution: bool) -> (SocketAddr, Arc<Mutex<V
         .local_vid(SERVER_VID)
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
         .require_attribution(require_attribution)
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(move |_req, ctx| {
+        .on::<list::v0_1::Payload, _>(move |_req, ctx| {
             recorder
                 .lock()
                 .unwrap()
@@ -921,7 +929,7 @@ async fn unknown_type_is_rejected_before_the_verifier_is_called() {
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
         .with_verifier(SpyVerifier(Arc::clone(&calls)))
         // Deliberately registers only acl/list — acl/show is unknown.
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
+        .on::<list::v0_1::Payload, _>(|_req, _ctx| Ok(list_response()))
         .build();
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -974,7 +982,7 @@ async fn disallowed_did_method_never_reaches_the_verifier() {
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
         .with_verifier(SpyVerifier(Arc::clone(&calls)))
         .allowed_did_methods(["key"])
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
+        .on::<list::v0_1::Payload, _>(|_req, _ctx| Ok(list_response()))
         .build();
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -1199,7 +1207,7 @@ async fn spawn_discovery_server(public: bool) -> SocketAddr {
         // Isolate the discovery gate from the attribution gate, which would
         // otherwise reject an unauthenticated caller further upstream.
         .require_attribution(false)
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
+        .on::<list::v0_1::Payload, _>(|_req, _ctx| Ok(list_response()))
         .enable_discovery();
     if public {
         builder = builder.public_discovery();
@@ -1337,7 +1345,7 @@ async fn stalled_request_body_is_cut_off_with_408() {
         .local_vid(SERVER_VID)
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
         .request_timeout(std::time::Duration::from_millis(150))
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
+        .on::<list::v0_1::Payload, _>(|_req, _ctx| Ok(list_response()))
         .build();
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -1500,7 +1508,7 @@ async fn spawn_replay_server(
     let builder = HttpsServer::builder()
         .local_vid(SERVER_VID)
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(move |_req, _ctx| {
+        .on::<list::v0_1::Payload, _>(move |_req, _ctx| {
             let n = counter.fetch_add(1, AtomicOrdering::SeqCst);
             match &behaviour {
                 HandlerBehaviour::Succeed => {}
@@ -1862,4 +1870,50 @@ async fn document_parse_failure_does_not_leak_the_serde_path() {
             "serde detail reached the wire ({leak:?}): {message}"
         );
     }
+}
+
+/// A fire-and-forget specification — one with no `$defs.Response` — is
+/// registerable through `on_ack` and answered `204 No Content`.
+///
+/// This is the half of the `on`/`on_ack` split that is easy to lose.
+/// Constraining `on` to `RequestPayload` closes the mismatched-pair hole,
+/// but SPEC §4.4.1 fire-and-forget specs deliberately get no
+/// `RequestPayload` impl, so without `on_ack` a server could not register a
+/// handler for one at all. 204 is the status the binding already gives a
+/// duplicate of a completed fire-and-forget execution.
+#[tokio::test]
+async fn a_fire_and_forget_spec_is_registerable_and_answers_204() {
+    let addr = spawn_server().await;
+
+    let doc = serde_json::json!({
+        "id": "urn:uuid:4b1f0f9a-6b1f-4a2e-9d8e-1f0a2b3c4d5e",
+        "type": granted::Payload::TYPE_URI,
+        "issuer": "did:web:alice.example",
+        "recipient": SERVER_VID,
+        "issuedAt": Utc::now().to_rfc3339(),
+        "payload": {
+            "status": "granted",
+            "payloadDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+            "taskType": "https://trusttasks.org/spec/acl/grant/0.1",
+        },
+    });
+
+    let resp = reqwest::Client::new()
+        .post(format!("http://{addr}/trust-tasks"))
+        .header("content-type", "application/json")
+        .bearer_auth("alice")
+        .json(&doc)
+        .send()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        resp.status(),
+        reqwest::StatusCode::NO_CONTENT,
+        "a fire-and-forget acknowledgement is 204"
+    );
+    assert!(
+        resp.bytes().await.unwrap().is_empty(),
+        "204 carries no body"
+    );
 }

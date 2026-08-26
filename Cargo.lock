@@ -6453,7 +6453,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "affinidi-secrets-resolver",
  "chrono",
@@ -6552,7 +6552,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-https"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "affinidi-secrets-resolver",
  "async-trait",
