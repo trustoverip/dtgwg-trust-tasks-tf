@@ -7,7 +7,7 @@
   "required": ["communityDid"],
   "properties": {
     "communityDid": { "type": "string", "minLength": 1, "description": "DID the member's credential must name as credentialSubject.id." },
-    "reason": { "type": "string", "minLength": 1, "description": "Operator-supplied context surfaced to the member." },
+    "reason": { "type": "string", "minLength": 1, "maxLength": 500, "description": "Operator-supplied context surfaced to the member." },
     "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {

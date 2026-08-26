@@ -13,6 +13,7 @@
     },
     "label": {
       "type": "string",
+      "maxLength": 256,
       "description": "Operator-facing audit label for the rotation."
     },
     "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }

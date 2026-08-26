@@ -22,7 +22,7 @@
         "obligations": { "type": "object", "description": "Conditions attached to the grant. `allow` only." },
         "bundleRef": { "type": "object", "description": "Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only." },
         "code": { "type": "string", "minLength": 1, "description": "Stable refusal code, safe to branch on. `deny` only." },
-        "reason": { "type": ["string", "null"], "description": "Elaboration in prose, when the decider gave one. `deny` and `refer`." },
+        "reason": { "type": ["string", "null"], "maxLength": 1024, "description": "Elaboration in prose, when the decider gave one. `deny` and `refer`." },
         "queue": { "type": "string", "minLength": 1, "description": "Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only." },
         "needs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only." },
         "presentationDefinition": { "type": "object", "description": "A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only." }

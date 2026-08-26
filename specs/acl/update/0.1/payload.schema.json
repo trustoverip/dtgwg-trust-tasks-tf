@@ -19,6 +19,7 @@
         "string",
         "null"
       ],
+      "maxLength": 256,
       "description": "Replacement human-readable label. Explicit `null` clears it. Omitted leaves it unchanged."
     },
     "scopes": {
@@ -92,6 +93,7 @@
     },
     "reason": {
       "type": "string",
+      "maxLength": 1024,
       "description": "Optional human-readable rationale, recorded with the change."
     },
     "ext": {

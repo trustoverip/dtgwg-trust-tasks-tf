@@ -13,7 +13,7 @@
       "minimum": 0,
       "description": "Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise."
     },
-    "label": { "type": "string" },
+    "label": { "type": "string", "maxLength": 256 },
     "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {

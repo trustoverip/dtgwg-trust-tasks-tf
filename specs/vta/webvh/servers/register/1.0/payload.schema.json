@@ -8,7 +8,7 @@
   "properties": {
     "id": { "type": "string", "minLength": 1, "description": "Local id for the server. Referenced by every DID published through it." },
     "did": { "type": "string", "description": "The server's DID, used to authenticate it. Absent where the VTA resolves it during registration." },
-    "label": { "type": "string" },
+    "label": { "type": "string", "maxLength": 256 },
     "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {
