@@ -45,6 +45,14 @@ export interface AuthStepUpApproveRequest {
  */
 export interface PublicKeyCredentialRequestOptions {
   /**
+   * Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.
+   *
+   * This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
+   *
+   * Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.
+   */
+  extensions?: {};
+  /**
    * base64url-encoded one-time nonce.
    */
   challenge: string;
@@ -215,6 +223,10 @@ export const PAYLOAD_SCHEMA = {
         "challenge"
       ],
       "properties": {
+        "extensions": {
+          "type": "object",
+          "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later."
+        },
         "challenge": {
           "type": "string",
           "description": "base64url-encoded one-time nonce."
@@ -328,6 +340,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "challenge"
       ],
       "properties": {
+        "extensions": {
+          "type": "object",
+          "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later."
+        },
         "challenge": {
           "type": "string",
           "description": "base64url-encoded one-time nonce."

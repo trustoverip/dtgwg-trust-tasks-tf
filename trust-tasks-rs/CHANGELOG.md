@@ -29,6 +29,31 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.15] - 2026-08-26
+
+### Added
+
+- **`auth/_shared/0.1/webauthn`'s `CredentialCreationOptions` and
+  `CredentialRequestOptions` gain `extensions`.**
+
+  Both components state that they mirror the WebAuthn Level 2
+  `PublicKeyCredentialCreationOptions` / `PublicKeyCredentialRequestOptions`
+  dictionaries. Those dictionaries define `extensions`; these did not, while
+  also being `additionalProperties: false` — so the two claims contradicted
+  each other, and **a server emitting standard WebAuthn options could not
+  conform**. The widely-used server libraries emit the member by default, so
+  the practical effect was that conforming required stripping a standard field
+  on the way out.
+
+  Structure is deliberately unconstrained. The set of extensions is open and
+  registered outside this framework; enumerating them here would date the
+  schema against a registry it does not own, and a closed list would reproduce
+  the original defect one revision later.
+
+  Additive, so a patch bump. Affects `auth/passkey/enroll/start/{0.1,0.2}`,
+  `auth/passkey/login/start/0.2` and `auth/passkey/revoke/start/0.1`, which
+  all reference these components.
+
 ## [0.11.14] - 2026-08-26
 
 ### Added
