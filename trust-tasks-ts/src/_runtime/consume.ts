@@ -1,12 +1,20 @@
 /**
- * Inbound-document orchestration for SPEC.md §7.2 item 2 and items 4–8.
+ * Inbound-document orchestration for SPEC.md §7.2 item 2, items 4–8, and the
+ * two stateful checks — the freshness bound of item 4 and the
+ * duplicate-execution record of item 11.
  *
  * Hand-written. Mirrors `consume.rs` in trust-tasks-rs, deliberately closely:
  * a TypeScript consumer and a Rust one must reach the same verdict on the same
  * document, or the two reference implementations disagree about what conforms.
  *
  * ```ts
- * import { consumeInbound, StaticTransport, AclGrant_v0_1 } from "@openvtc/trust-tasks";
+ * import {
+ *   consequentialChecks, consumeInbound, InMemoryReplayGuard,
+ *   StaticTransport, AclGrant_v0_1,
+ * } from "@openvtc/trust-tasks";
+ *
+ * // One guard per consumer, not one per document: it *is* the record.
+ * const guard = new InMemoryReplayGuard();
  *
  * const outcome = await consumeInbound({
  *   transport,
@@ -14,6 +22,8 @@
  *   proofPolicy: { kind: "verify", verify: myVerifier },
  *   // ajv, or whatever validator you already run — see PayloadPolicy.
  *   payloadPolicy: { kind: "validate", validate: myValidator },
+ *   // acl/grant is consequential: a replayed envelope must not grant twice.
+ *   checks: consequentialChecks(guard),
  *   doc,
  *   myVid: "did:web:maintainer.example",
  *   now: Date.now(),
@@ -27,6 +37,11 @@
  *   case "rejected":   emit(outcome.error); break;
  *   case "suppressed": logSuppressed(); break;
  *   case "accepted":   break; // fire-and-forget: nothing to emit
+ *   // §7.2 item 11: already executed. Not an error — return the prior result
+ *   // if there is one, otherwise emit nothing.
+ *   case "duplicate":
+ *     if (outcome.priorResponse !== undefined) emit(outcome.priorResponse);
+ *     break;
  * }
  * ```
  *
@@ -56,12 +71,72 @@ import {
   type TrustTaskDocument,
 } from "./document.js";
 import {
+  CONSEQUENTIAL_FRESHNESS,
+  DEFAULT_FRESHNESS,
+  STALE_WIRE_MESSAGE,
+  recordExpiry,
+  validateFreshness,
+  type FreshnessPolicy,
+} from "./freshness.js";
+import {
+  documentDigest,
+  type ReplayGuard,
+  type ReplayPolicy,
+} from "./replay.js";
+import {
   identityMismatchReason,
   reject,
   resolveParties,
   type ResolvedParties,
   type TransportHandler,
 } from "./transport.js";
+
+/**
+ * The two stateful §7.2 checks: the freshness bound over `issuedAt` /
+ * `expiresAt`, and the duplicate-execution record of item 11.
+ *
+ * They travel together because the spec ties them together. §7.2 (*Bounding
+ * the record*) makes the acceptance window and the record's retention **the
+ * same bound**. Passing them as one option is what stops a deployment
+ * configuring a five-minute record and an unbounded acceptance window, which
+ * reads as a working replay defence and is not one.
+ *
+ * Like {@link PayloadPolicy}, this is a *required* option. Whether the task a
+ * consumer implements is *consequential* (§2) is a decision only that consumer
+ * can make, and the failure mode of getting it wrong silently — an ACL grant
+ * applied twice by a mediator retry — is not one to discover after the fact.
+ */
+export interface ConsumeChecks {
+  /** Bounds the document in time (SPEC §4.2, §7.2 item 4). */
+  readonly freshness: FreshnessPolicy;
+  /** Applies (or knowingly disapplies) SPEC §7.2 item 11. */
+  readonly replay: ReplayPolicy;
+}
+
+/**
+ * The posture for a *consequential Trust Task* (§2): item 11 enforced against
+ * `guard`, and the bounded acceptance window that makes the record droppable.
+ *
+ * The right choice for any task whose execution grants access, moves value,
+ * discloses a secret, or otherwise cannot be undone by ignoring the next
+ * document.
+ */
+export function consequentialChecks(guard: ReplayGuard): ConsumeChecks {
+  return { freshness: CONSEQUENTIAL_FRESHNESS, replay: { kind: "guard", guard } };
+}
+
+/**
+ * The posture for a task that is **not** consequential, or whose specification
+ * "explicitly declares repeated execution safe and intended" — the narrow
+ * disapplication item 11 permits.
+ *
+ * Keeps no record. Still applies the default freshness policy, because a
+ * future-dated document and one with an empty validity interval are malformed
+ * whatever the task does.
+ */
+export function notConsequentialChecks(): ConsumeChecks {
+  return { freshness: DEFAULT_FRESHNESS, replay: { kind: "notConsequential" } };
+}
 
 /** Verifies a document's Data Integrity proof (SPEC §4.7). */
 export interface ProofVerifier {
@@ -173,7 +248,32 @@ export type ConsumeOutcome<R> =
    * return type demanded a document or an error, and returning neither threw a
    * bare `TypeError` out of the pipeline. Emit nothing.
    */
-  | { kind: "accepted" };
+  | { kind: "accepted" }
+  /**
+   * SPEC §7.2 item 11: a document with this `id` and this content was already
+   * accepted for execution. **The handler was not called**, and the
+   * consequential effect did not happen a second time. This is the §8.4 retry
+   * being absorbed, which is what makes retrying safe.
+   *
+   * **Not an error.** §7.2 (*Disposition of a duplicate*): "In no case is a
+   * duplicate reported as `taskFailed`; the task did not fail, it already
+   * happened." Folding this into `rejected` would report a failure that did
+   * not occur.
+   *
+   * What to emit:
+   *
+   * - `priorResponse` present — emit it. It is the response document the first
+   *   execution produced (a success response, or a non-retryable error
+   *   response; tell them apart by its `type`), which §7.2 says the consumer
+   *   SHOULD return.
+   * - `priorResponse` absent, `inFlight === false` — the specification defines
+   *   no success response (§4.4.1 fire-and-forget), or the guard retains none.
+   *   Emit nothing: that silence is the correct disposition, not an error.
+   * - `inFlight === true` — the first execution has not finished. §7.2: the
+   *   consumer SHOULD "return or expose the existing execution state rather
+   *   than begin another".
+   */
+  | { kind: "duplicate"; priorResponse?: unknown; inFlight: boolean };
 
 /** Wire-safe message for the `rejectIfPresent` path. */
 export const PROOF_NOT_ACCEPTED_BY_POLICY =
@@ -186,6 +286,12 @@ export interface ConsumeOptions<P, R> {
   proofPolicy: ProofPolicy;
   /** §7.2 item 2. Required — see {@link PayloadPolicy} for why. */
   payloadPolicy: PayloadPolicy;
+  /**
+   * §7.2 item 4 (freshness) and item 11 (duplicate execution). Required — see
+   * {@link ConsumeChecks}. Use {@link consequentialChecks} or
+   * {@link notConsequentialChecks}.
+   */
+  checks: ConsumeChecks;
   doc: TrustTaskDocument<P>;
   /** This consumer's own VID, for the §7.2 item 5 recipient check. */
   myVid: string;
@@ -225,8 +331,19 @@ export interface ConsumeOptions<P, R> {
 export async function consumeInbound<P, R>(
   opts: ConsumeOptions<P, R>,
 ): Promise<ConsumeOutcome<R>> {
-  const { transport, spec, proofPolicy, payloadPolicy, doc, myVid, now, newErrorId, handler, clock } =
-    opts;
+  const {
+    transport,
+    spec,
+    proofPolicy,
+    payloadPolicy,
+    checks,
+    doc,
+    myVid,
+    now,
+    newErrorId,
+    handler,
+    clock,
+  } = opts;
 
   const route = (reason: RejectReason): ConsumeOutcome<R> => {
     const error = reject(transport, doc, newErrorId(), reason, clock);
@@ -243,6 +360,19 @@ export async function consumeInbound<P, R>(
         'Pass { kind: "validate", validate } to check the payload against ' +
         "`spec.payloadSchema`, or { kind: \"acceptUnvalidated\" } to state that you " +
         "are deliberately not checking it.",
+    );
+  }
+
+  // Same reasoning, for the check that decides whether a replayed envelope
+  // executes a second time. A JavaScript caller gets no compile-time check,
+  // and defaulting to "keep no record" would silently reproduce the defect
+  // this option exists to remove.
+  if (checks === undefined) {
+    throw new TypeError(
+      "consumeInbound: `checks` is required as of 0.12.17 (SPEC §7.2 items 4 and 11). " +
+        "Pass consequentialChecks(guard) for a task whose execution grants access, " +
+        "moves value or is otherwise irreversible, or notConsequentialChecks() to " +
+        "state that repeated execution of this task is safe and intended.",
     );
   }
 
@@ -278,6 +408,15 @@ export async function consumeInbound<P, R>(
   const basic = validateBasic(doc, now, myVid);
   if (basic !== null) return route(basic);
 
+  // §7.2 item 4, the other half — the freshness bound over `issuedAt`.
+  // `validateBasic` honours `expiresAt`, which is optional and which a
+  // producer sets for its own reasons; on its own it leaves a document stamped
+  // years ago, or years hence, indefinitely acceptable. It is also what bounds
+  // the replay record below: §7.2 makes the acceptance window and the record's
+  // retention one bound.
+  const fresh = validateFreshness(doc, now, checks.freshness);
+  if (fresh !== null) return route(fresh);
+
   // §7.2 item 6 — in-band vs transport-derived identity cross-check.
   const resolved = resolveParties(transport, doc);
   if ("error" in resolved) return route(identityMismatchReason(resolved.error));
@@ -293,9 +432,15 @@ export async function consumeInbound<P, R>(
           ok = false;
         }
         if (!ok) {
+          // A constant, never the verifier's own error text. SPEC §10.4
+          // extends the §8.1 identity rule to every code, and a verifier's
+          // vocabulary names DIDs it tried to resolve, whether a resolver
+          // answered, and what a fetched DID document contained — a
+          // resolver-reachability oracle for a sender who is, by construction,
+          // unauthenticated. Log the detail; do not send it.
           return route({
             code: "proofInvalid",
-            message: "proof verification failed",
+            message: PROOF_INVALID_WIRE_MESSAGE,
             retryable: false,
           });
         }
@@ -317,12 +462,124 @@ export async function consumeInbound<P, R>(
   const policy = enforceSpecPolicy(doc, spec);
   if (policy !== null) return route(policy);
 
+  // §7.2 item 11 — the duplicate-execution record. Deliberately **last**:
+  // claiming the `id` marks the document as accepted for execution, and a
+  // document some earlier check refuses was never accepted. Claiming first
+  // would burn the `id` on every malformed or unauthorised arrival, so a
+  // corrected resend under the same `id` would come back `idConflict` forever
+  // — and an attacker could pre-burn an `id` it had merely observed.
+  let claim: { guard: ReplayGuard; digest: string } | undefined;
+  if (checks.replay.kind === "guard") {
+    const { guard } = checks.replay;
+    const digest = documentDigest(doc);
+
+    // §7.2 (*Bounding the record*): "A consumer that can establish neither an
+    // `expiresAt` nor an age for a document has no window in which to place
+    // it, and MUST NOT execute a consequential Trust Task on it." A guard
+    // asked to retain a record forever is not a guard, so refuse rather than
+    // pretend.
+    const retainUntil = recordExpiry(doc, checks.freshness, now);
+    if (retainUntil === undefined) {
+      return route({ code: "expired", message: STALE_WIRE_MESSAGE, retryable: false });
+    }
+
+    let verdict;
+    try {
+      verdict = await guard.claim(doc.id, digest, retainUntil, now);
+    } catch {
+      // Fail closed. A consumer that cannot consult its record has not
+      // satisfied item 11, and executing anyway is exactly the double
+      // execution the rule forbids. `unavailable` is retryable, which is the
+      // honest answer: the producer's bit-for-bit resend will be absorbed
+      // correctly once the store is back. The thrown detail — a hostname, a
+      // connection string — stays out of the message, per §10.4.
+      return route({
+        code: "unavailable",
+        message: REPLAY_RECORD_UNAVAILABLE,
+        retryable: true,
+      });
+    }
+
+    switch (verdict.kind) {
+      case "duplicate":
+        return verdict.priorResponse === undefined
+          ? { kind: "duplicate", inFlight: verdict.inFlight }
+          : { kind: "duplicate", priorResponse: verdict.priorResponse, inFlight: verdict.inFlight };
+      case "conflict":
+        return route({
+          code: "idConflict",
+          message: ID_CONFLICT_WIRE_MESSAGE,
+          retryable: false,
+        });
+      case "fresh":
+        claim = { guard, digest };
+        break;
+    }
+  }
+
   const result = await handler(doc, resolved.parties);
-  if (result === undefined || result === null) return { kind: "accepted" };
-  return isErrorResponse(result)
-    ? { kind: "rejected", error: result }
-    : { kind: "handled", response: result as TrustTaskDocument<R> };
+
+  if (result === undefined || result === null) {
+    // Fire-and-forget: nothing to cache, but the claim stands — the effect
+    // happened, and item 11 is about the effect, not about the response.
+    await settle(claim, doc.id, undefined);
+    return { kind: "accepted" };
+  }
+  if (isErrorResponse(result)) {
+    // §8.4: a retryable refusal has just invited the producer to re-send this
+    // document bit-for-bit. Holding the claim would answer that invited retry
+    // with the cached failure forever. A non-retryable refusal is final, so
+    // the record stands and a replay is answered with the same determination.
+    if (result.payload.retryable === true) {
+      await claim?.guard.release?.(doc.id, claim.digest);
+    } else {
+      await settle(claim, doc.id, result);
+    }
+    return { kind: "rejected", error: result };
+  }
+  await settle(claim, doc.id, result);
+  return { kind: "handled", response: result as TrustTaskDocument<R> };
 }
+
+/**
+ * Record the response for a completed execution, best-effort.
+ *
+ * The effect has already happened, so a guard that cannot cache the response
+ * cannot un-happen it. The record of the *claim* is what item 11 needs and it
+ * is already written; all that is lost is the ability to hand the same
+ * response back, and the duplicate is still absorbed. Guards should log their
+ * own failures — there is nowhere to report this from here.
+ */
+async function settle(
+  claim: { guard: ReplayGuard; digest: string } | undefined,
+  id: string,
+  response: unknown,
+): Promise<void> {
+  if (claim === undefined) return;
+  try {
+    await claim.guard.recordResponse?.(id, response);
+  } catch {
+    /* see above */
+  }
+}
+
+/**
+ * Wire message for `proofInvalid`.
+ *
+ * Constant by design — see the §10.4 note at the rejection site. The Rust
+ * counterpart is `PROOF_INVALID_WIRE_MESSAGE` in `trust-tasks-rs`, kept equal.
+ */
+export const PROOF_INVALID_WIRE_MESSAGE = "proof verification failed";
+
+/** Wire message for `idConflict` (SPEC §7.2 item 11, §8.3). */
+export const ID_CONFLICT_WIRE_MESSAGE =
+  "a different document has already been accepted under this id (SPEC §7.2 item 11)";
+
+/**
+ * Wire message for a replay-record outage. A constant, so a store's hostname
+ * or connection string never reaches the wire (SPEC §10.4).
+ */
+export const REPLAY_RECORD_UNAVAILABLE = "temporarily unavailable";
 
 /**
  * Whether a handler returned an error response rather than a success response.

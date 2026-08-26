@@ -195,10 +195,23 @@ export interface RejectReason {
 /**
  * The Type URI a consumer emits error responses under.
  *
- * `0.3`, because this runtime populates the `inResponseTo` member of §8.2 and
- * `0.2`'s payload schema is `additionalProperties: false` — a document carrying
- * it would not validate as `0.2`. Per §5.2 forward-minor compatibility a `0.2`
- * consumer SHOULD accept it.
+ * **The single source of truth for the emitted `trust-task-error` version on
+ * this side.** Three different answers were in circulation — this runtime and
+ * `trust-tasks-rs` emitted `0.5`, the HTTPS server emitted `0.2`, and the
+ * READMEs described `0.1` — so a producer could not tell from the
+ * documentation which schema an error response would validate against. Build
+ * error responses with `rejectWith` / `rejectWithRecipient`, or read the URI
+ * from here; do not spell it out again.
+ *
+ * The Rust counterpart is `trust_task_error_type_uri()` in `trust-tasks-rs`,
+ * kept equal to this value.
+ *
+ * `0.5` because this runtime populates the `inResponseTo` member of §8.2 and
+ * can emit `idConflict` (§8.3), which is absent from `0.3`'s code enum and does
+ * not match its extended-code pattern — a document carrying it would not
+ * validate as `0.3`. Per §5.2 forward-minor compatibility a `0.3` consumer
+ * SHOULD accept it. (This comment said `0.3` while the value said `0.5`: the
+ * value moved and the prose did not.)
  */
 export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.5";
 

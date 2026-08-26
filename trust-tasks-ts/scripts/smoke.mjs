@@ -20,6 +20,16 @@ assert.equal(typeof pkg.consumeInbound, "function", "consumeInbound missing from
 assert.equal(typeof pkg.respondWith, "function", "respondWith missing from root export");
 assert.equal(typeof pkg.familyCode, "function", "familyCode missing from root export");
 assert.equal(typeof pkg.StaticTransport, "function", "StaticTransport missing from root export");
+assert.equal(
+  typeof pkg.InMemoryReplayGuard,
+  "function",
+  "InMemoryReplayGuard missing from root export",
+);
+assert.equal(
+  typeof pkg.consequentialChecks,
+  "function",
+  "consequentialChecks missing from root export",
+);
 
 // A generated module, reached through the root barrel.
 const grant = pkg.AclGrant_v0_1;
@@ -34,6 +44,10 @@ const outcome = await pkg.consumeInbound({
   spec: grant.SPEC,
   proofPolicy: { kind: "acceptUnverified" },
   payloadPolicy: { kind: "acceptUnvalidated" },
+  // Required as of 0.12.17 (SPEC §7.2 items 4 and 11). This document is
+  // refused before the record is ever consulted; `consequentialChecks` is what
+  // a real acl/grant consumer passes.
+  checks: pkg.notConsequentialChecks(),
   doc: {
     id: "req-1",
     type: grant.TYPE_URI,
@@ -72,6 +86,7 @@ const validated = await pkg.consumeInbound({
       },
     },
   },
+  checks: pkg.notConsequentialChecks(),
   doc: {
     id: "req-2",
     type: grant.TYPE_URI,
