@@ -149,7 +149,7 @@ A *Trust Task document* has the following top-level members.
 | `type` | **MUST** | string (URI) | The *Type URI* identifying the *Trust Task specification* and version this document conforms to. See [§4.4](#44-the-type-member). |
 | `issuer` | **MAY** | string (VID) | A *Verifiable Identifier* identifying the *party* responsible for the document's content. See [§4.8](#48-the-issuer-and-recipient-members). |
 | `recipient` | **MAY** | string (VID) | A *Verifiable Identifier* identifying the *party* the *issuer* expects to act upon the document. See [§4.8](#48-the-issuer-and-recipient-members). |
-| `issuedAt` | **SHOULD** | string (date-time) | An [[RFC3339]] timestamp recording when the document was produced. |
+| `issuedAt` | **SHOULD** | string (date-time) | An [[RFC3339]] timestamp recording when the document was produced. It is the value a *consumer* places the document in its acceptance window by; see [§7.2](#72-consumer-requirements) item 13 for the freshness bounds applied to it, and [§7.3](#73-specification-requirements) item 17 for when a *Trust Task specification* **MUST** require it. |
 | `expiresAt` | **MAY** | string (date-time) | An [[RFC3339]] timestamp after which the document is no longer valid **to accept**. Where `expiresAt` is specified, the *recipient party* **MUST** honor the expiry: a *consumer* **MUST NOT** act upon a document for which `now ≥ expiresAt` (inclusive bound; the instant `expiresAt` is itself treated as expired). A *consumer* **MAY** apply a small clock-skew tolerance, typically ≤ 60 seconds, when evaluating this comparison. `expiresAt` bounds **acceptance**, not execution: it does not abort work already under way (see [§7.2](#72-consumer-requirements) item 12). See [§7.2](#72-consumer-requirements). |
 | `payload` | **MUST** | object | The task-specific body. Its internal structure is governed by the *Trust Task specification* identified by `type`. See [§4.5](#45-the-payload-member). |
 | `@context` | **MAY** | string \| array \| object | If present, enables JSON-LD processing of the document. See [§4.6](#46-json-ld-compatibility). |
@@ -199,6 +199,18 @@ A single *Trust Task specification* often describes both a *request* document (t
 | `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>#request` | Request document, explicit form. |
 | `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>#response` | Success-response document for the same specification. |
 
+A reply to a *Trust Task document* takes one of exactly three dispositions, distinguished by the reply's own `type` and by nothing else:
+
+| Disposition | `type` of the reply | Closes the exchange? | Defined in |
+|---|---|---|---|
+| **Success** | the originating *Type URI* with the fragment `#response` | Yes | This section |
+| **Failure** | `https://trusttasks.org/spec/trust-task-error/<MAJOR.MINOR>` | Yes | [§8](#8-error-responses) |
+| **Continuation** | `https://trusttasks.org/spec/trust-task-next-step/<MAJOR.MINOR>` | **No** — the originating document remains `accepted` and blocked ([§4.12](#412-document-lifecycle)) | [§8.6](#86-reserved-response-type-slugs) |
+
+The three are exhaustive and are not interchangeable: a *consumer* **MUST NOT** report a failure as a `#response`, a success as a `trust-task-error`, or a blocked task as either. A party receiving a reply **MUST** determine its disposition from the reply's `type` alone — the fragment for the first, the slug for the other two — and **MUST NOT** infer it from the presence or absence of any `payload` member.
+
+The table is stated here because "is this document a response?" is otherwise answerable in three places — the fragment rule below, the distinct-*Type URI* rule of [§8](#8-error-responses), and the third-disposition rule of [§8.6](#86-reserved-response-type-slugs) — and an implementation that finds one of them hard-codes a list of the slugs it happens to know, which the next reserved slug silently invalidates.
+
 The rules:
 
 1. A *Trust Task document* whose `type` URI carries **no fragment** or the fragment `#request` is a *request*. The two forms are semantically equivalent; producers **MAY** emit either, consumers **MUST** accept both.
@@ -208,7 +220,20 @@ The rules:
 5. Consumers **MUST** preserve the fragment when comparing `type` URIs, when routing documents internally, and when keying hash maps on `type`. A consumer that strips the fragment before keying will conflate request and response documents.
 6. The payload JSON Schema for a request/response pair is published as a single schema document at the bare *Type URI* (no fragment). Within that schema, the request payload shape is the top-level schema (or the schema reachable via `$anchor: "request"`); the response payload shape is reachable via `$anchor: "response"`. See [§7.3](#73-specification-requirements) for the publishing requirements.
 
-A specification that defines a fire-and-forget task — one with no expected success response document — declares no response sub-schema. Its consumers signal success implicitly (by the absence of a `trust-task-error` reply) and **MUST NOT** emit a `#response`-variant document for that specification.
+#### 4.4.2 Acknowledging a fire-and-forget task
+
+A specification that defines a fire-and-forget task — one with no expected success response document — declares no response sub-schema ([§7.3](#73-specification-requirements) item 7.6). Its *consumer* **MAY** nonetheless return a document whose `type` is the originating *Type URI* with the fragment `#response` and whose `payload` is the empty object `{}`, as a **courtesy acknowledgement** that the document was received and performed.
+
+The rules for that acknowledgement:
+
+1. The `payload` **MUST** be exactly `{}`. The specification declares no response shape, so there is no shape for a member to validate against; a *consumer* **MUST NOT** place any member in it, and a party receiving one **MUST NOT** attribute meaning to anything it nonetheless contains.
+2. A *consumer* receiving such an acknowledgement validates it against the framework schema alone and **MUST NOT** attempt to resolve a `response` anchor, which item 7.6 forbids the specification to declare.
+3. A *producer* **MUST NOT** rely on receiving one. Its absence carries no information — the *consumer* may not implement acknowledgement, may implement it and stay silent, or the document may be lost — and a *producer* that reads absence as failure and reissues a *consequential Trust Task* causes exactly the duplicate effect [§7.2](#72-consumer-requirements) item 11 exists to prevent. This is the general rule of [§4.12](#412-document-lifecycle), not an exception to it.
+4. A *consumer* **MUST NOT** send one for a specification that *does* define a success response. Two success dispositions for one task leave a *producer* unable to tell which is authoritative.
+
+This form supersedes the reserved `trust-task-ok` slug, which exists for precisely this purpose and cannot serve it. `trust-task-ok` is a *different Trust Task specification* from the task it acknowledges, so a *producer* awaiting a reply must recognize a `type` unrelated to the one it sent; and it is defined so that it cannot carry meaning — a *consumer* **MUST NOT** require any member of it and a *producer* **MUST NOT** rely on receiving one — which leaves a registry entry, a schema, and a generated type in every language whose entire content is "something arrived". The same fact now travels on the reply a *producer* was already prepared to receive. `trust-task-ok` is **deprecated** accordingly; see [§8.6](#86-reserved-response-type-slugs).
+
+An acknowledgement that genuinely matters remains outside both forms. A task whose acknowledgement will be relied upon, audited, or disputed declares its own success response with its own payload and its own proof requirement, or a dedicated receipt task — the empty `{}` attests nothing beyond arrival, and is signed, where it is signed at all, only to that effect.
 
 ### 4.5 The `payload` member
 
@@ -466,6 +491,21 @@ A *consumer* verifying a citation **MUST** recompute the digest from the documen
 
 **This is not the document identity of [§7.2](#72-consumer-requirements) item 11.** The two answer different questions and are deliberately computed differently. Item 11 and [§8.4](#84-retry-semantics) ask *which serialization arrived*, so a re-signed `proof` over identical content makes a different document — that is the `idConflict` case, and the distinction is the whole point of the rule. A citation asks *what the document says*, so the same statement signed, unsigned, or re-signed is one document with one task digest. A specification requiring the bytes-as-received sense — [`trust-ceremony-receipt`](https://trusttasks.org/spec/trust-ceremony-receipt/0.1)'s step digest, for one — states so and computes over the document including its `proof`; it is not applying this section loosely.
 
+The framework names the two, because both have until now been called `digestMultibase` in the places they appear and the difference between them is load-bearing:
+
+| | **`taskDigest`** | **`stepDigest`** |
+|---|---|---|
+| Asks | *What does the document say?* | *Which serialization arrived?* |
+| Input | The document with its **top-level `proof` removed** | The document **including** its top-level `proof`, plus any salt the defining specification requires |
+| The same statement, signed and unsigned | One value | Two values |
+| The same content, re-signed | One value | Two values |
+| Defined by | This section | The specification that requires the bytes-as-received sense |
+| Used for | Binding a citation made outside the framework to the document it names | Chain of custody: the step chain of an *enactment* (`ceremony.prev`, `trust-ceremony-receipt`), and the document identity [§7.2](#72-consumer-requirements) item 11 keys `idConflict` on |
+
+Both are computed with JCS, a multihash-tagged hash, and a multibase encoding over a *Trust Task document*, and both are carried in a member of the `DigestMultibase` shape ([§6.6](#66-shared-schema-components)). The **only** structural difference is the treatment of the top-level `proof`, and it is the whole of the difference in meaning: excluding it makes the digest a property of the *statement*, so that a document has one task digest whether or not anyone ever signed it; including it makes the digest a property of the *artifact*, so that a re-signed document is a different document — which is exactly what a custody chain and an `idConflict` check need it to be.
+
+These are names for prose and for implementations. Neither is a document member: the members that carry these values keep the names their own specifications give them. The naming exists because an implementation with a single function called `digestMultibase` has, in practice, picked one of these two answers and is applying it to both questions — and whichever it picked, it is wrong for one of them.
+
 > **What a task digest establishes, and what it does not** *(this note is non-normative)*
 >
 > Recomputation is unconditional: content that differs cannot produce the value, and there is no string for a substitute document to copy. That is why a digest is preferred here to the cited document's own `proof` value. A `proofValue` is a string, and a string can be pasted verbatim onto a counterfeit; it binds only behind full signature verification — canonicalize, hash, resolve the signer's verification method, verify — which costs more than the digest recompute and is unavailable entirely for the documents [§4.7.1](#471-when-to-include-a-proof) permits to carry no `proof` at all.
@@ -540,6 +580,32 @@ Accordingly:
 Every authorization decision continues to be reached under [§7.2](#72-consumer-requirements) item 10, exactly as for a document carrying no `ceremony` member — and note that verifying `issuer` and `proof` is not by itself such a decision. Without this rule the member would be a confused-deputy vector: "you are in the onboarding ceremony, so perform this step" is an unauthenticated assertion by whoever composed the document. The rule is also what makes [§4.11.1](#4111-optionality) item 3 safe — because membership authorizes nothing, a *consumer* that ignores the member entirely omits nothing it was entitled to do.
 
 `ceremony` otherwise carries no normative validation semantics: a *consumer* **MUST NOT** reject a document on the basis of the member alone, and **MAY** use it for routing, correlation, aggregation, or audit.
+
+### 4.12 Document lifecycle
+
+Every rule in this framework that governs what a *consumer* may do next presupposes a state the document is in. [§7.2](#72-consumer-requirements) item 4 governs *acceptance*; item 11 governs a document *already accepted*; item 12 governs execution *under way*; [§12](#12-task-control) suspends and cancels *accepted* work; [§8](#8-error-responses) reports a *refusal*. Each of those sections describes the state it needs and none of them names the whole set, so implementations have inferred five overlapping lifecycles from one document.
+
+The states below are that set, stated once. They are normative: the state names are the vocabulary the rest of this specification's cross-references are to be read against, and a *transport binding* maps them onto its own protocol under the rule at the end of this section.
+
+| State | Reached when | Permitted next states | Reserved reply that carries the transition | What silence in this state means |
+|---|---|---|---|---|
+| `received` | The *consumer* holds the document's bytes and has not yet validated them. | `validated`, `errored`, `expired` | — | **Nothing.** A *producer* cannot distinguish a document in `received` from one that never arrived. |
+| `validated` | Every applicable check of [§7.2](#72-consumer-requirements) items 1–10 has passed. | `accepted`, `errored` | — | **Nothing.** Validation is internal to the *consumer* and is never signalled on the wire. |
+| `accepted` | The *consumer* has committed to execute and has written the duplicate-execution record of [§7.2](#72-consumer-requirements) item 11. | `executing`, `suspended`, `cancelled`, `errored` | `trust-task-next-step` — reported understood but **blocked**; the document remains `accepted` and the exchange stays open ([§8.6](#86-reserved-response-type-slugs)). | **Nothing.** Acceptance is not acknowledged unless the specification defines a reply that acknowledges it. |
+| `executing` | Work has begun. Expiry no longer bounds it ([§7.2](#72-consumer-requirements) item 12). | `responded`, `errored`, `cancelled`, `suspended` | — | **Nothing.** In particular, silence here is indistinguishable from `accepted` and from `responded`. |
+| `suspended` | A valid, authorized **suspend** has been received and recorded ([§12.5](#125-suspension-and-resumption)). | `executing` (on **resume**), `cancelled`, `expired` | The response to the `trust-task-control` document that suspended it. | **Nothing.** A *producer* **MUST NOT** infer suspension, lapse, or resumption from the absence of a notification ([§12.6](#126-notifications-and-the-meaning-of-silence)). |
+| `responded` | The outcome has been delivered. **Terminal.** | — | `<type>#response`, whose payload is `{}` where the specification defines no success response and the *consumer* acknowledges as a courtesy ([§4.4.2](#442-acknowledging-a-fire-and-forget-task)). | **Nothing.** Where no acknowledgement is sent, silence is consistent with this state *and with every state above it*, and **MUST NOT** be read as success. |
+| `errored` | The *consumer* has refused, failed, or abandoned the work. **Terminal.** | — | `trust-task-error` ([§8](#8-error-responses)). | **Nothing.** A *consumer* returns an *error response* where the transport permits one; where it cannot, the failure is unobservable to the *producer*. |
+| `cancelled` | A valid, authorized **cancel** has taken effect, or the *consumer* stopped on its own initiative. **Terminal** ([§12.3](#123-when-a-control-operation-takes-effect)). | — | The response to the `trust-task-control` document, for a *producer*-requested cancellation; `trust-task-error` carrying `cancelled` where the *consumer* stopped of its own accord ([§8.3](#83-standard-error-codes)). | **Nothing.** The two directions are distinguished by which reply arrives, never by which one does not. |
+| `expired` | `now ≥ expiresAt` was reached before the document was accepted, or before a suspended document was resumed. **Terminal.** | — | `trust-task-error` carrying `expired`, where one can be returned. | **Nothing.** Expiry is evaluated by the *consumer*'s clock and is not announced. |
+
+The re-arrival of a document already in `accepted` or any later state is **not** a state transition: [§7.2](#72-consumer-requirements) item 11 requires the *consumer* to absorb it, and the *disposition of a duplicate* rule of that section governs what, if anything, it returns. A re-arrival whose content differs is a different document and is refused with `idConflict`.
+
+**Silence signifies no state.** Four sections of this framework have had occasion to say what an absent reply means, and they have not said the same thing: a fire-and-forget task treats it as success, `trust-task-ok` says its absence "carries no information", [§7.2](#72-consumer-requirements) item 11 uses it to mean a duplicate absorbed, and [§12.6](#126-notifications-and-the-meaning-of-silence) says a lost control notification means nothing at all. Only one of those readings is safe, and this table settles on it: **the absence of a reply distinguishes no two states in the table above**, and a *producer* **MUST NOT** infer any state from it. The framework already warns that the silence of item 11 "must not be reused to signify work half-done" ([§7.2](#72-consumer-requirements)); the general rule is that it may not be reused to signify anything.
+
+The consequence for a fire-and-forget specification is that its *consumer* now has a way to say "received and done" positively rather than by not speaking — the empty `#response` of [§4.4.2](#442-acknowledging-a-fire-and-forget-task) — and its *producer* still **MUST NOT** rely on hearing it.
+
+**A transport binding MUST map this table.** A *transport binding* ([§9](#9-transport-bindings)) **MUST** state, for its own protocol, which protocol event or status corresponds to each state above, or state explicitly that its protocol expresses no counterpart for a given state. A binding that leaves the mapping implicit invites the substitution this section exists to prevent — an HTTP `202` read as `accepted`, an acknowledged queue delivery read as `executing`, a closed connection read as `cancelled` ([§12.7](#127-transport-level-cancellation-is-not-semantic-cancellation)) — each of which reports a document state from a transport fact that does not establish it.
 
 ## 5. Versioning
 
