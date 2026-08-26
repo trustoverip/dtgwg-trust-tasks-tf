@@ -10,8 +10,12 @@
 //!
 //! ```rust,ignore
 //! use trust_tasks_rs::{
-//!     consume_inbound, ConsumeOutcome, PayloadPolicy, ProofPolicy, TrustTask,
+//!     consume_inbound, ConsumeChecks, ConsumeOutcome, InMemoryReplayGuard,
+//!     PayloadPolicy, ProofPolicy, TrustTask,
 //! };
+//!
+//! // One guard per consumer, not one per document: it *is* the record.
+//! static GUARD: LazyLock<InMemoryReplayGuard> = LazyLock::new(Default::default);
 //!
 //! async fn on_inbound<P>(
 //!     transport: &MyHandler,
@@ -24,6 +28,9 @@
 //!         transport,
 //!         ProofPolicy::Verify(verifier),
 //!         PayloadPolicy::Validate(schema_validator),
+//!         // `acl/grant` is consequential: a replayed envelope must not grant
+//!         // twice. Use `not_consequential()` only where the spec says so.
+//!         ConsumeChecks::consequential(&*GUARD),
 //!         doc,
 //!         "did:web:maintainer.example",
 //!         chrono::Utc::now(),
@@ -44,6 +51,11 @@
 //!         ConsumeOutcome::Handled(response) => emit(response),
 //!         ConsumeOutcome::Rejected(error)   => emit(error),
 //!         ConsumeOutcome::Suppressed        => {} // identity_mismatch w/o transport sender
+//!         // §7.2 item 11: already executed. Not an error — return the prior
+//!         // result if there is one, otherwise emit nothing.
+//!         ConsumeOutcome::Duplicate { prior_response, .. } => {
+//!             if let Some(prior) = prior_response { emit_json(prior) }
+//!         }
 //!     }
 //! }
 //! ```
@@ -70,9 +82,73 @@ use serde_json::Value;
 
 use crate::document::{ErrorResponse, TrustTask};
 use crate::error::RejectReason;
+use crate::freshness::{FreshnessPolicy, StaleReason};
 use crate::payload::Payload;
 use crate::proof::{ProofVerifier, VerificationError};
+use crate::replay::{document_digest, DocumentDigest, ReplayGuard, ReplayPolicy, ReplayVerdict};
 use crate::transport::{ResolvedParties, TransportHandler};
+
+/// The two stateful consumer checks SPEC.md §7.2 requires and that no runtime
+/// in this repo implemented before 0.11.17: the freshness bound over
+/// `issuedAt` / `expiresAt`, and the duplicate-execution record of item 11.
+///
+/// They travel together because the spec ties them together. §7.2 (*Bounding
+/// the record*) makes the acceptance window and the replay record's retention
+/// **the same bound**: a consumer "**MUST NOT** accept for execution a
+/// document older than the window over which it retains records". Passing them
+/// as one argument is what stops a deployment configuring a five-minute record
+/// and an unbounded acceptance window, which reads as a working replay defence
+/// and is not one.
+///
+/// Like [`PayloadPolicy`], this is a *required* argument rather than a
+/// defaulted one. Whether the task a consumer implements is *consequential*
+/// (§2) is a decision only that consumer can make, and the failure mode of
+/// getting it wrong silently — an ACL grant applied twice by a mediator retry
+/// — is not one to discover after the fact.
+pub struct ConsumeChecks<'a> {
+    /// Bounds the document in time (SPEC §4.2, §7.2 item 4).
+    pub freshness: FreshnessPolicy,
+    /// Applies (or knowingly disapplies) the duplicate-execution rule of
+    /// SPEC §7.2 item 11.
+    pub replay: ReplayPolicy<'a>,
+}
+
+impl<'a> ConsumeChecks<'a> {
+    /// The posture for a *consequential Trust Task* (§2): item 11 enforced
+    /// against `guard`, and the bounded acceptance window
+    /// ([`FreshnessPolicy::consequential`]) that makes the record droppable.
+    ///
+    /// This is the right constructor for any task whose execution grants
+    /// access, moves value, discloses a secret, or otherwise cannot be undone
+    /// by ignoring the next document.
+    pub fn consequential(guard: &'a dyn ReplayGuard) -> Self {
+        Self {
+            freshness: FreshnessPolicy::consequential(),
+            replay: ReplayPolicy::Guard(guard),
+        }
+    }
+
+    /// The posture for a task that is **not** consequential, or for one whose
+    /// *Trust Task specification* "explicitly declares repeated execution safe
+    /// and intended" — the narrow disapplication item 11 permits.
+    ///
+    /// Keeps no record. Still applies [`FreshnessPolicy::default`], because
+    /// a future-dated document and one with an empty validity interval are
+    /// malformed whatever the task does.
+    pub fn not_consequential() -> Self {
+        Self {
+            freshness: FreshnessPolicy::default(),
+            replay: ReplayPolicy::NotConsequential,
+        }
+    }
+
+    /// Builder: override the freshness policy.
+    #[must_use]
+    pub fn with_freshness(mut self, freshness: FreshnessPolicy) -> Self {
+        self.freshness = freshness;
+        self
+    }
+}
 
 /// How [`consume_inbound`] handles a document's `proof` member, per
 /// SPEC.md §7.2 item 7.
@@ -185,6 +261,7 @@ pub enum PayloadPolicy<'a, V: PayloadValidator + ?Sized> {
 ///     transport,
 ///     ProofPolicy::Verify(verifier),
 ///     PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+///     ConsumeChecks::consequential(&guard),
 ///     doc,
 ///     // …
 /// )
@@ -222,6 +299,39 @@ pub enum ConsumeOutcome<R> {
     /// Callers **SHOULD** log this case for audit — silent suppression
     /// is the spec rule but invisible suppression is an ops footgun.
     Suppressed,
+
+    /// SPEC.md §7.2 item 11: a document with this `id` and this content was
+    /// already accepted for execution. **The handler was not called**, and the
+    /// consequential effect did not happen a second time. This is the §8.4
+    /// retry being absorbed, which is the outcome that makes retrying safe.
+    ///
+    /// **This is not an error.** §7.2 (*Disposition of a duplicate*): "In no
+    /// case is a duplicate reported as `taskFailed`; the task did not fail, it
+    /// already happened." A caller that folded this into
+    /// [`Rejected`](Self::Rejected) would report a failure that did not occur,
+    /// and would tell the producer to investigate a working system.
+    ///
+    /// What to emit:
+    ///
+    /// * `prior_response` present — emit it. It is the response document the
+    ///   first execution produced (a success response, or a non-retryable
+    ///   error response; tell them apart by its `type`), which §7.2 says the
+    ///   consumer **SHOULD** return.
+    /// * `prior_response` absent, `in_flight == false` — the specification
+    ///   defines no success response (§4.4.1's fire-and-forget case) or the
+    ///   guard retains none. Emit nothing: "there is nothing to return: the
+    ///   *consumer* declines to execute again and that silence is the correct
+    ///   disposition, not an error."
+    /// * `in_flight == true` — the original execution has not finished. §7.2:
+    ///   "the *consumer* **SHOULD** return or expose the existing execution
+    ///   state rather than begin another."
+    Duplicate {
+        /// The response the first execution produced, if the
+        /// [`ReplayGuard`](crate::ReplayGuard) retained one.
+        prior_response: Option<Value>,
+        /// Whether that first execution is still running.
+        in_flight: bool,
+    },
 }
 
 /// Run SPEC.md §7.2 item 2 and items 4–8 against `doc`, then either call
@@ -271,6 +381,7 @@ pub async fn consume_inbound<P, R, T, V, W, F, Fut>(
     transport: &T,
     policy: ProofPolicy<'_, V>,
     payload_policy: PayloadPolicy<'_, W>,
+    checks: ConsumeChecks<'_>,
     doc: TrustTask<P>,
     my_vid: &str,
     now: DateTime<Utc>,
@@ -279,12 +390,14 @@ pub async fn consume_inbound<P, R, T, V, W, F, Fut>(
 ) -> ConsumeOutcome<R>
 where
     P: Payload + Serialize + Send + Sync,
+    R: Serialize,
     T: TransportHandler + Sync + ?Sized,
     V: ProofVerifier + ?Sized,
     W: PayloadValidator + ?Sized,
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
     Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
+    let ConsumeChecks { freshness, replay } = checks;
     // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
     // before any check that consults the payload's meaning: a document whose
     // payload is not the shape the specification declares should be refused as
@@ -322,6 +435,16 @@ where
 
     // §7.2 items 4 + 5a — expiry and wrong-recipient enforcement.
     if let Err(reason) = doc.validate_basic(now, my_vid) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
+
+    // §7.2 item 4, the other half — the freshness bound over `issuedAt`.
+    // `validate_basic` honours `expiresAt`, which is optional and which a
+    // producer sets for its own reasons; on its own it leaves a document
+    // stamped years ago, or years hence, indefinitely acceptable. It is also
+    // what bounds the replay record below: §7.2 (*Bounding the record*) makes
+    // the acceptance window and the record's retention one bound.
+    if let Err(reason) = doc.validate_freshness(now, &freshness) {
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 
@@ -376,10 +499,108 @@ where
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 
+    // §7.2 item 11 — the duplicate-execution record. Deliberately **last**:
+    // claiming the `id` marks the document as accepted for execution, and a
+    // document that some earlier check refuses was never accepted. Claiming
+    // first would burn the `id` on every malformed or unauthorised arrival,
+    // so a corrected resend under the same `id` — which §8.4 does not permit
+    // anyway, but which producers do — would come back `idConflict` forever,
+    // and an attacker could pre-burn an `id` it had merely observed.
+    let mut claim: Option<(&dyn ReplayGuard, DocumentDigest)> = None;
+    if let ReplayPolicy::Guard(guard) = replay {
+        let digest = match document_digest(&doc) {
+            Ok(digest) => digest,
+            Err(e) => {
+                return route_rejection(
+                    transport,
+                    &doc,
+                    RejectReason::malformed_from_serde(&e),
+                    error_id_factory,
+                );
+            }
+        };
+
+        // §7.2 (*Bounding the record*): "A *consumer* that can establish
+        // neither an `expiresAt` nor an age for a document has no window in
+        // which to place it, and **MUST NOT** execute a *consequential Trust
+        // Task* on it." A guard asked to retain a record forever is not a
+        // guard, so refuse rather than pretend.
+        let Some(retain_until) = freshness.record_expiry(&doc, now) else {
+            return route_rejection(
+                transport,
+                &doc,
+                RejectReason::Stale {
+                    detail: StaleReason::Unboundable,
+                },
+                error_id_factory,
+            );
+        };
+
+        match guard.claim(&doc.id, &digest, Some(retain_until), now).await {
+            Ok(ReplayVerdict::Fresh) => claim = Some((guard, digest)),
+            Ok(ReplayVerdict::Duplicate {
+                prior_response,
+                in_flight,
+            }) => {
+                return ConsumeOutcome::Duplicate {
+                    prior_response,
+                    in_flight,
+                };
+            }
+            Ok(ReplayVerdict::Conflict) => {
+                return route_rejection(
+                    transport,
+                    &doc,
+                    RejectReason::IdConflict,
+                    error_id_factory,
+                );
+            }
+            // Fail closed. A consumer that cannot consult its record has not
+            // satisfied item 11, and executing anyway is exactly the double
+            // execution the rule forbids. `unavailable` is retryable, which is
+            // the honest answer: the producer's bit-for-bit resend will be
+            // absorbed correctly once the store is back.
+            Err(e) => {
+                return route_rejection(transport, &doc, e.into(), error_id_factory);
+            }
+        }
+    }
+
     // All §7.2 checks passed. Hand to the caller's business handler.
+    let doc_id = doc.id.clone();
     match handler(doc, parties).await {
-        Ok(response) => ConsumeOutcome::Handled(response),
-        Err(error_response) => ConsumeOutcome::Rejected(error_response),
+        Ok(response) => {
+            if let Some((guard, _)) = claim {
+                // Best-effort: the effect has already happened, so a failure
+                // to cache the response cannot un-happen it. The record of the
+                // *claim* is what item 11 needs and it is already written; all
+                // that is lost is the ability to hand the same response back,
+                // and the duplicate is still absorbed. Guards should log their
+                // own failures — there is nowhere to report this from here.
+                let value = serde_json::to_value(&response).ok();
+                let _ = guard.record_response(&doc_id, value.as_ref()).await;
+            }
+            ConsumeOutcome::Handled(response)
+        }
+        Err(error_response) => {
+            if let Some((guard, digest)) = claim {
+                if error_response.payload.retryable {
+                    // §8.4: the consumer has just told the producer it MAY
+                    // re-send this document bit-for-bit. Holding the claim
+                    // would make that retry come back as an absorbed duplicate
+                    // carrying the same failure forever — the consumer would
+                    // have invited a retry it had already decided to refuse.
+                    let _ = guard.release(&doc_id, &digest).await;
+                } else {
+                    // A non-retryable refusal is final for this document, so
+                    // the record stands and a replay is answered with the same
+                    // determination rather than re-evaluated.
+                    let value = serde_json::to_value(&error_response).ok();
+                    let _ = guard.record_response(&doc_id, value.as_ref()).await;
+                }
+            }
+            ConsumeOutcome::Rejected(error_response)
+        }
     }
 }
 
@@ -513,6 +734,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -558,6 +780,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::Validate(&RejectingValidator),
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -599,6 +822,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -647,6 +871,7 @@ mod tests {
                 &transport,
                 ProofPolicy::RejectIfPresent,
                 PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+                ConsumeChecks::not_consequential(),
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -687,6 +912,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -720,6 +946,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -758,6 +985,7 @@ mod tests {
                 &transport,
                 ProofPolicy::RejectIfPresent,
                 PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+                ConsumeChecks::not_consequential(),
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -806,6 +1034,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -869,6 +1098,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -918,6 +1148,7 @@ mod tests {
                 &transport,
                 ProofPolicy::AcceptUnverified,
                 PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+                ConsumeChecks::not_consequential(),
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -940,9 +1171,15 @@ mod tests {
         assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
     }
 
-    /// Verifier returns `Err` → consume_inbound maps to `proof_invalid`
-    /// and surfaces the verifier's error text on the wire. Pins the
-    /// `proof_error_to_reject` mapping the prior tests left untested.
+    /// Verifier returns `Err` → `consume_inbound` maps to `proofInvalid` and
+    /// the wire message is the constant, **not** the verifier's error text.
+    ///
+    /// This test asserted the opposite until 0.11.17. The verifier's text is
+    /// the only place a consumer's DID-resolution behaviour is described in
+    /// English, and the party receiving it is by construction unauthenticated
+    /// — the proof did not verify. SPEC §10.4 extends the §8.1
+    /// `identityMismatch` rule to every code for exactly this reason. The
+    /// detail is still on the `Display` impl, which is what the operator logs.
     #[tokio::test]
     async fn proof_invalid_rejected_with_verifier_error_message() {
         let transport = NoopHandler::new();
@@ -958,6 +1195,7 @@ mod tests {
             &transport,
             ProofPolicy::Verify(&verifier),
             PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
             Utc::now(),
@@ -974,7 +1212,9 @@ mod tests {
             ConsumeOutcome::Rejected(err) => {
                 assert_eq!(err.payload.code, StandardCode::ProofInvalid.into());
                 let msg = err.payload.message.as_deref().unwrap_or("");
-                assert!(msg.contains("signature"), "expected signature error: {msg}");
+                assert_eq!(msg, crate::PROOF_INVALID_WIRE_MESSAGE);
+                // The verifier's own vocabulary must not reach the wire.
+                assert!(!msg.contains("signature"), "verifier detail leaked: {msg}");
             }
             other => panic!("expected Rejected, got {other:?}"),
         }
@@ -1013,6 +1253,7 @@ mod tests {
                 &transport,
                 ProofPolicy::RejectIfPresent,
                 PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+                ConsumeChecks::not_consequential(),
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),
@@ -1105,6 +1346,7 @@ mod tests {
                 &MismatchingNoSenderTransport,
                 ProofPolicy::RejectIfPresent,
                 PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+                ConsumeChecks::not_consequential(),
                 doc,
                 "did:web:maintainer.example",
                 Utc::now(),

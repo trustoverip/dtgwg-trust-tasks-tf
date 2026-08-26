@@ -146,7 +146,7 @@ impl<R> Dispatcher<R> {
     /// [`TrustTask::reject_with`] applies.
     ///
     /// `ErrorResponse` is intentionally large (it carries a full
-    /// `trust-task-error/0.1` document including a typed payload and
+    /// `trust-task-error` document including a typed payload and
     /// extra-member map). Boxing it in the `Err` variant would just push
     /// the allocation onto every caller; the convenience this method
     /// provides assumes the caller wants the value back unboxed.

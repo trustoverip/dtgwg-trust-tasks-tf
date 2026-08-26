@@ -18,7 +18,7 @@ use crate::payload::Payload;
 use crate::proof::Proof;
 use crate::type_uri::TypeUri;
 
-/// A `trust-task-error/0.1` document — a [`TrustTask`] whose payload is an
+/// A `trust-task-error` document — a [`TrustTask`] whose payload is an
 /// [`ErrorPayload`]. This type alias is the form most consumer code holds onto
 /// when raising or propagating an error response.
 pub type ErrorResponse = TrustTask<ErrorPayload>;
@@ -267,7 +267,7 @@ impl<P> TrustTask<P> {
         Ok(())
     }
 
-    /// Build the `trust-task-error/0.1` response document for this request,
+    /// Build the `trust-task-error` response document for this request,
     /// per the spec's "Reporting consumer" conformance rules.
     ///
     /// Wires:
@@ -309,7 +309,7 @@ impl<P> TrustTask<P> {
         self.reject_with_recipient(id, payload, self.issuer.clone())
     }
 
-    /// Build the `trust-task-error/0.1` response document with an explicit
+    /// Build the `trust-task-error` response document with an explicit
     /// `recipient`. Use this when the safe default in [`Self::reject_with`]
     /// does not apply — most importantly under
     /// [`RejectReason::IdentityMismatch`], where SPEC.md §8.1 requires the
@@ -407,13 +407,28 @@ impl<P> TrustTask<P> {
     }
 }
 
-pub(crate) fn trust_task_error_type_uri() -> TypeUri {
+/// The `type` URI every error response this library emits carries.
+///
+/// **The single source of truth for the emitted `trust-task-error` version.**
+/// Three different answers were previously in circulation — this crate and the
+/// TypeScript runtime emitted `0.5`, the HTTPS server emitted `0.2`, and the
+/// READMEs described `0.1` — which meant a producer could not know from the
+/// documentation which schema an error response would validate against, and a
+/// version bump had to be found in four places. Construct error responses via
+/// [`TrustTask::reject_with`] / [`TrustTask::reject_with_recipient`], or read
+/// the URI from here; do not spell it out again.
+///
+/// The TypeScript counterpart is `TRUST_TASK_ERROR_TYPE_URI` in
+/// `trust-tasks-ts/src/_runtime/document.ts`, kept equal to this value.
+///
+/// `0.5` because this library populates the `inResponseTo` member of §8.2 and
+/// can emit `idConflict` (§8.3), which is absent from `0.3`'s code enum and
+/// does not match its extended-code pattern — a document carrying it would not
+/// validate as `0.3`. Per §5.2 forward-minor compatibility a `0.3` consumer
+/// SHOULD accept it.
+pub fn trust_task_error_type_uri() -> TypeUri {
     // The `trust-task-error` slug is a framework-defined reserved name, so
-    // `TypeUri::canonical` accepts it. The SDK emits `0.5`: it populates the
-    // `inResponseTo` member of §8.2, and it can emit `idConflict` (§8.3), which
-    // is absent from `0.3`'s code enum and does not match its extended-code
-    // pattern — so a document carrying it would not validate as `0.3`. Per §5.2
-    // forward-minor compatibility a `0.3` consumer SHOULD accept it.
+    // `TypeUri::canonical` accepts it.
     TypeUri::canonical("trust-task-error", 0, 5)
         .expect("trust-task-error/0.5 is a valid framework Type URI")
 }
