@@ -41,6 +41,20 @@ const REQUIRED_SPEC: SpecPolicy = {
   isRecipientRequired: true,
 };
 
+/**
+ * A spec declaring `issuedAtRequirement: REQUIRED` (SPEC §7.3 item 17). No
+ * published spec declares it yet, so this stands in for what one will
+ * generate — the TypeScript counterpart of the hand-rolled impls in
+ * `trust-tasks-rs/tests/issued_at_requirement.rs`.
+ */
+const FRESH_SPEC: SpecPolicy = {
+  typeUri: "https://trusttasks.org/spec/acl/grant/0.1",
+  isBearer: false,
+  isProofRequired: false,
+  isRecipientRequired: true,
+  isIssuedAtRequired: true,
+};
+
 /** A spec that only RECOMMENDS a proof and does not require a recipient. */
 const RELAXED_SPEC: SpecPolicy = {
   typeUri: "https://trusttasks.org/spec/acl/list/0.1",
@@ -203,6 +217,28 @@ describe("§7.2 pipeline", () => {
     // Locks in the per-spec discrimination: a regression here would make every
     // spec behave as though proof were REQUIRED.
     const outcome = await run({ proof: undefined }, { spec: RELAXED_SPEC });
+    assert.equal(outcome.kind, "handled");
+  });
+
+  it("§7.3 item 17 — issuedAt REQUIRED by the spec but absent", async () => {
+    // malformedRequest, not expired: §8.3 defines no dedicated code, and
+    // `expired` names a document that was once acceptable.
+    const outcome = await run({ issuedAt: undefined }, {
+      spec: FRESH_SPEC,
+      handlerShouldNotRun: true,
+    });
+    assert.equal(rejectedCode(outcome), "malformedRequest");
+  });
+
+  it("§7.3 item 17 — the same document passes once it carries issuedAt", async () => {
+    const outcome = await run({ issuedAt: "2026-01-01T00:00:00Z" }, { spec: FRESH_SPEC });
+    assert.equal(outcome.kind, "handled");
+  });
+
+  it("§7.3 item 17 — a spec that declares nothing still accepts a document without issuedAt", async () => {
+    // The additive guarantee: `isIssuedAtRequired` is optional and absence
+    // reads as false, so no document accepted before is rejected now.
+    const outcome = await run({ issuedAt: undefined }, { spec: RELAXED_SPEC });
     assert.equal(outcome.kind, "handled");
   });
 

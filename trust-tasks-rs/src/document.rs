@@ -181,6 +181,16 @@ impl<P> TrustTask<P> {
     /// * **item 7 clause A — proof-REQUIRED** ([`Payload::IS_PROOF_REQUIRED`]):
     ///   a `proof`-REQUIRED spec rejects a proofless document with
     ///   `proofRequired`.
+    /// * **§7.3 item 17 — issuedAt-REQUIRED**
+    ///   ([`Payload::IS_ISSUED_AT_REQUIRED`]): a specification defining a
+    ///   *consequential Trust Task* raises §4.2's `issuedAt` **SHOULD** to a
+    ///   **MUST** for its own documents, so a document without one is
+    ///   `malformedRequest` — the code §7.2 item 13 already uses for the
+    ///   freshness rejections, since §8.3 defines no dedicated one and
+    ///   `expired` would misdescribe a document that was never acceptable.
+    ///   This is the *specification's* requirement, not the consumer's; see
+    ///   [`FreshnessPolicy::require_issued_at`](crate::FreshnessPolicy::require_issued_at)
+    ///   for the consumer-side counterpart, which is applied separately.
     /// * **item 8 — audience binding** ([`Self::enforce_audience_binding`]).
     ///
     /// This is the single source of truth for the flag-driven §7.2 checks. Both
@@ -203,6 +213,11 @@ impl<P> TrustTask<P> {
         }
         if self.proof.is_none() && P::IS_PROOF_REQUIRED {
             return Err(RejectReason::ProofRequired);
+        }
+        if self.issued_at.is_none() && P::IS_ISSUED_AT_REQUIRED {
+            return Err(RejectReason::MalformedRequest {
+                reason: crate::freshness::ISSUED_AT_REQUIRED_BY_SPEC.to_string(),
+            });
         }
         self.enforce_audience_binding()
     }

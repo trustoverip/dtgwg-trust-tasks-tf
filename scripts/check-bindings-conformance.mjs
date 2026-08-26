@@ -138,6 +138,9 @@ function indexGenerated(dir, filename, uriPattern) {
  *   variants, or a per-variant `{request, response}` pair. Where the per-variant
  *   form omits `response`, the request's value applies: the only reading that
  *   cannot weaken a variant by omission.
+ * * `issuedAtRequirement` — item 17. Same two forms as `proofRequirement`,
+ *   normalised the same way. Absent leaves the §4.2 SHOULD in place, which is
+ *   `false` here: only `REQUIRED` obliges a consumer to reject.
  * * `parties[].requirement` — item 5, including the party swap. A *response*
  *   addresses the original producer, so the requirement governing its
  *   `recipient` member is the one declared for the request's **issuer**.
@@ -155,17 +158,28 @@ function expectedPolicy(meta) {
           response: (pr.response ?? pr.request) === "REQUIRED",
         };
 
+  const ir = meta.issuedAtRequirement || {};
+  const issuedAt =
+    typeof ir.requirement === "string"
+      ? { request: ir.requirement === "REQUIRED", response: ir.requirement === "REQUIRED" }
+      : {
+          request: ir.request === "REQUIRED",
+          response: (ir.response ?? ir.request) === "REQUIRED",
+        };
+
   const isBearer = meta.bearer === true;
   return {
     request: {
       isBearer,
       isProofRequired: proof.request,
       isRecipientRequired: partyRequired("recipient"),
+      isIssuedAtRequired: issuedAt.request,
     },
     response: {
       isBearer,
       isProofRequired: proof.response,
       isRecipientRequired: partyRequired("issuer"),
+      isIssuedAtRequired: issuedAt.response,
     },
   };
 }
@@ -179,10 +193,18 @@ function tsPolicy(src, constName) {
     const m = new RegExp(`${key}:\\s*(true|false)`).exec(block[1]);
     return m ? m[1] === "true" : null;
   };
+  const readDefault = (key, dflt) => {
+    const v = read(key);
+    return v === null ? dflt : v;
+  };
   return {
     isBearer: read("isBearer"),
     isProofRequired: read("isProofRequired"),
     isRecipientRequired: read("isRecipientRequired"),
+    // Absent means the module predates the field; `SpecPolicy` declares it
+    // optional and `enforceSpecPolicy` reads absence as false, so the
+    // comparison must too.
+    isIssuedAtRequired: readDefault("isIssuedAtRequired", false),
   };
 }
 
@@ -203,6 +225,7 @@ function rustPolicy(src, ident) {
     isBearer: read("IS_BEARER", false),
     isProofRequired: read("IS_PROOF_REQUIRED", false),
     isRecipientRequired: read("IS_RECIPIENT_REQUIRED", false),
+    isIssuedAtRequired: read("IS_ISSUED_AT_REQUIRED", false),
   };
 }
 
@@ -211,12 +234,17 @@ function comparePolicy(where, variant, expected, actual, lang) {
     fail(where, `${lang} declares no ${variant} policy block`);
     return;
   }
-  for (const key of ["isBearer", "isProofRequired", "isRecipientRequired"]) {
+  for (const key of [
+    "isBearer",
+    "isProofRequired",
+    "isRecipientRequired",
+    "isIssuedAtRequired",
+  ]) {
     if (actual[key] !== expected[key]) {
       fail(
         where,
         `${lang} ${variant} ${key} is ${actual[key]}, but spec.md front matter says ${expected[key]} ` +
-          `(SPEC §7.3 items 5, 8, 12). Either the front matter changed without regenerating, or the generator is wrong.`,
+          `(SPEC §7.3 items 5, 8, 12, 17). Either the front matter changed without regenerating, or the generator is wrong.`,
       );
     }
   }

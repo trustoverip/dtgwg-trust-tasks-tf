@@ -510,6 +510,109 @@ function checkProofFloor(meta, rel, hasResponse) {
 }
 
 /*
+ * Resolve a spec's `issuedAt` requirement for each document variant.
+ *
+ * §7.3 item 17 is declared with the same shape as item 8's `proofRequirement`
+ * — a single `requirement` covering every variant, or a per-variant
+ * `request` / `response` pair — so it is normalised the same way, including
+ * the "an omitted `response` takes the request's value" rule that cannot
+ * weaken a variant by omission.
+ *
+ * Absent means the framework baseline of §4.2 applies, which is a SHOULD.
+ * That is reported as `undefined` rather than `RECOMMENDED` so a caller can
+ * tell "the author said nothing" from "the author considered it and chose the
+ * baseline" — the distinction the freshness floor below is entirely about.
+ */
+function resolveIssuedAtRequirement(meta) {
+  const ir = meta.issuedAtRequirement || {};
+  if (typeof ir.requirement === 'string') {
+    return { request: ir.requirement, response: ir.requirement, declared: true };
+  }
+  if (typeof ir.request === 'string') {
+    return { request: ir.request, response: ir.response ?? ir.request, declared: true };
+  }
+  return { request: undefined, response: undefined, declared: false };
+}
+
+/*
+ * Is this a *consequential Trust Task* (SPEC §2)?
+ *
+ * The predicate is spelled out once in §2 and is a pure function of
+ * declarations items 13 and 14 already require of every spec:
+ *
+ *   sideEffects.level ∈ {mutating, destructive}
+ *   ∨ exposure.discloses == secret
+ *   ∨ exposure.actsAsSubject == true
+ *
+ * §2 also fixes the fail-safe reading: an absent or unrecognized declaration
+ * is consequential. That matters here, because the specs most likely to be
+ * missing a declaration are the ones least likely to have thought about
+ * freshness.
+ */
+function isConsequential(meta) {
+  const level = meta.sideEffects?.level;
+  if (level === undefined || !['none', 'mutating', 'destructive'].includes(level)) return true;
+  if (level === 'mutating' || level === 'destructive') return true;
+  const discloses = meta.exposure?.discloses;
+  if (discloses === undefined || !['none', 'metadata', 'secret'].includes(discloses)) return true;
+  if (discloses === 'secret') return true;
+  return meta.exposure?.actsAsSubject !== false;
+}
+
+/*
+ * SPEC §7.3 item 17: a specification defining a *consequential Trust Task*
+ * MUST require the `issuedAt` member, raising §4.2's SHOULD to a MUST for its
+ * own documents. Until `issuedAtRequirement` existed there was no way to say
+ * so, so the requirement was unexpressible and no spec could comply.
+ *
+ * The floor is derived here rather than *substituted* for the declaration.
+ * Deriving the value outright would remove the hand-edits, but it would also
+ * mean that editing `sideEffects.level` from `none` to `mutating` — a purely
+ * DESCRIPTIVE correction, which items 13 and 14 insist those declarations are
+ * — silently changed which documents every consumer of the spec must reject.
+ * §2 further makes the *handler* authoritative for consequentiality, not this
+ * front matter, so a value computed from the front matter would be enforcing
+ * something the front matter does not authoritatively state. So the author
+ * declares it, the build derives the floor, and the two are compared:
+ *
+ *   declared weaker than the floor -> hard error, immediately.
+ *   floor unmet because nothing is declared -> counted and reported below,
+ *     because 272 draft specs predate the declaration and failing the build
+ *     for all of them would only teach contributors to ignore the message.
+ *     TT_STRICT_ISSUED_AT=1 makes it fatal; that becomes the default once the
+ *     registry has caught up.
+ *
+ * A non-consequential spec MAY still declare REQUIRED. The floor is a floor.
+ */
+function checkIssuedAtFloor(meta, rel, hasResponse) {
+  const declared = resolveIssuedAtRequirement(meta);
+  const consequential = isConsequential(meta);
+  if (!consequential) return { consequential, unmet: false };
+
+  if (!declared.declared) return { consequential, unmet: true };
+
+  const variants = hasResponse ? ['request', 'response'] : ['request'];
+  let unmet = false;
+  for (const variant of variants) {
+    if (declared[variant] !== 'REQUIRED') {
+      unmet = true;
+      fail(
+        `${rel}/spec.md`,
+        `issuedAtRequirement for the ${variant} variant is '${declared[variant]}' but this is a ` +
+          `consequential Trust Task (sideEffects.level: ${meta.sideEffects?.level}, ` +
+          `exposure.discloses: ${meta.exposure?.discloses}, ` +
+          `exposure.actsAsSubject: ${meta.exposure?.actsAsSubject}). SPEC §7.3 item 17 makes ` +
+          `issuedAt REQUIRED for such a specification — the duplicate-execution protection of ` +
+          `§7.2 item 11 is implementable only over a window, and a document with no issuedAt ` +
+          `cannot be placed in one. Declare REQUIRED, or correct the item 13/14 declarations if ` +
+          `this task is not in fact consequential.`
+      );
+    }
+  }
+  return { consequential, unmet };
+}
+
+/*
  * `parties[].identifierScope: public` (framework 0.5.0) narrows the privacy
  * properties available to every producer of the task: it says the counterparty
  * must be able to recognise the same identifier it sees elsewhere, which
@@ -1036,6 +1139,9 @@ function buildTask(entry, meta, schema, uses) {
     parties: meta.parties.map((p) => p.role),
     partiesDetail: meta.parties,
     proofRequirement: meta.proofRequirement,
+    // §7.3 item 17. Absent where the spec has not declared one, which is not
+    // the same as declaring the §4.2 baseline — see resolveIssuedAtRequirement.
+    issuedAtRequirement: meta.issuedAtRequirement,
     sideEffects: meta.sideEffects || null,
     // Framework 0.5.0's third descriptive dimension. Carried even when absent
     // (as null) for the same reason knownImplementations is: a reader needs to
@@ -1311,6 +1417,12 @@ function main() {
   const tasks = [];
   const seen = new Set();
   let disclosureFloorOffenders = 0;
+  // SPEC §7.3 item 17 — see checkIssuedAtFloor. Counted rather than warned
+  // per-spec: 272 draft specs predate `issuedAtRequirement`, and 272 warnings
+  // is a wall of text nobody reads, while one line with a count is a number
+  // that visibly has to go to zero.
+  let consequentialSpecs = 0;
+  const issuedAtFloorUnmet = [];
 
   for (const entry of entries) {
     const { slug, version, specPath, dir } = entry;
@@ -1353,6 +1465,11 @@ function main() {
     const schema = checkPayloadSchema(slug, version, dir);
     if (!schema) continue;
     checkProofFloor(meta, rel, Boolean(schema.$defs?.Response));
+    const freshness = checkIssuedAtFloor(meta, rel, Boolean(schema.$defs?.Response));
+    if (freshness.consequential) {
+      consequentialSpecs++;
+      if (freshness.unmet) issuedAtFloorUnmet.push(rel);
+    }
     const payloadSchemaPath = path.join(dir, 'payload.schema.json');
     // The machine-checkable half of the same question checkProofFloor asks:
     // checkProofFloor trusts `exposure.discloses` and derives the proof floor
@@ -1382,6 +1499,26 @@ function main() {
       `while returning released material` +
       `${disclosureFloorOffenders ? ' (warning — set TT_STRICT_DISCLOSURE=1 to fail the build)' : ''}`
   );
+  const strictIssuedAt = process.env.TT_STRICT_ISSUED_AT === '1';
+  console.log(
+    `  Freshness floor (§7.3 item 17): ${consequentialSpecs - issuedAtFloorUnmet.length}/` +
+      `${consequentialSpecs} consequential spec(s) declare issuedAtRequirement: REQUIRED` +
+      `${
+        issuedAtFloorUnmet.length
+          ? ` — ${issuedAtFloorUnmet.length} undeclared, e.g. ${issuedAtFloorUnmet
+              .slice(0, 3)
+              .join(', ')} (${strictIssuedAt ? 'error' : 'warning — set TT_STRICT_ISSUED_AT=1 to fail the build'})`
+          : ''
+      }`
+  );
+  if (strictIssuedAt) {
+    for (const rel of issuedAtFloorUnmet) {
+      fail(
+        `${rel}/spec.md`,
+        'consequential Trust Task with no issuedAtRequirement declaration (SPEC §7.3 item 17)'
+      );
+    }
+  }
   errorCodeCasing.report();
   console.log(
     `  Error code shadowing: ${shadowLint.conforming}/${shadowLint.declared} extended code(s) ` +
