@@ -8,21 +8,18 @@ use chrono::Utc;
 use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, Proof, StandardCode, TrustTask};
 
 fn entry() -> grant::AclEntry {
-    grant::AclEntry {
-        allowed_keys: None,
-        subject: "did:web:alice.example".into(),
-        role: "admin".parse().unwrap(),
-        scopes: vec![],
-        label: None,
-        created_at: None,
-        created_by: None,
-        updated_at: None,
-        updated_by: None,
-        expires_at: None,
-        approve: None,
-        step_up: None,
-        ext: None,
-    }
+    grant::AclEntry::builder()
+        .subject("did:web:alice.example")
+        .role("admin")
+        .try_into()
+        .expect("acl entry builder")
+}
+
+fn payload() -> grant::Payload {
+    grant::Payload::builder()
+        .entry(entry())
+        .try_into()
+        .expect("acl grant payload builder")
 }
 
 fn dummy_proof() -> Proof {
@@ -41,14 +38,7 @@ fn dummy_proof() -> Proof {
 /// reject as malformed_request.
 #[test]
 fn proof_without_recipient_rejected_on_non_bearer_spec() {
-    let mut doc = TrustTask::for_payload(
-        "req-1",
-        grant::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let mut doc = TrustTask::for_payload("req-1", payload());
     doc.issuer = Some("did:web:org.example".into());
     doc.proof = Some(dummy_proof());
     // recipient deliberately omitted
@@ -63,14 +53,7 @@ fn proof_without_recipient_rejected_on_non_bearer_spec() {
 /// SPEC §4.8.2 — proof present *and* recipient in-band ⇒ accepted.
 #[test]
 fn proof_with_recipient_passes() {
-    let mut doc = TrustTask::for_payload(
-        "req-1",
-        grant::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let mut doc = TrustTask::for_payload("req-1", payload());
     doc.issuer = Some("did:web:org.example".into());
     doc.recipient = Some("did:web:maintainer.example".into());
     doc.proof = Some(dummy_proof());
@@ -82,14 +65,7 @@ fn proof_with_recipient_passes() {
 /// out-of-band, but §4.8.2 only governs proof-carrying documents.
 #[test]
 fn no_proof_passes_regardless_of_recipient() {
-    let mut doc = TrustTask::for_payload(
-        "req-1",
-        grant::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let mut doc = TrustTask::for_payload("req-1", payload());
     doc.issuer = Some("did:web:org.example".into());
     // No proof, no recipient.
 

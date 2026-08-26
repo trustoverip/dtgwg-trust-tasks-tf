@@ -27,8 +27,8 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use thiserror::Error;
 use trust_tasks_rs::{
-    erase_verifier, DynProofVerifier, ErrorResponse, Payload, ProofVerifier, TransportHandler,
-    TrustTask, TypeUri,
+    erase_verifier, DynProofVerifier, ErrorResponse, Payload, ProofVerifier, RequestPayload,
+    TransportHandler, TrustTask, TypeUri,
 };
 
 use crate::handler::HttpsHandler;
@@ -185,7 +185,7 @@ impl HttpsClient {
     ///    [`HttpsClientBuilder::strip_redundant_in_band`].
     /// 3. POSTs the JSON body with `Authorization: Bearer <my_token>` if
     ///    a token is configured.
-    /// 4. On HTTP 2xx, deserialises the body as `TrustTask<Resp>` **and
+    /// 4. On HTTP 2xx, deserialises the body as `TrustTask<Req::Response>` **and
     ///    binds it to the request** (see below).
     /// 5. On non-2xx, deserialises the body as an [`ErrorResponse`],
     ///    checks its `inResponseTo.id` where present, and returns it via
@@ -193,7 +193,7 @@ impl HttpsClient {
     ///
     /// # Response binding
     ///
-    /// A 2xx body that merely *deserialises* as `TrustTask<Resp>` proves
+    /// A 2xx body that merely *deserialises* as `TrustTask<Req::Response>` proves
     /// nothing: it could answer a different request, be a different task
     /// type whose payload happens to be shape-compatible, come from a
     /// party that is not the configured server, or be addressed to someone
@@ -220,13 +220,26 @@ impl HttpsClient {
     /// [`ClientError::ErrorResponseMismatch`]. It is legitimately absent
     /// under `identityMismatch` (SPEC §8.1 omits it), so absence is not an
     /// error.
-    pub async fn send<Req, Resp>(
+    /// # Naming the response
+    ///
+    /// The response type is **not** a parameter: it is
+    /// `<Req as RequestPayload>::Response`, which the codegen pairs with the
+    /// request from the one schema. `send::<grant::Payload>(req)` therefore
+    /// returns `TrustTask<grant::Response>` and nothing else, where the
+    /// previous `send::<Req, Resp>` accepted a mismatched pair such as
+    /// `send::<grant::Payload, revoke::Response>(req)` and turned it into a
+    /// decode failure at run time.
+    ///
+    /// A specification defining no success response implements no
+    /// [`RequestPayload`], so `send` does not compile for it — see the
+    /// trait's docs.
+    pub async fn send<Req>(
         &self,
         mut request: TrustTask<Req>,
-    ) -> Result<TrustTask<Resp>, ClientError>
+    ) -> Result<TrustTask<Req::Response>, ClientError>
     where
-        Req: Payload + serde::Serialize,
-        Resp: Payload + DeserializeOwned,
+        Req: RequestPayload + serde::Serialize,
+        Req::Response: DeserializeOwned,
     {
         // Fill in identity defaults if the caller didn't already set them.
         if request.issuer.is_none() {
@@ -281,7 +294,7 @@ impl HttpsClient {
             self.check_response_binding(&request, &untyped)?;
             self.verify_response_proof(&untyped).await?;
 
-            let typed: TrustTask<Resp> = serde_json::from_slice(&body)
+            let typed: TrustTask<Req::Response> = serde_json::from_slice(&body)
                 .map_err(|e| ClientError::ResponseDecode(e.to_string()))?;
             Ok(typed)
         } else {
@@ -432,7 +445,7 @@ pub enum ClientError {
     },
 
     /// 2xx response whose body did not decode as the expected
-    /// `TrustTask<Resp>`.
+    /// `TrustTask<Req::Response>`.
     #[error("response body did not match expected type: {0}")]
     ResponseDecode(String),
 

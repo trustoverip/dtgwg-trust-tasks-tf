@@ -4,6 +4,41 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.15.0] - 2026-08-26
+
+### Changed
+
+- **BREAKING. `HttpsClient::send` takes one type parameter, not two.** The
+  response type is now `<Req as RequestPayload>::Response`, which the codegen
+  pairs with the request from the one schema:
+
+  ```rust
+  // before
+  let resp = client.send::<grant::Payload, grant::Response>(req).await?;
+  // after
+  let resp = client.send::<grant::Payload>(req).await?;
+  ```
+
+  The pair could previously disagree — `send::<grant::Payload,
+  revoke::Response>(req)` compiled, and the mistake surfaced as a decode
+  failure against a live server. It no longer type-checks. A specification
+  defining no success response implements no `RequestPayload`, so `send` does
+  not compile for it, which is the right answer for an exchange with no reply.
+
+  Call sites written without the turbofish (`let r: TrustTask<grant::Response>
+  = client.send(req).await?;`) are unaffected.
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.14, whose generated payload types
+  are `#[non_exhaustive]` and built through a builder. A handler returning a
+  response payload constructs it with `Response::builder()` rather than a
+  struct literal — see that crate's migration note.
+
+  `HttpsServer::on` deliberately keeps both type parameters
+  (`on::<Req, Resp, _>`) in this release. Constraining it to
+  `Req: RequestPayload` is the same win on the server side and is worth doing,
+  but it also decides whether a server may register a handler for a
+  response-less specification, which is a separate question from this release's.
+
 ## [0.14.1] - 2026-08-26
 
 ### Fixed

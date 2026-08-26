@@ -48,6 +48,12 @@
 // the rustdoc warnings on the generated tree only.
 #![allow(rustdoc::bare_urls)]
 #![allow(rustdoc::invalid_html_tags)]
+// The struct builders name one setter per schema member, so a member called
+// `add`, `sub`, `not` or `next` produces an inherent method whose name
+// collides with a std trait method. Renaming it would put the Rust API out of
+// step with the schema member it sets, which is the one property the builder
+// has to keep.
+#![allow(clippy::should_implement_trait)]
 
 // trust-tasks-codegen:begin
 #[cfg(feature = "acl")]

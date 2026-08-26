@@ -61,27 +61,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .my_token("alice")
         .build()?;
 
+    // Generated payload types are `#[non_exhaustive]` and built through the
+    // builder typify emits: only the members this request actually carries
+    // are named, so a member added to `acl/grant` in a later revision of the
+    // specification leaves this call site alone.
+    let entry: grant::AclEntry = grant::AclEntry::builder()
+        .subject("did:web:carol.example")
+        .role("moderator")
+        .label("Carol — content moderation".to_string())
+        .try_into()?;
+
     let request = TrustTask::for_payload(
         format!("urn:uuid:{}", uuid::Uuid::new_v4()),
-        grant::Payload {
-            entry: grant::AclEntry {
-                subject: "did:web:carol.example".into(),
-                role: "moderator".into(),
-                scopes: vec![],
-                allowed_keys: None,
-                label: Some("Carol — content moderation".into()),
-                created_at: None,
-                created_by: None,
-                updated_at: None,
-                updated_by: None,
-                expires_at: None,
-                approve: None,
-                step_up: None,
-                ext: None,
-            },
-            reason: Some("onboarding moderator".into()),
-            ext: None,
-        },
+        grant::Payload::builder()
+            .entry(entry)
+            .reason("onboarding moderator".to_string())
+            .try_into()?,
     );
 
     // Party members and `issuedAt` must be set *before* signing.
@@ -99,10 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         url, request.id, request.type_uri, my_did
     );
 
-    match client
-        .send::<grant::Payload, grant::Response>(request)
-        .await
-    {
+    match client.send::<grant::Payload>(request).await {
         Ok(resp) => {
             println!(
                 "← {} (id: {}, threadId: {})\n  entry: subject={} role={}",

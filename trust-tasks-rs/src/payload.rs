@@ -14,7 +14,9 @@
 //!
 //! The generated code emits one impl per request payload and, where the
 //! specification defines a success response, a second impl on the response
-//! type with the `#response` fragment in [`Payload::TYPE_URI`].
+//! type with the `#response` fragment in [`Payload::TYPE_URI`] — plus a
+//! [`RequestPayload`] impl on the request pairing the two, so a transport can
+//! infer the response type rather than be told it.
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -222,6 +224,78 @@ pub trait Payload: Serialize + DeserializeOwned {
             )
         })
     }
+}
+
+/// A [`Payload`] that names the response payload it is answered with.
+///
+/// This is the type-level half of the request/response pairing SPEC.md
+/// §4.4.1 describes at the URI level: a response document's `type` is the
+/// request's Type URI with a `#response` fragment, and
+/// [`RequestPayload::Response`] is the Rust type carrying that payload.
+///
+/// It exists so a transport can *infer* the response type instead of being
+/// told it. Before this trait, sending a request meant naming both halves —
+///
+/// ```rust,ignore
+/// let resp = client.send::<grant::Payload, grant::Response>(req).await?;
+/// ```
+///
+/// — and nothing stopped the two halves from belonging to different
+/// specifications. `send::<grant::Payload, revoke::Response>(req)` compiled,
+/// and the mistake surfaced as a decode failure against a live server.
+/// With the pairing on the type, the second half is derived:
+///
+/// ```rust,ignore
+/// let resp = client.send::<grant::Payload>(req).await?; // -> TrustTask<grant::Response>
+/// ```
+///
+/// # Why this is a separate trait rather than an associated type on `Payload`
+///
+/// An associated type with a default (`type Response = ();`) would have
+/// allowed [`Payload`] to carry the pairing without disturbing the impls
+/// that have no response to name. Associated type defaults are still
+/// unstable in Rust ([rust-lang/rust#29661]), so on stable the choice is
+/// between a required associated type — which breaks every hand-written
+/// [`Payload`] impl, including the crate's own hand-modelled
+/// `trust-task-error` payload, and every impl downstream — and a second
+/// trait. A second trait is used, so that implementing [`Payload`] stays
+/// exactly as cheap as it was.
+///
+/// # Fire-and-forget specifications
+///
+/// A specification that defines no `$defs.Response` gets **no
+/// `RequestPayload` impl**. There is no response document to name, and the
+/// absence of the impl says so: `client.send::<chat::message::Payload>(req)`
+/// does not compile, which is the correct answer for an exchange the
+/// specification defines no reply to.
+///
+/// Two stand-ins were considered and rejected:
+///
+/// - **`()`** — not a [`Payload`], has no Type URI, and would make
+///   `send()` compile for an exchange that yields no document, trading a
+///   compile-time error for a runtime one (the HTTPS binding answers such a
+///   request with `204` and no body).
+/// - **`trust_task_ok::v0_1::Payload`** — a real payload, but the wrong one
+///   to bake in: framework 0.5.0 deprecates `trust-task-ok` in favour of a
+///   specification declaring an empty `#response` of its own. Pairing every
+///   response-less specification with a type that is being retired would
+///   need undoing at exactly the moment the framework made the pairing
+///   expressible properly.
+///
+/// The second point is also why nothing is lost by waiting: when a
+/// specification adopts framework 0.5.0's empty `#response`, the codegen
+/// sees a `$defs.Response`, emits the type, and emits this impl alongside
+/// it. No change here is needed to pick that up.
+///
+/// [rust-lang/rust#29661]: https://github.com/rust-lang/rust/issues/29661
+pub trait RequestPayload: Payload {
+    /// The payload of the success response to this request, per SPEC.md
+    /// §4.4.1.
+    ///
+    /// Its [`Payload::TYPE_URI`] is this type's with a `#response` fragment
+    /// appended; the codegen emits both from the one schema, so the two
+    /// cannot drift.
+    type Response: Payload;
 }
 
 #[cfg(test)]

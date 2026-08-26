@@ -4,6 +4,16 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.13.0] - 2026-08-26
+
+### Changed
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.14, whose generated payload types
+  are `#[non_exhaustive]` and carry builders. Signing and verification are
+  generic over `Payload` and are unchanged; a caller that constructs a payload
+  to sign now goes through `X::builder()`. See `trust-tasks-rs` 0.14.0 for the
+  migration note. No change to this crate's own API.
+
 ## [0.12.1] - 2026-08-26
 
 ### Added

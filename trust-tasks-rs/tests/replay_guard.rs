@@ -42,21 +42,18 @@ fn t(s: &str) -> DateTime<Utc> {
 }
 
 fn entry(role: &str) -> grant::AclEntry {
-    grant::AclEntry {
-        allowed_keys: None,
-        subject: "did:web:alice.example".into(),
-        role: role.into(),
-        scopes: vec![],
-        label: None,
-        created_at: None,
-        created_by: None,
-        updated_at: None,
-        updated_by: None,
-        expires_at: None,
-        approve: None,
-        step_up: None,
-        ext: None,
-    }
+    grant::AclEntry::builder()
+        .subject("did:web:alice.example")
+        .role(role)
+        .try_into()
+        .expect("acl entry builder")
+}
+
+fn response(role: &str) -> grant::Response {
+    grant::Response::builder()
+        .entry(entry(role))
+        .try_into()
+        .expect("acl grant response builder")
 }
 
 fn proof() -> Proof {
@@ -75,11 +72,10 @@ fn proof() -> Proof {
 fn request(id: &str, role: &str, issued_at: DateTime<Utc>) -> TrustTask<grant::Payload> {
     let mut doc = TrustTask::for_payload(
         id,
-        grant::Payload {
-            entry: entry(role),
-            reason: None,
-            ext: None,
-        },
+        grant::Payload::builder()
+            .entry(entry(role))
+            .try_into()
+            .expect("acl grant payload builder"),
     );
     doc.issuer = Some(THEM.into());
     doc.recipient = Some(ME.into());
@@ -116,13 +112,7 @@ async fn consume(
         || "err-1".to_string(),
         |req, _parties| async move {
             executions.0.fetch_add(1, Ordering::SeqCst);
-            Ok::<_, ErrorResponse>(req.respond_with(
-                "resp-1",
-                grant::Response {
-                    entry: entry("admin"),
-                    ext: None,
-                },
-            ))
+            Ok::<_, ErrorResponse>(req.respond_with("resp-1", response("admin")))
         },
     )
     .await
@@ -276,13 +266,7 @@ async fn a_retryable_refusal_releases_the_claim_so_the_invited_retry_can_run() {
                         trust_tasks_rs::RejectReason::Unavailable { retry_after: None },
                     ))
                 } else {
-                    Ok(req.respond_with(
-                        "resp-1",
-                        grant::Response {
-                            entry: entry("admin"),
-                            ext: None,
-                        },
-                    ))
+                    Ok(req.respond_with("resp-1", response("admin")))
                 }
             },
         )
@@ -412,13 +396,7 @@ async fn an_unboundable_document_is_refused_rather_than_executed() {
         || "err-1".to_string(),
         |req, _parties| async move {
             executions.0.fetch_add(1, Ordering::SeqCst);
-            Ok::<_, ErrorResponse>(req.respond_with(
-                "resp-1",
-                grant::Response {
-                    entry: entry("admin"),
-                    ext: None,
-                },
-            ))
+            Ok::<_, ErrorResponse>(req.respond_with("resp-1", response("admin")))
         },
     )
     .await;

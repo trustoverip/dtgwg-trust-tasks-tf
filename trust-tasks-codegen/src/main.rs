@@ -780,7 +780,22 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     let normalized_text = serde_json::to_string(&schema)?;
     let root_schema: schemars::schema::RootSchema = serde_json::from_str(&normalized_text)?;
 
-    let settings = typify::TypeSpaceSettings::default();
+    // `with_struct_builder(true)` is what makes an additive spec change
+    // non-breaking. Every generated struct gains an inherent
+    // `X::builder()` returning a `builder::X` with one `.field(v)` setter
+    // per member and a `TryFrom<builder::X> for X`, so a consumer never
+    // has to spell the members it does not care about. Combined with
+    // `#[non_exhaustive]` (applied below) the builder is the *only*
+    // cross-crate construction path, which is the point: adding a member
+    // to a schema can no longer break a call site.
+    //
+    // typify already emits `impl Default` for a struct whose every member
+    // is optional, so `Default` needs no extra derive here.
+    let settings = {
+        let mut s = typify::TypeSpaceSettings::default();
+        s.with_struct_builder(true);
+        s
+    };
     let mut type_space = typify::TypeSpace::new(&settings);
     type_space
         .add_root_schema(root_schema)
@@ -810,12 +825,13 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         response_raw.as_deref(),
     );
 
-    let parsed: syn::File = syn::parse2(module_tokens.clone()).with_context(|| {
+    let mut parsed: syn::File = syn::parse2(module_tokens.clone()).with_context(|| {
         format!(
             "failed to parse generated tokens for {}/{}:\n{}",
             spec.slug, spec.version, module_tokens
         )
     })?;
+    apply_non_exhaustive(&mut parsed);
     let formatted = prettyplease::unparse(&parsed);
 
     let mut path = out_root.to_path_buf();
@@ -826,6 +842,53 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         path.join(format!("{}.rs", spec.version_module())),
         formatted,
     ))
+}
+
+/// Mark every generated payload type `#[non_exhaustive]`.
+///
+/// This is the half of the ergonomics contract that the builder cannot
+/// provide on its own. Without it a consumer keeps reaching for a struct
+/// literal, and the next member added to a schema keeps breaking every one
+/// of those literals — the tax this crate's CHANGELOG has recorded
+/// repeatedly ("consumers constructing `AclEntry` with a struct literal must
+/// add `step_up: None`"). With it, cross-crate construction has to go
+/// through `X::builder()` or `X::default()`, both of which absorb a new
+/// member silently, and a `match` on a generated enum has to carry a
+/// wildcard arm, which absorbs a new enum value silently. `#[non_exhaustive]`
+/// binds only *other* crates, so `trust-tasks-rs`' own code — including the
+/// `builder` module's `TryFrom` impl and the generated conformance tests —
+/// is unaffected.
+///
+/// Applied to:
+///
+/// - **named-field structs** (`Payload`, `Response`, and every `$defs`
+///   object type) — the struct-literal case, and the one the builder
+///   gives an alternative to;
+/// - **enums** — matching the precedent set by `StandardCode` in 0.7.0, so
+///   that a value added to a schema's `enum` is not a break either.
+///
+/// Deliberately *not* applied to tuple/newtype structs. typify emits those
+/// for constrained scalars (`ExtKey`) and for map wrappers (`Ext(pub
+/// HashMap<..>)`); it generates no builder for them, so marking them
+/// `#[non_exhaustive]` would remove the only construction path a consumer
+/// has and leave nothing in its place. Their shape is fixed by the scalar
+/// or map they wrap, so there is no additive change for the attribute to
+/// absorb.
+///
+/// Only top-level items are visited. The nested `error`, `builder` and
+/// `defaults` modules typify emits are crate-internal plumbing whose types
+/// are constructed by generated code, never by a consumer's struct literal.
+fn apply_non_exhaustive(file: &mut syn::File) {
+    let attr: syn::Attribute = syn::parse_quote!(#[non_exhaustive]);
+    for item in file.items.iter_mut() {
+        match item {
+            syn::Item::Struct(s) if matches!(s.fields, syn::Fields::Named(_)) => {
+                s.attrs.push(attr.clone());
+            }
+            syn::Item::Enum(e) => e.attrs.push(attr.clone()),
+            _ => {}
+        }
+    }
 }
 
 /// Resolve `$ref` strings of the form `<relative-path>#/$defs/<name>` by
@@ -1143,6 +1206,14 @@ fn render_module(
         None => quote! {},
     };
 
+    // SPEC §4.4.1 — the request payload names the response payload it is
+    // answered with, so a transport can infer it. Emitted only for a
+    // specification that actually defines a `$defs.Response`: a
+    // fire-and-forget specification has no response *document*, and the
+    // honest encoding of that is the absence of a `RequestPayload` impl
+    // rather than a stand-in type. See the trait docs in
+    // `trust-tasks-rs/src/payload.rs` for why neither `()` nor
+    // `trust-task-ok` is used to fill the hole.
     let response_payload_impl = if has_response {
         quote! {
             impl crate::Payload for Response {
@@ -1151,6 +1222,10 @@ fn render_module(
                 #resp_proof_const
                 #resp_recipient_const
                 #resp_schema_const
+            }
+
+            impl crate::RequestPayload for Payload {
+                type Response = Response;
             }
         }
     } else {

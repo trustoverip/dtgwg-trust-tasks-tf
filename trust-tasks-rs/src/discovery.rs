@@ -20,10 +20,11 @@
 //!     .with::<grant::v0_1::Payload>()
 //!     .with::<revoke::v0_1::Payload>();
 //!
-//! // Query received off the wire:
-//! let query = discovery::Payload {
-//!     patterns: vec!["acl/*".parse().unwrap()],
-//! };
+//! // Query received off the wire. Generated payload types are
+//! // `#[non_exhaustive]`, so construction goes through the builder.
+//! let query: discovery::Payload = discovery::Payload::builder()
+//!     .patterns(vec!["acl/*".parse::<discovery::PayloadPatternsItem>()?])
+//!     .try_into()?;
 //!
 //! let response = registry.respond_to(&query);
 //! // response.supported_types now lists the bare Type URIs of every
