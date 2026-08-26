@@ -194,19 +194,19 @@ impl<R> Dispatcher<R> {
 /// response, so we work from the metadata cloned beforehand.
 /// The parts of an inbound document a routing-time rejection needs, captured
 /// before the handler consumes it.
-struct RequestOrigin {
-    id: String,
-    thread_id: Option<String>,
-    parent_thread_id: Option<String>,
+pub(crate) struct RequestOrigin {
+    pub(crate) id: String,
+    pub(crate) thread_id: Option<String>,
+    pub(crate) parent_thread_id: Option<String>,
     /// Carried onto the error response so a rejection stays inside the
     /// enactment it belongs to (SPEC.md §7.1).
-    ceremony: Option<crate::Ceremony>,
-    type_uri: String,
-    issuer: Option<String>,
-    recipient: Option<String>,
+    pub(crate) ceremony: Option<crate::Ceremony>,
+    pub(crate) type_uri: String,
+    pub(crate) issuer: Option<String>,
+    pub(crate) recipient: Option<String>,
 }
 
-fn build_error_response(
+pub(crate) fn build_error_response(
     error_id: String,
     origin: RequestOrigin,
     mut payload: ErrorPayload,
@@ -250,11 +250,11 @@ fn build_error_response(
     }
 }
 
-fn canonical_key(uri: &crate::type_uri::TypeUri) -> String {
+pub(crate) fn canonical_key(uri: &crate::type_uri::TypeUri) -> String {
     uri.for_routing().to_string()
 }
 
-fn downcast_payload<P>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason>
+pub(crate) fn downcast_payload<P>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason>
 where
     P: Payload,
 {
