@@ -4,6 +4,81 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.13.0] - 2026-08-26
+
+### Added
+
+- **SPEC §7.2 item 11 — the duplicate-execution record, on by default.** The
+  server now claims each document `id` before dispatch and keeps a record of
+  what it executed, so a bit-for-bit resend is absorbed instead of executing a
+  second time and a *different* document under a reused `id` is refused
+  `idConflict`. `trust-tasks-rs` 0.12.0 shipped the `ReplayGuard` seam; this
+  release is the wiring that makes an HTTPS deployment actually keep the
+  record.
+
+  The claim sits at the `validated → accepted` transition — after validation,
+  attribution, the DID-method pre-screen and proof verification, immediately
+  before the handler runs. Claiming earlier would burn the `id` of every
+  document the server then refuses, so a corrected resend came back
+  `idConflict` forever and a stranger could pre-burn an `id` it had merely
+  observed.
+
+  Verdicts are disposed of per §7.2 (*Disposition of a duplicate*), which is
+  explicit that a duplicate is never a failure:
+
+  | Verdict | Answer |
+  |---|---|
+  | `Fresh` | dispatch, then record the response |
+  | `Duplicate` with a recorded response | `200` with that response, no second dispatch |
+  | `Duplicate`, original still in flight | `202 Accepted` — accepted, executing, no result yet |
+  | `Duplicate`, nothing recorded | `204 No Content` — silence, the fire-and-forget case |
+  | `Conflict` | `409` `idConflict` |
+  | guard error | `503` `unavailable`, `retryable` — **fail closed**, never execute |
+
+  A refusal or a panic downstream of the claim releases it, so a legitimate
+  retry is not blocked for the whole retention window.
+
+- **`HttpsServerBuilder::with_replay_guard`** — supply a shared-store
+  `ReplayGuard`. The default `InMemoryReplayGuard` is correct for a
+  single-process consumer and **not** correct behind a load balancer, where two
+  replicas would each accept the same document once.
+
+- **`HttpsServerBuilder::freshness`** — the acceptance window, defaulting to
+  `FreshnessPolicy::consequential()` (`issuedAt` REQUIRED, five-minute window).
+  Its `record_expiry` is what bounds the replay record: SPEC §7.2 makes the
+  window and the record's retention one bound, so there is deliberately no
+  second TTL to configure.
+
+- **`HttpsServerBuilder::replay_protection(false)`** — the documented opt-out.
+  Its rustdoc says plainly what turning it off re-opens.
+
+- **`ClientError::DuplicateAbsorbed`** — a 2xx with an empty body (the `202` /
+  `204` answers above) now surfaces as its own variant rather than as a
+  response-decode failure. It is *not* a failure: the effect happened, once.
+
+### Changed
+
+- **BREAKING: the duplicate-execution record and the freshness bound are on by
+  default.** Both change what a consumer observes. A deployment that resends a
+  document under a reused `id` will now see `idConflict`, and one whose
+  producers omit `issuedAt` — or whose intermediaries hold a request longer
+  than five minutes — will now see `malformedRequest` / `expired` where the
+  document used to be executed. The safe behaviour is the default, as with
+  `require_attribution` in 0.11.0; both opt-outs are one builder call and both
+  say what they cost.
+
+### Fixed
+
+- **SPEC §10.4: the deserializer's rendering no longer reaches the wire.** Both
+  places the server deserialized a body — the document parse and the payload
+  downcast — put `serde_json::Error`'s `Display` into the rejection message,
+  which spells the member path, the byte offset, and sometimes the full set of
+  expected members ("invalid type: string \"not-a-number\", expected a nonzero
+  u64"). That describes this consumer's internal type layout to anyone willing
+  to POST malformed JSON. Both now use `RejectReason::malformed_from_serde`,
+  which `trust-tasks-rs` 0.12.0 exported for exactly this; the detail stays in
+  the operator's log.
+
 ## [0.12.0] - 2026-08-26
 
 ### Changed
