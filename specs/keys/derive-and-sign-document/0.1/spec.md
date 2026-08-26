@@ -61,7 +61,7 @@ A conforming **producer** **MUST**:
 A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
-2. Decide whether this producer may derive and sign at this path, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
+2. Decide whether this producer may derive and sign at this path, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. **Strip any existing `proof` member before canonicalizing.** Signing over a document that still carries a previous proof produces a proof over a signature rather than over content, which no verifier will reproduce and which quietly makes the second signature meaningless.
 4. Canonicalize and construct the proof, recording `proofPurpose` (defaulting to `assertionMethod`) and a verification method that resolves under the derived `did:key`.
 5. Return `signerDid` and the proofed `document`, and **not** the derived private key.
@@ -139,7 +139,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/de
 }
 ```
 
-Failures (`permission_denied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

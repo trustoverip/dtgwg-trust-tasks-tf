@@ -82,7 +82,7 @@ A conforming **producer** (the querying party) **MUST**:
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
-2. Apply its own policy to decide whether the querying party is permitted to enumerate the ACL. Where the policy denies the query, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
+2. Apply its own policy to decide whether the querying party is permitted to enumerate the ACL. Where the policy denies the query, respond with the framework's `permissionDenied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Apply any provided filters (conjunctively) and return only the matching entries. Filter strings the maintainer does not recognize **MUST** simply produce zero matches; they are not an error.
 4. Honor `pageSize` (default and maximum at the maintainer's discretion) and return a continuation `cursor` if more entries remain.
 5. Respond via the `#response` variant defined below.

@@ -55,7 +55,7 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
-2. Establish the producer's authority over the key, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
+2. Establish the producer's authority over the key, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. Refuse with `not_found` where no record carries `keyId`.
 4. Refuse with `already_exists` where a record already carries `newKeyId`. A rename **MUST NOT** overwrite another key's record — doing so would silently repoint every signing request naming that identifier at different material.
 5. Leave the key material, `publicKey`, `createdAt` and `origin` unchanged, and return the new identifier with the time of the change.
@@ -110,7 +110,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/re
 }
 ```
 
-Failures (`permission_denied`, `not_found`, `already_exists`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `not_found`, `already_exists`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

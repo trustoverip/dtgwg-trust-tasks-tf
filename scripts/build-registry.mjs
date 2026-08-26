@@ -29,7 +29,7 @@ import {
   writeAllowlist
 } from './lib/security-privacy.mjs';
 import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
-import { createErrorCodeCasingLint } from './lib/error-code-casing.mjs';
+import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/error-code-casing.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -1268,6 +1268,10 @@ function main() {
       `${disclosureFloorOffenders ? ' (warning — set TT_STRICT_DISCLOSURE=1 to fail the build)' : ''}`
   );
   errorCodeCasing.report();
+  // The rule-4 lint above reads `errorCodes` declarations, which is where an
+  // *extended* code is defined. A *standard* code (§8.3) is declared nowhere and
+  // only ever referenced, so its rule-2 MUST has to be swept over the text.
+  checkStandardErrorCodeCasing(entries, { fs, path, specsDir: SPECS_DIR }, { fail, log: console.log });
 
   // wireCompatibleWith referential integrity: the named predecessor must be a
   // real, strictly-earlier version of the SAME slug. The field's whole value is

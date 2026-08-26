@@ -83,7 +83,7 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Confirm the subject's current role in its own ACL equals `payload.fromRole`. If not, respond with `acl/change-role:stateMismatch`.
-3. Apply its own policy to decide whether the changing authority may make the requested transition. Where the policy forbids the transition, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
+3. Apply its own policy to decide whether the changing authority may make the requested transition. Where the policy forbids the transition, respond with the framework's `permissionDenied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 4. Where either role string is not recognized, respond with `acl/change-role:roleNotRecognized`.
 5. On acceptance, persist the document as the evidentiary record of the change.
 

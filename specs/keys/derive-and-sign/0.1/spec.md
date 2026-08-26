@@ -62,7 +62,7 @@ A conforming **producer** **MUST**:
 A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
-2. Decide, from its own policy, whether this producer may derive and sign **at this path**, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise. A path is not a stored record, so there is no per-key ACL to fall back on — the policy has to be expressed over paths.
+2. Decide, from its own policy, whether this producer may derive and sign **at this path**, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise. A path is not a stored record, so there is no per-key ACL to fall back on — the policy has to be expressed over paths.
 3. Refuse an `algorithm` the derived key type cannot perform, with `invalid_argument`.
 4. Sign the decoded bytes verbatim.
 5. Return the derived `publicKey` alongside the signature, and **not** the derived private key.
@@ -124,7 +124,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/de
 }
 ```
 
-Failures (`permission_denied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

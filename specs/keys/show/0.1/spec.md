@@ -57,11 +57,11 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
-2. Apply its policy to decide whether this producer may read this key's record, refusing with `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) where it may not.
+2. Apply its policy to decide whether this producer may read this key's record, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) where it may not.
 3. Respond with `key` set to the record, or `null` where no such key exists.
 4. **Not** include private key material in the record.
 
-Where policy denies the read, a custodian **SHOULD** answer `permission_denied` rather than `key: null`. The two answers mean different things, and collapsing them tells a caller that a key it is simply not allowed to see does not exist.
+Where policy denies the read, a custodian **SHOULD** answer `permissionDenied` rather than `key: null`. The two answers mean different things, and collapsing them tells a caller that a key it is simply not allowed to see does not exist.
 
 ## Definitions
 

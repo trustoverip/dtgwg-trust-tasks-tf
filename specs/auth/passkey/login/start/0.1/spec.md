@@ -63,7 +63,7 @@ This task serves two semantically-distinct flows, distinguished by `payload.purp
 - **`login`** — issue a fresh session at AAL ≥ 2 on the matching finish.
 - **`step-up`** — elevate the producer's existing session's `acr` on the matching finish, without rotating its `id` or `subject`.
 
-A consumer that does not support step-up MAY refuse `purpose: "step-up"` and respond with the framework's `permission_denied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
+A consumer that does not support step-up MAY refuse `purpose: "step-up"` and respond with the framework's `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 
 ## Status of this Document
 
