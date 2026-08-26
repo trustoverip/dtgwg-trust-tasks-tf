@@ -27,9 +27,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/website/rollback:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/website/rollback:notManaged
     meaning: The website is in live mode, which has no generations to roll back to. Managed mode only.
     retryable: false

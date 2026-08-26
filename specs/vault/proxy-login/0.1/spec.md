@@ -38,9 +38,6 @@ errorCodes:
   - code: vault/proxy-login:notFound
     meaning: No entry with this id exists in the consumer's scope.
     retryable: false
-  - code: vault/proxy-login:permissionDenied
-    meaning: The consumer lacks ProxyLogin capability for this entry.
-    retryable: false
   - code: vault/proxy-login:stepUpRequired
     meaning: Policy demands a step-up proof before the login can proceed. Consumer retries with `stepUpProof` populated.
     retryable: true

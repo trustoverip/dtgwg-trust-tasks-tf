@@ -30,9 +30,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vtc/endorsements/show:permissionDenied
-    meaning: The consumer holds neither the community-admin nor the issuer capability.
-    retryable: false
   - code: vtc/endorsements/show:notFound
     meaning: No endorsement with the supplied `endorsementId` exists in this community.
     retryable: false

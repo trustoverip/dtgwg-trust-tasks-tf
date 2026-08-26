@@ -37,9 +37,6 @@ errorCodes:
   - code: vault/delete:notFound
     meaning: No entry with this id exists in the consumer's visible scope (conflates "absent" and "permission denied" — see Security).
     retryable: false
-  - code: vault/delete:permissionDenied
-    meaning: Returned only when the consumer can already prove existence (e.g. via a prior list); maintainers operating enumeration-resistant modes use `notFound` instead.
-    retryable: false
   - code: vault/delete:versionConflict
     meaning: An `expectedVersion` was supplied and does not match the current version.
     retryable: true

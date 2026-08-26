@@ -31,9 +31,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/members/personhood/challenge:permissionDenied
-    meaning: The consumer lacks the capability to assert personhood for this member.
-    retryable: false
   - code: vtc/members/personhood/challenge:notFound
     meaning: No member with the supplied did exists.
     retryable: false

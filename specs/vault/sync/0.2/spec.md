@@ -40,9 +40,6 @@ errorCodes:
       additionalProperties: false
       properties:
         oldestRetainedSeq: { type: "integer", minimum: 0 }
-  - code: vault/sync:permissionDenied
-    meaning: The consumer lacks VaultRead on the requested scope.
-    retryable: false
 ---
 
 ## Abstract

@@ -31,9 +31,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/members/personhood/revoke:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/members/personhood/revoke:notFound
     meaning: No member with the supplied did exists.
     retryable: false

@@ -28,10 +28,7 @@ sideEffects:
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: device/list:permissionDenied
-    meaning: The consumer lacks visibility into the device inventory.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

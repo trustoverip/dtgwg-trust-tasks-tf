@@ -31,10 +31,7 @@ consequences:
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: config/reload:permissionDenied
-    meaning: The consumer lacks the configuration-admin capability.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

@@ -29,10 +29,7 @@ sideEffects:
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: vtc/members/list:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

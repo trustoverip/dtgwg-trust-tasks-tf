@@ -33,9 +33,6 @@ errorCodes:
   - code: device/disable:notFound
     meaning: No DeviceBinding with this id (or the consumer cannot see it).
     retryable: false
-  - code: device/disable:permissionDenied
-    meaning: The consumer lacks DeviceAdmin capability.
-    retryable: false
   - code: device/disable:alreadyDisabled
     meaning: The device is already disabled (idempotent — maintainers MAY return success with the original disabledAt instead).
     retryable: false

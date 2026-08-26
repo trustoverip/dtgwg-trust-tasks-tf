@@ -26,9 +26,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vtc/website/generations/list:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/website/generations/list:notManaged
     meaning: The website is in live mode, which has no generations. Managed mode only.
     retryable: false
