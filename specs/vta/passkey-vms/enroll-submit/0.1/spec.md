@@ -21,6 +21,7 @@ parties:
   - role: DID administrator
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: VTA
     requirement: REQUIRED
     member: recipient
@@ -35,7 +36,12 @@ consequences:
 subjectPath: /did
 exposure:
   discloses: none
+  ingests: personal
   actsAsSubject: false
+  rationale: "The request carries raw WebAuthn registration material from a human's own authenticator — `attestationObject`, `authenticatorData`, `clientDataJson`, `credentialId` — together with an operator-chosen device `label`. Depending on the attestation format the authenticator selected, `attestationObject` can carry an AAGUID identifying the authenticator model and, under full-basic attestation, a certificate narrower than a model; `credentialId` and the derived key are stable identifiers for one physical device a person carries. Nothing here is confidential material the VTA holds on the producer's behalf — the published key is public and carries no secret — so this is `personal` rather than `secret`. Nothing is returned that the caller did not supply or already know, which is why `discloses` remains `none`."
+retention:
+  class: durable
+  rationale: "Success appends the verificationMethod to the DID document through a WebVH log entry, and WebVH is append-only: the entry recording which key was added, under which label and transports, and at what time is the non-repudiable account of who could authenticate for this DID from that moment. A verifier checking an assertion made against an earlier version of the document needs it, so deleting the entry — if the log allowed it — would break verification of historic assertions and erase the only record of the change. `vta/passkey-vms/revoke` removes the method going forward; it does not unwrite the entry that added it."
 errorCodes:
   - code: vta/passkey-vms/enroll-submit:unknownCeremony
     meaning: The `ceremonyId` is unknown, has expired, or has already been consumed. Re-running this submission will not succeed; the producer must obtain a fresh challenge.
@@ -183,12 +189,132 @@ Response to the request example:
 
 ## Security & Privacy
 
-**Server-side re-derivation is the trust anchor.** The browser-supplied `publicKeyMultibase` is never trusted as authoritative. The VTA re-derives the public key from `attestationObject.authData` and publishes that. A divergence (`vta/passkey-vms/enroll-submit:publicKeyMismatch`) means the browser-side value was tampered with or miscomputed — publishing it would let an attacker bind a key they do not control to the DID. This check is mandatory.
+### Data carried
 
-**Single-use ceremony.** `ceremonyId` is consumed by exactly one submission and bound to one DID. A re-used or expired ceremony (`vta/passkey-vms/enroll-submit:unknownCeremony`) and a cross-DID submission (`vta/passkey-vms/enroll-submit:ceremonyDidMismatch`) are both rejected. The WebAuthn `challenge` from the ceremony is bound into `clientDataJSON`, so a replayed registration cannot be retargeted.
+This request carries raw output from a human's own authenticator, and the members
+divide sharply into three groups.
 
-**Admin authority and auditability.** Only an administrator of the DID's context may enrol a passkey. The **REQUIRED** `proof` makes the published change non-repudiable; the resulting WebVH log entry is the durable audit record of who added which key and when.
+**What gets published, permanently.** `credentialId` becomes the published
+`webauthnCredentialId` and also determines the verificationMethod's `id` fragment,
+which is `passkey-<base64url(sha256(credentialId))>` — content-derived so a verifier
+can locate the method by recomputing the hash. `transports` becomes the advisory
+`webauthnTransports`; verifiers **MUST NOT** make trust decisions based on transport
+hints, but they are readable by anyone and they say what kind of device this is.
+`label` is published verbatim. And the re-derived public key is published as
+`publicKeyMultibase`. All of this is public by design and none of it is secret —
+the point of the family is that a resolver can verify a WebAuthn assertion with no
+callback to the VTA and no shared secret. Producers **SHOULD NOT** place sensitive
+information in `label`, and should read "sensitive" broadly, because unlike most
+mistakes this one cannot be withdrawn (see *Retention*).
 
-**Published key is public.** The verificationMethod is written into the DID document and is therefore public. It carries no secret. `webauthnCredentialId` and `label` are likewise public; producers **SHOULD NOT** place sensitive information in `label`.
+**What is consumed and should not be.** `attestationObject` is the member the
+previous version of this section passed over, and it is the privacy-sharpest thing
+in the payload. The VTA needs exactly one thing from it — `authData`, from which it
+re-derives the authoritative public key — but a raw CBOR attestation object can
+carry considerably more, depending on the attestation format the authenticator
+chose: an AAGUID identifying the authenticator model, and, under a full-basic
+attestation, a certificate that can be narrower than a model. WebAuthn treats
+attestation as a privacy-relevant disclosure for precisely this reason. Nothing in
+this task uses the attestation statement for anything, so a VTA **SHOULD** parse
+`authData`, derive the key, and discard the rest; it **MUST NOT** copy an AAGUID,
+a certificate, or any other identifier taken from the attestation into the DID
+document, where it would become permanent and public alongside the key.
+`authenticatorData` similarly carries the RP ID hash, the user-verification flags,
+and a signature counter — the counter being a well-known tracking channel — and
+`clientDataJson` carries the origin the ceremony actually ran at.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.
+**What is advisory and deliberately distrusted.** The browser-supplied
+`publicKeyMultibase` is never authoritative. The VTA re-derives the public key from
+`attestationObject.authData` and publishes *that*; a divergence
+(`vta/passkey-vms/enroll-submit:publicKeyMismatch`) means the browser-side value was
+tampered with or miscomputed, and publishing it would let an attacker bind a key
+they do not control to the DID. This check is mandatory. `ext` reaches the VTA on a
+document that is about to become a public DID-document write; a producer **MUST NOT**
+place anything there expecting it to stay between the two parties, because the
+natural implementation of an unrecognised extension on an enrolment is to carry it
+through to the published method, exactly as `label` and `transports` are carried
+through.
+
+### Correlation
+
+The published verificationMethod is a permanent, globally-readable record, and taken
+together the methods on one DID are an inventory of a person's devices: how many
+authenticators can act for this DID, roughly what kind each is (`webauthnTransports`
+distinguishes `internal` from `hybrid` from `usb`), what their owner calls them
+(`label`), and — because each was added by its own WebVH log entry — when each was
+enrolled and in what order. Nobody has to be authorized to read any of it; they have
+to resolve a DID.
+
+Two joins deserve naming. First, `label` correlates *across* DIDs: an operator who
+labels devices consistently, which is the whole point of labelling them, publishes
+the same string in every DID document they administer, linking those DIDs to one
+person's device set for anyone who looks. Second, the `id` fragment is
+`sha256(credentialId)`, so it is a standing test oracle: a party that learns a
+credential id by any route can confirm or refute that this DID holds that credential
+without asking anyone. WebAuthn's rpId scoping limits the blast radius — a credential
+registered at one relying party is a different credential, with a different id, from
+one registered at another — but within this relying party the hash is a stable public
+handle for one device.
+
+Against all of that, the administrator stays out of the record entirely, and
+`identifierScope: pairwise` on the DID administrator is the declaration of that
+choice. The published method names the DID as its `controller`; it does not name the
+party that enrolled it. A stranger resolving the DID learns which keys may
+authenticate for it, not who added them, how many administrators exist, or which of
+them is which. The account of *who* enrolled *what* lives at the VTA next to the
+admin-role check and the **REQUIRED** `proof` that makes the change non-repudiable —
+which is the right place for it, because that record has an audience of one and the
+DID document has an audience of everyone. Nothing in this task would work better if
+the administrator's identifier were recognisable elsewhere.
+
+### Retention
+
+Durable, and durable in the specific way that append-only logs are: the write cannot
+be taken back. Success appends the verificationMethod to the DID document *via a
+WebVH log entry*, and [`vta/passkey-vms/revoke`](../../revoke/0.1/spec.md) removes
+the method by appending *another* entry. The current document stops listing the key;
+the history still contains the entry that added it, with its `credentialId`, its
+`label`, its transports, and its timestamp, retrievable by anyone who holds or
+fetches the log. Revocation is a forward-looking act and not an erasure. The
+practical consequence is worth stating plainly to whoever implements the enrolment
+UI: a label chosen carelessly at enrolment cannot be un-chosen by revoking the key.
+
+That permanence is not an accident and it is what makes the record worth keeping. The
+log entry is the non-repudiable account of who could authenticate for this DID from
+which moment, and a verifier evaluating an assertion made against an earlier version
+of the document needs the historic entry to check it. Deleting it — were the log
+mutable — would break verification of every assertion made while that key was live,
+and would remove the only evidence that the change happened at all. A consumer that
+wants a key gone must revoke, and must understand that revoking is the whole of what
+is available.
+
+Short-lived state goes the other way. `ceremonyId` is consumed by exactly one
+submission and bound to one DID; a re-used or expired ceremony
+(`vta/passkey-vms/enroll-submit:unknownCeremony`) and a cross-DID submission
+(`vta/passkey-vms/enroll-submit:ceremonyDidMismatch`) are both rejected, and the
+WebAuthn `challenge` from the ceremony is bound into `clientDataJSON` so a replayed
+registration cannot be retargeted. Once the key is derived and published, the
+ceremony record, the attestation object, and the client data have no further role,
+and a VTA **SHOULD NOT** retain them.
+
+### Consent/purpose
+
+The material is submitted for one purpose: so that the VTA can re-derive a public key
+it can trust and publish it on the DID, making assertions from that authenticator
+verifiable by anyone who resolves the DID. The basis on which the VTA accepts it is
+the administrator's admin role on the DID's context — the same gate as the challenge
+step, re-applied here rather than inherited from the ceremony.
+
+The limit follows from *why* the attestation is present at all. It is carried because
+it is the only trustworthy source of the public key, not because the VTA is entitled
+to whatever else the authenticator chose to put in it; deriving a device fingerprint,
+an authenticator-model inventory, or a fleet report from attestations collected this
+way is a different purpose from the one they were sent for. There is a second
+asymmetry implementers should not paper over: an administrator submitting this
+document understands they are publishing a *key*, and may not have registered that
+they are also publishing a durable, public, unretractable entry naming a device and
+the moment it was added. Surfacing that at the point the `label` is chosen is the
+honest design. What the human does at their authenticator — the biometric or PIN
+gesture the platform prompts for — is governed by the platform and is outside this
+specification, which takes no position on what further gate a VTA applies before
+accepting a submission.

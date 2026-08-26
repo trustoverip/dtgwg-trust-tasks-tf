@@ -33,8 +33,12 @@ consequences:
 subjectPath: /target
 exposure:
   discloses: secret
+  ingests: personal
   actsAsSubject: true
-  rationale: "Logs in as the holder at the bound site and returns a usable session blob, exercising the bound credential."
+  rationale: "Logs in as the holder at the bound site and returns a usable session blob, exercising the bound credential. Inbound, `consumerContext` carries `deviceId`, `lastUserVerificationAt` — the moment a human last unlocked their device — and a `networkClass` of `home`, `corp`, `public`, or `vpn`, so every login also reports where the principal is and when they were last physically present at the device. `target` names the third party being logged into, and `nonce` may carry a relying party's challenge."
+retention:
+  class: exchange
+  rationale: "The returned `sealedSessionBlob` is scoped to the session it opens: the consumer holds cookies and headers for one origin until the session's own expiry, and the maintainer caps that lifetime by policy regardless of `ttlSecondsHint`. Nothing about the long-term credential leaves the maintainer, so unlike `vault/release` there is no released secret whose disposal has to be trusted to the consumer — what the consumer keeps dies with the session. The maintainer's durable residue is the audit line, which is deliberately kept and is not the session."
 errorCodes:
   - code: vault/proxy-login:notFound
     meaning: No entry with this id exists in the consumer's scope.
@@ -205,14 +209,107 @@ Consumer retry with proof:
 
 ## Security & Privacy
 
-**Credential containment.** The long-term credential MUST stay on the maintainer side throughout. Maintainers MUST NOT log the credential, MUST NOT include it in any response field, MUST NOT cache it in memory beyond the duration of the login attempt. Defense in depth: implementations SHOULD wipe the credential from memory immediately after use.
+### Data carried
 
-**Session TTL discipline.** Short TTL is the primary defence against a compromised consumer replaying the session indefinitely. Maintainers SHOULD scope `expiresAt` to minutes for high-value sites, hours for low-value. The maintainer's policy is the source of truth, not the third party's intrinsic session TTL.
+**Credential containment is the task's reason to exist.** The long-term credential
+**MUST** stay on the maintainer side throughout. Maintainers **MUST NOT** log it,
+**MUST NOT** include it in any response field, and **MUST NOT** cache it in memory
+beyond the duration of the login attempt; as defence in depth, implementations
+**SHOULD** wipe it from memory immediately after use. What comes back is
+`sealedSessionBlob` — cookies and headers for one origin, enough to operate a
+session and nothing more.
 
-**Step-up trust.** When policy requires step-up, the maintainer MUST verify the proof on its own — not trust the consumer's claim that a UV happened. For WebAuthn UV, the consumer signs a maintainer-issued challenge with a key the maintainer can verify. For push-approval, the maintainer issues a DIDComm challenge to the holder's mobile Companion and waits for a signed approval.
+That is the entire privacy difference between this task and
+[`vault/release`](../../release/0.2/spec.md), and it is worth stating as a
+substitution rather than a nuance. A release hands over the credential that mints
+sessions: unscoped, non-expiring, usable from any machine, and irrecoverable once
+out. A proxy-login hands over one session: bound to a single origin, expiring on
+its own, and useless anywhere else. Consumers **SHOULD** reach for this task first
+and fall back to release only on `vault/proxy-login:notProxyable`.
 
-**Audit reach.** Every proxy-login is logged. This is non-negotiable: a Service consumer (AI agent) with `ProxyLogin` can authenticate as the holder; without audit, it would be impossible to detect misuse.
+The inbound side is where personal data travels, and it is easy to overlook because
+none of it is credential material. `entryId` and `target` say which account at which
+third party is about to be used. `consumerContext` describes the human: `deviceId`
+identifies the device, `networkClass` reports whether the principal is on a `home`,
+`corp`, `public`, or `vpn` network, and `lastUserVerificationAt` timestamps the last
+occasion a person physically unlocked that device. These are advisory inputs to the
+maintainer's policy engine, and the maintainer **MUST** cross-check anything
+security-relevant against its own state rather than trusting the producer; a
+producer **SHOULD NOT** populate them beyond what the policy engine actually
+consumes, since everything supplied is retained in the mandatory audit record.
+`nonce` is the remaining member worth naming: for SIOPv2-shaped flows it carries the
+relying party's challenge verbatim into the issued credential, so it is
+relying-party data passing through rather than the consumer's own.
 
-**Replay.** The `id` is the maintainer's idempotency key. A retry of the same proxy-login `id` within the maintainer's idempotency window MUST return the same `sealedSessionBlob` (re-sealing to the same key), not perform a second login at the third party. Different `id` = new login.
+### Correlation
 
-**Policy hot-reload.** If policy is updated mid-session-window, the existing session blob remains valid until `expiresAt`. New proxy-login requests are evaluated against the updated policy.
+The maintainer is party to every login it proxies, which is a sharper position than
+holding the vault at rest. `entryId`, `target`, timestamp, `networkClass` and
+`lastUserVerificationAt` together reconstruct when a principal used which account
+from what kind of network and whether a human was present — a behavioural log
+produced as a by-product of a security control, and one the audit requirement below
+makes non-optional.
+
+At the third party the correlation is the intended one: the login is
+indistinguishable from the principal logging in themselves, which is what
+`actsAsSubject: true` records. The relying party cannot tell a proxied session from
+a direct one, and cannot tell which of a principal's Companions initiated it — the
+attribution that exists lives in the maintainer's log and nowhere else. That
+asymmetry is deliberate (the third party learns no more than it would have) but it
+means the maintainer's audit trail is the only place a misused session can be traced
+back to the consumer that asked for it.
+
+`deviceId` is stable across requests by design, so per-device policy and per-device
+revocation are possible; the cost is that the log joins on it cleanly.
+
+### Retention
+
+Exchange-scoped, and the scoping is enforced rather than trusted — the distinction
+from `vault/release`, where the equivalent claim rests on a consumer honouring a
+TTL it could ignore. Here the consumer never holds the long-term secret, so what it
+retains dies with the session.
+
+**Session TTL discipline.** Short TTL is the primary defence against a compromised
+consumer replaying the session indefinitely. Maintainers **SHOULD** scope `expiresAt`
+to minutes for high-value sites and hours for low-value ones, and the maintainer's
+policy is the source of truth — not the third party's intrinsic session TTL, and not
+`ttlSecondsHint`, which is a preference the maintainer silently truncates rather than
+rejects. Drivers over a fixed-lifetime bearer (a SIOP `id_token` with its own `exp`)
+**MUST NOT** extend beyond the underlying credential regardless of the hint.
+
+**Policy hot-reload.** If policy is updated mid-session-window the existing session
+blob remains valid until `expiresAt`; new requests are evaluated against the updated
+policy. A tightened policy therefore takes effect at the next login and not
+retroactively, which is a real retention window an operator revoking access needs to
+account for.
+
+**Audit reach.** Every proxy-login is logged, and this is non-negotiable: a Service
+consumer with `ProxyLogin` can authenticate as the holder, and without an audit
+record misuse would be undetectable. The log is the durable residue of an otherwise
+transient exchange, and it necessarily contains whatever `consumerContext` the
+producer supplied.
+
+**Replay.** The `id` is the maintainer's idempotency key. A retry of the same `id`
+within the idempotency window **MUST** return the same `sealedSessionBlob`, re-sealed
+to the same key, rather than performing a second login at the third party — so a
+retried request does not multiply sessions at the relying party or entries in its
+logs. A different `id` is a new login.
+
+### Consent/purpose
+
+The data moves so the maintainer can authenticate as the holder at one named third
+party and hand back a session scoped to it. The REQUIRED `proof` is the record of
+the basis: it lets the maintainer attribute every session it creates on the holder's
+behalf to a specific Companion or Service, which is the only attribution that
+survives the third party's inability to distinguish a proxied login from a direct
+one.
+
+**Step-up trust.** Where policy calls for a step-up, the maintainer **MUST** verify
+the proof itself rather than trust a consumer's claim that a user verification
+happened — for WebAuthn UV the consumer signs a maintainer-issued challenge with a
+key the maintainer can verify, and for push-approval the maintainer issues its own
+DIDComm challenge to the holder's mobile Companion and waits for a signed answer.
+Per [SPEC §7.3 item 13](/SPEC.md#73-specification-requirements) this specification
+describes how such a check is carried out where a maintainer's policy calls for one;
+it does not require the policy. `vault/proxy-login:stepUpRequired` is the channel
+through which a maintainer expresses that decision.
