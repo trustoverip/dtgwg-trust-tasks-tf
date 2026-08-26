@@ -30,7 +30,13 @@ sideEffects:
 exposure:
   discloses: none
   actsAsSubject: false
-errorCodes: []
+errorCodes:
+  - code: keys:alreadyExists
+    meaning: A key record already carries the target identifier; the custodian refuses rather than overwrite it. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
+  - code: keys:invalidArgument
+    meaning: A payload member is well-formed against the schema but unusable for this request. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
 related:
   - keys/import
   - keys/show
@@ -64,7 +70,7 @@ A conforming **consumer** (the key custodian) **MUST**:
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Establish the producer's authority to add keys, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 2a. **Refuse `mnemonic` on any transport that is not end-to-end confidential**, and never log or echo it. A BIP-39 phrase reconstitutes the key anywhere, so it is secret-bearing in exactly the way the rest of this payload is not — the same reasoning that makes [`keys/import`](../../import/0.1/spec.md) refuse its cleartext carrier.
-3. Refuse, with `already_exists`, a request that would collide with an existing key record rather than replacing it.
+3. Refuse, with `keys:alreadyExists`, a request that would collide with an existing key record rather than replacing it.
 4. Return the realized record — including `publicKey` and the assigned `keyId` — under the `#response` variant, with `origin: "derived"`.
 5. **Not** return the private key, or any encoding of it.
 
@@ -125,7 +131,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/cr
 }
 ```
 
-Failures (`permissionDenied`, `already_exists`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `keys:alreadyExists`, `keys:invalidArgument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

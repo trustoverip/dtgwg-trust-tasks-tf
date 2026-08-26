@@ -30,7 +30,10 @@ subjectPath: /keyId
 exposure:
   discloses: none
   actsAsSubject: false
-errorCodes: []
+errorCodes:
+  - code: keys:notFound
+    meaning: No key record on this custodian carries the named `keyId`. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
 related:
   - keys/show
   - keys/list
@@ -58,7 +61,7 @@ A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Establish the producer's authority over the key, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
-3. Refuse with `not_found` where no record carries `keyId`.
+3. Refuse with `keys:notFound` where no record carries `keyId`.
 4. Set the record's status to `revoked`, **retain the record**, and refuse every subsequent [`keys/sign`](../../sign/0.1/spec.md) naming it.
 5. **Never** return a revoked key to `active`. Reactivation would make the audit trail unfalsifiable in the wrong direction: a signature made during the revoked window would afterwards look as though it were made by a valid key.
 6. Return the realized `status` and the `updatedAt` boundary under the `#response` variant.
@@ -118,7 +121,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/re
 }
 ```
 
-Failures (`permissionDenied`, `not_found`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `keys:notFound`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
