@@ -308,10 +308,30 @@ fn validate_segment(seg: &str) -> Option<()> {
 }
 
 fn is_reserved_namespace(slug: &str) -> bool {
+    // SPEC §6.1 reserves `^trust-(task|ceremony)($|-|/)`. Both halves: the
+    // `trust-ceremony` half is unused by published specs at framework 0.5,
+    // and exists precisely so the ceremony layer has a namespace no other
+    // party can claim first — a check that omits it hands that namespace
+    // to whoever asks.
     let first = slug.split('/').next().unwrap_or("");
-    first == "trust-task" || first.starts_with("trust-task-")
+    for stem in ["trust-task", "trust-ceremony"] {
+        if first == stem || first.starts_with(&format!("{stem}-")) {
+            return true;
+        }
+    }
+    false
 }
 
+/// The framework slugs permitted inside the reservation of
+/// [`is_reserved_namespace`].
+///
+/// This list is the second of two hand-maintained copies — the other is
+/// `#/properties/slug/anyOf[1]/enum` in `specs/spec.meta.schema.json`, which
+/// is what the registry build enforces. `reserved_allowlist_matches_the_meta_schema`
+/// below reads that file and fails if the two disagree, so the copies cannot
+/// drift silently the way they did before: this list was missing
+/// `trust-task-control` and `trust-ceremony-receipt`, so the library rejected
+/// the Type URI of a published specification.
 fn is_allowed_framework_slug(slug: &str) -> bool {
     matches!(
         slug,
@@ -320,7 +340,94 @@ fn is_allowed_framework_slug(slug: &str) -> bool {
             | "trust-task-ok"
             | "trust-task-next-step"
             | "trust-task-discovery"
+            | "trust-task-control"
+            | "trust-ceremony-receipt"
     )
+}
+
+#[cfg(test)]
+mod reserved_slug_conformance {
+    use super::*;
+
+    /// SPEC §6.1 reserves `^trust-(task|ceremony)($|-|/)`. Both halves.
+    #[test]
+    fn both_halves_of_the_reservation_are_enforced() {
+        for slug in [
+            "trust-task",
+            "trust-task-error",
+            "trust-task-anything",
+            "trust-ceremony",
+            "trust-ceremony-receipt",
+            "trust-ceremony-anything",
+            "trust-task/nested",
+        ] {
+            assert!(is_reserved_namespace(slug), "{slug} is reserved by §6.1");
+        }
+        for slug in ["acl/grant", "trust-tasks", "trusty-task", "vault/get"] {
+            assert!(!is_reserved_namespace(slug), "{slug} is not reserved");
+        }
+    }
+
+    /// Every framework slug the registry publishes must parse. This is the
+    /// regression: `trust-task-control/0.1` is a published specification whose
+    /// Type URI this crate rejected, because the allowlist here had drifted
+    /// from the one the registry build enforces.
+    #[test]
+    fn published_framework_type_uris_parse() {
+        for slug in [
+            "trust-task-error",
+            "trust-task-ok",
+            "trust-task-next-step",
+            "trust-task-discovery",
+            "trust-task-control",
+            "trust-ceremony-receipt",
+        ] {
+            let uri = format!("https://trusttasks.org/spec/{slug}/0.1");
+            assert!(
+                uri.parse::<TypeUri>().is_ok(),
+                "{slug} is published by the framework and must parse"
+            );
+        }
+    }
+
+    /// A reserved slug that is *not* a published framework specification must
+    /// be refused, or the reservation protects nothing.
+    #[test]
+    fn an_unclaimed_reserved_slug_is_refused() {
+        for slug in ["trust-task-evil", "trust-ceremony-evil"] {
+            let uri = format!("https://trusttasks.org/spec/{slug}/0.1");
+            assert!(
+                uri.parse::<TypeUri>().is_err(),
+                "{slug} sits inside the §6.1 reservation and is not framework-published"
+            );
+        }
+    }
+
+    /// The allowlist above is one of two hand-maintained copies; the registry
+    /// build enforces the other. Read that one and fail if they disagree —
+    /// CLAUDE.md records several incidents of exactly this drift, and this
+    /// pair had already drifted by two entries.
+    #[test]
+    fn reserved_allowlist_matches_the_meta_schema() {
+        let meta =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../specs/spec.meta.schema.json");
+        let Ok(raw) = std::fs::read_to_string(&meta) else {
+            // Published crate: the registry is not vendored alongside it.
+            return;
+        };
+        let json: serde_json::Value = serde_json::from_str(&raw).expect("meta-schema parses");
+        let listed = json["properties"]["slug"]["anyOf"][1]["enum"]
+            .as_array()
+            .expect("reserved-slug allowlist is an array");
+        for v in listed {
+            let slug = v.as_str().expect("allowlist entries are strings");
+            assert!(
+                is_allowed_framework_slug(slug),
+                "{slug} is allowlisted by specs/spec.meta.schema.json but not by \
+                 is_allowed_framework_slug — the two copies have drifted"
+            );
+        }
+    }
 }
 
 #[cfg(test)]
