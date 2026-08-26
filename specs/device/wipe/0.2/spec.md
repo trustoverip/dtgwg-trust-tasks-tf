@@ -22,6 +22,7 @@ parties:
   - role: device
     requirement: REQUIRED
     member: recipient
+    identifierScope: pairwise
 proofRequirement:
   requirement: REQUIRED
   rationale: Wipe is destructive and irreversible from the target's perspective. The maintainer's authority MUST be verifiable so the target can confirm the wipe is genuine before executing it (defence against an attacker who has captured the transport channel attempting to silently wipe legitimate Companions).
@@ -33,7 +34,28 @@ consequences:
 subjectPath: /deviceId
 exposure:
   discloses: none
+  ingests: personal
   actsAsSubject: false
+  rationale: >-
+    Nothing is returned to the issuer beyond an acknowledgement, so `discloses`
+    stays `none`. Inbound is the unusual half: `reason` is a REQUIRED free-text
+    member the schema exists to feed an audit log's record of intent, and the
+    circumstances that prompt a wipe — a device lost, a person departed, a
+    compromise suspected — make the natural sentence one that names an
+    identifiable person and what happened to them. That text is delivered to
+    the device being wiped, which is the party the maintainer has just declared
+    it no longer trusts.
+retention:
+  class: durable
+  rationale: >-
+    The two halves of this task retain in opposite directions. The target
+    destroys what it holds — that is the point — while the maintainer keeps the
+    wipe as a security-incident record: who issued it, when, against which
+    `deviceId`, at what `scope`, and with what `reason`, alongside whether an
+    acknowledgement ever arrived. `wipedAt` is stamped on the DeviceBinding
+    rather than the row being deleted. A consumer that discarded the record
+    would lose the only evidence distinguishing a device that confirmed its
+    wipe from one that may still hold cached vault material.
 errorCodes:
   - code: device/wipe:notFound
     meaning: No DeviceBinding with this id.
@@ -145,14 +167,93 @@ In order of preference:
 
 ## Security & Privacy
 
-**Defence in depth.** The wipe message is one of four mitigations; the others (ACL revoke, cache-key rotation, mediator suppression) execute regardless of whether the wipe is acknowledged. Implementers MUST NOT defer the server-side mitigations until acknowledgement — that creates a window in which a silently-dropped wipe leaves the device functional.
+### Data carried
 
-**Proof verification on the target side.** The target verifies the maintainer's proof before executing. This protects against a malicious mediator or man-in-the-middle attempting to silently wipe legitimate Companions. A wipe whose proof does not verify MUST be ignored (and logged locally if the target has logging).
+The request is four members: `deviceId`, a `scope` of `cache`, `cacheAndKeys`,
+or `full`, a self-contained `issuedAt` repeated so an offline-queued delivery
+still carries its own timestamp, and `reason`.
 
-**No replay neutralisation.** A captured wipe document is still a valid wipe of its named target — replaying it is harmless if the device is already wiped, and the maintainer-side mitigations cannot be re-triggered into a useful state by a replay.
+`reason` is the member that deserves care, and its position in this task is
+unusual enough to state plainly. It is **required**, it is free text up to 256
+characters, and the schema is explicit that it is required "because every wipe
+is consequential and the audit log must capture intent". But the document it
+travels in is delivered *to the device being wiped* — the one party the
+maintainer has, by issuing this task, formally declared it no longer trusts, and
+which in the lost-or-stolen case is physically in someone else's hands. An
+operator writing "laptop stolen from Anna at the Barcelona office" or "issued on
+dismissal" has written a sentence for the audit log and transmitted it to a
+stranger.
 
-**Audit reach.** Every wipe is logged with `{ who issued, when, deviceId, scope, reason }`. Acknowledgements (or absences) are also logged so an investigator can distinguish "device confirmed wipe" from "device may still hold cached material".
+Nothing here needs that sentence to reach the target. `scope` already says what
+the device must do; the audit entry already records who issued the wipe and
+when. A producer **SHOULD** write a `reason` that satisfies the audit
+requirement without narrating the incident, and **MUST NOT** place credentials,
+third-party personal data, or investigation detail in it.
 
-**Diagnostics privacy.** `diagnostics` is part of the target's signed surface (sent over an authenticated transport) but is not encrypted on the wire by default. Targets SHOULD NOT include personally-identifiable detail beyond byte counts and hook names.
+The response carries `deviceId`, `scope`, `completedAt`, and optional
+`diagnostics`: byte and key counts, the `osHooksInvoked` naming which OS-level
+revocation APIs the target managed to call, and free-form `partialReasons`
+strings. `diagnostics` is part of the target's signed surface and travels over
+an authenticated transport, but it is not encrypted on the wire by default, so
+targets **SHOULD NOT** put personally-identifiable detail there beyond byte
+counts and hook names.
 
-**Recovery.** A user who wipes a device by mistake (e.g. confused with disable) MUST re-onboard the device via the normal provision-integration + acl/swap-key + device/register flow. There is no "undo wipe".
+### Correlation
+
+`deviceId` ties the wipe to the DeviceBinding and, through it, to every
+heartbeat, capability grant, and audit line that device ever produced. The wipe
+itself becomes part of that record: `wipedAt` is stamped on the binding rather
+than the row being removed, and `deviceId` is never re-used, so "this device was
+wiped, on this date" is a permanent property of the identifier.
+
+`osHooksInvoked` is more identifying than it looks. Naming
+`ASCredentialIdentityStore.removeAllCredentialIdentities` rather than
+`navigator.credentials.preventSilentAccess` distinguishes an Apple platform from
+a browser extension, and the set of hooks a target succeeded in calling
+fingerprints its OS version and its permission state — on a response that is not
+encrypted by default.
+
+Replay does not create a correlation problem here, only a non-problem worth
+recording: a captured wipe document remains a valid wipe of its named target, so
+replaying it against an already-wiped device achieves nothing, and the
+maintainer-side mitigations cannot be re-triggered into a useful state by one.
+
+The device party declares `identifierScope: pairwise`. The wipe must name a
+device its own maintainer can resolve, and no third party is asked to recognise
+that identifier; a device reusing one identifier across maintainers would let
+each of them learn that it had been wiped by another.
+
+### Retention
+
+Destructive on one side and durable on the other, which is the whole shape of
+the task. The target destroys its cache and, at `cacheAndKeys` or `full`, its
+device-local key material; there is no undo, and a user who issues a wipe when
+they meant `device/disable` **MUST** re-onboard through the full
+provision-integration → `acl/swap-key` → `device/register` sequence.
+
+The maintainer keeps the opposite. Every wipe is logged with who issued it,
+when, against which device, at what scope, and for what reason; acknowledgements
+and their absence are logged too, so an investigator can tell "device confirmed
+wipe" from "device may still hold cached material". That means the `reason` text
+persists in the audit trail indefinitely — a second, independent reason to write
+it as a record rather than as a narrative.
+
+### Consent/purpose
+
+The purpose is neutralisation, and the design assumes the target will not
+cooperate. The wipe message is one of four mitigations; ACL revocation,
+cache-key-derivation-root rotation, and mediator suppression all execute
+regardless of whether it is acknowledged, and implementers **MUST NOT** defer
+those server-side steps until an acknowledgement arrives — doing so opens a
+window in which a silently-dropped wipe leaves the device fully functional.
+
+Authority runs the other way to everywhere else in this family. The target
+verifies the maintainer's proof *before* executing, because the instruction is
+destructive and a malicious mediator or an intercepting party would otherwise be
+able to wipe legitimate Companions at will; a wipe whose proof does not verify
+**MUST** be ignored, and logged locally where the target has logging.
+
+`reason` is collected for the audit log, and that is the limit of its purpose. A
+consumer that renders it in the target's own interface is showing incident
+detail to whoever currently holds the device, which is precisely the population
+the wipe exists to defend against.

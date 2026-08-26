@@ -82,7 +82,7 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
 - `MINOR` bump = backwards-compatible change.
 - `MAJOR` bump = breaking change, reset `MINOR` to 0.
 - Editorial/normalization changes to a `status: draft` spec — normalizing casing to the canonical convention below, re-pinning a framework or shared-schema `$ref` with no wire effect, rewording descriptions — are made **in place**. Do **not** create a new version folder for them ([SPEC.md §5.2](SPEC.md#52-compatibility-rules)).
-- See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump.
+- See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump. (That is the *spec's* version, which you do own — unlike the library versions, which the Release PR assigns; see [RELEASING.md](RELEASING.md).)
 
 ## `spec.md` front matter
 
@@ -418,10 +418,9 @@ cargo run -p trust-tasks-codegen && cargo fmt --all   # 1. regenerate Rust bindi
 npm run build-ts-bindings                             # 2. regenerate TS bindings, commit the diff
 ```
 
-Then bump the two libraries **in lockstep** (keep their versions equal):
+**Do not bump either library's version, and do not write a `CHANGELOG.md` entry.** That changed when this repo moved to release-plz: versions and changelogs are assigned by a **Release PR**, and merging your PR no longer publishes anything. A version edited in a feature PR collides with every other open PR touching that package. See [RELEASING.md](RELEASING.md).
 
-- **`trust-tasks-rs`** — bump `version` in `trust-tasks-rs/Cargo.toml`, add a `trust-tasks-rs/CHANGELOG.md` entry, and refresh `Cargo.lock` (`cargo build -p trust-tasks-rs`).
-- **`@openvtc/trust-tasks`** — bump `version` in `trust-tasks-ts/package.json` (and its `package-lock.json`).
+What you *do* owe the release is a **conventional-commit PR title**, since PRs squash-merge and that title becomes the published changelog entry and decides the size of the bump. Use `feat(<slug>):` when you add a spec family — `spec(<slug>):` is allowed but is scored as a patch.
 
 Additive changes (new task, backwards-compatible schema edit) are a patch/minor bump; a breaking schema change needs a new spec **version** folder, not an in-place edit (see [Version rules](#version-rules-per-spec-5)).
 
@@ -443,7 +442,7 @@ This is a loud compile error rather than a silent behaviour change, and the fix 
 
 Making this structurally impossible was considered and rejected: deriving `Default` on the generated types (so consumers could write `..Default::default()`) does not compile, because generated enums have no natural default variant, and inventing one is unsafe — a `decision` enum silently defaulting to `approved` is a worse failure than a compile error.
 
-CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindings-drift` job fail the PR if either set of generated files is stale. Publishing itself is automated and version-gated: `publish.yml` releases on push to `main` **only** when the manifest version is newer than what's already published, so an un-bumped PR is a silent no-op. Never publish by hand.
+CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindings-drift` job fail the PR if either set of generated files is stale. Publishing is automated but **not triggered by your merge**: `publish.yml` keeps a Release PR up to date with the bumps and changelog entries the merged commits imply, and merging that PR is the release. Never publish by hand. See [RELEASING.md](RELEASING.md).
 
 ## Submitting a PR
 

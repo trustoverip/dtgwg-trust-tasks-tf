@@ -1,0 +1,67 @@
+# release-plz — versioning, changelogs and publishing for the Rust workspace.
+#
+# The model: merge PRs to main freely. release-plz watches main and keeps a
+# single "Release PR" up to date with the version bumps and changelog entries
+# those merges imply. Merging THAT PR is the release — it tags each crate and
+# publishes to crates.io. Nothing else publishes.
+#
+# So merging a feature PR never releases anything, and a release is a reviewable
+# diff rather than a side effect of a merge. See RELEASING.md.
+#
+# WHAT GETS PUBLISHED is decided in each crate's Cargo.toml, not here. Nine
+# crates publish; `trust-tasks-codegen` sets `publish = false` because it is the
+# internal generator. release-plz honours that flag — it still updates an
+# unpublished crate's version and dependency requirements so the workspace stays
+# coherent, it just never uploads it. Keeping the decision in the manifests
+# means cargo and release-plz cannot disagree about it.
+#
+# The npm package is NOT here: release-plz is Rust-only and has no hook that
+# could bump `trust-tasks-ts/package.json`. It gets its own Release PR from
+# `scripts/release-ts-pr.sh`, built to work the same way.
+
+[workspace]
+# Changelog entries come from conventional commits via git-cliff. The commit
+# message IS the entry, so there is nothing for two concurrent PRs to conflict
+# over — which is what the per-PR "add a CHANGELOG entry and bump the version"
+# ritual used to cost.
+changelog_config = "cliff.toml"
+
+# Compare each crate's public API against its published version and force a
+# compatibility-breaking bump when it actually broke, rather than trusting an
+# author to notice.
+#
+# ON FOR ALL NINE, deliberately. The sibling VTI workspace switches this off for
+# twelve of its crates, but those are published only to satisfy crates.io's
+# rule that a published crate's whole closure must be published — nothing
+# consumes their APIs. The opposite is true here: every crate this repo
+# publishes exists to be consumed directly (a transport binding, the proof
+# backend, the ceremony helpers, the generated types), so a silent break in any
+# of them reaches somebody.
+#
+# The cost is real — cargo-semver-checks builds rustdoc JSON twice per crate,
+# current and baseline — but it is paid once per merge to main in the
+# `release-plz-pr` job, not on every pull request, which is the tax VTI was
+# avoiding. If the job outgrows its timeout, `trust-tasks` (the facade) is the
+# first candidate to switch off: it only re-exports the other eight, so most of
+# its surface is already checked on the crate that owns it. Turn it off there
+# before weakening the check anywhere that owns an API.
+semver_check = true
+
+# One GitHub Release per published crate, carrying that crate's changelog
+# section. This is what an external consumer lands on from crates.io.
+git_release_enable = true
+
+# Label the Release PR so it is obvious in the queue and easy to filter.
+pr_labels = ["release"]
+
+# NOT SET, on purpose:
+#
+#   publish_no_verify — `cargo publish` compiles the packaged tarball, which is
+#   the check that catches generated code `include_str!`-ing a path outside the
+#   crate root (the file gets excluded from the tarball and the verify build
+#   fails). rust.yml's `package` job exercises that for trust-tasks-rs; the
+#   publish-time verify is what covers the other eight.
+#
+#   release_always — left at its default (true) so a hand-fixed version, or a
+#   re-run after a half-published release, still gets picked up. Publication is
+#   idempotent: a crate already at that version on crates.io is skipped.

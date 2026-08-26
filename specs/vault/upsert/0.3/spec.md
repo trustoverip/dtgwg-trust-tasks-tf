@@ -31,7 +31,12 @@ sideEffects:
 subjectPath: /id
 exposure:
   discloses: none
+  ingests: personal
   actsAsSubject: false
+  rationale: "The secret rides sealed and the maintainer cannot read it, but everything wrapped around it arrives in cleartext and is about a person: `targets` names the sites, apps, and relying parties the principal holds an account with, `label` is a human display name of the account's own naming (\"Personal bank — checking\"), `tags` group entries by area of life, `notes` is 4096 characters of free text, and `customFieldNames` describes the shape of a credential the maintainer is not permitted to read. Nothing is disclosed back to the caller beyond the entry it just wrote."
+retention:
+  class: durable
+  rationale: "An entry is the vault's whole product — it is stored until an explicit `vault/delete`, survives every session, and is what later `vault/release` and `vault/proxy-login` calls resolve against. The cleartext metadata is retained on exactly the same terms as the sealed secret, which is the asymmetry worth naming: deleting it would leave the maintainer holding ciphertext it could no longer match to a site or render to a person."
 errorCodes:
   - code: vault/upsert:contextNotFound
     meaning: The supplied `contextId` does not exist.
@@ -208,14 +213,107 @@ A conforming **consumer** **MUST**:
 
 ## Security & Privacy
 
-**No cleartext on the wire.** The Trust Task wire form carries only HPKE-sealed bytes for the secret. Maintainers MUST refuse documents that smuggle plaintext via `ext` or by abusing optional metadata fields to carry credential material.
+### Data carried
 
-**Optimistic concurrency.** `expectedVersion` is the only safe way to update — without it, two Companions racing on the same entry can silently overwrite each other. Maintainers MAY accept blind updates (omit `expectedVersion`) only when explicitly opted in via ACL capability; this is a foot-gun and should not be default.
+**No cleartext secret on the wire.** The Trust Task wire form carries the secret
+only as HPKE-sealed bytes inside `sealedSecret`, and the maintainer verifies the
+envelope's authenticator before persisting — a failed verification yields
+`vault/upsert:sealedSecretInvalid` with `details.reason` and **MUST NOT** mutate any
+stored state. Maintainers **MUST** refuse documents that smuggle plaintext via `ext`
+or by abusing optional metadata fields to carry credential material.
 
-**Rotation audit.** Every secret rotation is an audit event; the maintainer MUST record `who, when, kind` (NOT the new secret bytes). For `password` kind, the maintainer MUST set `passwordChangedAt` to the upsert time.
+**The metadata is the leak, and it is not sealed.** Everything wrapped around the
+envelope arrives in cleartext, is stored in cleartext, and is about a person:
 
-**Sealed envelope verification.** The maintainer MUST verify the envelope's authenticator (the `producerAssertion` mode) before persisting. A failed verification MUST result in `sealedSecretInvalid` with `details.reason` and MUST NOT cause any stored state to mutate.
+* `targets[]` names every web origin, iOS bundle id, Android package, or relying-party
+  DID the entry applies to. Accumulated across a vault this is the single most
+  revealing structure the maintainer holds — the list of services a principal has
+  an account with — and it is available without decrypting anything.
+* `label` is a display name the schema illustrates with *"Work GitHub"* and
+  *"Personal bank — checking"*. Those examples are the ordinary case, and both leak
+  more than the origin alone does.
+* `tags[]` are user-authored groupings; the schema's own example is
+  `["family", "finance"]`, which classifies an account by area of life.
+* `notes` is up to 4096 characters of free text. The shared schema calls it
+  "non-sensitive notes" and suggests support contacts, account numbers, and expiry
+  memos — but the field enforces nothing, and a member described as non-sensitive is
+  exactly the one that fills with sensitive text. Genuinely sensitive notes belong
+  inside the sealed payload as `secureNotes`, where only a
+  [`vault/release`](../../release/0.2/spec.md) reveals them.
+* `customFieldNames[]` is the subtlest. It tells the maintainer the *shape* of a
+  credential it is expressly not permitted to read — that this entry has a field
+  called `securityAnswerMothersMaidenName`, or `recoveryEmail` — which is inference
+  the seal was supposed to prevent.
 
-**Permission scope.** `VaultWrite` granted to a Service consumer (AI agent, sync daemon) is a high-risk capability — that consumer can introduce or rotate credentials silently. Maintainers SHOULD prefer narrow per-site Capability grants over blanket VaultWrite for Service consumers.
+A producer **SHOULD** treat every unsealed member as visible to the maintainer
+forever and put in it only what the maintainer needs to route, match, and render the
+entry. `secretKind` is the deliberate exception: it is exposed precisely so consumers
+can render the right affordance and policy can route by kind without unsealing.
 
-**Replay.** The `id` is used for idempotency: a maintainer SHOULD treat a retry of the same document id as a no-op once the upsert has been applied (within an idempotency window — recommended 24h).
+### Correlation
+
+The joins here are trivial and unavoidable. `contextId` partitions entries by persona
+and is immutable on an entry — the schema requires a delete-and-recreate to move one —
+so a maintainer can see the boundary between a principal's personas but cannot be
+asked to forget it. Within a context, `targets[]` correlates directly to the outside
+world: a maintainer holding a vault knows which relying parties its principal deals
+with, and a relying party's presence is disclosed by the act of storing a credential
+for it, before any login ever happens.
+
+Across entries, `tags` and `label` are user-authored and habitually consistent, so
+they cluster reliably even where `targets` do not overlap. And because
+[`vault/get`](../../get/0.1/spec.md) and [`vault/list`](../../list/0.1/spec.md) return
+this metadata without releasing secrets, the correlation surface is reachable by any
+consumer holding read scope — a strictly larger set than those holding
+`FillRelease`.
+
+The `version` counter and `updatedAt` add a temporal trace: the sequence of upserts
+against one entry records when a principal changed a password, which is behavioural
+data the maintainer accrues simply by doing its job.
+
+### Retention
+
+Durable, without qualification. An entry persists until an explicit
+[`vault/delete`](../../delete/0.1/spec.md); nothing in this payload expires it, and
+`expiresAt` describes the credential's own validity rather than the record's lifetime.
+That is what a vault is for, and the sealed secret's durability is not the
+interesting half — the cleartext metadata is retained on identical terms, so a `label`
+or a `notes` line written once outlives every rotation of the secret it describes.
+
+`clearFields` is the only member that shortens retention, and it exists because
+omission had to mean "don't touch": a consumer that wants a `notes` line gone
+**MUST** name it in `clearFields`, since leaving it out of the payload preserves it.
+Producers correcting an over-shared `notes` or `label` should know that an update
+alone does not remove it.
+
+**Rotation audit.** Every secret rotation is an audit event and the maintainer
+**MUST** record `who, when, kind` — and **NOT** the new secret bytes. For `password`
+kind the maintainer **MUST** set `passwordChangedAt` to the upsert time. The audit
+record therefore outlives the secret deliberately, and is scoped so that it proves a
+rotation happened without reproducing what was rotated to.
+
+**Replay.** The `id` is used for idempotency: a maintainer **SHOULD** treat a retry of
+the same document id as a no-op once the upsert has been applied, within an
+idempotency window (recommended 24h). That window is itself retained state, and it is
+bounded for the same reason.
+
+### Consent/purpose
+
+The data moves so that a maintainer can hold a credential on a principal's behalf and
+act on it later at a named target. The `proof` is REQUIRED so the maintainer can
+attribute the change to a specific consumer and record who introduced or rotated a
+credential that other Companions will subsequently trust.
+
+The purpose limit that matters is scope creep between consumers rather than between
+uses. **`VaultWrite` granted to a Service consumer** (an AI agent, a sync daemon) is a
+high-risk capability: that consumer can introduce or rotate credentials silently, and
+a credential it introduces is one every other Companion will treat as the principal's
+own. Maintainers **SHOULD** prefer narrow per-site capability grants over blanket
+`VaultWrite` for Service consumers.
+
+**Optimistic concurrency** is a purpose-integrity control as much as a correctness
+one. `expectedVersion` is the only safe way to update — without it two Companions
+racing on the same entry silently overwrite each other, and the loser's rotation is
+lost with no party observing an error. Maintainers **MAY** accept blind updates only
+where a consumer has explicitly opted in via ACL capability; this is a foot-gun and
+**SHOULD NOT** be the default.

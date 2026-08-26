@@ -20,6 +20,7 @@ parties:
   - role: DID administrator
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: VTA
     requirement: REQUIRED
     member: recipient
@@ -32,7 +33,12 @@ sideEffects:
 subjectPath: /did
 exposure:
   discloses: none
+  ingests: metadata
   actsAsSubject: false
+  rationale: "The request carries the target `did` — an identifier for a VTA-managed resource whose document is publicly resolvable — and an optional operator-chosen `label` describing a device (\"MacBook Touch ID\"). Neither is an attribute of a natural person, but `label` is unconstrained free text that the ceremony will carry through to a published verificationMethod if it completes, so it is the member where personal data would arrive if a producer put it there."
+retention:
+  class: exchange
+  rationale: "The VTA keeps the ceremony — `ceremonyId` bound to the challenge, the target DID and the label — only until `vta/passkey-vms/enroll-submit` consumes it or it expires. `sideEffects` is `none`: an abandoned ceremony leaves nothing behind, which is the right outcome for an operation a human can walk away from at the authenticator prompt. The durable record is created by `enroll-submit`, not here."
 errorCodes:
   - code: vta/passkey-vms/enroll-challenge:didNotFound
     meaning: The target DID is not managed by this VTA, so no challenge can be issued.
@@ -143,10 +149,106 @@ Response to the request example:
 
 ## Security & Privacy
 
-**Single-use, short-lived ceremony.** The `ceremonyId` and `challenge` bind one WebAuthn registration attempt to one DID. The VTA **MUST** reject a re-used or expired ceremony at [`enroll-submit`](../../enroll-submit/0.1/spec.md) (`vta/passkey-vms/enroll-submit:unknownCeremony`). The `challenge` **MUST** carry sufficient entropy (at least 32 random bytes) to make replay infeasible.
+### Data carried
 
-**Admin authority is the gate.** The security of the whole family rests on the admin-role check: only an administrator of the target DID's context may add a verificationMethod. The **REQUIRED** `proof` lets the VTA attribute the request to a specific admin key and prevents a captured request being replayed against a different DID.
+The request is a target `did` and an optional `label`. The label is the only
+member a human authors, and it is easy to under-read: it does not stay between the
+administrator and the VTA. The schema says it is carried through to the WebAuthn
+user name and, if the ceremony completes, to the *published* verificationMethod —
+so choosing a label here is making a public commitment at the one moment the
+operator has least reason to think they are. A producer **SHOULD** describe a
+device ("MacBook Touch ID", "office YubiKey") and **SHOULD NOT** use a person's
+name, a location, a role, or a ticket reference. `label` is also not authenticated
+as belonging to any particular device: it is informational, and consumers
+**MUST NOT** make trust decisions based on it.
 
-**Label is producer-supplied.** `label` is informational only and is not authenticated as belonging to any particular device. Consumers **MUST NOT** make trust decisions based on it.
+The response carries a full set of WebAuthn relying-party and *user* parameters —
+`rpId`, `rpName`, `userHandle`, `userName`, `userDisplayName` — which is why
+`exposure.discloses: none` deserves an explanation rather than a shrug. It holds
+because every one of those values is derived from what the caller already supplied
+or already knows: `userName` and `userDisplayName` come from the DID or the
+operator-supplied label, and `rpId`/`rpName` are the VTA's own configuration. The
+response tells the administrator nothing about any person that the administrator
+did not put into the request. Implementers **SHOULD** keep it that way. Populating
+`userDisplayName` from an account record — a real name, an email address, a
+directory lookup — is the obvious convenience and it would silently turn this into
+a disclosure the declaration does not cover, in a member that then travels to the
+browser and into the authenticator's own credential list.
 
-The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload; producers **MUST NOT** place data in `ext` that they would not be comfortable signing.
+`userHandle` deserves its own note because WebAuthn is explicit that it is meant to
+be an opaque, non-correlating value and warns against deriving it from a username
+or an email. This task honours that: the schema specifies a **per-DID** handle, so
+it carries nothing about the administrator and does not join one DID's enrolments
+to another's. Two consequences follow. A VTA **MUST NOT** derive `userHandle` from
+the administrator's identity or from any account identifier. And because a per-DID
+derivation is a function of a publicly-resolvable DID, the handle may be
+*predictable* to anyone who knows that DID — it is not a secret, confers nothing,
+and **MUST NOT** be treated as an authenticator of anything.
+
+`ext` on the response reaches a browser that is about to hand adjacent values to
+`navigator.credentials.create`. A VTA **MUST NOT** use it to smuggle WebAuthn
+parameters this schema does not name — a client that honours them is running a
+registration ceremony this specification did not describe, and the anti-tamper
+gate at [`enroll-submit`](../../enroll-submit/0.1/spec.md) checks the key, not the
+ceremony's shape.
+
+### Correlation
+
+`rpId` is a single DNS name matching the origin the administration UI is served
+from, and every passkey this VTA enrols shares it. Authenticators group credentials
+by relying party, so a human's own device will display all passkeys for all DIDs
+managed by that VTA as one account cluster — a real correlation, local to the
+authenticator, that no member of this payload can vary. `userHandle` cuts the other
+way: being per-DID, it keeps enrolments for different DIDs apart in the
+authenticator's view, while deliberately joining every enrolment for the *same* DID
+so that a re-registration replaces rather than duplicates.
+
+The interesting separation in this task is between the administrator and the
+subject. The target `did` at `subjectPath` is or will be publicly resolvable, and
+[`enroll-submit`](../../enroll-submit/0.1/spec.md) writes into its document
+permanently. The administrator's own identifier goes nowhere near it. That is what
+`identifierScope: pairwise` on the DID administrator records: nothing in this task
+requires the administrator to be recognisable outside its relationship with this
+VTA, and a stranger who later resolves the DID learns which keys may authenticate
+for it but not who added them or how many people hold admin over it. The account of
+*who enrolled what* lives at the VTA, next to the admin-role check that authorized
+it, and does not become public as a side effect of the key becoming public.
+
+### Retention
+
+Exchange-scoped, and unusually cleanly so. The VTA holds the ceremony — the
+`ceremonyId` bound to its challenge, the target DID, and the label — only until
+[`enroll-submit`](../../enroll-submit/0.1/spec.md) consumes it or it expires. The
+`challenge` **MUST** carry at least 32 random bytes so that replay is infeasible
+within that window, and the ceremony is single-use: the VTA **MUST** reject a
+re-used or expired one (`vta/passkey-vms/enroll-submit:unknownCeremony`). Note that
+`timeoutMs` is advisory — the authenticator and the browser apply their own limits
+and the VTA applies its own expiry, which is the authoritative one; a consumer
+**MUST NOT** read it as a retention commitment.
+
+Because `sideEffects` is `none`, a ceremony that is never completed leaves nothing
+behind at all. That is the correct default for an operation a human can abandon at
+a biometric prompt, and it is worth preserving: a VTA **SHOULD** retain, after a
+ceremony is consumed or expires, only enough to *refuse* a replay — the id, marked
+spent — and not the challenge, the label, or the browser parameters, none of which
+have any use once the ceremony has closed. The one member that outlives this
+exchange is `label`, and it does so only by being copied into the durable record
+that `enroll-submit` publishes.
+
+### Consent/purpose
+
+The parameters exist for one purpose: to let one browser attempt one WebAuthn
+registration against one named DID. The basis on which the VTA issues them is the
+administrator's admin role on that DID's context, which the VTA re-checks at
+submission rather than treating this response as a token — holding a `challenge`
+authorizes nothing, because it is a freshness value and not a capability.
+
+The limit on reuse is correspondingly narrow. `userHandle` is stable, which makes
+it tempting as a general account key; it is not one, and a VTA **SHOULD NOT** use
+it outside the WebAuthn ceremonies it was minted for. The same applies to the
+ceremony record: it is scoped to establishing that one submission belongs to one
+challenge, not to building a history of enrolment attempts against a DID. What
+happens at the authenticator itself — the biometric or PIN gesture the human is
+asked for — is governed by the platform and is outside this specification, and this
+specification takes no position on what further gate a VTA applies before issuing a
+challenge.
