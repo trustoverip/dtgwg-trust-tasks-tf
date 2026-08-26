@@ -63,8 +63,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          # Full history + tags: release-plz diffs each crate against the
-          # commit its last release was tagged at.
+          # Full history + tags. release-plz decides WHETHER a crate changed by
+          # comparing its packaged files against the tarball on crates.io — it
+          # downloads each published crate to do so — but it decides WHAT the
+          # changelog says from the commits since that crate's `<crate>-v*` tag.
+          # Shallow history therefore produces a correct bump with an empty
+          # changelog, which is the failure mode to recognise.
           fetch-depth: 0
           persist-credentials: false
 

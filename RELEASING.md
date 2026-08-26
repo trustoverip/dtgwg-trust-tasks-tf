@@ -159,10 +159,12 @@ usually fixes it, because the missing crate is on crates.io by then.
 
 ### One-time migration
 
-release-plz anchors each crate's changelog to the tag of its last release, and
-`scripts/release-ts-pr.sh` does the same for the npm package. No such tags exist
-in this repo. Seed them once at the current `main` — every version there is
-already published — **before trusting the first Release PR**:
+release-plz decides *whether* a crate changed by comparing its packaged files
+against the tarball on crates.io, so it will find the right bump with no tags at
+all. It decides *what the changelog says* from the commits since that crate's
+`<crate>-v<version>` tag — and `scripts/release-ts-pr.sh` uses its tag for both.
+No such tags exist in this repo. Seed them once at the current `main` — every
+version there is already published — **before trusting the first Release PR**:
 
 ```bash
 git switch main && git pull
