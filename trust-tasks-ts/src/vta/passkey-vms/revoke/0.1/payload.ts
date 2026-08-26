@@ -3,6 +3,9 @@
  * Source: specs/vta/passkey-vms/revoke/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Remove a passkey verificationMethod from a VTA-managed DID document via a WebVH log entry. Admin-gated. The VM is identified by its URL fragment (everything after `#` in the verificationMethod id). The success response is an empty object — modelled as an object so future additive fields do not bump the version.
  */
@@ -15,26 +18,23 @@ export interface VTAPasskeyVMRevokePayload {
    * The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`.
    */
   fragment: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.
  */
 export interface VTAPasskeyVMRevokeResponsePayload {
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/auth/refresh/0.1/payload.schema.json
  */
 
+import type { Ext, Session, TokenBundle } from "../../../_shared/components.js";
+
+
 /**
  * Exchange a refresh token for a new access token (and optionally a new refresh token).
  */
@@ -15,102 +18,31 @@ export interface AuthRefresh {
    * Optional capability tags requested on the new access token. MAY be narrower than the original session's scope; consumers MUST NOT widen scope on refresh.
    */
   scope?: string[];
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Issued by the auth service when the presented refresh token is valid. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/refresh/0.1#response.
  */
 export interface AuthRefreshResponsePayload {
+  /**
+   * Optional session snapshot. Consumers SHOULD include it so the producer can refresh client-side state (acr changes after step-up, scope changes after policy edits) without a separate whoami call.
+   */
   session?: Session;
+  /**
+   * New access token. If the consumer's policy rotates refresh tokens on each use, a new refreshToken is included; otherwise the producer continues using the previously-issued one.
+   */
   tokens: TokenBundle;
-  ext?: Ext3;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Optional session snapshot. Consumers SHOULD include it so the producer can refresh client-side state (acr changes after step-up, scope changes after policy edits) without a separate whoami call.
- */
-export interface Session {
-  /**
-   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
-   */
-  id: string;
-  /**
-   * The authenticated party's VID (typically a DID URL).
-   */
-  subject: string;
-  /**
-   * ISO-8601 timestamp when the session was created.
-   */
-  issuedAt: string;
-  /**
-   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
-   */
-  expiresAt: string;
-  /**
-   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
-   *
-   * @minItems 1
-   */
-  amr?: [string, ...string[]];
-  /**
-   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
-   */
-  acr?: string;
-  ext?: Ext1;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
-/**
- * New access token. If the consumer's policy rotates refresh tokens on each use, a new refreshToken is included; otherwise the producer continues using the previously-issued one.
- */
-export interface TokenBundle {
-  /**
-   * Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.
-   */
-  accessToken: string;
-  /**
-   * Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.
-   */
-  refreshToken?: string;
-  /**
-   * Token presentation scheme. Almost always "Bearer"; reserved for future schemes.
-   */
-  tokenType: string;
-  /**
-   * Seconds from issuance until the access token expires.
-   */
-  expiresIn: number;
-  /**
-   * Seconds from issuance until the refresh token expires, when one was issued.
-   */
-  refreshExpiresIn?: number;
-  /**
-   * Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.
-   */
-  scope?: string[];
-  ext?: Ext2;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext2 {
-  [k: string]: unknown | undefined;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext3 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Session, TokenBundle };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/refresh/0.1" as const;

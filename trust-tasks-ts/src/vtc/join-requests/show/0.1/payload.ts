@@ -3,6 +3,9 @@
  * Source: specs/vtc/join-requests/show/0.1/payload.schema.json
  */
 
+import type { Ext, JoinRequest } from "../../../../_shared/components.js";
+
+
 export interface VTCJoinRequestsShowPayload {
   /**
    * The join request to fetch.
@@ -10,70 +13,13 @@ export interface VTCJoinRequestsShowPayload {
   id: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCJoinRequestsShowResponsePayload {
   request: JoinRequest;
   ext?: Ext;
 }
-/**
- * One application to join a Verifiable Trust Community.
- */
-export interface JoinRequest {
-  /**
-   * Stable id of this join request (a UUID).
-   */
-  id: string;
-  /**
-   * DID of the applicant.
-   */
-  applicantDid: string;
-  /**
-   * The W3C Verifiable Presentation the applicant submitted (opaque here).
-   */
-  vp: {};
-  /**
-   * Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.
-   */
-  vpClaims?: {} | null;
-  submittedAt: string;
-  status: "pending" | "approved" | "rejected" | "withdrawn" | "deferred";
-  /**
-   * The community policy verdict recorded for this request (opaque here); absent while pending.
-   */
-  policyDecision?: {};
-  /**
-   * Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.
-   *
-   * Distinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.
-   */
-  decision?: {
-    /**
-     * Stable refusal code, safe to branch on.
-     */
-    code: string;
-    /**
-     * Elaboration in prose, when the decider gave one.
-     */
-    reason?: string | null;
-    /**
-     * When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.
-     */
-    decidedAt: string;
-  } | null;
-  /**
-   * Whether the applicant consented to trust-registry publication.
-   */
-  registryConsent?: boolean;
-  /**
-   * Opaque community-defined extension bag.
-   */
-  extensions?: {};
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, JoinRequest };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/show/0.1" as const;

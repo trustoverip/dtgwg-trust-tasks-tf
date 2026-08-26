@@ -3,6 +3,9 @@
  * Source: specs/did-management/registry/admin-register/0.1/payload.schema.json
  */
 
+import type { Ext, ServiceInstance } from "../../../../_shared/components.js";
+
+
 export interface RegistryAdminRegisterPayload {
   instanceId: string;
   did: string;
@@ -11,34 +14,13 @@ export interface RegistryAdminRegisterPayload {
   label?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface RegistryAdminRegisterResponsePayload {
   entry: ServiceInstance;
   ext?: Ext;
 }
-export interface ServiceInstance {
-  /**
-   * Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.
-   */
-  instanceId: string;
-  /**
-   * VID identifying the registered service.
-   */
-  did: string;
-  label?: string;
-  publicUrl?: string;
-  /**
-   * Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.
-   */
-  servedDomains?: string[];
-  lastSeen?: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, ServiceInstance };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/registry/admin-register/0.1" as const;

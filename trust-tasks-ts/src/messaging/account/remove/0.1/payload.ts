@@ -3,42 +3,39 @@
  * Source: specs/messaging/account/remove/0.1/payload.schema.json
  */
 
-/**
- * The DID of the account to remove.
- */
-export type Vid = string;
-/**
- * The account that was removed.
- */
-export type Vid1 = string;
+import type { Ext, Vid } from "../../../../_shared/components.js";
+
 
 export interface MessagingRemoveAccountPayload {
+  /**
+   * The DID of the account to remove.
+   */
   did: Vid;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/account/remove request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/remove/0.1#response.
  */
 export interface MessagingRemoveAccountResponsePayload {
-  did: Vid1;
+  /**
+   * The account that was removed.
+   */
+  did: Vid;
   /**
    * Whether the account was removed.
    */
   removed: boolean;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Vid };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/account/remove/0.1" as const;

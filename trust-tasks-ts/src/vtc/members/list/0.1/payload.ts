@@ -3,6 +3,9 @@
  * Source: specs/vtc/members/list/0.1/payload.schema.json
  */
 
+import type { Ext, MemberResponse } from "../../../../_shared/components.js";
+
+
 export interface VTCMembersListPayload {
   /**
    * Filter to members with this role (wire form, e.g. `admin`, `custom:editor`).
@@ -18,12 +21,6 @@ export interface VTCMembersListPayload {
   limit?: number;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCMembersListResponsePayload {
   items: MemberResponse[];
   /**
@@ -36,68 +33,9 @@ export interface VTCMembersListResponsePayload {
   totalEstimate?: number | null;
   ext?: Ext;
 }
-/**
- * One community member as the maintainer sees it: the membership record joined with its ACL role.
- */
-export interface MemberResponse {
-  /**
-   * The member's DID.
-   */
-  did: string;
-  /**
-   * The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).
-   */
-  role: string;
-  /**
-   * Optional human-readable label.
-   */
-  label?: string | null;
-  joinedAt: string;
-  /**
-   * Whether the member consented to being published in the community directory.
-   */
-  publishConsent: boolean;
-  /**
-   * How the member's record is handled on departure.
-   */
-  departurePreference: "purge" | "tombstone" | "historical" | "policydefault";
-  /**
-   * The member's slot on the community's membership status list, when allocated.
-   */
-  statusListIndex?: number | null;
-  /**
-   * Id of the member's current Verifiable Membership Credential, if issued.
-   */
-  currentVmcId?: string | null;
-  /**
-   * Id of the member's current role Verifiable Endorsement Credential, if issued.
-   */
-  currentRoleVecId?: string | null;
-  /**
-   * Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.
-   */
-  personhood?: boolean;
-  /**
-   * When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.
-   */
-  personhoodAssertedAt?: string | null;
-  /**
-   * Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.
-   */
-  joinedViaInvitation?: boolean;
-  /**
-   * `id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.
-   */
-  memberVmcId?: string | null;
-  /**
-   * When that reciprocal credential was received. Paired with `memberVmcId`.
-   */
-  memberVmcReceivedAt?: string | null;
-  /**
-   * Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).
-   */
-  extensions: {};
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, MemberResponse };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/list/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/vta/services/drain/cancel/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainsUntil`. Messages still in flight through it are lost, which is the whole reason the drain window existed.
  */
@@ -14,12 +17,6 @@ export interface VTAServicesDrainCancelPayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/services/drain/cancel. Type https://trusttasks.org/spec/vta/services/drain/cancel/1.0#response.
  */
 export interface VTAServicesDrainCancelResponsePayload {
@@ -29,6 +26,9 @@ export interface VTAServicesDrainCancelResponsePayload {
   mediatorDid: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/services/drain/cancel/1.0" as const;

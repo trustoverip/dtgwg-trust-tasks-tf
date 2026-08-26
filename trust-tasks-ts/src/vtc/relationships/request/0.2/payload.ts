@@ -3,10 +3,8 @@
  * Source: specs/vtc/relationships/request/0.2/payload.schema.json
  */
 
-/**
- * Digest over the RFC 8785 canonicalization of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing — which requires both ends to canonicalize the same way, and is why the canonicalization is named here rather than assumed.
- */
-export type DigestMultibase = string;
+import type { DigestMultibase, Ext } from "../../../../_shared/components.js";
+
 
 /**
  * A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.
@@ -19,12 +17,6 @@ export interface VTCRelationshipsRequestPayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.
  */
 export interface VTCRelationshipsRequestResponsePayload {
@@ -32,9 +24,15 @@ export interface VTCRelationshipsRequestResponsePayload {
    * A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged.
    */
   vrc: {};
+  /**
+   * Digest over the RFC 8785 canonicalization of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing — which requires both ends to canonicalize the same way, and is why the canonicalization is named here rather than assumed.
+   */
   vrcDigestMultibase?: DigestMultibase;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/request/0.2" as const;

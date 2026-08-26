@@ -3,6 +3,9 @@
  * Source: specs/device/wipe/0.2/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.
  */
@@ -26,12 +29,6 @@ export interface DeviceWipePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.
  */
 export interface DeviceWipeResponsePayload {
@@ -52,6 +49,9 @@ export interface DeviceWipeResponsePayload {
   };
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/wipe/0.2" as const;

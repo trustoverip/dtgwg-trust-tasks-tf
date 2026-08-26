@@ -3,6 +3,9 @@
  * Source: specs/vta/contexts/update/1.0/payload.schema.json
  */
 
+import type { ContextPolicy, ContextRecord, Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Request payload for vta/contexts/update. Every member except `id` is optional and omitting one leaves that field unchanged — this is a patch, not a replacement.
  */
@@ -23,81 +26,15 @@ export interface VTAContextsUpdatePayload {
    * New description.
    */
   description?: string;
+  /**
+   * Replacement policy for the context. Supplied whole: the members present in the new policy are the policy, and one omitted from it becomes unrestricted rather than retaining its previous value.
+   */
   contextPolicy?: ContextPolicy;
   ext?: Ext;
 }
-/**
- * Replacement policy for the context. Supplied whole: the members present in the new policy are the policy, and one omitted from it becomes unrestricted rather than retaining its previous value.
- */
-export interface ContextPolicy {
-  /**
-   * VIDs permitted to receive presentations from this context. Absent: any verifier. Present-but-empty: none.
-   */
-  trustedVerifiers?: string[];
-  /**
-   * Credential types that may be presented from this context. Absent: any type. Present-but-empty: none.
-   */
-  presentableTypes?: string[];
-  /**
-   * Key ids the signing oracle may be invoked on within this context. Absent: every key the context holds. Present-but-empty: no keys.
-   */
-  signableKeys?: string[];
-  /**
-   * Whether material in this context may leave it through an export. Defaults to true; set it to false for a context whose contents must not be extractable.
-   */
-  exportAllowed?: boolean;
-  /**
-   * Resource limits for the context. Shape is maintainer-defined.
-   */
-  quotas?: {
-    [k: string]: unknown | undefined;
-  };
-  ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
- * A context as the VTA holds it.
- */
-export interface ContextRecord {
-  /**
-   * Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.
-   */
-  id: string;
-  /**
-   * Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.
-   */
-  name: string;
-  /**
-   * DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.
-   */
-  did?: string;
-  /**
-   * Free-form description.
-   */
-  description?: string;
-  /**
-   * Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.
-   */
-  parent?: string;
-  /**
-   * Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.
-   */
-  basePath: string;
-  /**
-   * RFC 3339.
-   */
-  createdAt: string;
-  /**
-   * RFC 3339.
-   */
-  updatedAt: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ContextPolicy, ContextRecord, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/update/1.0" as const;

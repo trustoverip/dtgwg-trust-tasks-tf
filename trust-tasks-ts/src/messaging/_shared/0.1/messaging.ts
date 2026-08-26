@@ -9,3 +9,9 @@
 export interface MessagingAdministrationSharedDefinitionsForTheMessagingSpecFamily {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { Account, AccountType, AdminAccount, AuditAction, AuditEntry, MediatorAcl, QueueLimits, Vid } from "../../../_shared/components.js";

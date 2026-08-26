@@ -3,6 +3,9 @@
  * Source: specs/vta/contexts/did-templates/update/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Resolved scope of the stored template.
  */
@@ -21,6 +24,9 @@ export interface VTAContextDIDTemplateUpdatePayload {
    */
   name: string;
   template: DidTemplate;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
 /**
@@ -69,12 +75,6 @@ export interface DidTemplate {
   document: {};
 }
 /**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * The persisted DidTemplateRecord after replacement. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/get.
  */
 export interface VTAContextDIDTemplateUpdateResponsePayload {
@@ -115,6 +115,9 @@ export interface Context {
   type: "context";
   contextId: string;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/update/1.0" as const;

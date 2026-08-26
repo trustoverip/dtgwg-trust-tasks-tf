@@ -3,6 +3,9 @@
  * Source: specs/auth/step-up/policy/0.2/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * The relying party's (ACL maintainer's) system-wide step-up policy: the per-operation-class floor that decides whether — and how — a step-up to a higher assurance level is required before a gated operation proceeds. Set by an administrator; resolved per request against per-entry overrides (see acl/_shared AclEntry.stepUp).
  */
@@ -15,6 +18,9 @@ export interface AuthStepUpPolicyPayload {
    * The system-wide minimum step-up requirement per operation-class — the maintainer-owned floor. Per-entry `stepUp` settings on an AclEntry MAY raise the requirement for a given subject but MUST NOT lower it (additive-only). The effective requirement for a request is the strictest of (matching floor, caller's per-entry setting).
    */
   floors: StepUpFloor[];
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
 export interface StepUpFloor {
@@ -32,12 +38,6 @@ export interface StepUpFloor {
   allowAal1IfNonEscalating?: boolean;
 }
 /**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.
  */
 export interface AuthStepUpPolicyResponsePayload {
@@ -49,14 +49,11 @@ export interface AuthStepUpPolicyResponsePayload {
    * The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).
    */
   floors: StepUpFloor[];
-  ext?: Ext1;
+  ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/policy/0.2" as const;

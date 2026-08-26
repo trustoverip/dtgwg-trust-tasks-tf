@@ -3,6 +3,9 @@
  * Source: specs/auth/passkey/enroll/invite/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * An administrator issues a single-use invite link an unenrolled subject can redeem to bind their first passkey, without first holding an authenticated session.
  */
@@ -30,12 +33,6 @@ export interface AuthPasskeyEnrollInvite {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.
  */
 export interface AuthPasskeyEnrollInviteResponsePayload {
@@ -56,6 +53,9 @@ export interface AuthPasskeyEnrollInviteResponsePayload {
   expiresAt: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1" as const;

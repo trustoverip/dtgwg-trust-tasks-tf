@@ -3,6 +3,9 @@
  * Source: specs/git-trust/revoke/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * A community operator revokes a member's commit-signing grant for a resource. The host marks the TRQP authorization tuple unauthorized (retaining it for audit), so CI verifiers observe the denial on their next query.
  */
@@ -21,12 +24,6 @@ export interface GitTrustRevokePayload {
   reason?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface GitTrustRevokeResponsePayload {
   subject: string;
   resource: string;
@@ -40,6 +37,9 @@ export interface GitTrustRevokeResponsePayload {
   message?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-trust/revoke/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/trust-task-next-step/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../_shared/components.js";
+
+
 /**
  * The recipient-suggested continuation reserved at SPEC.md §8.6: the original task was understood, but cannot complete in isolation, and this names what the recipient party expects in order to proceed.
  *
@@ -69,12 +72,9 @@ export interface TrustTaskNextStepPayload {
   message?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/trust-task-next-step/0.1" as const;

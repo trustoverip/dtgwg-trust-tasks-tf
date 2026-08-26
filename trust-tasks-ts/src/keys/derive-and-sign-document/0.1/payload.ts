@@ -3,15 +3,16 @@
  * Source: specs/keys/derive-and-sign-document/0.1/payload.schema.json
  */
 
-/**
- * Algorithm to derive. MUST be one that can sign.
- */
-export type KeyType = "ed25519" | "x25519" | "p256";
+import type { Ext, KeyType } from "../../../_shared/components.js";
+
 
 /**
  * Derive a key at a path and return the supplied JSON document with a Data Integrity proof grafted on. Unlike keys/derive-and-sign, the custodian canonicalizes the document itself.
  */
 export interface KeysDeriveAndSignDocumentPayload {
+  /**
+   * Algorithm to derive. MUST be one that can sign.
+   */
   keyType: KeyType;
   /**
    * Hierarchical-deterministic path to derive at.
@@ -25,13 +26,10 @@ export interface KeysDeriveAndSignDocumentPayload {
    * Proof purpose to record in the generated proof. Absent means `assertionMethod`.
    */
   proofPurpose?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a keys/derive-and-sign-document request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign-document/0.1#response.
@@ -45,14 +43,11 @@ export interface KeysDeriveAndSignDocumentResponsePayload {
    * The document with the Data Integrity `proof` grafted on.
    */
   document: {};
-  ext?: Ext1;
+  ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, KeyType };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/derive-and-sign-document/0.1" as const;

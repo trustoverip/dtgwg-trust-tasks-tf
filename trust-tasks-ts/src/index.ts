@@ -5,6 +5,11 @@
 // not one specification among many.
 export * from "./_runtime/index.js";
 
+// Every cross-file definition, declared once. Namespaced rather than flat:
+// 150-odd names in the root export would collide with the runtime's on the
+// first shared definition anyone calls `Transport` or `Session`.
+export * as SharedComponents from "./_shared/components.js";
+
 export * as FrameworkShared_v0_1 from "./_framework/0.1/framework.js";
 export * as FrameworkShared_v0_2 from "./_framework/0.2/framework.js";
 export * as FrameworkShared_v0_3 from "./_framework/0.3/framework.js";

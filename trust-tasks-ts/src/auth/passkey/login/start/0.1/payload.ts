@@ -3,6 +3,9 @@
  * Source: specs/auth/passkey/login/start/0.1/payload.schema.json
  */
 
+import type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOptions } from "../../../../../_shared/components.js";
+
+
 /**
  * Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.
  */
@@ -15,13 +18,10 @@ export interface AuthPasskeyLoginStart {
    * Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.
    */
   purpose?: "login" | "step-up";
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.
@@ -31,44 +31,18 @@ export interface AuthPasskeyLoginStartResponsePayload {
    * Opaque server handle correlating this start with the matching finish.
    */
   authId: string;
+  /**
+   * PublicKeyCredentialRequestOptions for navigator.credentials.get.
+   */
   options: PublicKeyCredentialRequestOptions;
-  ext?: Ext1;
-}
-/**
- * PublicKeyCredentialRequestOptions for navigator.credentials.get.
- */
-export interface PublicKeyCredentialRequestOptions {
   /**
-   * Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.
-   *
-   * This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
-   *
-   * Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
-  extensions?: {};
-  /**
-   * base64url-encoded one-time nonce.
-   */
-  challenge: string;
-  timeout?: number;
-  rpId?: string;
-  allowCredentials?: PublicKeyCredentialDescriptor[];
-  userVerification?: "discouraged" | "preferred" | "required";
+  ext?: Ext;
 }
-export interface PublicKeyCredentialDescriptor {
-  type: "public-key";
-  /**
-   * base64url-encoded credential id.
-   */
-  id: string;
-  transports?: ("usb" | "nfc" | "ble" | "internal" | "hybrid")[];
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOptions };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/login/start/0.1" as const;

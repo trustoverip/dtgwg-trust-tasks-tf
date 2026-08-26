@@ -3,16 +3,13 @@
  * Source: specs/did-management/domain/assign/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface DomainAssignPayload {
   instanceId: string;
   domain: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface DomainAssignResponsePayload {
   instanceId: string;
@@ -20,6 +17,9 @@ export interface DomainAssignResponsePayload {
   status: "queued";
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/domain/assign/0.1" as const;

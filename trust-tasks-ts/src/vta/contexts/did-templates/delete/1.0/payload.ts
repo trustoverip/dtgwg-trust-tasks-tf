@@ -3,6 +3,9 @@
  * Source: specs/vta/contexts/did-templates/delete/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Remove a DID template scoped to a context on a VTA by name. Gated on the context's admin (or super-admin). The success response echoes the name and confirms deletion.
  */
@@ -15,13 +18,10 @@ export interface VTAContextDIDTemplateDeletePayload {
    * Resource id of the template to remove within the context scope.
    */
   name: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Confirmation that the named context-scoped template was removed.
@@ -35,14 +35,14 @@ export interface VTAContextDIDTemplateDeleteResponsePayload {
    * True on successful removal.
    */
   deleted: boolean;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0" as const;

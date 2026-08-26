@@ -3,6 +3,9 @@
  * Source: specs/vtc/community/profile/update/0.1/payload.schema.json
  */
 
+import type { CommunityProfileView, Ext, PersonhoodGovernance } from "../../../../../_shared/components.js";
+
+
 export interface VTCCommunityProfileUpdatePayload {
   name?: string;
   description?: string;
@@ -14,6 +17,9 @@ export interface VTCCommunityProfileUpdatePayload {
    * Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged.
    */
   relationshipIdentifierDefault?: "attributed" | "pairwise";
+  /**
+   * Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged.
+   */
   personhood?: PersonhoodGovernance;
   /**
    * Opaque community-defined extension bag (maintainer-capped).
@@ -21,34 +27,10 @@ export interface VTCCommunityProfileUpdatePayload {
   extensions?: {};
   ext?: Ext;
 }
-/**
- * Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged.
- */
-export interface PersonhoodGovernance {
-  /**
-   * Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
-   */
-  realHuman?: boolean;
-  /**
-   * Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says "exactly one membership in that VTC" — so a single community can satisfy it without any network above it.
-   */
-  singleMembership?: boolean;
-  /**
-   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
-   */
-  acceptedIdvps?: string[];
-  /**
-   * Where the governance framework these assertions refer to can be read.
-   */
-  governanceFrameworkUrl?: string | null;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCCommunityProfileUpdateResponsePayload {
+  /**
+   * The community's profile as read, including the immutable `communityDid` an update cannot set.
+   */
   profile: CommunityProfileView;
   /**
    * Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent.
@@ -56,59 +38,9 @@ export interface VTCCommunityProfileUpdateResponsePayload {
   fieldsChanged?: string[];
   ext?: Ext;
 }
-/**
- * The community's profile as read, including the immutable `communityDid` an update cannot set.
- */
-export interface CommunityProfileView {
-  /**
-   * The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update.
-   */
-  communityDid: string;
-  /**
-   * When the community was created. Immutable, like `communityDid`.
-   */
-  createdAt?: string;
-  name: string;
-  description?: string;
-  logoUrl?: string | null;
-  publicUrl?: string | null;
-  contactEmail?: string | null;
-  language: string;
-  /**
-   * Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation.
-   */
-  relationshipIdentifierDefault?: "attributed" | "pairwise";
-  /**
-   * Opaque community-defined extension bag.
-   */
-  extensions?: {};
-  /**
-   * Trust-registry reachability. Populated on reads; not settable.
-   */
-  registryStatus?: "active" | "degraded";
-  personhood?: PersonhoodGovernance1;
-}
-/**
- * What this community's governance asserts about the personhood of its members.
- */
-export interface PersonhoodGovernance1 {
-  /**
-   * Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
-   */
-  realHuman?: boolean;
-  /**
-   * Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says "exactly one membership in that VTC" — so a single community can satisfy it without any network above it.
-   */
-  singleMembership?: boolean;
-  /**
-   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
-   */
-  acceptedIdvps?: string[];
-  /**
-   * Where the governance framework these assertions refer to can be read.
-   */
-  governanceFrameworkUrl?: string | null;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CommunityProfileView, Ext, PersonhoodGovernance };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/community/profile/update/0.1" as const;

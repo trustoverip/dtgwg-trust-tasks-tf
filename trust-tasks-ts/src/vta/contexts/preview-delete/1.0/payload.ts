@@ -3,6 +3,9 @@
  * Source: specs/vta/contexts/preview-delete/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Request payload for vta/contexts/preview-delete: what deleting this context would destroy, computed without destroying it.
  */
@@ -12,12 +15,6 @@ export interface VTAContextsPreviewDeletePayload {
    */
   id: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.
@@ -49,6 +46,9 @@ export interface VTAContextsPreviewDeleteResponsePayload {
   didTemplates?: string[];
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0" as const;

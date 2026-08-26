@@ -9,3 +9,9 @@
 export interface ConsentSharedDefinitions {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { ApproverBinding, ConsentGrant, ConsentSubject, Effect_ConsentV0_1 as Effect, Kind, Route, Scope_ConsentV0_1 as Scope } from "../../../_shared/components.js";

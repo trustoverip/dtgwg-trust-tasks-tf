@@ -3,6 +3,9 @@
  * Source: specs/governance/capability/list/0.1/payload.schema.json
  */
 
+import type { CapabilityManifest, Ext } from "../../../../_shared/components.js";
+
+
 /**
  * List a community's capabilities and their manifests — the query behind a capability management surface. Defaults to enabled capabilities only.
  */
@@ -12,12 +15,6 @@ export interface GovernanceCapabilityListPayload {
    */
   status?: "enabled" | "available" | "all";
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface GovernanceCapabilityListResponsePayload {
   capabilities: {
@@ -34,82 +31,9 @@ export interface GovernanceCapabilityListResponsePayload {
   }[];
   ext?: Ext;
 }
-/**
- * The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.
- */
-export interface CapabilityManifest {
-  /**
-   * The capability's namespace slug, e.g. `git-trust`.
-   */
-  capability: string;
-  /**
-   * Manifest/capability version, `MAJOR.MINOR`.
-   */
-  version: string;
-  /**
-   * Human-readable capability name for management surfaces.
-   */
-  title?: string;
-  /**
-   * One-paragraph description for management surfaces.
-   */
-  description?: string;
-  /**
-   * Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.
-   *
-   * @minItems 1
-   */
-  specs: [string, ...string[]];
-  /**
-   * The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.
-   */
-  vocabulary?: {
-    /**
-     * TRQP `action` values this capability owns, e.g. `git.commit.sign`.
-     *
-     * @minItems 1
-     */
-    actions: [string, ...string[]];
-    /**
-     * Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.
-     */
-    resourcePattern?: string;
-  };
-  /**
-   * Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.
-   */
-  roles?: {
-    [k: string]: string[] | undefined;
-  };
-  /**
-   * Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.
-   */
-  lifecycleHooks?: string[];
-  /**
-   * Map of capability operation to the consent class its execution requires under the host's delegated-execution policy.
-   */
-  consentClass?: {
-    [k: string]: ("normal" | "elevated" | "destructive") | undefined;
-  };
-  /**
-   * Out-of-stack components that consume this capability's trust decisions.
-   */
-  externalAdapters?: {
-    /**
-     * Adapter type, e.g. `github-action`, `webhook`.
-     */
-    kind: string;
-    /**
-     * Where the adapter lives, e.g. a repository path or URL.
-     */
-    ref: string;
-  }[];
-  /**
-   * Spec slug of the JSON schema the per-community `config` document must validate against.
-   */
-  configSchema?: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CapabilityManifest, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/governance/capability/list/0.1" as const;

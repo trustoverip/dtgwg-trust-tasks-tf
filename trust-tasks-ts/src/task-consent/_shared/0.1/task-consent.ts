@@ -9,3 +9,9 @@
 export interface TaskConsentSharedDefinitions {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { Decision, Effect_TaskConsentV0_1 as Effect, Exposure, StatePin } from "../../../_shared/components.js";

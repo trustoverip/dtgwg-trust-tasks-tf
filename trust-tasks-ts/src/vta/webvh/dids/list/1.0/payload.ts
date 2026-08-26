@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/dids/list/1.0/payload.schema.json
  */
 
+import type { Ext, WebvhDidRecord } from "../../../../../_shared/components.js";
+
+
 export interface VTAWebVHDIDsListPayload {
   /**
    * Only DIDs in this context.
@@ -15,12 +18,6 @@ export interface VTAWebVHDIDsListPayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/webvh/dids/list. Type https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response.
  */
 export interface VTAWebVHDIDsListResponsePayload {
@@ -30,50 +27,9 @@ export interface VTAWebVHDIDsListResponsePayload {
   dids: WebvhDidRecord[];
   ext?: Ext;
 }
-/**
- * A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.
- */
-export interface WebvhDidRecord {
-  /**
-   * The DID, e.g. `did:webvh:<scid>:example.com:alice`.
-   */
-  did: string;
-  /**
-   * Id of the hosting server serving this DID's log. Empty for a serverless DID, whose location comes from the URL it was created with.
-   */
-  serverId: string;
-  /**
-   * The hosting server's handle for the record. Unrelated to a BIP-39 phrase; the collision of terms is historical.
-   */
-  mnemonic: string;
-  /**
-   * Self-certifying identifier: the hash committing to the log's first entry. It is what makes the DID's history tamper-evident, and it changes only when the log is re-created — never in place.
-   */
-  scid: string;
-  /**
-   * Context this DID belongs to. Deleting that context destroys this DID.
-   */
-  contextId: string;
-  /**
-   * Whether the DID may be moved to another domain without losing its identity. Fixed at creation: a DID created non-portable cannot be made portable later, because portability is a commitment recorded in the log's first entry.
-   */
-  portable: boolean;
-  /**
-   * Number of entries in the log.
-   */
-  logEntryCount: number;
-  /**
-   * Pre-rotation keys committed by the most recent entry. `0` means pre-rotation is disabled — a compromise of the current key is then unrecoverable by rotation, because the successor was never committed in advance.
-   */
-  preRotationCount?: number;
-  /**
-   * Next `#key-{n}` fragment id to mint. Monotonic and never decremented, so a fragment is never reused for a different key.
-   */
-  nextFragmentId?: number;
-  createdAt: string;
-  updatedAt: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, WebvhDidRecord };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/list/1.0" as const;

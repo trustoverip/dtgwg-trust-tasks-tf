@@ -3,6 +3,9 @@
  * Source: specs/config/patch/0.1/payload.schema.json
  */
 
+import type { Ext, RejectedKey } from "../../../_shared/components.js";
+
+
 export interface ConfigPatchPayload {
   /**
    * A key -> value map of overrides to write. Keys are configuration keys; values are the desired new values. Wrapped in an object (rather than being the top-level payload) so the payload keeps a fixed, additionalProperties:false envelope. Each entry is validated independently — an invalid or unknown key is reported under `rejected` and does not block the rest.
@@ -11,12 +14,6 @@ export interface ConfigPatchPayload {
     [k: string]: unknown | undefined;
   };
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface ConfigPatchResponsePayload {
   /**
@@ -33,16 +30,9 @@ export interface ConfigPatchResponsePayload {
   rejected: RejectedKey[];
   ext?: Ext;
 }
-/**
- * A key a patch declined to apply, with the reason.
- */
-export interface RejectedKey {
-  key: string;
-  /**
-   * Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
-   */
-  reason: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, RejectedKey };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/config/patch/0.1" as const;

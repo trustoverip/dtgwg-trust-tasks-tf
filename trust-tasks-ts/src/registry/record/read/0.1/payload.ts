@@ -3,10 +3,8 @@
  * Source: specs/registry/record/read/0.1/payload.schema.json
  */
 
-/**
- * Whether the record asserts an authorization or a recognition relationship.
- */
-export type RecordType = "authorization" | "recognition";
+import type { Ext, RecordType } from "../../../../_shared/components.js";
+
 
 /**
  * An administrator reads the full trust record identified by the four TRQP identifiers (both the recognized and authorized facets, unlike the filtered TRQP query responses).
@@ -17,12 +15,6 @@ export interface RegistryRecordReadPayload {
   action: string;
   resource: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface RegistryRecordReadResponsePayloadATrustRecord {
   entity_id: string;
@@ -36,6 +28,9 @@ export interface RegistryRecordReadResponsePayloadATrustRecord {
   };
   record_type: RecordType;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, RecordType };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/read/0.1" as const;

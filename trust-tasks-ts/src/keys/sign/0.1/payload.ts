@@ -3,14 +3,8 @@
  * Source: specs/keys/sign/0.1/payload.schema.json
  */
 
-/**
- * Signature algorithm to use. MUST be compatible with the named key's `keyType`.
- */
-export type SignAlgorithm = "EdDSA" | "ES256";
-/**
- * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
- */
-export type SignAlgorithm1 = "EdDSA" | "ES256";
+import type { Ext, SignAlgorithm } from "../../../_shared/components.js";
+
 
 export interface KeysSignPayload {
   /**
@@ -21,14 +15,14 @@ export interface KeysSignPayload {
    * The exact bytes to sign, base64url-encoded without padding. The maintainer signs these bytes verbatim: it does not parse, canonicalize, or wrap them.
    */
   payload: string;
+  /**
+   * Signature algorithm to use. MUST be compatible with the named key's `keyType`.
+   */
   algorithm: SignAlgorithm;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a keys/sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign/0.1#response.
@@ -42,15 +36,12 @@ export interface KeysSignResponsePayload {
    * Signature bytes, base64url-encoded without padding.
    */
   signature: string;
-  algorithm: SignAlgorithm1;
-  ext?: Ext1;
+  algorithm: SignAlgorithm;
+  ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, SignAlgorithm };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/sign/0.1" as const;

@@ -3,14 +3,8 @@
  * Source: specs/vtc/relationships/publish/0.2/payload.schema.json
  */
 
-/**
- * Digest over the RFC 8785 canonicalization of the VRC this authorizes. Binds the authorization to one credential, so it cannot be moved to another.
- */
-export type DigestMultibase = string;
-/**
- * Digest over the RFC 8785 canonicalization of the stored VRC, for out-of-band integrity checks. The same value vtc/relationships/request reports on issuance and vtc/relationships/list reports per entry, so a member can tie the three together without re-hashing.
- */
-export type DigestMultibase1 = string;
+import type { DigestMultibase, Ext } from "../../../../_shared/components.js";
+
 
 export interface VTCRelationshipsPublishPayload {
   /**
@@ -33,6 +27,9 @@ export interface VTCRelationshipsPublishPayload {
      * The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member. Every document carries a unique `id` (SPEC §4.3), which is why the binding needs no transport-specific notion of a session.
      */
     documentId: string;
+    /**
+     * Digest over the RFC 8785 canonicalization of the VRC this authorizes. Binds the authorization to one credential, so it cannot be moved to another.
+     */
     vrcDigestMultibase: DigestMultibase;
     /**
      * Data-integrity proof over this object, by a verification method the VRC's `issuer` controls. This is the proof of possession; the members above only bound what it authorizes.
@@ -41,12 +38,6 @@ export interface VTCRelationshipsPublishPayload {
   };
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCRelationshipsPublishResponsePayload {
   /**
    * Id assigned to the stored relationship (a UUID).
@@ -54,9 +45,15 @@ export interface VTCRelationshipsPublishResponsePayload {
   id: string;
   issuerDid: string;
   subjectDid: string;
-  vrcDigestMultibase: DigestMultibase1;
+  /**
+   * Digest over the RFC 8785 canonicalization of the stored VRC, for out-of-band integrity checks. The same value vtc/relationships/request reports on issuance and vtc/relationships/list reports per entry, so a member can tie the three together without re-hashing.
+   */
+  vrcDigestMultibase: DigestMultibase;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/publish/0.2" as const;

@@ -3,10 +3,8 @@
  * Source: specs/registry/record/update/0.1/payload.schema.json
  */
 
-/**
- * Whether the record asserts an authorization or a recognition relationship.
- */
-export type RecordType = "authorization" | "recognition";
+import type { Ext, RecordType, TrustRecord } from "../../../../_shared/components.js";
+
 
 /**
  * An administrator asks a trust registry to update an existing trust record. The record key (entity+authority+action+resource) must already exist.
@@ -14,33 +12,6 @@ export type RecordType = "authorization" | "recognition";
 export interface RegistryRecordUpdatePayload {
   record: TrustRecord;
   ext?: Ext;
-}
-export interface TrustRecord {
-  entity_id: string;
-  authority_id: string;
-  action: string;
-  resource: string;
-  /**
-   * Present on recognition records: whether the action+resource is recognised.
-   */
-  recognized?: boolean;
-  /**
-   * Present on authorization records: whether the action+resource authorization is confirmed.
-   */
-  authorized?: boolean;
-  /**
-   * Opaque governance context attached to the record.
-   */
-  context?: {
-    [k: string]: unknown | undefined;
-  };
-  record_type: RecordType;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface RegistryRecordUpdateResponsePayload {
   /**
@@ -53,6 +24,9 @@ export interface RegistryRecordUpdateResponsePayload {
   message?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, RecordType, TrustRecord };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/update/0.1" as const;

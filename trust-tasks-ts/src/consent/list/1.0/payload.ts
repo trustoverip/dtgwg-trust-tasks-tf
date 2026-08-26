@@ -3,6 +3,9 @@
  * Source: specs/consent/list/1.0/payload.schema.json
  */
 
+import type { ConsentGrant, ConsentSubject, Effect_ConsentV0_1 as Effect, Ext, Kind, Scope_ConsentV0_1 as Scope } from "../../../_shared/components.js";
+
+
 /**
  * A bridge fetches the consent grants it should enforce.
  */
@@ -15,39 +18,15 @@ export interface ConsentListPayload {
    * Optional. Restrict to this platform tag.
    */
   platform?: string;
+  /**
+   * Optional. A full subject, to point-check a single conversation.
+   */
   subject?: ConsentSubject;
   /**
    * Optional opaque cursor; return only grants changed after it.
    */
   since?: string;
   ext?: Ext;
-}
-/**
- * Optional. A full subject, to point-check a single conversation.
- */
-export interface ConsentSubject {
-  /**
-   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
-   */
-  platform: string;
-  /**
-   * The bridge's OPAQUE conversation handle (e.g. "sig-1a2b3c4d"). NEVER the raw platform address — the VTA never learns the phone number / chat id.
-   */
-  conversationRef: string;
-  /**
-   * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
-   */
-  kind: "dm" | "group" | "channel";
-  /**
-   * VID (DID) of the AI agent the conversation would reach.
-   */
-  agent: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The grants the requesting bridge is authorized to enforce.
@@ -63,57 +42,9 @@ export interface ConsentListResponsePayload {
   cursor?: string;
   ext?: Ext;
 }
-/**
- * A recorded consent decision over a ConsentSubject.
- */
-export interface ConsentGrant {
-  subject: ConsentSubject1;
-  /**
-   * Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
-   */
-  effect: "allow" | "deny";
-  /**
-   * Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.
-   */
-  scope?: "receive" | "converse";
-  /**
-   * VID of the approver who made the decision.
-   */
-  grantedBy: string;
-  /**
-   * RFC 3339 time the decision was recorded.
-   */
-  grantedAt: string;
-  /**
-   * Optional. After this time the grant lapses and the subject must be re-consented.
-   */
-  expiresAt?: string;
-  /**
-   * How the decision was authorized — e.g. "did-signed" (approver's DID signed the consent/decision) or "bridge-attested" (an enrolled bridge relayed the operator's out-of-band choice).
-   */
-  evidence?: string;
-}
-/**
- * The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.
- */
-export interface ConsentSubject1 {
-  /**
-   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
-   */
-  platform: string;
-  /**
-   * The bridge's OPAQUE conversation handle (e.g. "sig-1a2b3c4d"). NEVER the raw platform address — the VTA never learns the phone number / chat id.
-   */
-  conversationRef: string;
-  /**
-   * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
-   */
-  kind: "dm" | "group" | "channel";
-  /**
-   * VID (DID) of the AI agent the conversation would reach.
-   */
-  agent: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ConsentGrant, ConsentSubject, Effect, Ext, Kind, Scope };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/list/1.0" as const;

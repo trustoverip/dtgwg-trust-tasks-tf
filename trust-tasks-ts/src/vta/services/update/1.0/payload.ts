@@ -3,10 +3,8 @@
  * Source: specs/vta/services/update/1.0/payload.schema.json
  */
 
-/**
- * Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
- */
-export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
+import type { Ext, ServiceKind, ServiceMutationResult } from "../../../../_shared/components.js";
+
 
 /**
  * Request payload for vta/services/update. Replaces the settings on a transport that is already advertised. Refused when the transport is not currently enabled — that case is `enable`, and conflating the two would let a typo silently advertise a service the operator meant to change.
@@ -37,48 +35,15 @@ export interface VTAServicesUpdatePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.
  */
 export interface VTAServicesUpdateResponsePayload {
   result: ServiceMutationResult;
   ext?: Ext;
 }
-/**
- * The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.
- */
-export interface ServiceMutationResult {
-  /**
-   * Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
-   */
-  logEntryVersionId: string;
-  /**
-   * RFC 3339 instant the change took effect — the same instant stamped on the new log entry.
-   */
-  effectiveAt: string;
-  /**
-   * Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.
-   */
-  drainUntil?: string;
-  /**
-   * The mediator being drained, when `drainUntil` is present.
-   */
-  drainingMediator?: string;
-  /**
-   * The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.
-   */
-  vtaDid?: string;
-  /**
-   * True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.
-   */
-  serverless?: boolean;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, ServiceKind, ServiceMutationResult };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/services/update/1.0" as const;

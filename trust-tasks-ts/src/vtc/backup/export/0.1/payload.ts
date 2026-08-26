@@ -3,6 +3,9 @@
  * Source: specs/vtc/backup/export/0.1/payload.schema.json
  */
 
+import type { BackupEnvelope, EncryptionParams, Ext, KdfParams } from "../../../../_shared/components.js";
+
+
 export interface VTCBackupExportPayload {
   /**
    * Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.
@@ -14,83 +17,16 @@ export interface VTCBackupExportPayload {
   includeAudit?: boolean;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCBackupExportResponsePayload {
+  /**
+   * The encrypted full-state backup.
+   */
   envelope: BackupEnvelope;
   ext?: Ext;
 }
-/**
- * The encrypted full-state backup.
- */
-export interface BackupEnvelope {
-  /**
-   * Envelope schema version.
-   */
-  version: number;
-  /**
-   * Envelope format tag, e.g. `vtc-backup-v1`.
-   */
-  format: string;
-  /**
-   * When the export was taken.
-   */
-  createdAt: string;
-  /**
-   * DID of the community exported from, when it has one. An import cross-checks this against the running community.
-   */
-  sourceDid?: string | null;
-  /**
-   * Version of the software that produced the envelope.
-   */
-  sourceVersion: string;
-  kdf: KdfParams;
-  encryption: EncryptionParams;
-  /**
-   * Whether the audit log and its signed checkpoints are inside `ciphertext`.
-   */
-  includesAudit: boolean;
-  /**
-   * base64url(AEAD(JSON(payload))).
-   */
-  ciphertext: string;
-}
-export interface KdfParams {
-  /**
-   * KDF identifier, e.g. `argon2id`.
-   */
-  algorithm: string;
-  /**
-   * base64url, 32 bytes.
-   */
-  salt: string;
-  /**
-   * Argon2id memory cost (KiB).
-   */
-  mCost: number;
-  /**
-   * Argon2id time cost (iterations).
-   */
-  tCost: number;
-  /**
-   * Argon2id parallelism.
-   */
-  pCost: number;
-}
-export interface EncryptionParams {
-  /**
-   * AEAD identifier, e.g. `aes-256-gcm`.
-   */
-  algorithm: string;
-  /**
-   * base64url, 12 bytes.
-   */
-  nonce: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { BackupEnvelope, EncryptionParams, Ext, KdfParams };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/backup/export/0.1" as const;

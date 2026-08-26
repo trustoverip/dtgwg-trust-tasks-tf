@@ -3,14 +3,8 @@
  * Source: specs/trust-ceremony-receipt/0.1/payload.schema.json
  */
 
-/**
- * Multibase-multihash over the RFC 8785 (JCS) canonicalization of that definition. MUST equal the `ceremony.definitionDigest` every enumerated step carried. It is what stops the completion rule being changed after the fact by whoever controls the definition URI.
- */
-export type DigestMultibase = string;
-/**
- * Salted digest of the step document, computed as the specification's Conformance section defines. A verifier holding the document recomputes it; a verifier that does not hold the document still learns that the recorder committed to a specific one.
- */
-export type DigestMultibase1 = string;
+import type { DigestMultibase, Ext } from "../../_shared/components.js";
+
 
 /**
  * Evidence that one enactment of a Trust Ceremony completed (SPEC §4.11, §6.7).
@@ -32,6 +26,9 @@ export interface TrustCeremonyReceiptPayload {
    * The ceremony definition the enactment ran under (SPEC §6.7). REQUIRED here, unlike on the envelope: a receipt asserts that a flow COMPLETED, and completeness is meaningless without the rule that defines it.
    */
   definition: string;
+  /**
+   * Multibase-multihash over the RFC 8785 (JCS) canonicalization of that definition. MUST equal the `ceremony.definitionDigest` every enumerated step carried. It is what stops the completion rule being changed after the fact by whoever controls the definition URI.
+   */
   definitionDigest: DigestMultibase;
   /**
    * Whether the recorder considers the enactment complete.
@@ -74,7 +71,10 @@ export interface TrustCeremonyReceiptPayload {
        * The step document's `id` (SPEC §4.3) — globally unique and never reused, so it names one instance where the step name names a position in the flow, and so a verifier can locate the document the digest is over.
        */
       id: string;
-      digestMultibase: DigestMultibase1;
+      /**
+       * Salted digest of the step document, computed as the specification's Conformance section defines. A verifier holding the document recomputes it; a verifier that does not hold the document still learns that the recorder committed to a specific one.
+       */
+      digestMultibase: DigestMultibase;
       /**
        * Whether the step document carried `ceremony.terminal`. At least one enumerated step MUST carry it for the enactment to be complete.
        */
@@ -101,7 +101,10 @@ export interface TrustCeremonyReceiptPayload {
        * The step document's `id` (SPEC §4.3) — globally unique and never reused, so it names one instance where the step name names a position in the flow, and so a verifier can locate the document the digest is over.
        */
       id: string;
-      digestMultibase: DigestMultibase1;
+      /**
+       * Salted digest of the step document, computed as the specification's Conformance section defines. A verifier holding the document recomputes it; a verifier that does not hold the document still learns that the recorder committed to a specific one.
+       */
+      digestMultibase: DigestMultibase;
       /**
        * Whether the step document carried `ceremony.terminal`. At least one enumerated step MUST carry it for the enactment to be complete.
        */
@@ -110,12 +113,9 @@ export interface TrustCeremonyReceiptPayload {
   ];
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/trust-ceremony-receipt/0.1" as const;

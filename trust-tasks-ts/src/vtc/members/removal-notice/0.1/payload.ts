@@ -3,6 +3,9 @@
  * Source: specs/vtc/members/removal-notice/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * A community tells a member it removed them, on whose authority, when, and why. Unsolicited: unlike vtc/members/self-remove-receipt this answers no request from the member, because the member did not ask.
  */
@@ -33,12 +36,9 @@ export interface VTCMembersRemovalNoticePayload {
   decidedBy: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/removal-notice/0.1" as const;

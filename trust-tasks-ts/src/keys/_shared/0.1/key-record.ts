@@ -9,3 +9,9 @@
 export interface KeyRecordSharedDefinitionForTheKeysSpecFamily {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { KeyOrigin, KeyRecord, KeyStatus, KeyType } from "../../../_shared/components.js";

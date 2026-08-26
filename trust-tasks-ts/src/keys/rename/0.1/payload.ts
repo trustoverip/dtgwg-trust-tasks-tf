@@ -3,6 +3,9 @@
  * Source: specs/keys/rename/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * Change a key's identifier. The key material is untouched — only the name it is addressed by changes.
  */
@@ -15,13 +18,10 @@ export interface KeysRenamePayload {
    * The identifier it should be addressed by afterwards. MUST NOT collide with an existing record.
    */
   newKeyId: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a keys/rename request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/rename/0.1#response.
@@ -35,14 +35,11 @@ export interface KeysRenameResponsePayload {
    * RFC 3339 timestamp of the rename.
    */
   updatedAt: string;
-  ext?: Ext1;
+  ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/rename/0.1" as const;

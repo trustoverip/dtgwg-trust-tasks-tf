@@ -3,10 +3,8 @@
  * Source: specs/keys/revoke/0.1/payload.schema.json
  */
 
-/**
- * The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.
- */
-export type KeyStatus = "active" | "revoked";
+import type { Ext, KeyStatus } from "../../../_shared/components.js";
+
 
 /**
  * Retire a key from further use. The record is retained so historic signatures stay attributable; this is not a delete.
@@ -20,13 +18,10 @@ export interface KeysRevokePayload {
    * Optional human-readable rationale, recorded with the revocation.
    */
   reason?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.
@@ -36,19 +31,19 @@ export interface KeysRevokeResponsePayload {
    * The key that was retired.
    */
   keyId: string;
+  /**
+   * The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.
+   */
   status: KeyStatus;
   /**
    * RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards.
    */
   updatedAt: string;
-  ext?: Ext1;
+  ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, KeyStatus };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/revoke/0.1" as const;

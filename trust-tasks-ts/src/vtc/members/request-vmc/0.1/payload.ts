@@ -3,6 +3,9 @@
  * Source: specs/vtc/members/request-vmc/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface VTCMembersRequestVMCPayload {
   /**
    * DID the member's credential must name as credentialSubject.id.
@@ -14,12 +17,6 @@ export interface VTCMembersRequestVMCPayload {
   reason?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCMembersRequestVMCResponsePayload {
   /**
    * The member received the request. NOT a commitment to issue — the credential arrives separately as vtc/members/vmc, or never.
@@ -27,6 +24,9 @@ export interface VTCMembersRequestVMCResponsePayload {
   acknowledged: boolean;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/request-vmc/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/confirm/request/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * A relying party asks a wallet (or other approval agent) to obtain user confirmation for an action. The wallet surfaces the reason to the user and returns a signed confirm/response.
  */
@@ -34,12 +37,6 @@ export interface ConfirmRequest {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.
  */
 export interface ConfirmRequestSynchronousAck {
@@ -50,6 +47,9 @@ export interface ConfirmRequestSynchronousAck {
   reason?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/confirm/request/0.1" as const;

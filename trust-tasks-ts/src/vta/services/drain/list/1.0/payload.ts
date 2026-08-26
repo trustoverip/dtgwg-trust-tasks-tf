@@ -3,17 +3,14 @@
  * Source: specs/vta/services/drain/list/1.0/payload.schema.json
  */
 
+import type { DrainEntry, Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Request payload for vta/services/drain/list. Enumerates DIDComm mediators that are no longer advertised but are still accepting delivery.
  */
 export interface VTAServicesDrainListPayload {
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.
@@ -25,24 +22,9 @@ export interface VTAServicesDrainListResponsePayload {
   entries: DrainEntry[];
   ext?: Ext;
 }
-/**
- * A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.
- */
-export interface DrainEntry {
-  /**
-   * The mediator being drained.
-   */
-  mediatorDid: string;
-  /**
-   * Where it is still reachable for the remainder of the drain.
-   */
-  endpoint: string;
-  /**
-   * RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.
-   */
-  drainsUntil: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DrainEntry, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/services/drain/list/1.0" as const;

@@ -3,6 +3,9 @@
  * Source: specs/device/heartbeat/0.2/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).
  */
@@ -16,12 +19,6 @@ export interface DeviceHeartbeatPayload {
    */
   vaultSeq?: number;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface DeviceHeartbeatResponsePayload {
   /**
@@ -50,6 +47,9 @@ export interface QueuedOperation {
     [k: string]: unknown | undefined;
   };
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/heartbeat/0.2" as const;

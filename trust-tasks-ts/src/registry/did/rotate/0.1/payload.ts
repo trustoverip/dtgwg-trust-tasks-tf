@@ -3,6 +3,9 @@
  * Source: specs/registry/did/rotate/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Field names are snake_case, frozen from the pre-existing deployed wire form this specification documents (matching the registry/* family convention).
  */
@@ -16,12 +19,6 @@ export interface RegistryDIDRotatePayload {
    */
   label?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface RegistryDIDRotateResponsePayload {
   /**
@@ -38,6 +35,9 @@ export interface RegistryDIDRotateResponsePayload {
   new_version_id: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/did/rotate/0.1" as const;
