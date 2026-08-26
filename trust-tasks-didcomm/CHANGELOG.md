@@ -4,6 +4,16 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.14.0] - 2026-08-26
+
+### Changed
+
+- **`trust-tasks-rs` requirement moved to `0.13`.** That release flips
+  `IS_PROOF_REQUIRED` on `vta/memory/list/0.1`'s response, so a consumer rejects
+  an unproofed response it used to accept. This crate re-exports the generated
+  types, so the leading component moves with it. No change to this crate's own
+  API.
+
 ## [0.13.0] - 2026-08-26
 
 The duplicate-execution defence of SPEC §7.2 item 11, wired onto this

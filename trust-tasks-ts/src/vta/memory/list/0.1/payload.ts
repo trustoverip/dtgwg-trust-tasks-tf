@@ -193,7 +193,7 @@ export const SPEC = {
 export const RESPONSE_SPEC = {
   typeUri: RESPONSE_TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;
