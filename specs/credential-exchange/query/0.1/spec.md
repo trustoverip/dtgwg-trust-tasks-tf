@@ -19,9 +19,11 @@ parties:
   - role: Verifier
     requirement: REQUIRED
     member: issuer
+    identifierScope: public
   - role: Holder
     requirement: REQUIRED
     member: recipient
+    identifierScope: pairwise
 proofRequirement:
   requirement: OPTIONAL
   rationale: An authcrypted transport proves which DID is asking, and the verifier's identity is the input the holder's consent decision turns on. A document proof is permitted where the envelope's authentication does not survive relaying.
@@ -30,7 +32,11 @@ sideEffects:
   rationale: A query the holder does not auto-consent to is PERSISTED as a deferral awaiting an out-of-band decision. Asking therefore leaves durable state at the holder even when nothing is presented — which is also why an unbounded query rate is a storage concern, not merely a nuisance.
 exposure:
   discloses: none
+  ingests: metadata
   actsAsSubject: false
+retention:
+  class: exchange
+  rationale: A query the holder does not auto-consent to is persisted as a deferral and lives exactly as long as the decision it is waiting on — until approval, denial, or `expiresAt`, after which the verifier's nonce is stale and the record cannot be acted on at all. Nothing about the query is kept past the decision it was stored to enable.
 errorCodes:
   - code: credential-exchange/query:consentRequired
     meaning: The holder deferred the query for an out-of-band decision. Not a failure — the verifier should expect a later presentation on the same thread, or nothing.
@@ -76,6 +82,89 @@ Consumer: gather candidates only through the type index. Gate every match on con
 
 ## Security & Privacy
 
-`exposure.discloses` is `none` for the query itself — it asks, it does not tell.
+### Data carried
 
-The privacy properties that matter here are the holder's, and they are enforced by the two rules above: no enumeration, and refusals that do not leak. `sideEffects` is `mutating` because a deferred query persists; a consumer SHOULD bound how much deferral state one verifier can create.
+The request is three members, and all three are the verifier's own words. `dcql_query`
+names credential types — through the `meta` discriminator, `vct_values` for SD-JWT-VC
+or `type_values` for W3C — and the claim paths the verifier wants. That is descriptive
+data about *credentials sought*, not attributes of the person holding them: the query
+asks, it does not tell, and there is no response payload carrying claims. Disclosure is
+[`present`](../../present/0.1/)'s job, and every rule here exists to keep the two
+separate.
+
+The one path by which a verifier can push personal data *into* a holder is DCQL's
+claim-value filtering. A query may constrain the values it will accept, and "the
+credential whose `family_name` is Schmidt" asserts an attribute rather than requesting
+one. A producer **SHOULD NOT** use value constraints to state what it already believes
+about the holder: a deferred query is persisted and put in front of a human, so the
+assertion outlives the request and is read as though the holder's own agent had
+recorded it.
+
+`purpose` is REQUIRED, non-empty and free text, which makes it the member most likely
+to carry more than the task needs. It is shown to whoever decides and bound into the
+consent record, so it is the verifier's most durable statement in the whole exchange.
+A producer **SHOULD** write the reason for this request and not the case file behind
+it — a purpose string is read by a person and retained as evidence, and neither of
+those is improved by additional detail about why the verifier is interested.
+
+### Correlation
+
+The verifier's identifier is the pivot this task turns on. The holder's consent policy
+is a decision about *which verifier is asking* — a pre-trusted one is auto-consented,
+anyone else is deferred — and a verifier the holder cannot recognise from one exchange
+to the next cannot be pre-trusted, cannot be audited across disclosures, and cannot be
+matched against an ecosystem trust list. That is why the Verifier party declares
+`identifierScope: public`: a pairwise verifier identifier would make every query look
+like a first contact and would collapse the consent decision into a coin toss. The
+Holder faces no such constraint and declares `identifierScope: pairwise` — nothing in
+this task requires the holder to be recognisable to anyone but the verifier in front of
+it, and a holder using a distinct identifier per verifier keeps its queries from being
+joined across them.
+
+Refusal is the subtler channel. `noMatch` and "held, but not consented" **MUST** be
+indistinguishable to the verifier, because a refusal that discriminates between them is
+an enumeration primitive wearing an error code: a verifier that can tell the two apart
+maps a wallet one query at a time without ever receiving a presentation. The
+no-enumeration rule closes the direct route — candidates are gathered only through the
+type index named by `meta`, and a query carrying no discriminator contributes **no**
+candidates rather than all of them — but the rule is worthless if the failure path
+leaks what the success path withheld.
+
+Timing is left. A deferred query tells the verifier that the holder's consent policy
+did not pre-trust it, and the interval before a presentation arrives is a measure of
+how long a human took. A consumer that wants to narrow that channel varies its
+`consentRequired` response time rather than answering as fast as the deferral is
+written.
+
+### Retention
+
+Exchange-scoped, and bounded by a value the holder does not control. A deferred query
+is persisted with the verifier's `nonce` intact so that an approval can present against
+the original request byte-faithfully; once `expiresAt` passes, the verifier has stopped
+accepting that nonce and the record is unactionable — [`pending/list`](../../pending/list/0.1/)
+**MUST** omit it and [`pending/approve`](../../pending/approve/0.1/) **MUST** refuse it.
+Expiry is therefore the deletion trigger as well as the freshness rule, and a consumer
+has no reason to keep the record past it.
+
+This is also why `sideEffects` is `mutating` rather than `none`: asking leaves durable
+state at the holder even when nothing is presented. A verifier that re-sends on
+`consentRequired` does not advance a decision waiting on a human — it accumulates
+deferrals. A consumer **SHOULD** bound how much deferral state one verifier can create,
+which is a storage limit and a privacy limit at once, since the backlog is a record of
+that verifier's interest in this holder.
+
+### Consent/purpose
+
+`purpose` is what makes the rest of the family a consent flow rather than an access
+protocol. A verifier cannot ask without saying why, and a consumer **MUST** surface the
+stated purpose to whoever decides and bind it into any consent record it keeps, so that
+a disclosure can later be audited against the reason given for it. Making the member
+optional would render the well-behaved verifier's query indistinguishable from the one
+that declines to explain itself, precisely where the difference matters.
+
+What this specification does **not** do is require a human. The holder's policy decides:
+a pre-trusted verifier is answered immediately, anyone else is deferred to
+[`pending/approve`](../../pending/approve/0.1/) or [`pending/deny`](../../pending/deny/0.1/).
+Which verifiers earn pre-trust, and whether a person is asked at all, are consumer
+policy questions this task takes no position on — it supplies the stated purpose the
+decision is made against, and leaves the gate to the deployment.

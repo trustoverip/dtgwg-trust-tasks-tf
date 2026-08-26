@@ -19,6 +19,7 @@ parties:
   - role: device
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: vault maintainer
     requirement: REQUIRED
     member: recipient
@@ -30,13 +31,29 @@ sideEffects:
   rationale: "Sets the device's opaque WakeHandle on the VTA; idempotent config write."
 exposure:
   discloses: metadata
+  ingests: metadata
   actsAsSubject: false
   rationale: >-
     The response returns `triggerPolicy.allowedTriggers` — the DIDs the VTA
     computed and provisioned as permitted to wake this device, typically its
     mediator and the VTA itself — plus whether a usable wake channel now exists.
     That names part of the device's infrastructure to the caller; it is
-    descriptive rather than a bearer secret, so `metadata`.
+    descriptive rather than a bearer secret, so `metadata`. Inbound the request
+    carries the opaque `wakeHandle`, an advisory `pushPlatform` hint, and a list
+    of suggested trigger DIDs — infrastructure descriptors rather than data
+    about a person, and deliberately not the platform push token, which never
+    leaves the gateway. `ingests` is therefore `metadata`: the handle is a
+    bearer reference to *request* a wake, gated at the gateway by the allowlist,
+    not confidential material the VTA holds on the device's behalf.
+retention:
+  class: durable
+  rationale: >-
+    The handle and the allowlist derived from it are device configuration, held
+    at the VTA until the device supersedes them with a fresh handle or clears
+    the channel by omitting `wakeHandle`. Nothing here expires on its own. A
+    consumer that dropped the handle would leave the device unwakeable and would
+    lose the VTA's authoritative copy of who is permitted to wake it — the
+    record the gateway's enforcement is provisioned from.
 related:
   - device/register
   - device/heartbeat
@@ -90,12 +107,93 @@ A consumer **MUST NOT** treat the wake channel as a security boundary for any fr
 
 ## Security & Privacy
 
-**Token isolation.** The platform push token never appears in this task, on the VTA, or on the mediator — it is held by the gateway alone, behind the opaque handle. A compromised VTA leaks the handle and the allowlist, not the device's push identity (the token / APNs-FCM identifier).
+### Data carried
 
-**VTA owns the allowlist.** Who may wake the device is VTA policy, not device assertion. The device proposes a handle; the VTA decides the triggers. This keeps all device configuration state authoritative at the VTA and prevents a device from authorizing an arbitrary third party to wake it.
+What this task carries is best described by what it deliberately does not. The
+platform push token — an APNs device token, an FCM registration token, or a Web
+Push endpoint with its `p256dh` and `auth` keys — never appears in this document,
+never reaches the VTA, and never reaches the mediator. It is held by the push
+gateway alone. What crosses this wire instead is `wakeHandle`, a pair of
+`gateway` (the DID or https URL of the service that issued it) and `handle` (an
+opaque string that reveals no token). A compromised VTA therefore leaks the
+handle and the allowlist, not the device's push identity.
 
-**Gateway enforcement.** The gateway refuses a wake from a DID not on the provisioned allowlist, and authenticates the trigger's DID first. The handle alone does not authorize a wake — allowlist membership does.
+The handle is a bearer reference, but a weak one, and the distinction is worth
+stating precisely because it is what keeps this task out of the `secret` class:
+it lets a party *request* a wake, never read the channel, and the gateway
+refuses a request from a DID outside the provisioned allowlist. Possession alone
+yields, at worst, a refused wake.
 
-**Rotation and revocation.** Re-issuing with a fresh handle atomically supersedes the prior one (the VTA re-provisions; the old handle SHOULD be dropped at the gateway). Clearing (omitting `wakeHandle`) empties the gateway allowlist so no party can wake the device. `device/disable` and `device/wipe` SHOULD also clear the wake channel as part of decommissioning.
+`pushPlatform` is advisory and explicitly non-authoritative — it exists so
+`device/list` can show a platform family without the VTA ever seeing a token —
+but it does narrow the device: `apns` says Apple hardware. `suggestedTriggers`
+is a list of DIDs, typically the device's own mediator, so a producer that
+populates it is naming part of its routing infrastructure to its VTA. Both are
+optional and both are hints.
 
-**Replay.** The `id` is the maintainer's idempotency key; a retry of the same id within the idempotency window returns the same result without re-provisioning.
+The one member whose *absence* is content is `wakeHandle` itself. Omitting it
+does not mean "no change"; it clears the wake channel and empties the gateway
+allowlist. A producer sending an empty payload is issuing a command, and a
+consumer **MUST** read it as one.
+
+### Correlation
+
+Between rotations, `handle` is a stable identifier for this device's push
+channel at the gateway. Every wake request the gateway ever receives for this
+device names that same handle, so the gateway can assemble a complete traffic
+history — how often this device is woken, at what hours, in what bursts — from
+the handle alone, without decrypting anything, because there is nothing to
+decrypt.
+
+The architecture's answer is a split of knowledge rather than a secret. The VTA
+holds the handle and the allowlist but not the token; the gateway holds the
+token and the handle but not what the wakes were for. Neither side alone
+reconstructs "whose phone was woken, and why". That separation is a deployment
+property, not a wire property: nothing in this document prevents one operator
+from running both the VTA and the gateway, and an operator that does has
+collapsed the split without changing a single member.
+
+Rotation is the other correlation surface. A fresh handle supersedes the prior
+one atomically — the VTA re-provisions and the old handle **SHOULD** be dropped
+at the gateway — and a VTA that retained superseded handles instead would hold a
+dated history of the device's push-channel rotations, which tracks app
+reinstalls, device restores, and OS migrations rather than anything this task
+needs.
+
+The device party declares `identifierScope: pairwise`. Its DID must be stable
+enough for the VTA to attach the handle to the right `DeviceBinding`, but no
+third party — not the gateway, which sees only the handle — is asked to
+recognise it, and a device reusing one identifier across VTAs would let them
+align their views of its wake configuration.
+
+### Retention
+
+Durable, because the handle is configuration rather than a message. The VTA
+holds it until the device replaces it or clears it, and holds the derived
+`allowedTriggers` for as long as it is the source of truth the gateway is
+provisioned from. Nothing here carries an expiry.
+
+Clearing is the deletion path and it is complete by design: omitting
+`wakeHandle` empties the gateway allowlist, so no party can wake the device.
+`device/disable` and `device/wipe` **SHOULD** clear the wake channel as part of
+decommissioning, since a decommissioned device that remains wakeable is a
+channel nobody is watching. Superseded handles **SHOULD NOT** be retained after
+rotation. The document `id` is the maintainer's idempotency key, so a retry
+inside the idempotency window returns the same result rather than
+re-provisioning the gateway.
+
+### Consent/purpose
+
+The handle moves for one reason: so that the VTA, not the device, owns the
+question of who may wake this device. The device proposes; the VTA decides. That
+is why `suggestedTriggers` is advisory and why the schema says the VTA **MAY**
+ignore it entirely — the purpose limit is written into the member's own
+definition. Without it, a device could authorise an arbitrary third party to
+wake it, and device configuration would stop being authoritative at the VTA.
+
+The gateway is the backstop rather than the decision-maker: it authenticates a
+trigger's DID and then checks allowlist membership, so the handle alone never
+authorises a wake. Reuse of the handle for anything other than provisioning that
+allowlist — as a device identifier in an unrelated record, say — is outside the
+purpose it was conveyed for, and would give the VTA a correlation key it was
+handed for a narrower job.

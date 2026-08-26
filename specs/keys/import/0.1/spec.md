@@ -29,7 +29,12 @@ sideEffects:
   rationale: "Creates a durable key record the custodian will sign with. Not destructive: an import never replaces existing material — a collision is refused."
 exposure:
   discloses: none
+  ingests: secret
   actsAsSubject: false
+  rationale: "The request body is a private key. Exactly one of `privateKeySealed`, `privateKeyJwe`, or `privateKeyMultibase` is present, and the last of those is cleartext — the custodian receives material it must protect on the producer's behalf from the moment the document arrives. Nothing is disclosed back: the response carries only the public half."
+retention:
+  class: durable
+  rationale: The custodian holds the imported material for the key's whole lifetime and holds the record beyond it, since `keys/revoke` retires rather than deletes so historic signatures stay attributable. Imported keys are additionally the family's retention edge case — they have no `derivationPath` and no `seedId`, so a seed restore does not reproduce them and deleting the record destroys the key outright.
 errorCodes:
   - code: keys:alreadyExists
     meaning: A key record already carries the target identifier; the custodian refuses rather than overwrite it. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
@@ -158,12 +163,81 @@ Failures (`permissionDenied`, `keys:invalidArgument`, `keys:alreadyExists`) use 
 
 ## Security & Privacy
 
-**This is the one task in the family that carries a private key on the wire**, and every other consideration follows from that.
+### Data carried
 
-*Choose the carrier by who can see it, not by convenience.* `privateKeySealed` and `privateKeyJwe` encrypt to the custodian, so the material is opaque to every intermediary and to the transport itself. `privateKeyMultibase` does not: it is cleartext, and its safety rests entirely on the transport being end-to-end confidential. The distinction is easy to lose because all three are "just a string in a JSON body" — hence the explicit consumer rule refusing the cleartext carrier where the transport terminates early.
+**This is the one task in the family that carries a private key on the wire**, and
+every other consideration follows from that. The schema's `oneOf` means exactly one
+carrier is present, and *which* one is a confidentiality decision rather than a
+formatting preference.
 
-*A key that has been on a wire has been on a wire.* Even a correct import means the material existed outside the custodian. Where the key's value justifies it, producers **SHOULD** generate in place with [`keys/create`](../../create/0.1/spec.md) instead, and reserve import for material that already exists elsewhere and cannot be regenerated.
+*Choose the carrier by who can see it, not by convenience.* `privateKeySealed` and
+`privateKeyJwe` encrypt to the custodian, so the material is opaque to every
+intermediary and to the transport itself. `privateKeyMultibase` does not: it is
+cleartext, and its safety rests entirely on the transport being end-to-end
+confidential. The distinction is easy to lose because all three are "just a string
+in a JSON body" — hence the explicit consumer rule refusing the cleartext carrier
+where the transport terminates early. A custodian behind TLS that terminates at a
+load balancer has an intermediary that can read the key, and the schema cannot
+detect that; only the deployment can.
 
-*Refuse collisions rather than resolving them.* Overwriting an existing record would silently invalidate signatures already verified against the old key, and would do so without any party observing an error. `keys:alreadyExists` is the safe answer even when the producer plainly meant to replace.
+The rest of the payload is thin and non-secret: `keyType`, which the custodian
+**MUST** verify against the supplied material rather than trust, and the optional
+`label` and `contextId`. `label` is operator-facing and carries no authorization
+meaning, which makes it the field a deployment quietly fills with a person's name
+or an account reference; a producer **SHOULD** name the key after its purpose. The
+response returns a `KeyRecord` carrying `publicKey` only — no `keys/*` response
+ever carries private material back.
 
-*Imported keys are outside the seed-recovery story.* Operators reasoning about disaster recovery from a seed backup will be wrong about exactly these keys unless the custodian tells them so.
+### Correlation
+
+An imported key is the family's least joinable record, and unusually that is a
+consequence of how it arrived rather than a privacy choice. `origin` is `imported`,
+`derivationPath` is absent, and `seedId` is absent, so nothing places the key in a
+family of sibling keys the way a derived key's path does. What remains joinable is
+`contextId`, `label`, and — far more durably — everything the key subsequently
+signs, since `publicKey` is public by nature and links every signature made under
+it.
+
+The correlation risk that is specific to import is on the *other* side of the wire.
+The producer held this key before the custodian did, which means at least two
+parties can now produce signatures that verify identically, and nothing in a
+signature distinguishes them. Where that matters, importing is the wrong operation.
+
+### Retention
+
+Durable in the custodian, and the retention question splits in two.
+
+The *record* is kept for the key's operating life and beyond it:
+[`keys/revoke`](../../revoke/0.1/spec.md) sets `status` to `revoked` rather than
+deleting, and a revoked record **MUST NOT** be reactivated, because a signature made
+last year is only attributable while the key that made it is still known.
+
+The *material* is where import differs from every sibling. *Imported keys are
+outside the seed-recovery story* — they have no derivation path, so a restore from a
+seed backup does not reproduce them. Operators reasoning about disaster recovery
+from a seed backup will be wrong about exactly these keys unless the custodian
+tells them so, and a custodian that deletes an imported record has destroyed the
+key rather than retired it.
+
+The producer's own retention is the part this specification cannot reach. *A key
+that has been on a wire has been on a wire*: even a correct import means the
+material existed outside the custodian, in the producer's memory, its logs, and
+possibly its backups. Where the key's value justifies it, producers **SHOULD**
+generate in place with [`keys/create`](../../create/0.1/spec.md) instead and
+reserve import for material that already exists elsewhere and cannot be
+regenerated.
+
+### Consent/purpose
+
+The purpose is custody transfer: the producer is handing over material it already
+holds so that a custodian can exercise it from now on. The producer's `proof` is
+the record of the basis — an unauthenticated import lets anyone who can reach the
+endpoint plant a key and then ask for signatures under it, so authority is
+established before the material is stored, not after.
+
+*Refuse collisions rather than resolving them.* Overwriting an existing record
+would silently invalidate signatures already verified against the old key, and
+would do so without any party observing an error. `keys:alreadyExists` is the safe
+answer even when the producer plainly meant to replace — a replacement is a
+decision that deserves to be made explicitly, under a new identifier, rather than
+inferred from a repeated request.

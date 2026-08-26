@@ -17,6 +17,7 @@ parties:
   - role: Issuer
     requirement: REQUIRED
     member: issuer
+    identifierScope: public
   - role: Holder
     requirement: REQUIRED
     member: recipient
@@ -28,7 +29,12 @@ sideEffects:
   rationale: An offer is a proposal. Nothing is issued and no credential exists until the holder replies and the issuer answers.
 exposure:
   discloses: none
+  ingests: secret
   actsAsSubject: false
+  rationale: An offer asserts nothing about the holder, so nothing is disclosed. It can nonetheless carry a bearer secret INTO the holder — an OID4VCI pre-authorized code grant places a redeemable code in `credential_offer.grants`, and anyone who reads it can claim the credential. The offer body is carried verbatim, so this specification cannot rule that path out and declares the class that covers it.
+retention:
+  class: exchange
+  rationale: An offer is consumed by the issuance thread it opens. A holder keeps it only until it replies with `credential-exchange/request` and the credential arrives — longer where the offer carries a pre-authorized code that has not yet been redeemed, and no longer than that, since a spent or lapsed code is a bearer secret with no remaining function.
 errorCodes:
   - code: credential-exchange/offer:unsupportedCredential
     meaning: The holder cannot accept any credential configuration named in the offer.
@@ -58,6 +64,70 @@ Relayer and holder may differ. The party that carries the envelope is not necess
 
 ## Security & Privacy
 
-`exposure.discloses` is `none`: an offer names credential *configurations*, not claims about anybody. Nothing about the holder is asserted, and no credential exists yet to disclose.
+### Data carried
 
-The offer is not an authorization. It states availability; the issuer's own policy still governs whether a request against it is honoured, and a consumer MUST NOT treat having received an offer as a grant.
+An offer names credential *configurations*, not claims about anybody. Nothing about the
+holder is asserted, no credential exists yet, and there is no response payload — which
+is why `exposure.discloses` is `none` and why this is the least revealing document in
+the family.
+
+It is not, however, empty of things worth protecting. `credential_offer` is an OID4VCI
+object carried verbatim, and one of the grant types it may carry is the **pre-authorized
+code**: a bearer value that redeems for the credential, held by whoever reads it. That
+is why `exposure.ingests` is `secret` rather than `none`. The body is not re-specified
+here, so this task cannot forbid the grant or bound what an issuer puts in it; what it
+can say is that a producer using that grant is placing a redeemable secret on the wire
+and **MUST** treat the channel accordingly — an offer that could be sent over an
+unauthenticated relay when it names only configurations cannot be, once it carries a
+code. Where a transaction code or user PIN is part of that flow, it belongs out of band,
+which is the whole reason OID4VCI separates them.
+
+The configuration identifiers themselves are mildly revealing in aggregate. An offer for
+a residency credential says what the issuer believes it is in a position to attest about
+the recipient, which is a statement about the recipient even though it is not a claim
+about them.
+
+### Correlation
+
+The Issuer declares `identifierScope: public`. A holder decides whether an offer is
+worth answering by recognising who made it, and that recognition has to survive across
+exchanges and match whatever the ecosystem's trust list names — the same identifier that
+will sign the credential at [`issue`](../../issue/0.1/) and that a verifier will resolve
+later. A pairwise issuer identifier would make every offer arrive from a stranger and
+would leave the eventual credential unverifiable by third parties.
+
+Nothing is declared for the Holder, and that is deliberate rather than an omission. An
+offer may be addressed to a party that is not yet known — the invite and air-gap cases —
+and relayer and holder may legitimately differ, which is why a consumer **MUST NOT**
+infer the holder's identity from the envelope sender. There is no identifier here whose
+scope this task is in a position to describe.
+
+What a relayer on the path does learn is the pairing: this issuer offered this
+configuration to this recipient, at this time. That is unavoidable given the envelope,
+and it is the reason an offer carrying a pre-authorized code needs a channel it can
+trust rather than merely a channel that works.
+
+### Retention
+
+An offer is consumed by the thread it opens. The holder keeps it long enough to reply
+with [`request`](../../request/0.1/) and receive the credential, and the issuer keeps it
+long enough to recognise the request as corresponding to an offer it made — which is
+what `unsupportedCredential` and the eventual `unknownOffer` on the request side are
+checked against. After the credential is delivered neither side has a use for it.
+
+Where the offer carries a pre-authorized code the retention question sharpens: a stored,
+unredeemed offer is a stored bearer secret. A holder **SHOULD** discard it as soon as it
+is spent or lapses, and an issuer **SHOULD** expire the code rather than rely on the
+holder to forget it, because an offer that stays redeemable indefinitely is a credential
+waiting for whoever finds the message.
+
+### Consent/purpose
+
+The purpose of an offer is to open a conversation, and its limit is that it opens
+nothing else. **An offer is not an authorization.** It states availability; the issuer's
+own policy still governs whether a request made against it is honoured, and a consumer
+**MUST NOT** treat having received an offer as a grant. Nor does it commit the holder:
+declining is expected, and a holder that supports none of the offered configurations
+**SHOULD** say so with `unsupportedCredential` rather than abandon the thread, since an
+issuer receiving silence cannot distinguish a refusal from a lost message — and will
+otherwise reasonably retry, which is a worse outcome for both.

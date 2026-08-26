@@ -18,9 +18,11 @@ parties:
   - role: participating party
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: witness
     requirement: REQUIRED
     member: recipient
+    identifierScope: public
 proofRequirement:
   request: OPTIONAL
   response: REQUIRED
@@ -36,7 +38,12 @@ sideEffects:
   rationale: "The witness opens session state it must hold until the session terminates or expires."
 exposure:
   discloses: metadata
+  ingests: metadata
   actsAsSubject: false
+  rationale: "The request carries nothing but the two relationship DIDs of the exchange to be witnessed — identifiers minted for that relationship, not attributes of anybody, and not resolvable to a natural person from the payload alone. The response discloses the session `challenge` and `domain`, which are binding material rather than data about a subject. What the witness accumulates across the sessions it serves is a correlation concern, addressed in Security & Privacy, not a property of this payload."
+retention:
+  class: durable
+  rationale: "The witness's own session state is exchange-scoped and ends when the session terminates or expires, but this document is not — its `id` is what a Verifiable Witness Credential carries as `taskContext`, and its content is what that credential's `taskDigestMultibase` is computed over. A holder retains it for the useful life of the VWC, because a verifier cannot recompute the digest without the document it was taken over — deleting it leaves a credential that still verifies on the witness's proof but can no longer be shown to belong to any particular session."
 errorCodes:
   - code: witness/session:refused
     meaning: The witness declines to open a session — policy, capacity, or the named exchange is not one it will witness.
@@ -157,18 +164,107 @@ assumes; it does not oblige a witness to accept any session, and
 
 ## Security & Privacy
 
-**The challenge is the session's binding value.** Presentations under `submit`
-are bound to `{challenge, domain}`. A challenge is single-use and
-unpredictable; a witness **MUST NOT** reuse one across sessions, including
-across the two sessions of a single witnessed exchange — a shared value would
-let either party's presentation satisfy the other's session. *The pair may be
-superseded by a canonical session transcript* — binding protocol and profile
-versions, context, purpose, scope, session and epoch — as that work is
-ratified; this specification deliberately isolates the binding material in one
-place so that upgrade replaces a member rather than the exchange.
+### Data carried
 
-**A witness learns who is forming relationships.** Opening a session
-discloses the parties' relationship DIDs to the witness by necessity. Those
-are pairwise values, but the witness can correlate the sessions it serves;
-parties choose witnesses with that in view, and a witness's own retention is
-governed by the policies it publishes, not by this specification.
+The request is two DIDs. `parties` is fixed at exactly two entries matching
+`^did:`, and there is no other member — no claim, no attribute, no name, no
+statement about what the relationship is for. That is the smallest payload that
+still lets a witness perform the one check it is obliged to perform under
+*Conformance* item 2: that the session's `issuer` is in the exchange it says it
+will be witnessed in. Anything more would be disclosure the design does not need.
+
+What the witness learns at this step is therefore narrow and worth stating
+precisely: that these two specific relationship DIDs are transacting, and at what
+time. The *claims* come later, under
+[`witness/session/submit`](../submit/0.1/spec.md), which is where a presentation
+actually reaches the witness. A producer **SHOULD NOT** use `ext` to carry
+relationship context — a purpose, a jurisdiction, a human-readable party name —
+because a witness attests that an exchange occurred, not what it was about, and
+a witness that is told what it was about cannot un-learn it.
+
+The response carries `challenge` and `domain`. Neither describes a subject; both
+are binding material, and `challenge` is required to be fresh, unpredictable, and
+single-use. A witness **MUST NOT** reuse a challenge across sessions, *including
+across the two sessions of a single witnessed exchange* — a shared value would let
+either party's presentation satisfy the other's session. *The pair may be
+superseded by a canonical session transcript* — binding protocol and profile
+versions, context, purpose, scope, session and epoch — as that work is ratified;
+this specification deliberately isolates the binding material in one place so that
+the upgrade replaces a member rather than the exchange.
+
+### Correlation
+
+The relationship DIDs in `parties` are pairwise: they were minted for this
+relationship and they do not join to either party's activity anywhere else. That
+protects the parties from everyone except the one party this task hands them to.
+Inside a witness they join freely, and by design — a witness serving many
+exchanges accumulates a graph of who transacts with whom, and neither the parties
+nor a later verifier has any way to observe what it does with that graph.
+
+Two structural features make the graph easier to build than it might appear.
+First, both sessions of one witnessed exchange name the **same `parties` pair**;
+that is precisely how the witness knows the two sessions observe one exchange, so
+the pair is a deliberate join key, and the distinct per-session challenges prevent
+replay without unlinking anything. Second, every document of the session carries
+`parentThreadId` naming the containing relationship exchange
+([§4.9.2](/SPEC.md#492-the-parentthreadid-member)); the framework calls that
+member navigation-only, but navigation between documents is what correlation is.
+
+The two parties' identifier scopes differ, and the asymmetry is the point. The
+participating party declares `identifierScope: pairwise` because its relationship
+DID exists only for this exchange. The witness declares `identifierScope: public`,
+which is a real narrowing of its privacy and is justified by two things this task
+would otherwise be unable to do. Both parties must independently open sessions
+with the **same** witness and be able to tell that they have; and a verifier
+holding a Verifiable Witness Credential must check that the credential's issuer is
+the same party as the issuer of the paired `submit#response`
+([`witness/session/submit`](../submit/0.1/spec.md) states that pairing rule). A
+witness reachable only under a pairwise identifier would leave a verifier unable
+to establish that one witness attested both halves of an exchange — which is the
+only thing the attestation is for. The cost is accepted openly: a public witness
+identifier means the *set of exchanges a given witness observed* is a single,
+nameable collection, and witness selection is therefore the parties' substantive
+privacy decision in this design, not a deployment detail.
+
+### Retention
+
+Two different lifetimes live in this exchange and conflating them is the easy
+mistake.
+
+The **witness's session state** is exchange-scoped. It exists so a submission can
+be checked against the challenge that was issued, and it ends when the session
+terminates or expires. Nothing in this payload bounds that window — there is no
+`expiresAt` member — so the expiry is the witness's own, published under its
+policy rather than declared here. Once `submit` has consumed the challenge it is
+spent, and a witness has no reason to retain it.
+
+The **document** is durable, and that is why the front matter says so. This
+document's `id` is what a Verifiable Witness Credential carries as `taskContext`,
+and its content is what the credential's `taskDigestMultibase` is computed over
+([§4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)). A holder
+retains it for as long as the credential is useful, because a verifier cannot
+recompute the digest without the document the digest was taken over. Discarding it
+does not invalidate the VWC — that still verifies on the witness's own proof — but
+it strips the credential of any way to show *which* session produced it, which is
+the difference between "a witness once signed something" and "this witnessing
+happened".
+
+### Consent/purpose
+
+The parties disclose their relationship DIDs for one purpose: so that a witness
+they chose can establish that the party asking to be witnessed is actually in the
+exchange it names, and can later attest that it observed the exchange. The
+membership check under *Authorization* is the whole reason the payload contains
+what it contains.
+
+That purpose does not extend to the by-product. A witness ends up holding a record
+of which pairwise DIDs met, when, and how often, and using that record for
+anything other than conducting sessions and attesting them — building a
+relationship directory, answering third-party questions about who is connected to
+whom, seeding a discovery service — is beyond what the parties disclosed it for.
+This specification gives the parties no mechanism to detect such reuse and no
+member through which to forbid it, which is exactly why the choice of witness, and
+the retention policy that witness publishes, carry the privacy weight here rather
+than anything on the wire. What further gate a witness applies before opening a
+session is its own policy decision; `witness/session:refused` is the disposition
+for declining, and this specification takes no position on when it should be used.
