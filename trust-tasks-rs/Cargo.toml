@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-rs"
-version = "0.13.3"
+version = "0.13.4"
 edition = "2021"
 # Effective MSRV is constrained by the workspace's transitive deps and
 # the Affinidi crates (`affinidi-data-integrity`, `affinidi-messaging-*`)
@@ -20,10 +20,74 @@ categories = ["data-structures", "encoding"]
 publish = true
 
 [features]
-default = []
 # Enables runtime payload validation against the JSON Schema bundled with
 # each generated spec module. Pulls in the `jsonschema` crate.
 validate = ["dep:jsonschema"]
+
+# Everything below is written by `cargo run -p trust-tasks-codegen` from what
+# is on disk under `specs/`. Do not hand-edit: a family added to the registry
+# gets its feature from the generator, and
+# `tests/spec_feature_manifest.rs` fails if this table and `specs/` disagree.
+# trust-tasks-codegen:begin
+# One feature per top-level spec family. `default` is the umbrella, so an
+# unconfigured consumer gets every family exactly as before; the saving is
+# `default-features = false, features = ["vault"]` and friends.
+default = ["all-specs"]
+all-specs = [
+    "acl",
+    "audit",
+    "auth",
+    "chat",
+    "config",
+    "confirm",
+    "consent",
+    "credential-exchange",
+    "device",
+    "did-management",
+    "git-trust",
+    "governance",
+    "keys",
+    "messaging",
+    "policy",
+    "provision",
+    "push",
+    "registry",
+    "sync",
+    "task-consent",
+    "vault",
+    "vrc",
+    "vta",
+    "vtc",
+    "webvh",
+    "witness",
+]
+acl = []
+audit = []
+auth = []
+chat = []
+config = []
+confirm = []
+consent = []
+credential-exchange = []
+device = []
+did-management = []
+git-trust = []
+governance = []
+keys = []
+messaging = []
+policy = []
+provision = []
+push = []
+registry = []
+sync = []
+task-consent = []
+vault = []
+vrc = []
+vta = []
+vtc = []
+webvh = []
+witness = []
+# trust-tasks-codegen:end
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
