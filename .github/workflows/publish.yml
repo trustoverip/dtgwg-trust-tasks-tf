@@ -169,13 +169,19 @@ jobs:
           # name — verified against action.yml, whose outputs are exactly
           # pr / prs / prs_created / releases / releases_created.
           PR_JSON: ${{ steps.release_pr.outputs.pr }}
+          GH_PUSH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           BRANCH=$(jq -r '.head_branch // empty' <<<"$PR_JSON")
           if [ -z "$BRANCH" ]; then
             echo "::error::release-plz reported a PR but no head_branch: $PR_JSON"
             exit 1
           fi
-          git fetch origin "$BRANCH" --depth=1
+          # NOT --depth=1. A shallow fetch leaves the release commit with no
+          # parent, and `git commit --amend` on a parentless commit does not
+          # amend — it writes a new ROOT commit containing the entire tree as
+          # newly-added files. The checkout above already uses fetch-depth: 0,
+          # so the history is here; just fetch the ref.
+          git fetch origin "$BRANCH"
           if git log -1 --format='%(trailers:key=Signed-off-by)' "origin/$BRANCH" | grep -q .; then
             echo "::notice::$BRANCH is already signed off"
             exit 0
@@ -188,7 +194,25 @@ jobs:
           # are who the DCO is a statement by.
           git -c user.name="$author_name" -c user.email="$author_email" \
               commit --amend --no-edit -s
-          git push --force-with-lease origin "$BRANCH"
+
+          # Verify before pushing: an amend that changed the parent, or added
+          # no trailer, must not reach the branch.
+          if [ "$(git rev-parse HEAD^)" != "$(git rev-parse "origin/$BRANCH^")" ]; then
+            echo "::error::amend changed the commit's parent — refusing to push"
+            exit 1
+          fi
+          if ! git log -1 --format='%(trailers:key=Signed-off-by)' | grep -q .; then
+            echo "::error::amend produced no Signed-off-by trailer — refusing to push"
+            exit 1
+          fi
+
+          # The checkout sets persist-credentials: false, so the local remote
+          # carries no auth and a bare `git push` fails. Push over an
+          # explicitly authenticated URL instead of re-persisting credentials
+          # for the whole job.
+          git push --force-with-lease \
+            "https://x-access-token:${GH_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:$BRANCH"
 
   # ── npm ──────────────────────────────────────────────────────────────────
   #
