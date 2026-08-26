@@ -15,6 +15,8 @@
 
 use trust_tasks_rs::{TransportContext, TransportHandler};
 
+use crate::pack::Carriage;
+
 /// Stable identifier for the DIDComm v1 binding, per SPEC.md §9.2.
 pub const BINDING_URI: &str = "https://trusttasks.org/binding/didcomm-v1/0.2";
 
@@ -29,15 +31,35 @@ pub const BINDING_URI: &str = "https://trusttasks.org/binding/didcomm-v1/0.2";
 pub struct DidcommV1Handler {
     local: Option<String>,
     peer: Option<String>,
+    carriage: Carriage,
 }
 
 impl DidcommV1Handler {
     /// Construct a handler. Either side may be `None`.
+    ///
+    /// The carriage defaults to [`Carriage::Dedicated`]; the consumer path in
+    /// [`crate::unpack_trust_task`] sets the one actually observed.
     pub fn new(local: impl Into<Option<String>>, peer: impl Into<Option<String>>) -> Self {
         Self {
             local: local.into(),
             peer: peer.into(),
+            carriage: Carriage::Dedicated,
         }
+    }
+
+    /// Record which carriage the message arrived on (binding §2.3).
+    pub fn with_carriage(mut self, carriage: Carriage) -> Self {
+        self.carriage = carriage;
+        self
+    }
+
+    /// Which carriage the message arrived on.
+    ///
+    /// [`Carriage::LegacyBasicMessage`] means the peer is still emitting the
+    /// superseded `0.1` form; §2.3 SHOULDs surfacing that so an operator can
+    /// see who has not migrated.
+    pub fn carriage(&self) -> Carriage {
+        self.carriage
     }
 
     /// The local party's DID, if set.
