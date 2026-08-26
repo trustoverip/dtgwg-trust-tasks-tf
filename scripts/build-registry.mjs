@@ -591,7 +591,10 @@ function checkExampleDocuments() {
   for (const { slug, version, specPath } of discoverSpecs()) {
     const { data } = splitFrontMatter(fs.readFileSync(specPath, 'utf8'));
     if (data?.targetFrameworkVersion) {
-      targetByTypePrefix.set(`https://trusttasks.org/spec/${slug}/${version}`, data.targetFrameworkVersion);
+      targetByTypePrefix.set(
+        `https://trusttasks.org/spec/${slug}/${version}`,
+        frameworkMinor(data.targetFrameworkVersion)
+      );
     }
   }
 
@@ -658,6 +661,21 @@ function checkExampleDocuments() {
     );
   }
   console.log(`  validated ${checked} example documents against the framework envelope schema`);
+}
+
+/*
+ * `targetFrameworkVersion` accepts both `MAJOR.MINOR` (what all 349 published
+ * specs declare) and `MAJOR.MINOR.PATCH` (what the canonical framework spec
+ * repo, trustoverip/dtgwg-trust-tasks-spec, now normatively requires). The
+ * envelope schemas on disk are keyed by `MAJOR.MINOR` — `specs/_framework/0.4/`
+ * — because a patch release does not change the envelope. Truncating here is
+ * what stops a spec written to the canonical text from landing in the
+ * "no envelope schema compiled, NOT validated" bucket, which is a silent loss
+ * of coverage dressed up as a warning nobody reads.
+ */
+function frameworkMinor(v) {
+  const m = /^(\d+\.\d+)(?:\.\d+)?$/.exec(String(v));
+  return m ? m[1] : String(v);
 }
 
 /** Whether a schema states how unrecognized members are treated (§7.3 item 7.4). */

@@ -72,8 +72,8 @@
     },
     "targetFrameworkVersion": {
       "type": "string",
-      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-      "description": "Framework MAJOR.MINOR this spec targets, per SPEC \u00a77.3 item 3."
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(\\.(0|[1-9][0-9]*))?$",
+      "description": "Framework version this spec targets, per SPEC \u00a77.3 item 3. Accepts both the two-part `MAJOR.MINOR` form used by every spec published so far and the three-part `MAJOR.MINOR.PATCH` form that the canonical framework spec repo (trustoverip/dtgwg-trust-tasks-spec) now normatively requires. Prefer the three-part form for new specs; the two-part form stays valid because 349 published specs use it and re-versioning them would be a wire-visible change for an editorial reason. The build normalises a three-part value to its `MAJOR.MINOR` prefix when selecting the envelope schema under `specs/_framework/`, so a spec written to the canonical text is still example-validated."
     },
     "category": {
       "type": "string",
