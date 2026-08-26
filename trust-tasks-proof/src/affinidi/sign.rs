@@ -65,6 +65,17 @@ pub enum SignError {
     #[error("serialise proof: {0}")]
     Serialize(#[from] serde_json::Error),
 
+    /// The proof this function emitted could not be read back into the
+    /// framework's typed [`Proof`](trust_tasks_rs::Proof).
+    ///
+    /// Raised only by [`ProofExt::sign`](crate::ProofExt::sign), which
+    /// lifts the emitted `proof` member onto a typed document. Reaching
+    /// it means the upstream Data Integrity crate emitted a proof object
+    /// that is not shaped like SPEC.md §4.7 — a dependency-version
+    /// mismatch, not a caller error.
+    #[error("read back the emitted proof: {0}")]
+    ProofRoundTrip(String),
+
     /// The underlying Data Integrity signing operation failed.
     #[error(transparent)]
     DataIntegrity(#[from] DataIntegrityError),

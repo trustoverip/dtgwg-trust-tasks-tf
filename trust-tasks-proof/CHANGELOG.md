@@ -4,6 +4,27 @@ All notable changes to `trust-tasks-proof` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.12.1] - 2026-08-26
+
+### Added
+
+- **`ProofExt` — `.sign()` and `.verify()` on a typed `TrustTask<P>`.** Signing
+  was a five-step ritual: serialise the typed document to `serde_json::Value`,
+  call `affinidi::sign_trust_task`, check the result, deserialise back, and get
+  the ordering right. The new extension trait does that round-trip internally,
+  so a producer writes `doc.sign(&secret, SignOptions::new()).await?` and a
+  consumer writes `doc.verify(&verifier).await?`.
+
+  It is a wrapper, not a reimplementation — `sign_trust_task` is called verbatim,
+  so the canonicalisation contract, the deterministic `eddsa-jcs-2022` default,
+  the replace-don't-nest rule and the SPEC §4.7/§4.8 issuer pre-flight are
+  unchanged, and a document signed either way is byte-identical (asserted by a
+  test). The free functions stay public and unchanged.
+
+- `SignError::ProofRoundTrip`, raised only by `ProofExt::sign` when the emitted
+  proof cannot be read back into the framework's typed `Proof`. `SignError` is
+  `#[non_exhaustive]`, so this is additive.
+
 ## [0.12.0] - 2026-08-26
 
 ### Changed

@@ -55,6 +55,33 @@ use trust_tasks_proof::affinidi::{sign_trust_task, SignOptions};
 let signed = sign_trust_task(&doc, &secret, SignOptions::new()).await?;
 ```
 
+### Signing a typed document — `ProofExt`
+
+`sign_trust_task` works on `serde_json::Value`, which is the right shape for the
+primitive and the wrong one for a producer holding a `TrustTask<P>`. `ProofExt`
+is the typed wrapper: import the trait and both halves of the round-trip become
+methods on the document. It calls `sign_trust_task` internally, so the
+canonicalisation, the defaults and the issuer pre-flight are identical — a
+document signed either way is byte-for-byte the same.
+
+```rust,ignore
+use trust_tasks_proof::{affinidi::{SignOptions, Verifier}, ProofExt};
+use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, TrustTask};
+
+let mut req = TrustTask::for_payload(new_id(), grant::Payload { /* … */ });
+req.issuer = Some(my_did.clone());          // set every member first …
+req.recipient = Some(server_did.clone());
+req.sign(&secret, SignOptions::new()).await?;   // … then sign.
+
+// Consumer side, same trait:
+req.verify(&Verifier::for_did_key()).await?;
+```
+
+⚠ **Sign last.** The proof covers the document as it stands when `sign` is
+called; mutating any member afterwards invalidates the signature. Re-signing is
+always safe — the existing proof is discarded and a fresh one minted over the
+current content.
+
 ## Opting out of the default backend
 
 ```toml
