@@ -59,7 +59,13 @@ jobs:
     # configured on crates.io for this repo + publish.yml, or its
     # `cargo publish` will fail auth.
     env:
-      CRATES: "trust-tasks-rs trust-tasks-https trust-tasks-didcomm trust-tasks-didcomm-v1 trust-tasks-proof trust-tasks-ceremony trust-tasks-tsp trust-tasks-capability-client trust-tasks"
+      # Publication order is a topological sort of the intra-workspace
+      # dependency graph, and it includes DEV-dependencies: `cargo publish`
+      # resolves them to package, so `trust-tasks-https` (whose demo
+      # dev-depends on `trust-tasks-proof` since #284) cannot go first.
+      # The `order` step below re-derives this from `cargo metadata` and
+      # fails if this list drifts — do not hand-edit it without running it.
+      CRATES: "trust-tasks-rs trust-tasks-ceremony trust-tasks-proof trust-tasks-https trust-tasks-didcomm trust-tasks-didcomm-v1 trust-tasks-tsp trust-tasks-capability-client trust-tasks"
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -70,6 +76,44 @@ jobs:
       # `test`/`package` jobs in rust.yml.
       - name: Install libdbus-1-dev
         run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+
+      # CRATES is hand-maintained, and CLAUDE.md records three separate
+      # incidents of a hand-maintained list drifting from the tree. This
+      # re-derives the publication order from `cargo metadata` — including
+      # dev-dependencies, which is what #287's release tripped over — and
+      # fails if CRATES is not a valid topological order or has drifted
+      # from the set of publishable crates.
+      - name: Verify CRATES is a valid publication order
+        run: |
+          python3 - "$CRATES" <<'PY'
+          import json, subprocess, sys
+          listed = sys.argv[1].split()
+          meta = json.loads(subprocess.run(
+              ["cargo", "metadata", "--no-deps", "--format-version", "1"],
+              capture_output=True, text=True, check=True).stdout)
+          # publish = [] means publish=false; anything else is publishable.
+          pkgs = {p["name"]: p for p in meta["packages"] if p.get("publish") != []}
+          names = set(pkgs)
+          missing = names - set(listed)
+          extra = set(listed) - names
+          if missing or extra:
+              if missing: print(f"::error::CRATES is missing publishable crate(s): {' '.join(sorted(missing))}")
+              if extra: print(f"::error::CRATES lists non-publishable or unknown crate(s): {' '.join(sorted(extra))}")
+              sys.exit(1)
+          pos = {c: i for i, c in enumerate(listed)}
+          bad = False
+          for name, p in pkgs.items():
+              # Every dependency kind counts: `cargo publish` resolves
+              # dev-dependencies to package, so they constrain order too.
+              for d in p["dependencies"]:
+                  if d["name"] in pos and pos[d["name"]] > pos[name]:
+                      kind = d.get("kind") or "normal"
+                      print(f"::error::{name} is published before its {kind} dependency {d['name']}; "
+                            f"cargo publish will fail to resolve it. Move {d['name']} earlier in CRATES.")
+                      bad = True
+          sys.exit(1 if bad else 0)
+          PY
+          echo "CRATES is a valid topological publication order"
 
       - name: Decide which crates to publish
         id: decide
