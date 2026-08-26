@@ -4,6 +4,54 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.13.0] - 2026-08-26
+
+The duplicate-execution defence of SPEC §7.2 item 11, wired onto this
+binding's inbound path and **on by default**. 0.12.0 moved the requirement to
+`trust-tasks-rs` 0.12 and told callers to wire a `ReplayGuard` themselves; this
+release wires it, because a defence every deployment has to remember to switch
+on is not a defence.
+
+### Added
+
+- **`DidcommConsumer` — the guarded inbound path.** `receive` /
+  `receive_from` unpack an envelope and run `consume_inbound` over the document
+  with a `ReplayGuard` and a `FreshnessPolicy` already in place; `consume`
+  applies the same pipeline to a document the caller unpacked itself (a
+  mediator SDK's own delivery loop). Every verdict of §7.2's *Disposition of a
+  duplicate* is applied: a duplicate returns the prior response and does not
+  re-dispatch, an in-flight duplicate reports the existing execution rather
+  than starting another, a differing document under a reused `id` is
+  `idConflict`, and a guard that cannot answer fails closed as `unavailable`
+  with `retryable = true` — never by executing.
+
+  **The record is keyed on the document `id`, never on the DIDComm `@id`,
+  `thid` or `pthid`.** SPEC §7.2 forbids the substitution, and the reason is
+  this binding's own §6: a mediator "can drop, delay, reorder, and re-deliver",
+  and a redelivery is a *fresh* DIDComm message carrying the *same* document.
+  A record keyed on `@id` would admit it and grant the ACL entry twice —
+  `tests/replay.rs` pins this by asserting the two envelopes' `@id`s differ
+  before feeding both through the path and asserting the handler ran once.
+
+### Changed
+
+- **BREAKING — the duplicate-execution record defaults ON.** `DidcommConsumer`
+  keeps an in-process `InMemoryReplayGuard` and applies
+  `FreshnessPolicy::consequential` (`issuedAt` REQUIRED, five-minute acceptance
+  window). A consumer that previously accepted an undated document, or the same
+  document twice, no longer does — that is a change to what a consumer
+  observes, so the leading component moves.
+
+  `DidcommConsumer::with_replay_guard` takes a store shared across replicas
+  (the in-process guard is wrong behind a load balancer);
+  `DidcommConsumer::without_replay_record` is the explicit opt-out, documented
+  with what it re-opens; `with_freshness` widens the acceptance window — and
+  with it the record's retention, because §7.2 makes them one bound. There is
+  no second TTL.
+
+- `chrono` is now a direct dependency (the pipeline takes a `now`), and
+  `async-trait` a dev-dependency (the tests implement a failing guard).
+
 ## [0.12.0] - 2026-08-26
 
 ### Changed
