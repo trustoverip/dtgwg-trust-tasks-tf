@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — Revoke
 summary: An operator revokes a standing consent grant so a previously-allowed messaging conversation no longer reaches the AI agent.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

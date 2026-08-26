@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Sessions List
 summary: A subject lists every active session the auth service holds for them — typical "where am I signed in?" UX for users managing multi-device authentication.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

@@ -4,7 +4,7 @@ version: "0.1"
 title: Policy — Get
 summary: Fetch a single Rego policy module by id, including its source. The read-one companion to policy/list.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy

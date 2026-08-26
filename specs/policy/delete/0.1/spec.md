@@ -4,7 +4,7 @@ version: "0.1"
 title: Policy — Delete
 summary: Delete a Rego policy module; takes effect on the next request evaluation.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy

@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Passkey Revoke (start)
 summary: A subject asks the auth service to begin removing one of their passkeys; the response is a fresh user-verification challenge that must be satisfied before anything is removed.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

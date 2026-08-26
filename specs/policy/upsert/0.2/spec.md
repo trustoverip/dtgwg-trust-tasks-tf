@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Policy — Upsert
 summary: Create or update a Rego policy module on the maintainer. New policies take effect on the next request evaluation; no restart required.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy

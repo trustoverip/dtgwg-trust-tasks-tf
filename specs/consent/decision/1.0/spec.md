@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — Decision
 summary: An approver allows or denies an AI agent's access to a messaging conversation, recording a consent grant at the Verifiable-Trust Agent.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

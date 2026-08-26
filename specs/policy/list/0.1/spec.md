@@ -4,7 +4,7 @@ version: "0.1"
 title: Policy — List
 summary: List Rego policy modules registered on the maintainer, optionally filtered by context or enablement status.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy

@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — Set Approver
 summary: An admin binds the operator who approves inbound-messaging consent for a platform within a context, and how the prompt reaches them.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

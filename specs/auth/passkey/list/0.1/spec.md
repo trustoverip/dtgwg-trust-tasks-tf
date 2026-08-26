@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Passkey List
 summary: A subject lists every passkey the auth service holds for them, so they can tell their authenticators apart before revoking one.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth
