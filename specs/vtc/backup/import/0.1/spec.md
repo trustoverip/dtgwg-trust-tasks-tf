@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A confirmed import clears and replaces every backed-up keyspace. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An import overwrites live community state with the contents of an archive and cannot be undone. Replayed, it rolls the community back to the archive’s moment a second time, discarding everything done since.
 sideEffects:
   level: destructive
   rationale: "With `confirm: true` the backed-up keyspaces are cleared and replaced wholesale. With `confirm: false` nothing is written."

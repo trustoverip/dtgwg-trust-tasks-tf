@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rewrites the community's profile and configuration in one call. The caller must be attributable, and the change auditable to them.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Importing configuration replaces the community's settings wholesale and discards what was there. A replayed import reverts every setting changed since the document was written, without naming a single one of them.
 sideEffects:
   level: destructive
   rationale: On confirm, overwrites the community profile and stored configuration overrides with the document's values. Prior values are not retained by this task. Previewing has no side effects at all.

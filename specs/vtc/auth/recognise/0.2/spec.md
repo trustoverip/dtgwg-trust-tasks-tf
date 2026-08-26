@@ -26,6 +26,9 @@ proofRequirement:
     Sender authentication is carried by the presented credentials (the vec/vmc
     proofs), not the framework proof. A framework proof is recommended for
     channel binding but the credential proofs are the primary evidence.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Recognition is a challenge-response exchange, and a response accepted outside a bounded window is a response to a challenge that has already been answered. This is the case SPEC §7.2 item 11 protects most directly.
 sideEffects:
   level: mutating
   rationale: "Mints a cross-community session token; recoverable by letting it expire or revoking it."

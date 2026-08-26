@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Changing a member's role or metadata alters their standing in the community. The change MUST be attributable and non-repudiable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A member update overwrites the member's record, so an out-of-order copy restores details the member has already corrected.
 sideEffects:
   level: mutating
   rationale: "Updates a member's role or non-credential metadata; recoverable by updating again."

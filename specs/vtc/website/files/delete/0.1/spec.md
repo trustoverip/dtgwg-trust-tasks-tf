@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Deleting a served file changes the live site and destroys content; it MUST be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a published file removes it irreversibly and the deletion is visible to every visitor. Replayed after a file was uploaded to the same path, it deletes the replacement.
 sideEffects:
   level: destructive
   rationale: "Removes a file from the website root; the bytes are gone unless separately backed up."

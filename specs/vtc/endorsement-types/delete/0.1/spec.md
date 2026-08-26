@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Removing a recognised endorsement type changes what the community accepts; it MUST be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting an endorsement type invalidates the endorsements that reference it. Replayed after the type was re-registered, it deletes the new registration and the endorsements hanging off it.
 sideEffects:
   level: destructive
   rationale: "Removes an endorsement type from the registry; recoverable only by re-registering it."

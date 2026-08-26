@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: Pre-authentication. The caller has no session yet; the nonce is what they will later bind a proof to.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A challenge is only meaningful while the verifier is still waiting on it. Carrying its issue time is what allows a challenge to be aged out rather than answered indefinitely.
 sideEffects:
   level: mutating
   rationale: "Persists a single-use nonce with a short expiry."

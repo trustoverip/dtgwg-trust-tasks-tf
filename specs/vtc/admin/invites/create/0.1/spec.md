@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Mints a credential-bearing URL that grants administrator access. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The invite carries secret material that admits its bearer as an administrator. Replayed, it mints a second such invite, and the material is out of the community’s hands the moment it is returned.
 sideEffects:
   level: mutating
   rationale: "Persists an invite and, when the target DID has no entry, creates its ACL row."

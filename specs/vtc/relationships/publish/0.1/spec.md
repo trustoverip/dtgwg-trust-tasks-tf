@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The publisher is the document proof signer, which MUST equal the VRC's issuer; publishing a relationship attribution must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Publishing makes the relationship visible to parties outside the exchange, and what they read is whatever was published last. A stale copy republishes a relationship the community has since ended.
 sideEffects:
   level: mutating
   rationale: "Stores a relationship credential; reversible via relationships/revoke."

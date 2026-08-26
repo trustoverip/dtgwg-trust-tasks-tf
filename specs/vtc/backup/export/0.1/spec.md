@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Exports every backed-up keyspace and the community signing key bundle. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An export returns the community's secret material in bulk. A captured export request is the most valuable document in this family to replay, and the acceptance window is the only thing that stops it being replayable forever.
 sideEffects:
   level: none
   rationale: "Reads state and returns an envelope; the community is not mutated. The export is audited."
