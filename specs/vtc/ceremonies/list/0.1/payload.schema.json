@@ -45,6 +45,7 @@
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Governance purpose this ceremony decides, e.g. join, removal."
         },
         "pkg": {
@@ -70,6 +71,7 @@
         },
         "blurb": {
           "type": "string",
+          "maxLength": 256,
           "description": "One-line explanation shown beside the label."
         },
         "fields": {

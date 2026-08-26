@@ -57,3 +57,17 @@ Producer: populate `input` with a representative PolicyInput. Optionally supply 
 **No persistent state.** Evaluate never modifies the live policy set, even with `candidateModule`. The candidate is layered for this single call only.
 
 **Trace verbosity.** Traces can reveal implementation detail of the maintainer's Rego rules; consumers should treat them as security-relevant.
+
+**Free text.** Two members of the response are free text and are now bounded at
+1024 characters each. `decision.explanation` is the evaluator's own account of
+why a policy decided as it did; `trace[]` is the Rego evaluator's line-by-line
+trace, returned only when `includeTrace` was set. Both are authored by the
+maintainer that signs the response, so both are trusted to the same degree as
+the decision itself — but both describe the maintainer's *internal* rules, which
+is why the note above calls traces security-relevant. Their reader is the human
+debugging a policy, and neither is intended for a machine: a consumer MUST NOT
+parse either to recover a decision that `decision` did not state. Neither is
+retained by this task — evaluation persists nothing — so anything kept is kept
+by whatever the caller logs, and a caller that logs a trace has copied the
+maintainer's rule structure into its own retention.
+

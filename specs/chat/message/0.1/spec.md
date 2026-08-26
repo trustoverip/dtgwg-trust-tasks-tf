@@ -325,6 +325,17 @@ orders; it does not encrypt. A deployment carrying sensitive conversation
 should understand that doing so protects the message in flight and not the chain
 at rest.
 
+Two smaller members are free text on the same terms and are bounded accordingly.
+`mentions[].displayName` (256) is the name the *source platform* supplied for a
+mentioned participant — not the bridge's own view of them and never an identity
+claim, so a surface MUST render it as a hint and MUST NOT resolve a participant
+by it. `attachments[].filename` (256) is whatever the sender's device called the
+file, which is routinely more disclosive than the sender expects; it is carried
+for display only. Both are read by whoever reads the message and, because the
+chain is `durable`, both are retained for as long as the message is — a display
+name that was accurate when the message was sent is retained unchanged
+afterwards, and neither member is refreshed.
+
 ### Correlation
 
 `conversationId` is stable for the life of a conversation by construction — it is

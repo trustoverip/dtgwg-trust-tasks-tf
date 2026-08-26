@@ -50,3 +50,15 @@ Consumer: return every ceremony this maintainer implements. The manifests descri
 `exposure.discloses` is `none`: the manifests describe what the software can do, not what the community has done. No member, credential, or policy data is reachable here.
 
 They are still authenticated rather than public, because the set of ceremonies a deployment exposes is a reasonable fingerprint of its configuration and version.
+
+**Free text.** Two members of each returned manifest are free text and are now
+bounded: `purpose` at 128, matching the decision-slot bound the `policy/*` family
+already declares, and `blurb` at 256, matching the `label` it is displayed
+beside. Both are authored by the maintainer that publishes the manifest and are
+read by the operator console rendering the ceremony picker; nothing else reads
+them, and no decision is taken from either. The maintainer **retains** both for
+as long as the ceremony is published — they are part of the manifest, not part
+of any enactment — and a console SHOULD NOT copy them into the record of a
+ceremony it ran, because the manifest can be republished with different wording
+under the same `purpose`.
+

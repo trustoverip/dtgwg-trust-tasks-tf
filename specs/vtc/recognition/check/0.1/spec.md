@@ -49,3 +49,15 @@ Consumer: verify the community-admin capability. Return `recognised` from the re
 This is an admin-gated probe because it discloses which foreign identities the community has a recognition relationship with — a map of its inter-community trust that is not otherwise public.
 
 The three-way distinction (`recognised` / not configured / errored) exists so an operator debugging a failed cross-community login can tell a policy decision from an infrastructure problem. Reducing it to one boolean would make those two indistinguishable at exactly the moment the difference matters.
+
+**Free text.** `error` is free text, bounded at 1024 characters — a diagnostic
+string, not a status. It is present only when a configured registry could not be
+reached, and it is authored by the maintainer that signs the response, so it is
+trusted to the same degree as the rest of it. Its reader is the operator or
+client diagnosing an indeterminate answer; a consumer MUST NOT parse it, and
+MUST decide from `recognised` and `registryConfigured`, which exist so that
+"could not tell" is expressible without prose. It may quote an upstream URL or
+HTTP status, so it is operationally sensitive on the same terms as
+[`vtc/registry/diagnostics`](../../../registry/diagnostics/0.1/spec.md). This task
+retains nothing; whatever a caller logs, the caller retains.
+

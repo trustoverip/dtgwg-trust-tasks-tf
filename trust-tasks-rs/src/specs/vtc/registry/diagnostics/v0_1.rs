@@ -214,7 +214,8 @@ Advertised and active are reported separately: a registry that advertises a prot
 ///      "type": [
 ///        "string",
 ///        "null"
-///      ]
+///      ],
+///      "maxLength": 1024
 ///    },
 ///    "url": {
 ///      "description": "The registry's endpoint, when addressed by one.",
@@ -244,7 +245,7 @@ pub struct RegistryTransport {
     pub did: ::std::option::Option<::std::string::String>,
     ///Why the last selection failed, if it did.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub error: ::std::option::Option<::std::string::String>,
+    pub error: ::std::option::Option<RegistryTransportError>,
     ///The registry's endpoint, when addressed by one.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
@@ -333,6 +334,75 @@ impl<'de> ::serde::Deserialize<'de> for RegistryTransportAdvertisedItem {
             })
     }
 }
+///Why the last selection failed, if it did.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Why the last selection failed, if it did.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RegistryTransportError(::std::string::String);
+impl ::std::ops::Deref for RegistryTransportError {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RegistryTransportError> for ::std::string::String {
+    fn from(value: RegistryTransportError) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RegistryTransportError {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RegistryTransportError {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RegistryTransportError {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RegistryTransportError {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RegistryTransportError {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///`Response`
 ///
 /// <details><summary>JSON schema</summary>
@@ -361,7 +431,8 @@ impl<'de> ::serde::Deserialize<'de> for RegistryTransportAdvertisedItem {
 ///      "type": [
 ///        "string",
 ///        "null"
-///      ]
+///      ],
+///      "maxLength": 1024
 ///    },
 ///    "lastFailureAt": {
 ///      "type": [
@@ -474,7 +545,7 @@ pub struct Response {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_error: ::std::option::Option<::std::string::String>,
+    pub last_error: ::std::option::Option<ResponseLastError>,
     #[serde(
         rename = "lastFailureAt",
         default,
@@ -569,6 +640,75 @@ pub struct Response {
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
+    }
+}
+///Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.",
+///  "type": "string",
+///  "maxLength": 1024
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseLastError(::std::string::String);
+impl ::std::ops::Deref for ResponseLastError {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseLastError> for ::std::string::String {
+    fn from(value: ResponseLastError) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseLastError {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseLastError {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseLastError {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseLastError {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseLastError {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.
@@ -971,7 +1111,7 @@ pub mod builder {
             ::std::string::String,
         >,
         error: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::RegistryTransportError>,
             ::std::string::String,
         >,
         url: ::std::result::Result<
@@ -1023,7 +1163,7 @@ pub mod builder {
         }
         pub fn error<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::RegistryTransportError>>,
             T::Error: ::std::fmt::Display,
         {
             self.error = value
@@ -1072,7 +1212,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         failed_count: ::std::result::Result<u64, ::std::string::String>,
         last_error: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::ResponseLastError>,
             ::std::string::String,
         >,
         last_failure_at: ::std::result::Result<
@@ -1162,7 +1302,7 @@ pub mod builder {
         }
         pub fn last_error<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseLastError>>,
             T::Error: ::std::fmt::Display,
         {
             self.last_error = value
@@ -1464,7 +1604,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegistryTransport\": {\n      \"$anchor\": \"registryTransport\",\n      \"additionalProperties\": false,\n      \"description\": \"How a maintainer addresses its trust registry, and what the last selection chose.\\n\\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"advertised\": {\n          \"description\": \"Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"description\": \"The registry's DID, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"error\": {\n          \"description\": \"Why the last selection failed, if it did.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"url\": {\n          \"description\": \"The registry's endpoint, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"title\": \"RegistryTransport\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"failedCount\": {\n          \"description\": \"Terminal-failure rows awaiting operator triage.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastError\": {\n          \"description\": \"Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastFailureAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastSuccessAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator's DID, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorUrl\": {\n          \"description\": \"The mediator's endpoint, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"messagingStatus\": {\n          \"description\": \"Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.\",\n          \"enum\": [\n            \"connected\",\n            \"disconnected\"\n          ],\n          \"type\": \"string\"\n        },\n        \"oldestPendingAgeSeconds\": {\n          \"description\": \"Seconds since the oldest dispatchable pending job; null when the queue is empty.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        },\n        \"queueDepth\": {\n          \"description\": \"Pending + in-flight sync jobs.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"registryTransport\": {\n          \"$ref\": \"#/$defs/RegistryTransport\",\n          \"description\": \"How this maintainer reaches its trust registry, and which protocol the last attempt actually chose.\"\n        },\n        \"rtbfBatchedCount\": {\n          \"description\": \"Pending jobs parked behind the RTBF batch window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerEnabled\": {\n          \"description\": \"Whether the membership syncer is configured to run at all — false when no trust registry is configured.\",\n          \"type\": \"boolean\"\n        },\n        \"syncerRestarts\": {\n          \"description\": \"How many times the syncer has been restarted after a panic. A rising value is the \\\"it keeps crashing\\\" signal; queue depth alone looks identical to a healthy idle queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerRunning\": {\n          \"description\": \"Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals.\",\n          \"type\": \"boolean\"\n        },\n        \"transports\": {\n          \"description\": \"Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\\n\\nReports all protocols rather than only the advertised ones, so a client can tell \\\"not advertised\\\" from \\\"absent from an older response\\\".\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TransportStatus\"\n          },\n          \"type\": \"array\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registryStatus\",\n        \"queueDepth\",\n        \"rtbfBatchedCount\",\n        \"failedCount\"\n      ],\n      \"title\": \"VTC Registry Diagnostics — response payload\",\n      \"type\": \"object\"\n    },\n    \"TransportStatus\": {\n      \"$anchor\": \"transportStatus\",\n      \"additionalProperties\": false,\n      \"description\": \"One protocol's advertised and serviceable state.\\n\\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.\",\n      \"properties\": {\n        \"advertised\": {\n          \"description\": \"Present in the DID document, so a resolving client will find it.\",\n          \"type\": \"boolean\"\n        },\n        \"endpoint\": {\n          \"description\": \"The advertised endpoint, or null when not advertised — there is no endpoint to give.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"protocol\": {\n          \"description\": \"The protocol this row describes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serviceable\": {\n          \"description\": \"This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"protocol\",\n        \"advertised\",\n        \"serviceable\"\n      ],\n      \"title\": \"TransportStatus\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/registry/diagnostics/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Registry Diagnostics — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegistryTransport\": {\n      \"$anchor\": \"registryTransport\",\n      \"additionalProperties\": false,\n      \"description\": \"How a maintainer addresses its trust registry, and what the last selection chose.\\n\\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"advertised\": {\n          \"description\": \"Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"description\": \"The registry's DID, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"error\": {\n          \"description\": \"Why the last selection failed, if it did.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"url\": {\n          \"description\": \"The registry's endpoint, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"title\": \"RegistryTransport\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"failedCount\": {\n          \"description\": \"Terminal-failure rows awaiting operator triage.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastError\": {\n          \"description\": \"Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastFailureAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastSuccessAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator's DID, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorUrl\": {\n          \"description\": \"The mediator's endpoint, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"messagingStatus\": {\n          \"description\": \"Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.\",\n          \"enum\": [\n            \"connected\",\n            \"disconnected\"\n          ],\n          \"type\": \"string\"\n        },\n        \"oldestPendingAgeSeconds\": {\n          \"description\": \"Seconds since the oldest dispatchable pending job; null when the queue is empty.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        },\n        \"queueDepth\": {\n          \"description\": \"Pending + in-flight sync jobs.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"registryTransport\": {\n          \"$ref\": \"#/$defs/RegistryTransport\",\n          \"description\": \"How this maintainer reaches its trust registry, and which protocol the last attempt actually chose.\"\n        },\n        \"rtbfBatchedCount\": {\n          \"description\": \"Pending jobs parked behind the RTBF batch window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerEnabled\": {\n          \"description\": \"Whether the membership syncer is configured to run at all — false when no trust registry is configured.\",\n          \"type\": \"boolean\"\n        },\n        \"syncerRestarts\": {\n          \"description\": \"How many times the syncer has been restarted after a panic. A rising value is the \\\"it keeps crashing\\\" signal; queue depth alone looks identical to a healthy idle queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerRunning\": {\n          \"description\": \"Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals.\",\n          \"type\": \"boolean\"\n        },\n        \"transports\": {\n          \"description\": \"Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\\n\\nReports all protocols rather than only the advertised ones, so a client can tell \\\"not advertised\\\" from \\\"absent from an older response\\\".\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TransportStatus\"\n          },\n          \"type\": \"array\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registryStatus\",\n        \"queueDepth\",\n        \"rtbfBatchedCount\",\n        \"failedCount\"\n      ],\n      \"title\": \"VTC Registry Diagnostics — response payload\",\n      \"type\": \"object\"\n    },\n    \"TransportStatus\": {\n      \"$anchor\": \"transportStatus\",\n      \"additionalProperties\": false,\n      \"description\": \"One protocol's advertised and serviceable state.\\n\\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.\",\n      \"properties\": {\n        \"advertised\": {\n          \"description\": \"Present in the DID document, so a resolving client will find it.\",\n          \"type\": \"boolean\"\n        },\n        \"endpoint\": {\n          \"description\": \"The advertised endpoint, or null when not advertised — there is no endpoint to give.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"protocol\": {\n          \"description\": \"The protocol this row describes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serviceable\": {\n          \"description\": \"This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"protocol\",\n        \"advertised\",\n        \"serviceable\"\n      ],\n      \"title\": \"TransportStatus\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/registry/diagnostics/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Registry Diagnostics — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1472,7 +1612,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegistryTransport\": {\n      \"$anchor\": \"registryTransport\",\n      \"additionalProperties\": false,\n      \"description\": \"How a maintainer addresses its trust registry, and what the last selection chose.\\n\\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"advertised\": {\n          \"description\": \"Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"description\": \"The registry's DID, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"error\": {\n          \"description\": \"Why the last selection failed, if it did.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"url\": {\n          \"description\": \"The registry's endpoint, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"title\": \"RegistryTransport\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"failedCount\": {\n          \"description\": \"Terminal-failure rows awaiting operator triage.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastError\": {\n          \"description\": \"Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastFailureAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastSuccessAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator's DID, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorUrl\": {\n          \"description\": \"The mediator's endpoint, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"messagingStatus\": {\n          \"description\": \"Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.\",\n          \"enum\": [\n            \"connected\",\n            \"disconnected\"\n          ],\n          \"type\": \"string\"\n        },\n        \"oldestPendingAgeSeconds\": {\n          \"description\": \"Seconds since the oldest dispatchable pending job; null when the queue is empty.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        },\n        \"queueDepth\": {\n          \"description\": \"Pending + in-flight sync jobs.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"registryTransport\": {\n          \"$ref\": \"#/$defs/RegistryTransport\",\n          \"description\": \"How this maintainer reaches its trust registry, and which protocol the last attempt actually chose.\"\n        },\n        \"rtbfBatchedCount\": {\n          \"description\": \"Pending jobs parked behind the RTBF batch window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerEnabled\": {\n          \"description\": \"Whether the membership syncer is configured to run at all — false when no trust registry is configured.\",\n          \"type\": \"boolean\"\n        },\n        \"syncerRestarts\": {\n          \"description\": \"How many times the syncer has been restarted after a panic. A rising value is the \\\"it keeps crashing\\\" signal; queue depth alone looks identical to a healthy idle queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerRunning\": {\n          \"description\": \"Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals.\",\n          \"type\": \"boolean\"\n        },\n        \"transports\": {\n          \"description\": \"Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\\n\\nReports all protocols rather than only the advertised ones, so a client can tell \\\"not advertised\\\" from \\\"absent from an older response\\\".\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TransportStatus\"\n          },\n          \"type\": \"array\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registryStatus\",\n        \"queueDepth\",\n        \"rtbfBatchedCount\",\n        \"failedCount\"\n      ],\n      \"title\": \"VTC Registry Diagnostics — response payload\",\n      \"type\": \"object\"\n    },\n    \"TransportStatus\": {\n      \"$anchor\": \"transportStatus\",\n      \"additionalProperties\": false,\n      \"description\": \"One protocol's advertised and serviceable state.\\n\\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.\",\n      \"properties\": {\n        \"advertised\": {\n          \"description\": \"Present in the DID document, so a resolving client will find it.\",\n          \"type\": \"boolean\"\n        },\n        \"endpoint\": {\n          \"description\": \"The advertised endpoint, or null when not advertised — there is no endpoint to give.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"protocol\": {\n          \"description\": \"The protocol this row describes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serviceable\": {\n          \"description\": \"This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"protocol\",\n        \"advertised\",\n        \"serviceable\"\n      ],\n      \"title\": \"TransportStatus\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegistryTransport\": {\n      \"$anchor\": \"registryTransport\",\n      \"additionalProperties\": false,\n      \"description\": \"How a maintainer addresses its trust registry, and what the last selection chose.\\n\\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"advertised\": {\n          \"description\": \"Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"description\": \"The registry's DID, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"error\": {\n          \"description\": \"Why the last selection failed, if it did.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"url\": {\n          \"description\": \"The registry's endpoint, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"title\": \"RegistryTransport\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"failedCount\": {\n          \"description\": \"Terminal-failure rows awaiting operator triage.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastError\": {\n          \"description\": \"Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastFailureAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastSuccessAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator's DID, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorUrl\": {\n          \"description\": \"The mediator's endpoint, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"messagingStatus\": {\n          \"description\": \"Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.\",\n          \"enum\": [\n            \"connected\",\n            \"disconnected\"\n          ],\n          \"type\": \"string\"\n        },\n        \"oldestPendingAgeSeconds\": {\n          \"description\": \"Seconds since the oldest dispatchable pending job; null when the queue is empty.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        },\n        \"queueDepth\": {\n          \"description\": \"Pending + in-flight sync jobs.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"registryTransport\": {\n          \"$ref\": \"#/$defs/RegistryTransport\",\n          \"description\": \"How this maintainer reaches its trust registry, and which protocol the last attempt actually chose.\"\n        },\n        \"rtbfBatchedCount\": {\n          \"description\": \"Pending jobs parked behind the RTBF batch window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerEnabled\": {\n          \"description\": \"Whether the membership syncer is configured to run at all — false when no trust registry is configured.\",\n          \"type\": \"boolean\"\n        },\n        \"syncerRestarts\": {\n          \"description\": \"How many times the syncer has been restarted after a panic. A rising value is the \\\"it keeps crashing\\\" signal; queue depth alone looks identical to a healthy idle queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerRunning\": {\n          \"description\": \"Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals.\",\n          \"type\": \"boolean\"\n        },\n        \"transports\": {\n          \"description\": \"Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\\n\\nReports all protocols rather than only the advertised ones, so a client can tell \\\"not advertised\\\" from \\\"absent from an older response\\\".\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TransportStatus\"\n          },\n          \"type\": \"array\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registryStatus\",\n        \"queueDepth\",\n        \"rtbfBatchedCount\",\n        \"failedCount\"\n      ],\n      \"title\": \"VTC Registry Diagnostics — response payload\",\n      \"type\": \"object\"\n    },\n    \"TransportStatus\": {\n      \"$anchor\": \"transportStatus\",\n      \"additionalProperties\": false,\n      \"description\": \"One protocol's advertised and serviceable state.\\n\\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.\",\n      \"properties\": {\n        \"advertised\": {\n          \"description\": \"Present in the DID document, so a resolving client will find it.\",\n          \"type\": \"boolean\"\n        },\n        \"endpoint\": {\n          \"description\": \"The advertised endpoint, or null when not advertised — there is no endpoint to give.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"protocol\": {\n          \"description\": \"The protocol this row describes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serviceable\": {\n          \"description\": \"This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"protocol\",\n        \"advertised\",\n        \"serviceable\"\n      ],\n      \"title\": \"TransportStatus\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

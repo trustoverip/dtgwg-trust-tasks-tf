@@ -319,3 +319,17 @@ The relying party's `#response` confirms whether elevation succeeded.
 **Wallet UX.** Approvers presenting approve-requests to humans MUST display the request's `reason` and the relying party identity verbatim. Substituting a friendlier summary for an unclear reason is a phishing vector.
 
 The optional `ext` extension is part of the producer's signed surface.
+
+**Free text.** `deniedReason` is free text, bounded at 500 characters — the
+consent-surface figure, because this is prose a human wrote at an approval
+prompt and a second human reads at the other end. It is OPTIONAL in the schema
+and REQUIRED by the prose only when `decision` is `denied`. It is authored by
+the approver (or inferred by their device) rather than by the service that acted
+on the denial, so a surface rendering it MUST attribute it to the approver and
+MUST NOT present it as the service's own account of the refusal. It is read by
+the requesting party and by whoever reviews the step-up audit trail; a consumer
+that keeps a record of the denial **retains** it with that record, and one that
+does not discards it when the step-up closes. An approver SHOULD say which
+condition applied rather than describe their own circumstances — a reason
+travels further than the person who wrote it expects.
+

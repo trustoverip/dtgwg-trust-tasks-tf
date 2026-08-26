@@ -596,7 +596,8 @@ impl ::std::convert::TryFrom<::std::string::String> for Kind {
 ///    },
 ///    "displayHint": {
 ///      "description": "Optional operator-facing label (e.g. \"Signal group 'Family'\"). MUST NOT contain a raw platform address.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
@@ -636,7 +637,7 @@ pub struct Payload {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub display_hint: ::std::option::Option<::std::string::String>,
+    pub display_hint: ::std::option::Option<PayloadDisplayHint>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content.
@@ -713,6 +714,75 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadChallenge {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Optional operator-facing label (e.g. "Signal group 'Family'"). MUST NOT contain a raw platform address.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Optional operator-facing label (e.g. \"Signal group 'Family'\"). MUST NOT contain a raw platform address.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadDisplayHint(::std::string::String);
+impl ::std::ops::Deref for PayloadDisplayHint {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadDisplayHint> for ::std::string::String {
+    fn from(value: PayloadDisplayHint) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadDisplayHint {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadDisplayHint {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadDisplayHint {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadDisplayHint {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadDisplayHint {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1097,7 +1167,7 @@ pub mod builder {
             ::std::string::String,
         >,
         display_hint: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadDisplayHint>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -1144,7 +1214,7 @@ pub mod builder {
         }
         pub fn display_hint<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadDisplayHint>>,
             T::Error: ::std::fmt::Display,
         {
             self.display_hint = value
@@ -1312,7 +1382,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConsentSubject\": {\n      \"additionalProperties\": false,\n      \"description\": \"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"VID (DID) of the AI agent the conversation would reach.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/Kind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Kind\": {\n      \"description\": \"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"requestId\": {\n          \"description\": \"The VTA's id for the pending consent (set when accepted), for correlation and polling.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Consent Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"Scope\": {\n      \"description\": \"What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.\",\n      \"enum\": [\n        \"receive\",\n        \"converse\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/consent/request/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A bridge asks the VTA whether an inbound conversation may reach an AI agent, prompting operator consent on first contact.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"base64url-encoded nonce (≥128 bits entropy) echoed by the matching consent/decision, so the bridge can correlate the decision to this request.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"contextHint\": {\n      \"description\": \"Optional VTA context path the bridge runs under, to scope approver resolution.\",\n      \"type\": \"string\"\n    },\n    \"displayHint\": {\n      \"description\": \"Optional operator-facing label (e.g. \\\"Signal group 'Family'\\\"). MUST NOT contain a raw platform address.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"firstMessageDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content.\"\n    },\n    \"scope\": {\n      \"$ref\": \"#/$defs/Scope\",\n      \"description\": \"The access the bridge seeks for the agent on this conversation.\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/ConsentSubject\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"scope\",\n    \"challenge\"\n  ],\n  \"title\": \"Consent Request — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ConsentSubject\": {\n      \"additionalProperties\": false,\n      \"description\": \"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"VID (DID) of the AI agent the conversation would reach.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/Kind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Kind\": {\n      \"description\": \"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"requestId\": {\n          \"description\": \"The VTA's id for the pending consent (set when accepted), for correlation and polling.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Consent Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"Scope\": {\n      \"description\": \"What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.\",\n      \"enum\": [\n        \"receive\",\n        \"converse\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/consent/request/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A bridge asks the VTA whether an inbound conversation may reach an AI agent, prompting operator consent on first contact.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"base64url-encoded nonce (≥128 bits entropy) echoed by the matching consent/decision, so the bridge can correlate the decision to this request.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"contextHint\": {\n      \"description\": \"Optional VTA context path the bridge runs under, to scope approver resolution.\",\n      \"type\": \"string\"\n    },\n    \"displayHint\": {\n      \"description\": \"Optional operator-facing label (e.g. \\\"Signal group 'Family'\\\"). MUST NOT contain a raw platform address.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"firstMessageDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content.\"\n    },\n    \"scope\": {\n      \"$ref\": \"#/$defs/Scope\",\n      \"description\": \"The access the bridge seeks for the agent on this conversation.\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/ConsentSubject\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"scope\",\n    \"challenge\"\n  ],\n  \"title\": \"Consent Request — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

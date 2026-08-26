@@ -115,6 +115,7 @@ export const PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Echoed from the request."
         },
         "previousPolicyId": {
@@ -170,6 +171,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Echoed from the request."
         },
         "previousPolicyId": {

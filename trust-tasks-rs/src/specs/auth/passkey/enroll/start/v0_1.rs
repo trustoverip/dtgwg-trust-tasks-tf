@@ -130,6 +130,7 @@ pub mod error {
 ///        },
 ///        "name": {
 ///          "type": "string",
+///          "maxLength": 64,
 ///          "minLength": 1
 ///        }
 ///      },
@@ -148,7 +149,8 @@ pub mod error {
 ///      ],
 ///      "properties": {
 ///        "displayName": {
-///          "type": "string"
+///          "type": "string",
+///          "maxLength": 64
 ///        },
 ///        "id": {
 ///          "description": "base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.",
@@ -156,6 +158,7 @@ pub mod error {
 ///        },
 ///        "name": {
 ///          "type": "string",
+///          "maxLength": 64,
 ///          "minLength": 1
 ///        }
 ///      },
@@ -676,6 +679,7 @@ impl CredentialCreationOptionsPubKeyCredParamsItem {
 ///    },
 ///    "name": {
 ///      "type": "string",
+///      "maxLength": 64,
 ///      "minLength": 1
 ///    }
 ///  },
@@ -770,6 +774,7 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsRpId {
 /// ```json
 ///{
 ///  "type": "string",
+///  "maxLength": 64,
 ///  "minLength": 1
 ///}
 /// ```
@@ -791,6 +796,9 @@ impl ::std::convert::From<CredentialCreationOptionsRpName> for ::std::string::St
 impl ::std::str::FromStr for CredentialCreationOptionsRpName {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -845,7 +853,8 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsRpName {
 ///  ],
 ///  "properties": {
 ///    "displayName": {
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 64
 ///    },
 ///    "id": {
 ///      "description": "base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.",
@@ -853,6 +862,7 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsRpName {
 ///    },
 ///    "name": {
 ///      "type": "string",
+///      "maxLength": 64,
 ///      "minLength": 1
 ///    }
 ///  },
@@ -865,7 +875,7 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsRpName {
 #[non_exhaustive]
 pub struct CredentialCreationOptionsUser {
     #[serde(rename = "displayName")]
-    pub display_name: ::std::string::String,
+    pub display_name: CredentialCreationOptionsUserDisplayName,
     ///base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.
     pub id: ::std::string::String,
     pub name: CredentialCreationOptionsUserName,
@@ -875,6 +885,74 @@ impl CredentialCreationOptionsUser {
         Default::default()
     }
 }
+///`CredentialCreationOptionsUserDisplayName`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 64
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct CredentialCreationOptionsUserDisplayName(::std::string::String);
+impl ::std::ops::Deref for CredentialCreationOptionsUserDisplayName {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<CredentialCreationOptionsUserDisplayName> for ::std::string::String {
+    fn from(value: CredentialCreationOptionsUserDisplayName) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for CredentialCreationOptionsUserDisplayName {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for CredentialCreationOptionsUserDisplayName {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for CredentialCreationOptionsUserDisplayName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for CredentialCreationOptionsUserDisplayName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsUserDisplayName {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///`CredentialCreationOptionsUserName`
 ///
 /// <details><summary>JSON schema</summary>
@@ -882,6 +960,7 @@ impl CredentialCreationOptionsUser {
 /// ```json
 ///{
 ///  "type": "string",
+///  "maxLength": 64,
 ///  "minLength": 1
 ///}
 /// ```
@@ -903,6 +982,9 @@ impl ::std::convert::From<CredentialCreationOptionsUserName> for ::std::string::
 impl ::std::str::FromStr for CredentialCreationOptionsUserName {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -1205,7 +1287,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "properties": {
 ///    "deviceLabel": {
 ///      "description": "Operator-facing label for the credential (e.g. \"Alice's MacBook\"). Surfaced in the credential list for later management.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "ext": {
 ///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
@@ -1226,7 +1309,7 @@ pub struct Payload {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub device_label: ::std::option::Option<::std::string::String>,
+    pub device_label: ::std::option::Option<PayloadDeviceLabel>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -1242,6 +1325,75 @@ impl ::std::default::Default for Payload {
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+///Operator-facing label for the credential (e.g. "Alice's MacBook"). Surfaced in the credential list for later management.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Operator-facing label for the credential (e.g. \"Alice's MacBook\"). Surfaced in the credential list for later management.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadDeviceLabel(::std::string::String);
+impl ::std::ops::Deref for PayloadDeviceLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadDeviceLabel> for ::std::string::String {
+    fn from(value: PayloadDeviceLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadDeviceLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadDeviceLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadDeviceLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadDeviceLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadDeviceLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.
@@ -1772,7 +1924,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct CredentialCreationOptionsUser {
-        display_name: ::std::result::Result<::std::string::String, ::std::string::String>,
+        display_name: ::std::result::Result<
+            super::CredentialCreationOptionsUserDisplayName,
+            ::std::string::String,
+        >,
         id: ::std::result::Result<::std::string::String, ::std::string::String>,
         name:
             ::std::result::Result<super::CredentialCreationOptionsUserName, ::std::string::String>,
@@ -1789,7 +1944,7 @@ pub mod builder {
     impl CredentialCreationOptionsUser {
         pub fn display_name<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::string::String>,
+            T: ::std::convert::TryInto<super::CredentialCreationOptionsUserDisplayName>,
             T::Error: ::std::fmt::Display,
         {
             self.display_name = value
@@ -1915,7 +2070,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         device_label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::PayloadDeviceLabel>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -1931,7 +2086,7 @@ pub mod builder {
     impl Payload {
         pub fn device_label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadDeviceLabel>>,
             T::Error: ::std::fmt::Display,
         {
             self.device_label = value
@@ -2039,7 +2194,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialCreationOptions\": {\n      \"$anchor\": \"credentialCreationOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.\",\n      \"properties\": {\n        \"attestation\": {\n          \"enum\": [\n            \"none\",\n            \"indirect\",\n            \"direct\",\n            \"enterprise\"\n          ]\n        },\n        \"authenticatorSelection\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorAttachment\": {\n              \"enum\": [\n                \"platform\",\n                \"cross-platform\"\n              ]\n            },\n            \"requireResidentKey\": {\n              \"type\": \"boolean\"\n            },\n            \"residentKey\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            },\n            \"userVerification\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"excludeCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"pubKeyCredParams\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"alg\": {\n                \"description\": \"COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).\",\n                \"type\": \"integer\"\n              },\n              \"type\": {\n                \"const\": \"public-key\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"alg\"\n            ],\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"rp\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\"\n          ],\n          \"type\": \"object\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"user\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"displayName\": {\n              \"type\": \"string\"\n            },\n            \"id\": {\n              \"description\": \"base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.\",\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\",\n            \"displayName\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"rp\",\n        \"user\",\n        \"pubKeyCredParams\"\n      ],\n      \"title\": \"PublicKeyCredentialCreationOptions\",\n      \"type\": \"object\"\n    },\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.\",\n      \"properties\": {\n        \"enrollmentId\": {\n          \"description\": \"Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"options\": {\n          \"$ref\": \"#/$defs/CredentialCreationOptions\",\n          \"description\": \"PublicKeyCredentialCreationOptions for navigator.credentials.create.\"\n        }\n      },\n      \"required\": [\n        \"enrollmentId\",\n        \"options\"\n      ],\n      \"title\": \"Auth Passkey Enroll Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/enroll/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Ask the auth service to begin a WebAuthn registration ceremony. The response carries PublicKeyCredentialCreationOptions; the producer hands them to `navigator.credentials.create({ publicKey: ... })`.\",\n  \"properties\": {\n    \"deviceLabel\": {\n      \"description\": \"Operator-facing label for the credential (e.g. \\\"Alice's MacBook\\\"). Surfaced in the credential list for later management.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"Auth — Passkey Enroll (start)\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CredentialCreationOptions\": {\n      \"$anchor\": \"credentialCreationOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.\",\n      \"properties\": {\n        \"attestation\": {\n          \"enum\": [\n            \"none\",\n            \"indirect\",\n            \"direct\",\n            \"enterprise\"\n          ]\n        },\n        \"authenticatorSelection\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorAttachment\": {\n              \"enum\": [\n                \"platform\",\n                \"cross-platform\"\n              ]\n            },\n            \"requireResidentKey\": {\n              \"type\": \"boolean\"\n            },\n            \"residentKey\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            },\n            \"userVerification\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"excludeCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"pubKeyCredParams\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"alg\": {\n                \"description\": \"COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).\",\n                \"type\": \"integer\"\n              },\n              \"type\": {\n                \"const\": \"public-key\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"alg\"\n            ],\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"rp\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\"\n          ],\n          \"type\": \"object\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"user\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"displayName\": {\n              \"maxLength\": 64,\n              \"type\": \"string\"\n            },\n            \"id\": {\n              \"description\": \"base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.\",\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\",\n            \"displayName\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"rp\",\n        \"user\",\n        \"pubKeyCredParams\"\n      ],\n      \"title\": \"PublicKeyCredentialCreationOptions\",\n      \"type\": \"object\"\n    },\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.\",\n      \"properties\": {\n        \"enrollmentId\": {\n          \"description\": \"Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"options\": {\n          \"$ref\": \"#/$defs/CredentialCreationOptions\",\n          \"description\": \"PublicKeyCredentialCreationOptions for navigator.credentials.create.\"\n        }\n      },\n      \"required\": [\n        \"enrollmentId\",\n        \"options\"\n      ],\n      \"title\": \"Auth Passkey Enroll Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/enroll/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Ask the auth service to begin a WebAuthn registration ceremony. The response carries PublicKeyCredentialCreationOptions; the producer hands them to `navigator.credentials.create({ publicKey: ... })`.\",\n  \"properties\": {\n    \"deviceLabel\": {\n      \"description\": \"Operator-facing label for the credential (e.g. \\\"Alice's MacBook\\\"). Surfaced in the credential list for later management.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"Auth — Passkey Enroll (start)\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2048,7 +2203,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialCreationOptions\": {\n      \"$anchor\": \"credentialCreationOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.\",\n      \"properties\": {\n        \"attestation\": {\n          \"enum\": [\n            \"none\",\n            \"indirect\",\n            \"direct\",\n            \"enterprise\"\n          ]\n        },\n        \"authenticatorSelection\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorAttachment\": {\n              \"enum\": [\n                \"platform\",\n                \"cross-platform\"\n              ]\n            },\n            \"requireResidentKey\": {\n              \"type\": \"boolean\"\n            },\n            \"residentKey\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            },\n            \"userVerification\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"excludeCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"pubKeyCredParams\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"alg\": {\n                \"description\": \"COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).\",\n                \"type\": \"integer\"\n              },\n              \"type\": {\n                \"const\": \"public-key\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"alg\"\n            ],\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"rp\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\"\n          ],\n          \"type\": \"object\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"user\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"displayName\": {\n              \"type\": \"string\"\n            },\n            \"id\": {\n              \"description\": \"base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.\",\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\",\n            \"displayName\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"rp\",\n        \"user\",\n        \"pubKeyCredParams\"\n      ],\n      \"title\": \"PublicKeyCredentialCreationOptions\",\n      \"type\": \"object\"\n    },\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.\",\n      \"properties\": {\n        \"enrollmentId\": {\n          \"description\": \"Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"options\": {\n          \"$ref\": \"#/$defs/CredentialCreationOptions\",\n          \"description\": \"PublicKeyCredentialCreationOptions for navigator.credentials.create.\"\n        }\n      },\n      \"required\": [\n        \"enrollmentId\",\n        \"options\"\n      ],\n      \"title\": \"Auth Passkey Enroll Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CredentialCreationOptions\": {\n      \"$anchor\": \"credentialCreationOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.\",\n      \"properties\": {\n        \"attestation\": {\n          \"enum\": [\n            \"none\",\n            \"indirect\",\n            \"direct\",\n            \"enterprise\"\n          ]\n        },\n        \"authenticatorSelection\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorAttachment\": {\n              \"enum\": [\n                \"platform\",\n                \"cross-platform\"\n              ]\n            },\n            \"requireResidentKey\": {\n              \"type\": \"boolean\"\n            },\n            \"residentKey\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            },\n            \"userVerification\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"excludeCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"pubKeyCredParams\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"alg\": {\n                \"description\": \"COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).\",\n                \"type\": \"integer\"\n              },\n              \"type\": {\n                \"const\": \"public-key\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"alg\"\n            ],\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"rp\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\"\n          ],\n          \"type\": \"object\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"user\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"displayName\": {\n              \"maxLength\": 64,\n              \"type\": \"string\"\n            },\n            \"id\": {\n              \"description\": \"base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.\",\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\",\n            \"displayName\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"rp\",\n        \"user\",\n        \"pubKeyCredParams\"\n      ],\n      \"title\": \"PublicKeyCredentialCreationOptions\",\n      \"type\": \"object\"\n    },\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.\",\n      \"properties\": {\n        \"enrollmentId\": {\n          \"description\": \"Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"options\": {\n          \"$ref\": \"#/$defs/CredentialCreationOptions\",\n          \"description\": \"PublicKeyCredentialCreationOptions for navigator.credentials.create.\"\n        }\n      },\n      \"required\": [\n        \"enrollmentId\",\n        \"options\"\n      ],\n      \"title\": \"Auth Passkey Enroll Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -168,6 +168,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "purpose": {
 ///      "description": "The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.",
 ///      "type": "string",
+///      "maxLength": 500,
 ///      "minLength": 1
 ///    }
 ///  },
@@ -270,6 +271,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
 ///{
 ///  "description": "The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.",
 ///  "type": "string",
+///  "maxLength": 500,
 ///  "minLength": 1
 ///}
 /// ```
@@ -291,6 +293,9 @@ impl ::std::convert::From<PayloadPurpose> for ::std::string::String {
 impl ::std::str::FromStr for PayloadPurpose {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 500usize {
+            return Err("longer than 500 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
@@ -424,7 +429,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/query/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.\",\n  \"properties\": {\n    \"dcql_query\": {\n      \"description\": \"An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"nonce\": {\n      \"description\": \"Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"dcql_query\",\n    \"nonce\",\n    \"purpose\"\n  ],\n  \"title\": \"Credential Exchange Query — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/query/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.\",\n  \"properties\": {\n    \"dcql_query\": {\n      \"description\": \"An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"nonce\": {\n      \"description\": \"Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"dcql_query\",\n    \"nonce\",\n    \"purpose\"\n  ],\n  \"title\": \"Credential Exchange Query — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 #[cfg(test)]

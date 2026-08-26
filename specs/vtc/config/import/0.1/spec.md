@@ -95,3 +95,14 @@ Report restart-gated applied keys under `pendingRestart` on both paths — an op
 `sideEffects.level` is `destructive` because a confirmed import overwrites values this task does not retain. There is no undo: an operator who wants one takes an export first, which is cheap and is the reason these two tasks are specified together.
 
 The response echoes `oldValue` alongside `newValue` for every change, so it discloses the configuration that was in force as well as the one being installed. That is deliberate — a diff a caller cannot see both sides of is not a diff they can approve — but it means the preview response carries the same `metadata` exposure as an export, and should be handled the same way.
+
+**Free text.** The community profile inside the imported snapshot carries `name`,
+free text bounded at 256 characters — a display name, not prose. It is authored
+by whoever produced the export, which need not be this community's own
+administrator, so on import it is **untrusted** input: the maintainer MUST
+validate it like any other imported field and MUST NOT read a familiar name as
+evidence that the snapshot is the one it expected. Once applied it becomes the
+community's public name and is **retained** for as long as the community exists;
+the response's before/after echo of it is read by the operator confirming the
+import.
+

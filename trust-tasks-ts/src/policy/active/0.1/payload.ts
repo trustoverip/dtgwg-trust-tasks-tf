@@ -117,7 +117,8 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "purpose": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 128
         },
         "contextId": {
           "type": "string",
@@ -248,7 +249,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "properties": {
         "purpose": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 128
         },
         "contextId": {
           "type": "string",

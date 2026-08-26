@@ -105,6 +105,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "deviceLabel": {
       "type": "string",
+      "maxLength": 256,
       "description": "Final operator-facing label for the credential. Overrides any label passed at start."
     },
     "ext": {
@@ -135,6 +136,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "deviceLabel": {
           "type": "string",
+          "maxLength": 256,
           "description": "The label persisted with the credential."
         },
         "registeredAt": {
@@ -301,6 +303,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "deviceLabel": {
           "type": "string",
+          "maxLength": 256,
           "description": "The label persisted with the credential."
         },
         "registeredAt": {

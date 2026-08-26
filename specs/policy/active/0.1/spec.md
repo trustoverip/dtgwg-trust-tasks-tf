@@ -52,3 +52,14 @@ Consumer: verify `PolicyAdmin` capability (the same gate `policy/list` applies).
 **No existence oracle over purposes.** An unknown or unbound `purpose` returns an empty array, identical to a known-but-inactive one, so this task does not distinguish "purpose never used" from "purpose has no active policy". That is intentional: `purpose` is a free maintainer-scoped string, and there is nothing to enumerate against.
 
 **Auditing.** Recommended at sampled rate, matching `policy/list`.
+
+**Free text.** `purpose` names a decision slot and is constrained by no
+vocabulary the framework defines, so it is free text under
+[SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 19. The request
+member already declared `maxLength: 128`; the `purpose` inside each returned
+binding now declares the same bound. It is authored by the operator who
+activated the binding, read by the maintainer's policy router and by whoever
+reads this listing, and **retained** for as long as the binding is active,
+because it is half the binding's key. It carries no authority: a caller decides
+nothing from the slot name alone.
+

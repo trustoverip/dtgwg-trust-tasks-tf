@@ -198,7 +198,8 @@ impl Payload {
 ///    },
 ///    "deviceLabel": {
 ///      "description": "Operator-facing label captured at enrollment (e.g. \"Alice's MacBook Pro\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.",
-///      "type": "string"
+///      "type": "string",
+///      "maxLength": 256
 ///    },
 ///    "lastUsedAt": {
 ///      "description": "When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise \"usage is not tracked\" SHOULD say so under `ext`.",
@@ -237,7 +238,7 @@ pub struct RegisteredCredential {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub device_label: ::std::option::Option<::std::string::String>,
+    pub device_label: ::std::option::Option<RegisteredCredentialDeviceLabel>,
     ///When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise "usage is not tracked" SHOULD say so under `ext`.
     #[serde(
         rename = "lastUsedAt",
@@ -315,6 +316,75 @@ impl ::std::convert::TryFrom<::std::string::String> for RegisteredCredentialCred
     }
 }
 impl<'de> ::serde::Deserialize<'de> for RegisteredCredentialCredentialId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Operator-facing label captured at enrollment (e.g. "Alice's MacBook Pro"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Operator-facing label captured at enrollment (e.g. \"Alice's MacBook Pro\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.",
+///  "type": "string",
+///  "maxLength": 256
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RegisteredCredentialDeviceLabel(::std::string::String);
+impl ::std::ops::Deref for RegisteredCredentialDeviceLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RegisteredCredentialDeviceLabel> for ::std::string::String {
+    fn from(value: RegisteredCredentialDeviceLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RegisteredCredentialDeviceLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RegisteredCredentialDeviceLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RegisteredCredentialDeviceLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RegisteredCredentialDeviceLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RegisteredCredentialDeviceLabel {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -412,7 +482,7 @@ pub mod builder {
         credential_id:
             ::std::result::Result<super::RegisteredCredentialCredentialId, ::std::string::String>,
         device_label: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<super::RegisteredCredentialDeviceLabel>,
             ::std::string::String,
         >,
         last_used_at: ::std::result::Result<
@@ -450,7 +520,9 @@ pub mod builder {
         }
         pub fn device_label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::RegisteredCredentialDeviceLabel>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.device_label = value
@@ -577,7 +649,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegisteredCredential\": {\n      \"$anchor\": \"registeredCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"description\": \"Operator-facing label captured at enrollment (e.g. \\\"Alice's MacBook Pro\\\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.\",\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise \\\"usage is not tracked\\\" SHOULD say so under `ext`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"registeredAt\": {\n          \"description\": \"When the credential was bound to the subject.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"description\": \"WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"registeredAt\"\n      ],\n      \"title\": \"RegisteredCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/list/0.1#response.\",\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RegisteredCredential\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"credentials\"\n      ],\n      \"title\": \"Auth Passkey List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate the passkeys the auth service holds for the producer's subject. The credential-management counterpart to auth/sessions/list: sessions answers \\\"where am I signed in?\\\", this answers \\\"what can sign me in?\\\". Its output is the input to auth/passkey/revoke/start.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"Auth — Passkey List\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegisteredCredential\": {\n      \"$anchor\": \"registeredCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"description\": \"Operator-facing label captured at enrollment (e.g. \\\"Alice's MacBook Pro\\\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise \\\"usage is not tracked\\\" SHOULD say so under `ext`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"registeredAt\": {\n          \"description\": \"When the credential was bound to the subject.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"description\": \"WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"registeredAt\"\n      ],\n      \"title\": \"RegisteredCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/list/0.1#response.\",\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RegisteredCredential\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"credentials\"\n      ],\n      \"title\": \"Auth Passkey List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate the passkeys the auth service holds for the producer's subject. The credential-management counterpart to auth/sessions/list: sessions answers \\\"where am I signed in?\\\", this answers \\\"what can sign me in?\\\". Its output is the input to auth/passkey/revoke/start.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"Auth — Passkey List\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -585,7 +657,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegisteredCredential\": {\n      \"$anchor\": \"registeredCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"description\": \"Operator-facing label captured at enrollment (e.g. \\\"Alice's MacBook Pro\\\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.\",\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise \\\"usage is not tracked\\\" SHOULD say so under `ext`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"registeredAt\": {\n          \"description\": \"When the credential was bound to the subject.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"description\": \"WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"registeredAt\"\n      ],\n      \"title\": \"RegisteredCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/list/0.1#response.\",\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RegisteredCredential\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"credentials\"\n      ],\n      \"title\": \"Auth Passkey List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegisteredCredential\": {\n      \"$anchor\": \"registeredCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"description\": \"Operator-facing label captured at enrollment (e.g. \\\"Alice's MacBook Pro\\\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise \\\"usage is not tracked\\\" SHOULD say so under `ext`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"registeredAt\": {\n          \"description\": \"When the credential was bound to the subject.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"description\": \"WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"registeredAt\"\n      ],\n      \"title\": \"RegisteredCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/list/0.1#response.\",\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RegisteredCredential\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"credentials\"\n      ],\n      \"title\": \"Auth Passkey List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

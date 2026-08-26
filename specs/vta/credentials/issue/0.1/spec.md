@@ -246,3 +246,19 @@ When `payload.credentialType` is `GovernancePolicyCredential`:
 ```
 
 The response carries the minted credential (whose `credentialSubject` embeds the claims above and whose `credentialStatus` names the published status-list slot) and, because a policy was already active for `(ctx-acme, did:web:acme.example)`, the displaced credential's id in `supersedes`.
+
+## Security & Privacy
+
+**Free text.** `purpose` is the one member of this payload whose content nothing
+constrains, and it is now bounded at 1024 characters — the corpus figure for
+operator prose recorded for audit. It is OPTIONAL. It is authored by the caller
+requesting issuance, not by the VTA that signs the credential, so it is
+**untrusted**: it is not a claim, it does not appear in the issued credential's
+`credentialSubject`, and a surface that renders it MUST attribute it to the
+requesting caller. Its readers are the VTA's audit log and whoever later reads
+that log — which is to say the *recipient party* is expected to **retain** it
+for as long as it retains the issuance record, because recording why a
+credential was minted is the whole reason the member exists. A caller MUST NOT
+use it to carry material the auditor is not entitled to see; "rotate acme's
+gateway policy, change CR-1182" is the intended register, and anything about a
+person belongs in the claims where the exposure declaration can reach it.
