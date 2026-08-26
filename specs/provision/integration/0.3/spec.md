@@ -19,12 +19,14 @@ authors:
 parties:
   - role: integration holder
     requirement: REQUIRED
+    identifierScope: pairwise
   - role: integration relayer
     requirement: OPTIONAL
     member: issuer
   - role: provisioning maintainer
     requirement: REQUIRED
     member: recipient
+    identifierScope: public
 proofRequirement:
   requirement: REQUIRED
   rationale: Provisioning mints DIDs, issues an authorization VC, and grants the resulting admin DID an ACL row at the maintainer — the equivalent of "create an account with admin powers." Two distinct proofs are involved (the relayer's transport-level credential authenticating the *caller*, and the holder's VP `DataIntegrityProof` authenticating *who the bundle belongs to*); both MUST be present and verified before the maintainer mints anything. See "Two-proof model" in the spec body.
@@ -33,8 +35,12 @@ sideEffects:
   rationale: "Mints the integration's DIDs and admin credential from a template and returns a sealed bundle; the credential is revocable."
 exposure:
   discloses: secret
+  ingests: personal
   actsAsSubject: false
-  rationale: "Returns a sealed bundle carrying the minted admin credential and the integration's DID key material."
+  rationale: "Returns a sealed bundle carrying the minted admin credential and the integration's DID key material. Inbound, three free-text members — `request.label`, `ask.note`, and `ask.contextHint` — are documented as flowing into the maintainer's audit log, and `template.vars` is an open object the wire schema does not constrain at all; in practice these are where an operator's name, a customer identifier, or a ticket reference is written. No key material travels inward: the holder proves control of an ephemeral did:key rather than surrendering anything the maintainer must protect."
+retention:
+  class: durable
+  rationale: The maintainer keeps what the provisioning created and what proves it created it — the ACL row, the issued VtaAuthorizationCredential, the rendered DID, and an audit record carrying `label` and `note`. It also retains the VP `nonce` indefinitely as the one-shot replay anchor, since forgetting a spent nonce reopens the replay it exists to close. A maintainer that discarded these would be unable to say which party it granted admin authority to, or to refuse a resubmission of a request it has already honoured.
 errorCodes:
   - code: provision/integration:invalidBootstrapRequest
     meaning: The presented VP failed structural validation (missing required field, malformed `holder`, unsupported cryptosuite, freshness window passed, signature does not verify, `verificationMethod` does not resolve under `holder`).
@@ -486,14 +492,150 @@ Response summary:
 }
 ```
 
-## Security and privacy considerations
+## Security & Privacy
 
-* **Idempotency.** The maintainer SHOULD treat the VP's `nonce` as a one-shot replay anchor: a second `provision/integration` whose `nonce` matches a previously-completed provisioning MUST be refused. The 16-byte random nonce makes collisions cryptographically infeasible.
-* **Bundle digest leakage.** `summary.digestMultibase` is a digest of the armored ciphertext. It is not secret on its own, but maintainers MAY decline to publish it in any surface less authenticated than the response itself to prevent an unauthenticated party from confirming "a bundle with this digest was produced." Treat it like a session identifier.
-* **VP cryptosuite agility.** This version pins `eddsa-jcs-2022`. A future minor version MAY extend the allowlist; producers and consumers MUST NOT silently accept other suites, and producers MUST NOT degrade in response to an unsupported-suite error — there is no negotiation path.
-* **Air-gap relayer.** When relayer ≠ holder, the relayer cannot decrypt the bundle (no holder X25519 private key) and the VP cannot be forged without the holder's signing key. The threat model assumes the relayer can read but not modify the request body; it relies on the holder verifying `summary.digestMultibase` against the bundle they receive out-of-band.
-* **VC validity floor.** Maintainers SHOULD reject `vcValiditySeconds` below their minimum useful operating window (RECOMMENDED: 60s) — a near-zero VC validity creates noisy auditing without operational value.
-* **ACL race.** The maintainer MUST bind the resulting ACL row in the same transaction as bundle assembly. A partial provisioning that mints keys without binding the ACL row leaves the holder with no way to authenticate at the maintainer; the maintainer MUST roll the mint back rather than ship a half-broken bundle.
+### Data carried
+
+The secret-bearing artefact travels one way only. `bundle` is HPKE-sealed to the
+X25519 derivation of `request.holder`'s key, so the minted private keys and the
+admin credential are opaque to everything between the maintainer and the holder —
+including the relayer. `summary` is the deliberate counterweight: it is audit-grade
+metadata and **MUST NOT** carry private key material, which is why `secretCount`
+and `outputCount` are integers rather than contents.
+
+**The free-text members are where personal data actually enters**, and all three
+are documented as flowing into the maintainer's audit log, which is the most
+durable store in this exchange:
+
+* `request.label` (≤ 256 chars) — "a human-readable label carried into the
+  maintainer's audit log", which is an invitation to write a person's or a
+  customer's name.
+* `ask.note` (≤ 1024 chars) — "free-form operator note", likewise audit-bound. In
+  practice this fills with the reason for the provisioning: a ticket reference, an
+  incident, a customer escalation.
+* `ask.contextHint` — nominally documentation-only, since `payload.context` is
+  authoritative, but it is unconstrained text that is stored all the same.
+
+A fourth surface deserves naming because the schema does not bound it at all:
+`template.vars` is an object with `additionalProperties: true`. The maintainer
+validates it against the *template's* declared variables rather than against
+anything in this specification, so what may legitimately appear there is a property
+of a template registered out of band. Values are rendered into a DID document that
+is then published, so a var carrying an operator's name or an internal hostname is
+not merely stored — it is disclosed to everyone who resolves the resulting DID.
+Producers **SHOULD** treat `label`, `note`, `contextHint`, and every entry in `vars`
+as permanent and, for `vars`, as potentially public, and put in them what an
+operator needs to identify the provisioning rather than what identifies a person.
+
+**The relayer reads the request body.** The threat model assumes a relayer can read
+but not modify it: the bundle cannot be decrypted without the holder's X25519
+private key and the VP cannot be forged without the holder's signing key. The
+privacy consequence, which the integrity framing obscures, is that everything
+*outside* the sealed bundle is disclosed to the relayer as a matter of course — the
+holder's DID, the templates being requested, the target context, and all four
+free-text surfaces above. A holder provisioning through a relayer it does not
+operate **SHOULD** assume those members are read.
+
+**Bundle digest leakage.** `summary.digestMultibase` is a digest of the armored
+ciphertext. It is not secret on its own, but maintainers **MAY** decline to publish
+it on any surface less authenticated than the response itself, to prevent an
+unauthenticated party confirming "a bundle with this digest was produced". Treat it
+like a session identifier.
+
+### Correlation
+
+The holder's identifier is engineered *not* to correlate, and that is the most
+interesting privacy property here. `request.holder` is an **ephemeral** `did:key`,
+constrained by pattern to that method: it exists to receive one bundle and to prove
+control of the key that bundle is sealed to. Where `adminTemplate` is supplied the
+maintainer mints a fresh long-term admin DID and rolls the holder over to it in the
+same transaction, so the ephemeral identifier is retired at the moment it stops
+being needed. `summary.adminDid` and `summary.adminRolledOver` are how a holder
+confirms that happened. Nothing in this task asks a third party to recognise the
+holder across provisionings, which is why the integration holder declares
+`identifierScope: pairwise`.
+
+The maintainer is the opposite case, and its `identifierScope: public` is a real
+constraint rather than a default. Under the `didSigned` producer assertion the
+holder verifies the bundle's domain-bound signature *against the maintainer's
+published key* — a check that only works if the holder already knows which
+maintainer it is talking to and can resolve the same identifier that maintainer
+presents to everyone else. A pairwise maintainer DID would break exactly that: the
+holder would have nothing stable to pin, and the assertion would degrade to
+`pinnedOnly`, which this specification marks as dev/test only. The maintainer is
+also the party that must be discoverable in advance for a relayer to route to it at
+all. Public recognisability is therefore load-bearing for the integrity of the
+bundle, and the correlation cost — that every integration provisioned at one
+maintainer is provisioned at a *known* maintainer — is accepted deliberately.
+
+What does correlate across the exchange is the `nonce`, which appears three times
+by design: as the VP's freshness anchor, as the `Bundle-Id` armor header, and as
+`summary.bundleIdHex`. That is a cross-check the holder needs — it proves the bundle
+opened is the bundle minted for them — and it necessarily lets anyone who sees both a
+request and a response link the two. `summary` also enumerates
+`integrationDid`, `templateName`, `templateKind`, and `webvhServerId`, which
+together describe the maintainer's infrastructure topology to whoever receives the
+response, the relayer included.
+
+### Retention
+
+Durable, and asymmetric between the two sides.
+
+The maintainer keeps the outcome permanently: the ACL row, the issued
+`VtaAuthorizationCredential`, the rendered DID and its published `did.jsonl`, and
+the audit record carrying `label` and `note`. This is the point — a maintainer that
+could not say which party it granted admin authority to has no account of who can
+act at it — but it means the free-text members outlive the integration they
+described.
+
+The `nonce` is retained indefinitely and deliberately. **Idempotency:** the
+maintainer **SHOULD** treat the VP's `nonce` as a one-shot replay anchor and
+**MUST** refuse a second `provision/integration` whose `nonce` matches a
+previously-completed provisioning; the 16 random bytes make collisions
+cryptographically infeasible. A maintainer that expired spent nonces would reopen
+the replay this rule closes, so this is one retention obligation that cannot be
+minimised away.
+
+The holder's retention is short by contrast: it opens the bundle, installs the
+material, and has no reason to keep the armored ciphertext afterwards. The
+ephemeral `did:key` should be discarded once rollover is confirmed.
+
+**ACL race.** The maintainer **MUST** bind the resulting ACL row in the same
+transaction as bundle assembly. A partial provisioning that mints keys without
+binding the ACL row leaves the holder with no way to authenticate; the maintainer
+**MUST** roll the mint back rather than ship a half-broken bundle — and rolling back
+means the retained record and the shipped material stay consistent with each other.
+
+**VC validity floor.** Maintainers **SHOULD** reject `vcValiditySeconds` below their
+minimum useful operating window (RECOMMENDED 60s). A near-zero validity produces
+noisy auditing without operational value — retention cost with no evidentiary
+return.
+
+### Consent/purpose
+
+The purpose is bootstrap: a holder is asking a maintainer to mint an identity and
+grant it standing, which the specification's own framing calls the equivalent of
+creating an account with admin powers. The two-proof model is the record of the
+basis, and the split is the substance of it — the relayer's envelope proof
+establishes *who is making the call*, and the holder's VP `DataIntegrityProof`
+establishes *who the bundle belongs to*. Both **MUST** be present and verified
+before anything is minted, so a relayer cannot provision an integration into a
+holder's name and a holder cannot be provisioned by a party with no standing at the
+maintainer.
+
+`validUntil` bounds how long that authority is good for, and it is a purpose limit
+rather than merely a freshness check: a VP signed for one provisioning cannot be
+banked and presented later. **VP cryptosuite agility** protects the same boundary —
+this version pins `eddsa-jcs-2022`, a future minor **MAY** extend the allowlist, and
+producers and consumers **MUST NOT** silently accept other suites. Producers **MUST
+NOT** degrade in response to an unsupported-suite error, because there is no
+negotiation path and a party that downgraded would be authenticating the holder by
+weaker means than the holder chose.
+
+The limit on reuse falls on the audit data rather than the credential. `label` and
+`note` are collected so an operator can later identify *this* provisioning; they are
+not collected to profile the operator who ran it, and a maintainer **SHOULD NOT**
+mine them for anything the provisioning record does not need.
 
 ## Migration from `firstperson.network/protocols/provision-integration/1.0`
 

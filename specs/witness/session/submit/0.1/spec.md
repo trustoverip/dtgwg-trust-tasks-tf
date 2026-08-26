@@ -18,9 +18,11 @@ parties:
   - role: participating party
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: witness
     requirement: REQUIRED
     member: recipient
+    identifierScope: public
 proofRequirement:
   request: REQUIRED
   response: REQUIRED
@@ -40,8 +42,12 @@ sideEffects:
   rationale: "Successful execution mints a Verifiable Witness Credential. Not compensatable by this exchange; revocation is the witness's own act."
 exposure:
   discloses: secret
+  ingests: secret
   actsAsSubject: true
-  rationale: "The request presents the holder's own credential material under the session challenge; the response returns credential material the holder retains."
+  rationale: "The request presents the holder's own credential material under the session challenge; the response returns credential material the holder retains. On the inbound side `vp` is typed only as an object — the presentation is opaque to this schema — so every claim the party's wallet chose to disclose arrives at the witness in full and in the clear, and the witness must read all of it in order to verify it. That is confidential material the witness holds on the producer's behalf, which is why `ingests` is `secret` rather than `personal`."
+retention:
+  class: durable
+  rationale: The `#response` is the session's terminal success document and the outcome evidence a Verifiable Witness Credential's `taskContext` points at; a holder retains it, together with the `witness/session` document that opened the session, for the useful life of the VWC, because a verifier that lacks it cannot establish that the credential belongs to a session that actually completed. The durable obligation attaches to the response, not to the inbound `vp` — see Security & Privacy → Retention for why a witness that keeps presentations is holding credential material with no evidentiary role.
 errorCodes:
   - code: witness/session/submit:challengeMismatch
     meaning: The presentation is not bound to this session's challenge and domain — a replay from another session, or a stale binding.
@@ -201,18 +207,105 @@ attest anything.
 
 ## Security & Privacy
 
-**The wall between evidence and credential.** The VWC verifies as a
-credential on its own issuer proof, indefinitely. What *this response*
-proves is that the session reached its terminal success state. Neither
-substitutes for the other: a valid VWC with no paired evidence proves a
-witness once signed something, not that this session completed.
+### Data carried
 
-**Retention is the holder's obligation.** Evidence discovery and retrieval
-are out of scope here as in the depending credential specification —
-evidence the holder does not ship is evidence that does not exist. Holders
-retain this response for the useful life of the VWC.
+The request has exactly one substantive member, and it is the widest one in the
+family. `vp` is typed as a bare `object` — "opaque here", as the schema puts it —
+so nothing in this specification narrows what a presentation may contain. Whatever
+the party's wallet chose to disclose arrives at the witness whole, and the witness
+must read all of it, because verifying the presentation's own proof, its holder
+binding, and its binding to `{challenge, domain}` is the task. This is the point
+at which a witness stops seeing identifiers and starts seeing claims.
 
-**The presentation discloses the holder's credential material to the
-witness.** That is the point of witnessing, and the reason `exposure`
-declares `discloses: secret` and `actsAsSubject: true`. Witness selection
-and witness retention policy carry the privacy weight here.
+It follows that data minimisation here is not a property of the document — there is
+nothing in the payload to trim — but of the presentation the party constructs.
+A producer **SHOULD** present the narrowest derivation its credential format
+supports, and **SHOULD NOT** ship a full credential where a selective disclosure or
+a derived proof would satisfy the witness's checks. A witness needs to establish
+that the submitting party holds the relationship credential material the session
+concerns; it does not need every attribute that credential happens to carry, and
+this specification cannot tell the difference on the party's behalf.
+
+The response carries `vwc` — a signed Verifiable Witness Credential, likewise
+opaque to this schema — and `vwcDigestMultibase` over its RFC 8785
+canonicalization. The credential is a statement *about the party*, and unlike the
+presentation it is meant to travel: the party will show it to verifiers who were
+never in the exchange.
+
+### Correlation
+
+This is the strongest correlation event in the witnessing family, and it is worth
+being blunt about why. Up to this point the parties are protected by pairwise
+relationship DIDs that join to nothing outside the exchange. The presentation
+breaks that containment *at the witness*: a VP carries credential-level
+identifiers — the issuer of each credential, a credential `id`, a subject
+identifier, a revocation or status-list index — and the witness now holds all of
+them alongside the pairwise DID from the session and the counterparty's pairwise
+DID from the session's `parties` pair. A status-list index in particular is a
+stable handle that other verifiers see too. The witness is therefore the one party
+positioned to link a party's pairwise relationship identity to the credential
+identity it presents everywhere else, and nothing in the protocol prevents it.
+
+The Verifiable Witness Credential is a correlator in its own right, deliberately.
+Its `taskContext` names this session's opening document and its
+`taskDigestMultibase` binds to that document's content, so any verifier shown two
+VWCs can tell whether they came from the same session — which is what makes the
+credential meaningful and also what makes it linkable. A party presenting the same
+VWC to several verifiers gives them a shared, exact join key.
+
+The witness declares `identifierScope: public` and the participating party
+`pairwise`. The witness's public scope is a genuine narrowing of its own privacy
+and it buys a specific property: the verifier's pairing rule above requires
+checking that the `#response`'s `issuer` is the same party as the VWC's issuer, and
+that both parties' sessions ran with the same witness. A pairwise witness
+identifier would make those the same string only by accident, and a verifier would
+have no way to establish that one witness attested both halves of an exchange. The
+participating party stays pairwise because its relationship DID is minted for this
+exchange and nothing about the pairing rule needs it to be recognisable elsewhere.
+
+### Retention
+
+**The `#response` is durable and the holder owns that obligation.** Evidence
+discovery and retrieval are out of scope here as in the depending credential
+specification — evidence the holder does not ship is evidence that does not exist.
+A holder retains this response *and* the `witness/session` document that opened the
+session for the useful life of the VWC, because the digest check is not performable
+without the document the digest was taken over.
+
+**The wall between evidence and credential survives that retention.** The VWC
+verifies as a credential on its own issuer proof, indefinitely. What *this
+response* proves is that the session reached its terminal success state. Neither
+substitutes for the other: a valid VWC with no paired evidence proves a witness once
+signed something, not that this session completed.
+
+**The inbound presentation is the one thing here that should not be kept.** Once
+the witness has verified `vp` and minted the credential, the presentation has
+discharged its function. It has no evidentiary role afterwards: the VWC is bound to
+the *session document*, by `taskContext` and task digest, and to the *credential*,
+by `vwcDigestMultibase` — never to the presentation. A witness that retains
+presentations is therefore accumulating other parties' credential material that
+proves nothing it could not prove without it, which is the worst possible ratio. A
+witness **SHOULD** discard `vp` once the response is emitted, retaining only what
+its own revocation decision needs — revocation of a VWC is the witness's own act
+per this specification's `sideEffects` rationale, and that requires a record of
+what it attested, not a copy of what it was shown.
+
+### Consent/purpose
+
+The party discloses its credential material for one purpose: to let a witness it
+selected establish that the party submitting is the party that opened the session
+and holds the relationship credential material the session concerns, so that the
+witness can attest that participation. The challenge binding is the record that the
+disclosure was made into *this* session and no other, which is why a presentation
+bound elsewhere is `challengeMismatch` rather than an acceptable submission.
+
+Being witnessed is not the same as being verified, and the limit follows from that.
+Material presented so a witness can attest an exchange is not material presented so
+the witness can evaluate the party's claims for its own purposes, enrich a profile,
+or re-present them onward. The witness is an observer of an exchange, not a relying
+party to the credentials it observes. This specification provides no member through
+which a party can attach that limit to the presentation and no mechanism by which
+it could detect a breach — so, as with the session it belongs to, the operative
+control is which witness the parties chose and what retention policy that witness
+publishes. Whether to mint a credential for a submission that passes both checks
+remains the witness's own decision under its policy.
