@@ -31,7 +31,8 @@ feat(rs)!: generated types are #[non_exhaustive]   <- ! marks a breaking change
 ```
 
 Types: `feat` `fix` `docs` `test` `ci` `build` `perf` `refactor` `chore`
-`security` `spec` `revert`.
+`security` `spec` `site` `revert`. (`site` is a change to the registry website
+under `website/`; it reaches no published package.)
 
 **`spec` is ours, not the standard's**, and release-plz does not know it — an
 unrecognised type is scored as a **patch**. That is right for an in-place schema
