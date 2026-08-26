@@ -180,6 +180,34 @@ The push channel provides **no** integrity, confidentiality, or authentication g
 
 Push is fire-and-forget and carries no Trust Task, so it has no *error response* of its own. Failures are handled at the layer that owns them: a push-service delivery failure is the gateway's concern (the [§3.2](#32-device-registration-with-the-gateway) dead-token rule); an allowlist refusal is reported to the *trigger* over whatever transport it used (REST status / DIDComm problem-report), never to the device; a malformed or unverifiable document discovered after pickup produces a `trust-task-error/0.2` returned over the DIDComm binding, exactly as if the document had arrived without a push. Conveyance failures of the handle from device to VTA surface as `device/set-wake` error codes.
 
+### 7.1 Lifecycle mapping
+
+Required by [SPEC §9.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#91-what-a-transport-binding-specifies), which makes the mapping a **MUST** for every binding: each state of [SPEC §4.12 *Document Lifecycle*](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#412-document-lifecycle) must be mapped onto a protocol event, or the binding must state explicitly that its protocol expresses no counterpart.
+
+**This binding expresses no counterpart for any state in that table.** That is not an omission and not a gap to be filled later; it is the direct consequence of [§2](#2-what-this-binding-carries--and-what-it-must-not) and [§5](#5-identity-mapping). A push carries no *Trust Task document* — it is a contentless doorbell — and push is never the transport over which a document arrives. The document arrives when the *consumer* wakes, authenticates to its mediator and drains the queue ([§4](#4-delivery-flows) item 2), and from that moment its lifecycle is expressed by the **DIDComm binding**, under that binding's mapping. This one sits strictly below the document layer, exactly as [§5](#5-identity-mapping) says of identity.
+
+| Lifecycle state | Push counterpart |
+|---|---|
+| `received` | **No counterpart.** |
+| `validated` | **No counterpart.** |
+| `accepted` | **No counterpart.** |
+| `executing` | **No counterpart.** |
+| `suspended` | **No counterpart.** |
+| `responded` | **No counterpart.** |
+| `errored` | **No counterpart.** |
+| `cancelled` | **No counterpart.** |
+| `expired` | **No counterpart.** |
+
+Stating the whole column is the point. A binding that mapped even one row would be claiming a push event establishes something about a document, and every candidate for such a claim is wrong in a way worth naming:
+
+* **A push-service delivery receipt is not `received`.** An APNs or FCM "delivered" acknowledgement reports that a device got a doorbell. The document is still sealed in the mediator's queue at that moment, unread by anyone, and the *consumer* does not hold its bytes.
+* **A device acting on a wake is not `received` either.** The *consumer* connecting, authenticating and beginning a pickup drain ([§4](#4-delivery-flows) item 1) is transport activity below the document. `received` begins when the *consumer* holds a document's bytes, which happens under the DIDComm binding after the authcrypt envelope is unpacked — and the queue may in any case turn out to be empty, which [§6](#6-transport-security-profile) records as the expected outcome of a spoofed or replayed wake.
+* **A push failure is not `errored`, and a dead token is not `expired`.** A push-service delivery failure or an unregistered token is a *gateway* concern, handled by the gateway's dead-token rule. The queued document is untouched by it and remains deliverable on the *consumer*'s next connection: [§4](#4-delivery-flows) item 4 requires the *consumer* to function correctly with no push at all, so a failed push delays a document and never changes its state.
+* **An allowlist refusal is not any document state.** The gateway refusing a wake from a trigger that is not on the handle's allowlist ([§3.3](#33-trigger-allowlist-vta-owned)) is reported to the *trigger*, never to the device, and no *Trust Task document* is involved in the refusal at all.
+* **The absence of a push means nothing, and means nothing loudly.** [§4](#4-delivery-flows) item 4 already makes this normative from the delivery side — loss, delay or suppression of a push **MUST NOT** cause a message to be missed, only delayed. The lifecycle consequence is the same rule from the other side: a *producer* **MUST NOT** infer any document state from a push that was sent, not sent, delivered, or dropped. The framework's general rule, that the absence of a reply distinguishes no two states, applies here to a channel that was never carrying a reply in the first place.
+
+One thing this binding does have a lifecycle for, and it is not mapped here. The gateway control plane is itself a Trust Task family — `push/*` and `device/set-wake` ([§3.2](#32-the-gateway-control-plane-is-a-trust-task-family-push)) — so a [`push/wake/0.1`](../../../specs/push/wake/0.1/spec.md) document has a lifecycle like any other document. It is expressed by whichever binding carries **it** — DIDComm or HTTPS, per [§3.4](#34-triggering-a-wake) — and by that binding's mapping. It is not expressed by the push channel, which is what those documents cause rather than what carries them.
+
 ## 8. Platform profiles
 
 Platform specifics live **inside the gateway**, behind the handle. A trigger and a VTA deal only in handles and never name a platform; adding a platform is a gateway-side change plus a new [`PushRegistration`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/PushRegistration) variant — triggers and VTA config are untouched.
