@@ -39,12 +39,6 @@ errorCodes:
   - code: credential-exchange/pending/approve:notFound
     meaning: No actionable deferral matches `id`.
     retryable: false
-  - code: credential-exchange/pending/approve:expired
-    meaning: The deferral is past `expiresAt`; the verifier's nonce is stale and no valid presentation can be minted.
-    retryable: false
-  - code: credential-exchange/pending/approve:permissionDenied
-    meaning: The caller is not authorized to approve disclosures for this agent.
-    retryable: false
 related:
   - credential-exchange/pending/list
   - credential-exchange/pending/deny

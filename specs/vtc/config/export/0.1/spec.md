@@ -30,10 +30,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
   rationale: The document carries operational configuration and the community's public profile. No key material and no member data — unlike vtc/backup/export, which is why this task needs no passphrase.
-errorCodes:
-  - code: vtc/config/export:permissionDenied
-    meaning: The consumer lacks the community administrator capability.
-    retryable: false
+errorCodes: []
 related:
   - vtc/config/import
   - config/show

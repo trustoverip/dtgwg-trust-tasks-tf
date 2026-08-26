@@ -30,10 +30,7 @@ sideEffects:
 exposure:
   discloses: none
   actsAsSubject: false
-errorCodes:
-  - code: vtc/ceremonies/list:permissionDenied
-    meaning: The consumer is not authenticated against this community.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

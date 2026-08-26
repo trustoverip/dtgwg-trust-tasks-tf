@@ -30,9 +30,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vtc/endorsements/list:permissionDenied
-    meaning: The consumer holds neither the community-admin nor the issuer capability.
-    retryable: false
   - code: vtc/endorsements/list:invalidCursor
     meaning: The supplied `cursor` is malformed or has expired.
     retryable: false

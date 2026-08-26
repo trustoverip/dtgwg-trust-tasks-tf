@@ -34,9 +34,6 @@ errorCodes:
   - code: vtc/invitations/revoke:notFound
     meaning: No invitation with that `id` exists.
     retryable: false
-  - code: vtc/invitations/revoke:permissionDenied
-    meaning: The consumer lacks the inviter capability.
-    retryable: false
 ---
 
 ## Abstract

@@ -36,9 +36,6 @@ errorCodes:
   - code: vault/upsert:contextNotFound
     meaning: The supplied `contextId` does not exist.
     retryable: false
-  - code: vault/upsert:permissionDenied
-    meaning: The consumer lacks VaultWrite on the target context.
-    retryable: false
   - code: vault/upsert:notFound
     meaning: An `id` was supplied (update path) but no entry with that id exists in the consumer's visible scope.
     retryable: false

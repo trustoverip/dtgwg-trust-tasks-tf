@@ -34,9 +34,6 @@ errorCodes:
   - code: policy/delete:notFound
     meaning: No policy with this id.
     retryable: false
-  - code: policy/delete:permissionDenied
-    meaning: The consumer lacks PolicyAdmin capability.
-    retryable: false
   - code: policy/delete:versionConflict
     meaning: "`expectedVersion` mismatch."
     retryable: true

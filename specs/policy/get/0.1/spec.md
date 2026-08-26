@@ -31,9 +31,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: policy/get:permissionDenied
-    meaning: The consumer lacks PolicyAdmin capability.
-    retryable: false
   - code: policy/get:notFound
     meaning: No policy module with the supplied `id` exists.
     retryable: false

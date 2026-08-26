@@ -29,10 +29,7 @@ sideEffects:
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: audit/verify:permissionDenied
-    meaning: The consumer lacks the audit-read capability (typically a super-admin or auditor role).
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

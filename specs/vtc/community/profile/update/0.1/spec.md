@@ -32,9 +32,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vtc/community/profile/update:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/community/profile/update:validationFailed
     meaning: A supplied field failed validation (e.g. empty name, malformed URL).
     retryable: false

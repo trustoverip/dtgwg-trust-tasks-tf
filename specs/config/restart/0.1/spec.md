@@ -33,9 +33,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: config/restart:permissionDenied
-    meaning: The consumer lacks the configuration-admin capability.
-    retryable: false
   - code: config/restart:supervisorRequired
     meaning: No process supervisor was detected, so a graceful exit would not be followed by a restart — it would just stop the maintainer. Refused. Configure a supervisor (or set the maintainer's explicit opt-in) and retry.
     retryable: false

@@ -536,6 +536,74 @@ function checkIdentifierScopeJustification(meta, body, rel) {
   );
 }
 
+/*
+ * The §8.3 standard vocabulary, read off the newest published `trust-task-error`
+ * payload schema rather than typed out here.
+ *
+ * The codes are *defined* by that schema's `code` enum — a document carrying a
+ * code the declared version does not list will not validate — so the schema is
+ * the only copy that cannot be wrong. A hard-coded list in this file would be a
+ * fourth hand-maintained taxonomy of exactly the kind the callouts at the top of
+ * CLAUDE.md exist to warn about: it would go stale the moment a
+ * `trust-task-error/0.6` adds a code, and the staleness would present as a lint
+ * that quietly stops catching one shadow rather than as a failure.
+ *
+ * "Newest" is the highest version directory under specs/trust-task-error/, by
+ * numeric MAJOR then MINOR. Older versions are ignored on purpose: 0.1's frozen
+ * snake_case vocabulary is a superseded spelling (see the exemption reasoning in
+ * scripts/lib/error-code-casing.mjs), not part of the current set.
+ */
+let standardErrorCodesCache = null;
+function standardErrorCodes() {
+  if (standardErrorCodesCache) return standardErrorCodesCache;
+  const dir = path.join(SPECS_DIR, 'trust-task-error');
+  const versions = fs.existsSync(dir)
+    ? fs
+        .readdirSync(dir, { withFileTypes: true })
+        .filter((e) => e.isDirectory() && /^\d+\.\d+$/.test(e.name))
+        .map((e) => e.name)
+        .sort((a, b) => {
+          const [aM, am] = a.split('.').map(Number);
+          const [bM, bm] = b.split('.').map(Number);
+          return aM - bM || am - bm;
+        })
+    : [];
+  const newest = versions[versions.length - 1];
+  const codes = new Set();
+  if (newest) {
+    const schemaPath = path.join(dir, newest, 'payload.schema.json');
+    if (fs.existsSync(schemaPath)) {
+      try {
+        const code = readJson(schemaPath)?.properties?.code;
+        for (const branch of [code, ...(code?.anyOf || [])]) {
+          for (const v of branch?.enum || []) if (typeof v === 'string') codes.add(v);
+        }
+      } catch (e) {
+        fail(
+          `trust-task-error/${newest}/payload.schema.json`,
+          `could not be read to derive the §8.3 standard code set: ${e.message}`
+        );
+      }
+    }
+  }
+  if (codes.size === 0) {
+    // Never fail open. A lint that silently checks nothing is worse than one
+    // that is loud about being unable to run.
+    fail(
+      'specs/trust-task-error',
+      `no published version yields a §8.3 standard code enum from its ` +
+        `payload.schema.json (looked at '${newest || 'nothing'}'). The §8.5 ` +
+        `anti-shadowing check derives its vocabulary from that enum and cannot ` +
+        `run without it.`
+    );
+  }
+  standardErrorCodesCache = { codes, version: newest };
+  return standardErrorCodesCache;
+}
+
+// Counters for the §8.5 anti-shadowing summary line, accumulated across specs.
+const shadowLint = { declared: 0, conforming: 0, frozen: 0, frozenSpecs: new Set(), offending: 0 };
+
 function checkErrorCodeNamespaces(meta, rel) {
   const slug = meta.slug;
   if (typeof slug !== 'string') return;
@@ -546,12 +614,59 @@ function checkErrorCodeNamespaces(meta, rel) {
     segments.map((_, i) => segments.slice(0, i + 1).join('/'))
   );
 
+  const { codes: standard, version: errorSpecVersion } = standardErrorCodes();
+
   for (const entry of meta.errorCodes || []) {
     const code = entry?.code;
     if (typeof code !== 'string') continue;
     const colon = code.lastIndexOf(':');
     if (colon < 0) continue; // grammar failure — the meta schema reports it
     const namespace = code.slice(0, colon);
+    const local = code.slice(colon + 1);
+    shadowLint.declared++;
+
+    // ── SPEC §8.5, final sentence of the namespacing paragraph ──────────────
+    // "Extended codes MUST NOT shadow any code listed in §8.3."
+    //
+    // The namespace rule above asks *where* a code may be rooted; this asks
+    // whether the local part is a name the framework has already taken. A
+    // declaration like `audit/verify:permissionDenied` passes the first test and
+    // still breaks interoperability in both directions: a consumer switching on
+    // the standard `permissionDenied` never matches it, and §8.5's fallback
+    // rule maps the unrecognized extended code to `taskFailed` — a strictly
+    // worse signal than the standard code it duplicates. The fix is to delete
+    // the declaration and emit the standard code, which every conforming
+    // consumer already recognizes (§8.3); it is never to re-case or re-spell it.
+    if (standard.has(local)) {
+      // Frozen by §5.3 — a retired spec's declarations are kept so already-issued
+      // documents stay verifiable, and `retired` is terminal, so there is no
+      // conforming version increment in which to correct one. Counted, never
+      // failed, on the same reasoning as the two casing lints.
+      if (meta.status === 'retired') {
+        shadowLint.frozen++;
+        shadowLint.frozenSpecs.add(rel);
+        continue;
+      }
+      shadowLint.offending++;
+      fail(
+        `${rel}/spec.md`,
+        `errorCodes['${code}'] has a local part '${local}' that shadows the ` +
+          `framework standard code '${local}' (SPEC §8.3, as published by ` +
+          `trust-task-error/${errorSpecVersion}). SPEC §8.5 states that extended ` +
+          `codes MUST NOT shadow any code listed in §8.3. Delete the declaration ` +
+          `and emit the bare '${local}' instead — every conforming consumer ` +
+          `already recognizes it (§8.3), whereas the namespaced duplicate is an ` +
+          `unrecognized extended code that §8.5 tells a consumer to degrade to ` +
+          `'taskFailed'. Do not re-case or re-spell the local part: the problem ` +
+          `is the duplicate name, not its spelling. Leaving errorCodes empty is ` +
+          `fine — 'errorCodes: []' is what a spec with no task-specific codes ` +
+          `declares. At draft status §5.2 requires this fix in place, ` +
+          `errata-style, with no new version.`
+      );
+      continue;
+    }
+    shadowLint.conforming++;
+
     if (permitted.has(namespace)) continue;
 
     fail(
@@ -1268,6 +1383,13 @@ function main() {
       `${disclosureFloorOffenders ? ' (warning — set TT_STRICT_DISCLOSURE=1 to fail the build)' : ''}`
   );
   errorCodeCasing.report();
+  console.log(
+    `  Error code shadowing: ${shadowLint.conforming}/${shadowLint.declared} extended code(s) ` +
+      `avoid the §8.3 standard vocabulary (${standardErrorCodes().codes.size} code(s), derived ` +
+      `from trust-task-error/${standardErrorCodes().version}); ${shadowLint.frozen} frozen in ` +
+      `${shadowLint.frozenSpecs.size} retired spec(s) (§5.3 — exempt, not debt), ` +
+      `${shadowLint.offending} shadowing`
+  );
   // The rule-4 lint above reads `errorCodes` declarations, which is where an
   // *extended* code is defined. A *standard* code (§8.3) is declared nowhere and
   // only ever referenced, so its rule-2 MUST has to be swept over the text.

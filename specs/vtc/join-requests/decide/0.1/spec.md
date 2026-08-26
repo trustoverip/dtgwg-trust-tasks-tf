@@ -36,9 +36,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/join-requests/decide:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/join-requests/decide:notFound
     meaning: No join request with the supplied id exists.
     retryable: false

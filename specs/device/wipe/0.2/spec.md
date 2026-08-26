@@ -38,9 +38,6 @@ errorCodes:
   - code: device/wipe:notFound
     meaning: No DeviceBinding with this id.
     retryable: false
-  - code: device/wipe:permissionDenied
-    meaning: The issuer lacks DeviceAdmin capability on the maintainer.
-    retryable: false
   - code: device/wipe:wipePartial
     meaning: The target executed the wipe but could not complete every step (e.g. OS keychain APIs returned errors). The target completed as much as possible and reports `diagnostics.partialReasons`.
     retryable: false

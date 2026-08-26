@@ -33,9 +33,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: policy/upsert:permissionDenied
-    meaning: The consumer lacks PolicyAdmin capability.
-    retryable: false
   - code: policy/upsert:notFound
     meaning: An `id` was supplied for update but no policy with that id exists.
     retryable: false

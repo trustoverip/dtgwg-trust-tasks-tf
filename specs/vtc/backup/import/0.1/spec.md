@@ -35,12 +35,6 @@ errorCodes:
   - code: vtc/backup/import:decryptionFailed
     meaning: The password does not decrypt the envelope, or the ciphertext is corrupt.
     retryable: false
-  - code: vtc/backup/import:identityMismatch
-    meaning: The envelope's `sourceDid` names a different community than the running one.
-    retryable: false
-  - code: vtc/backup/import:permissionDenied
-    meaning: The consumer lacks the community super-admin capability.
-    retryable: false
 ---
 
 ## Abstract

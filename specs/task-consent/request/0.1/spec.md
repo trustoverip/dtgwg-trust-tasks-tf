@@ -37,9 +37,6 @@ errorCodes:
   - code: task-consent/request:untrustedIssuer
     meaning: The request was not signed by an executor this device is enrolled with. The device MUST NOT prompt.
     retryable: false
-  - code: task-consent/request:expired
-    meaning: The request's `expiresAt` has passed; the device MUST NOT prompt.
-    retryable: false
   - code: task-consent/request:notEligible
     meaning: This device is not a member of the named `approverSet`, or is the `requester` while `excludeRequester` is set.
     retryable: false

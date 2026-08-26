@@ -31,7 +31,10 @@ exposure:
   discloses: none
   actsAsSubject: true
   rationale: The custodian exercises the derived key to produce a Data Integrity proof that third-party verifiers will read as the derived identity's own assertion over the document's content.
-errorCodes: []
+errorCodes:
+  - code: keys:invalidArgument
+    meaning: A payload member is well-formed against the schema but unusable for this request. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
 related:
   - keys/derive-and-sign
   - keys/sign
@@ -139,7 +142,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/de
 }
 ```
 
-Failures (`permissionDenied`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `keys:invalidArgument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

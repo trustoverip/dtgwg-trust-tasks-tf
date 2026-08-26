@@ -30,7 +30,13 @@ sideEffects:
 exposure:
   discloses: none
   actsAsSubject: false
-errorCodes: []
+errorCodes:
+  - code: keys:alreadyExists
+    meaning: A key record already carries the target identifier; the custodian refuses rather than overwrite it. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
+  - code: keys:invalidArgument
+    meaning: A payload member is well-formed against the schema but unusable for this request. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
 related:
   - keys/create
   - keys/show
@@ -64,8 +70,8 @@ A conforming **consumer** (the key custodian) **MUST**:
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Establish the producer's authority to install key material before storing anything, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. **Refuse `privateKeyMultibase` unless the transport provides end-to-end confidentiality between producer and custodian.** A transport that terminates at an intermediary — TLS ending at a load balancer or gateway — does not qualify, because the cleartext key exists on that intermediary.
-4. Verify the supplied material is a well-formed private key of the declared `keyType`, and refuse with `invalid_argument` where it is not. A custodian that stores unvalidated material discovers the problem at first use, which is to say at the moment something depends on the signature.
-5. Refuse, with `already_exists`, an import that would collide with an existing key record. Import **MUST NOT** overwrite material: silently replacing a key invalidates every signature relying party has already verified against the old one.
+4. Verify the supplied material is a well-formed private key of the declared `keyType`, and refuse with `keys:invalidArgument` where it is not. A custodian that stores unvalidated material discovers the problem at first use, which is to say at the moment something depends on the signature.
+5. Refuse, with `keys:alreadyExists`, an import that would collide with an existing key record. Import **MUST NOT** overwrite material: silently replacing a key invalidates every signature relying party has already verified against the old one.
 6. Record the result with `origin: "imported"` and no `derivationPath`, and return it under the `#response` variant.
 7. **Not** echo the supplied private key in the response, in an error, or in a log.
 
@@ -148,7 +154,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/im
 
 Note the absent `derivationPath` — the shape itself records that this key is not reproducible.
 
-Failures (`permissionDenied`, `invalid_argument`, `already_exists`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `keys:invalidArgument`, `keys:alreadyExists`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 
@@ -158,6 +164,6 @@ Failures (`permissionDenied`, `invalid_argument`, `already_exists`) use `trust-t
 
 *A key that has been on a wire has been on a wire.* Even a correct import means the material existed outside the custodian. Where the key's value justifies it, producers **SHOULD** generate in place with [`keys/create`](../../create/0.1/spec.md) instead, and reserve import for material that already exists elsewhere and cannot be regenerated.
 
-*Refuse collisions rather than resolving them.* Overwriting an existing record would silently invalidate signatures already verified against the old key, and would do so without any party observing an error. `already_exists` is the safe answer even when the producer plainly meant to replace.
+*Refuse collisions rather than resolving them.* Overwriting an existing record would silently invalidate signatures already verified against the old key, and would do so without any party observing an error. `keys:alreadyExists` is the safe answer even when the producer plainly meant to replace.
 
 *Imported keys are outside the seed-recovery story.* Operators reasoning about disaster recovery from a seed backup will be wrong about exactly these keys unless the custodian tells them so.
