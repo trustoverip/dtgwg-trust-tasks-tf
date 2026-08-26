@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Solicit VMC
 summary: Ask the community to request a reciprocal Membership Credential from one of its members; the community dispatches the request and the member answers asynchronously.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

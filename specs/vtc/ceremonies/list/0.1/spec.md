@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Ceremonies — List
 summary: Return the community's ceremony manifests — the declarative descriptions an operator UI renders to drive each governance decision.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members Personhood — Challenge
 summary: Open a personhood-assertion ceremony for a member — return the single-use challenge to embed in the assertion presentation.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Relationships — Graph
 summary: Return a Verifiable Trust Community's published relationship credentials as a node-and-edge graph of who has vouched for whom.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: reputation
 keywords:
   - vtc

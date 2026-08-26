@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Self-Remove
 summary: A member removes themselves from a Verifiable Trust Community, choosing how their record is disposed of.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsements — List
 summary: Page through the community's issued endorsement credentials, optionally filtered by type or subject; live and revoked rows both surface.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Website — Rollback
 summary: Roll a managed-mode website back to a past deploy generation by flipping the current pointer.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, website, rollback]
 authors:

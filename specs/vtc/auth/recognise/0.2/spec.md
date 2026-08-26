@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Auth — Recognise
 summary: Mint a scoped cross-community session by presenting a foreign community's endorsement + membership credentials; maps the foreign role to a local one via policy.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

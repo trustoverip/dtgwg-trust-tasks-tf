@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Install Claim — Finish
 summary: Complete first-admin enrolment — submit the passkey attestation to derive the admin DID and a setup-session token.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, install, bootstrap, passkey]
 authors:

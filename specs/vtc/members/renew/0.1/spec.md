@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Renew
 summary: A member renews their community membership, re-issuing their membership and role credentials.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

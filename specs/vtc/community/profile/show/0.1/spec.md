@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Community Profile — Show
 summary: Fetch the Verifiable Trust Community's public profile (name, description, contact, language) plus live registry-reachability status.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

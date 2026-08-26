@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsement-Types — Register
 summary: Register an endorsement type a community will recognise, optionally with a claim schema.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, endorsements, endorsement-types, register]
 authors:

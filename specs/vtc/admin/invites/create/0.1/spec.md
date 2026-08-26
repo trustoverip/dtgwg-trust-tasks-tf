@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Admin Invites — Create
 summary: Mint a one-shot install URL and claim code that lets a named DID enrol an administrator passkey for a Verifiable Trust Community.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Request VMC
 summary: A community asks one of its members to issue and return a reciprocal Membership Credential naming the community as subject.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

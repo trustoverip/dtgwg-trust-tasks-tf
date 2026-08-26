@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Removed
 summary: Enumerate the tombstones of members who have left a Verifiable Trust Community, with when they left and their published revocation slot.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

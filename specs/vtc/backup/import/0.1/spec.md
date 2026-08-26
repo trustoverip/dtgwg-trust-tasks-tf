@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Backup — Import
 summary: Restore a Verifiable Trust Community from an encrypted backup envelope. Previews by default; `confirm` clears the backed-up keyspaces and applies it.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

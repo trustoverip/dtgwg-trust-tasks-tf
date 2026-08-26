@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Registry — Diagnostics
 summary: Report the registry-reconciler's health — queue depth, RTBF-batched and failed counts, oldest-pending age, and last success/failure timestamps.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

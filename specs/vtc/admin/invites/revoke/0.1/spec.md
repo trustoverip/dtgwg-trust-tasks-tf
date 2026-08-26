@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Admin Invites — Revoke
 summary: Revoke an outstanding administrator invite by its `jti`, so the install URL can no longer be redeemed.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - vtc
