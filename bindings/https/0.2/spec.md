@@ -4,7 +4,7 @@ version: "0.2"
 title: HTTPS transport binding
 summary: Carries Trust Task documents as JSON over HTTP/1.1 POST to a single endpoint; transport-authenticated sender identity comes from a bearer-token mapping to a VID.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 bindingURI: https://trusttasks.org/binding/https/0.2
 authors:
   - Glenn Gore (https://github.com/stormer78)

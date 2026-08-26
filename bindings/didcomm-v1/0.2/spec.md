@@ -4,7 +4,7 @@ version: "0.2"
 title: DIDComm v1 transport binding
 summary: Carries Trust Task documents to Aries-lineage agents inside DIDComm v1 authcrypt envelopes, as an attachment on a dedicated message type; the connection's theirDid maps to the framework's transport-authenticated party identity.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 bindingURI: https://trusttasks.org/binding/didcomm-v1/0.2
 envelopeType: https://trusttasks.org/binding/didcomm-v1/0.2/trust-task/1.0/task
 authors:
