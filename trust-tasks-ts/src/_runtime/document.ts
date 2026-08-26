@@ -173,6 +173,18 @@ export interface SpecPolicy {
   /** §7.3 item 5 — the party filling `recipient` is REQUIRED. */
   readonly isRecipientRequired: boolean;
   /**
+   * §7.3 item 17 — `issuedAtRequirement` is REQUIRED, raising §4.2's `issuedAt`
+   * SHOULD to a MUST for this specification's documents. A specification
+   * defining a *consequential Trust Task* (§2) must declare it, so that §7.2
+   * item 11's duplicate-execution record always has a window to sit in.
+   *
+   * Optional, defaulting to `false`, so a hand-written policy predating the
+   * declaration still type-checks. This is the *specification's* requirement,
+   * published in the registry — distinct from a consumer's own freshness
+   * posture, which is chosen at the call site and applied to every document.
+   */
+  readonly isIssuedAtRequired?: boolean;
+  /**
    * §7.2 item 2 — this variant's payload schema, as a value.
    *
    * Carried here because TypeScript types are erased at runtime: a consumer
@@ -282,12 +294,13 @@ export function enforceAudienceBinding<P>(
 }
 
 /**
- * The policy-driven subset of SPEC §7.2 — items 5b, 7 clause A, and 8.
+ * The policy-driven subset of SPEC §7.2 — items 5b, 7 clause A, and 8, plus
+ * §7.3 item 17's `issuedAt` requirement.
  *
  * Single source of truth for the flag-driven checks, so a binding-specific
  * pipeline and {@link consumeInbound} cannot diverge on the check set. Ordering
  * matches trust-tasks-rs `enforce_spec_policy`: recipient, then proof, then
- * audience binding.
+ * issuedAt (§7.3 item 17), then audience binding.
  */
 export function enforceSpecPolicy<P>(
   doc: TrustTaskDocument<P>,
@@ -305,6 +318,13 @@ export function enforceSpecPolicy<P>(
     return {
       code: "proofRequired",
       message: "specification declares proof REQUIRED but the document carries none",
+      retryable: false,
+    };
+  }
+  if (doc.issuedAt === undefined && spec.isIssuedAtRequired === true) {
+    return {
+      code: "malformedRequest",
+      message: "issuedAt is required by this Trust Task specification (SPEC §7.3 item 17)",
       retryable: false,
     };
   }

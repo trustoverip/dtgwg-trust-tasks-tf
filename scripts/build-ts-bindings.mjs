@@ -625,7 +625,8 @@ function slugFromSchemaPath(schemaPath) {
  * Read the SPEC §7.2 policy flags out of a spec's front matter.
  *
  * These mirror `Payload::IS_BEARER` / `IS_PROOF_REQUIRED` /
- * `IS_RECIPIENT_REQUIRED` in trust-tasks-rs, and are derived the same way, so
+ * `IS_RECIPIENT_REQUIRED` / `IS_ISSUED_AT_REQUIRED` in trust-tasks-rs, and are
+ * derived the same way, so
  * a TypeScript consumer reaches the same verdict as a Rust one on the same
  * document. Without them a TypeScript implementation cannot apply §7.2 items
  * 5b, 7 or 8 at all — the requirement is per-specification, and nothing else
@@ -667,10 +668,25 @@ function readSpecPolicy(schemaPath) {
           response: (pr.response ?? pr.request) === "REQUIRED",
         };
 
+  // §7.3 item 17, declared with the same shape as item 8 and normalised the
+  // same way. Only REQUIRED obliges a consumer to reject a document with no
+  // `issuedAt`; the framework baseline of §4.2 is already a SHOULD, which
+  // RECOMMENDED merely restates.
+  const ir = meta.issuedAtRequirement || {};
+  const issuedAtRequired =
+    typeof ir.requirement === "string"
+      ? { request: ir.requirement === "REQUIRED", response: ir.requirement === "REQUIRED" }
+      : {
+          request: ir.request === "REQUIRED",
+          response: (ir.response ?? ir.request) === "REQUIRED",
+        };
+
   return {
     isBearer: meta.bearer === true,
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
+    isIssuedAtRequired: issuedAtRequired.request,
+    responseIsIssuedAtRequired: issuedAtRequired.response,
     // Request: the party tagged `recipient`. Response: the party tagged
     // `issuer`, because the response addresses the original producer.
     isRecipientRequired: partyRequirement("recipient"),
@@ -864,13 +880,14 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
   }
 
   if (policy) {
-    const obj = (uri, isProofRequired, isRecipientRequired, schemaConst) =>
+    const obj = (uri, isProofRequired, isRecipientRequired, isIssuedAtRequired, schemaConst) =>
       [
         `{`,
         `  typeUri: ${uri},`,
         `  isBearer: ${policy.isBearer},`,
         `  isProofRequired: ${isProofRequired},`,
         `  isRecipientRequired: ${isRecipientRequired},`,
+        `  isIssuedAtRequired: ${isIssuedAtRequired},`,
         `  payloadSchema: ${schemaConst},`,
         `} as const;`,
       ].join("\n");
@@ -886,6 +903,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
         "TYPE_URI",
         policy.isProofRequired,
         policy.isRecipientRequired,
+        policy.isIssuedAtRequired,
         schemas?.request ? "PAYLOAD_SCHEMA" : "undefined",
       )}`,
       "",
@@ -902,6 +920,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
           "RESPONSE_TYPE_URI",
           policy.responseIsProofRequired,
           policy.responseIsRecipientRequired,
+          policy.responseIsIssuedAtRequired,
           schemas?.response ? "RESPONSE_PAYLOAD_SCHEMA" : "undefined",
         )}`,
         "",

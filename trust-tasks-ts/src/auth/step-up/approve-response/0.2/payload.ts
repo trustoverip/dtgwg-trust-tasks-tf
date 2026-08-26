@@ -554,6 +554,7 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  isIssuedAtRequired: false,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
@@ -567,5 +568,6 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
+  isIssuedAtRequired: false,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;
