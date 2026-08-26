@@ -6453,12 +6453,13 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-capability-client"
-version = "0.11.0"
+version = "0.12.0"
 dependencies = [
  "chrono",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
+ "tokio",
  "trust-tasks-rs",
  "uuid",
 ]
