@@ -29,13 +29,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
-  - code: did-management/domain/purge:not_disabled
+  - code: did-management/domain/purge:notDisabled
     meaning: The domain is still `active`; disable it first before purging.
     retryable: false
-  - code: did-management/domain/purge:is_default
+  - code: did-management/domain/purge:isDefault
     meaning: The domain is the current system default; cannot purge until the default is moved.
     retryable: false
 related: [did-management/domain/disable, did-management/domain/set-default]

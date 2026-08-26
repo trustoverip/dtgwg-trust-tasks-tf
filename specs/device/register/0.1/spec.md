@@ -31,10 +31,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: device/register:no_pending_enrolment
+  - code: device/register:noPendingEnrolment
     meaning: The producer's DID is not the result of a recent provision-integration + acl/swap-key flow. Registration cannot proceed without first being granted via the maintainer's normal enrolment path.
     retryable: false
-  - code: device/register:attestation_failed
+  - code: device/register:attestationFailed
     meaning: The supplied device attestation could not be verified against the platform's attestation infrastructure.
     retryable: false
     detailsSchema:
@@ -42,10 +42,10 @@ errorCodes:
       additionalProperties: false
       properties:
         reason: { type: "string", enum: ["signature_invalid", "untrusted_root", "stale", "rooted_device", "unsupported_attestation_kind"] }
-  - code: device/register:already_registered
+  - code: device/register:alreadyRegistered
     meaning: A DeviceBinding for this consumer DID already exists. Re-registration is rejected; the consumer SHOULD swap to a fresh key via acl/swap-key and retry.
     retryable: false
-  - code: device/register:hpke_key_invalid
+  - code: device/register:hpkeKeyInvalid
     meaning: The `hpkePublicKey` is not a valid X25519 did:key.
     retryable: false
 ---
@@ -74,11 +74,11 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
-1. Verify proof. The producer's DID MUST already be in the ACL (placed there by step 2 above). If not → `device/register:no_pending_enrolment`.
-2. Verify any supplied `attestation` against the platform's attestation infrastructure. Failure → `device/register:attestation_failed` with `details.reason`. The maintainer's policy decides whether a failed attestation is fatal or merely downgrades the device's policy class.
+1. Verify proof. The producer's DID MUST already be in the ACL (placed there by step 2 above). If not → `device/register:noPendingEnrolment`.
+2. Verify any supplied `attestation` against the platform's attestation infrastructure. Failure → `device/register:attestationFailed` with `details.reason`. The maintainer's policy decides whether a failed attestation is fatal or merely downgrades the device's policy class.
 3. Treat any supplied `keyCustody` as **policy input** (not a gate): a `software`-tier device MAY be assigned a stricter policy class (shorter sessions, more frequent step-up), the same way a missing/failed attestation is handled.
-4. If a DeviceBinding for this DID already exists → `device/register:already_registered`. (Re-registration is intentionally not idempotent — the consumer must rotate keys and try again.)
-5. Validate `hpkePublicKey` as a well-formed X25519 did:key. Failure → `device/register:hpke_key_invalid`.
+4. If a DeviceBinding for this DID already exists → `device/register:alreadyRegistered`. (Re-registration is intentionally not idempotent — the consumer must rotate keys and try again.)
+5. Validate `hpkePublicKey` as a well-formed X25519 did:key. Failure → `device/register:hpkeKeyInvalid`.
 6. Create the DeviceBinding with `registeredAt = now`, `lastSeenAt = now`, capabilities mirrored from the ACL entry. Return the DeviceBinding.
 
 ## Payload

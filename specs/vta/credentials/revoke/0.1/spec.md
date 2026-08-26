@@ -34,10 +34,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vta/credentials/revoke:not_found
+  - code: vta/credentials/revoke:notFound
     meaning: No issued credential with the given id is known to this VTA.
     retryable: false
-  - code: vta/credentials/revoke:already_revoked
+  - code: vta/credentials/revoke:alreadyRevoked
     meaning: The credential was already revoked.
     retryable: false
 related:
@@ -52,7 +52,7 @@ knownImplementations:
 
 The **VTA Credentials — Revoke** Trust Task withdraws a credential a VTA previously issued via [`vta/credentials/issue`](../../issue/0.1/spec.md), ending a cross-context share before its `validUntil`. The VTA records the revocation against the credential's id; a verifier that consults the VTA — or that relies on the VTA's short credential lifetimes — will no longer treat the credential as valid.
 
-Revocation is **idempotent in effect** but **MUST** report `vta/credentials/revoke:already_revoked` when the credential was already revoked, so the caller can distinguish "I revoked it now" from "it was already gone".
+Revocation is **idempotent in effect** but **MUST** report `vta/credentials/revoke:alreadyRevoked` when the credential was already revoked, so the caller can distinguish "I revoked it now" from "it was already gone".
 
 This task complements the VTA's authoritative control surface — removing the consuming party's access ultimately rests on the VTA's ACL — but provides a credential-granular withdrawal for shares that were issued as standalone Verifiable Credentials.
 
@@ -79,7 +79,7 @@ A conforming **producer** (the issuing authority) **MUST**:
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document and verify the `proof`.
-2. Respond with `vta/credentials/revoke:not_found` when the id is unknown, and `vta/credentials/revoke:already_revoked` when it was already revoked.
+2. Respond with `vta/credentials/revoke:notFound` when the id is unknown, and `vta/credentials/revoke:alreadyRevoked` when it was already revoked.
 3. Otherwise mark the credential revoked (recording `revokedAt`) and return the `#response` document.
 
 ## Authorization
@@ -88,7 +88,7 @@ A conforming **consumer** (the VTA) **MUST**:
 
 The authorization evidence this task presupposes is the producer's standing as the **issuing authority for the credential named by `payload.credentialId`** — in the ordinary case, the party that issued it. The VTA establishes that from the authenticated producer identity and its own issuance record.
 
-Neither error code Conformance names is that check. `not_found` and `already_revoked` are both statements about the credential's state, and a consumer that returns them without first establishing standing has told an unauthorized caller whether a credential exists and whether it is live. Where the producer lacks standing the VTA refuses with `permissionDenied`, and **SHOULD** do so without distinguishing an unknown credential from one the caller may not revoke.
+Neither error code Conformance names is that check. `notFound` and `alreadyRevoked` are both statements about the credential's state, and a consumer that returns them without first establishing standing has told an unauthorized caller whether a credential exists and whether it is live. Where the producer lacks standing the VTA refuses with `permissionDenied`, and **SHOULD** do so without distinguishing an unknown credential from one the caller may not revoke.
 
 The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 

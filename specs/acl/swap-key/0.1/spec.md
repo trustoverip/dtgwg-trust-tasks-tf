@@ -34,16 +34,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: acl/swap-key:subject_not_found
+  - code: acl/swap-key:subjectNotFound
     meaning: The `currentSubject` is not present in the ACL.
     retryable: false
-  - code: acl/swap-key:subject_already_in_use
+  - code: acl/swap-key:subjectAlreadyInUse
     meaning: The `newSubject` is already bound to a different AclEntry. The maintainer's policy decides whether to support "merge" semantics; the default is to refuse, leaving the operator to remove the existing entry first.
     retryable: false
-  - code: acl/swap-key:link_proof_required
+  - code: acl/swap-key:linkProofRequired
     meaning: The maintainer requires evidence that `newSubject` consents to taking over (see "Link proof"). The producer SHOULD retry with `linkProof` populated.
     retryable: false
-  - code: acl/swap-key:link_proof_invalid
+  - code: acl/swap-key:linkProofInvalid
     meaning: The supplied `linkProof` failed verification.
     retryable: false
     detailsSchema:
@@ -53,7 +53,7 @@ errorCodes:
         reason:
           type: string
           enum: ["signature_invalid", "nonce_mismatch", "subject_mismatch", "expired", "format_unsupported"]
-  - code: acl/swap-key:not_holder
+  - code: acl/swap-key:notHolder
     meaning: The document's `issuer` is not the `currentSubject` and the maintainer's policy does not permit cross-subject swaps. This is the default policy — see "Administrative swap" for the exception.
     retryable: false
 related:
@@ -92,11 +92,11 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Verify the document's `issuer` equals `payload.currentSubject` (unless administrative swap is configured — see below).
-3. Look up `payload.currentSubject` in the ACL. Absent → `acl/swap-key:subject_not_found`.
-4. Verify `payload.newSubject` is not already an AclEntry subject. Present → `acl/swap-key:subject_already_in_use`.
+3. Look up `payload.currentSubject` in the ACL. Absent → `acl/swap-key:subjectNotFound`.
+4. Verify `payload.newSubject` is not already an AclEntry subject. Present → `acl/swap-key:subjectAlreadyInUse`.
 5. Apply the consumer's link-proof policy:
-   - If link-proof is REQUIRED for `newSubject`'s VID scheme and `payload.linkProof` is absent → `acl/swap-key:link_proof_required`.
-   - When present, verify it per the consumer's policy. Failure → `acl/swap-key:link_proof_invalid` with `details.reason`.
+   - If link-proof is REQUIRED for `newSubject`'s VID scheme and `payload.linkProof` is absent → `acl/swap-key:linkProofRequired`.
+   - When present, verify it per the consumer's policy. Failure → `acl/swap-key:linkProofInvalid` with `details.reason`.
 6. Apply the swap as a single transaction: rebind the existing AclEntry's `subject` to `payload.newSubject` and remove `payload.currentSubject` from any subject indexes. The entry's `role`, `scopes`, `label`, `expiresAt` MUST be preserved verbatim. The entry's `createdAt`/`createdBy` MUST NOT be modified.
 7. Revoke any persistent authentication artifacts bound to `currentSubject` (refresh tokens, server-side sessions, signed bearer tokens issued to that VID). The maintainer's policy decides whether short-lived access tokens are also revoked — RECOMMENDED: yes; RATIONALE: if the holder rotated because the old key was compromised, leaving a 15-minute access-token window open is the gap that prompted the rotation in the first place.
 8. Return a `#response` document carrying the rebound `AclEntry` and the echoed `previousSubject`. Operate retries idempotently: a swap whose `currentSubject` is no longer present MAY succeed without effect if the maintainer can verify the same `newSubject` is already the bound entry (i.e. a prior swap with identical parameters succeeded).
@@ -226,7 +226,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/acl/swa
 
 **Token revocation.** The conformance section is firm: tokens bound to `currentSubject` MUST be revoked. The `recommended-but-not-required` framing on access tokens specifically (because their natural expiry is minutes) MAY be relaxed only when the maintainer's audit policy demands a complete cutover trace.
 
-**Concurrent swaps.** A swap and a concurrent administrative `acl/revoke` for the same entry, or two concurrent swaps with different `newSubject` values, MUST serialize. Maintainers MUST ensure one wins and the others fail with `subject_not_found` or `subject_already_in_use`.
+**Concurrent swaps.** A swap and a concurrent administrative `acl/revoke` for the same entry, or two concurrent swaps with different `newSubject` values, MUST serialize. Maintainers MUST ensure one wins and the others fail with `subjectNotFound` or `subjectAlreadyInUse`.
 
 **Replay.** The framework's general guidance on document replay applies: maintainers SHOULD reject documents whose `issuedAt` is far in the past or in the future, and SHOULD include the document's id in their idempotency window so a retry of the same document is observed as the same swap.
 

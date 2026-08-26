@@ -29,13 +29,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/did/rollback:not_owner
+  - code: did-management/did/rollback:notOwner
     meaning: The caller is not the slot's owner or an admin.
     retryable: false
-  - code: did-management/did/rollback:invalid_target_version
+  - code: did-management/did/rollback:invalidTargetVersion
     meaning: The submitted `targetVersion` is greater than the current `versionCount` or less than 1.
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/did/publish]

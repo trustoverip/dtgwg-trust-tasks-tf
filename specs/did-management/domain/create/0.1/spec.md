@@ -27,10 +27,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/domain/create:domain_exists
+  - code: did-management/domain/create:domainExists
     meaning: A domain with the same `name` already exists.
     retryable: false
-  - code: did-management/domain/create:invalid_name
+  - code: did-management/domain/create:invalidName
     meaning: The submitted `name` violates the host's hostname grammar.
     retryable: false
 related: [did-management/domain/update, did-management/domain/disable, did-management/domain/set-default]

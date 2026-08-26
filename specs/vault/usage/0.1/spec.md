@@ -31,10 +31,10 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vault/usage:permission_denied
+  - code: vault/usage:permissionDenied
     meaning: The consumer lacks visibility into the requested scope.
     retryable: false
-  - code: vault/usage:filter_conflict
+  - code: vault/usage:filterConflict
     meaning: Invalid filter combination.
     retryable: false
 ---
@@ -63,7 +63,7 @@ Records are returned in `occurredAt` descending order by default. Pagination is 
 
 ## Security & Privacy
 
-**Visibility scoping.** A Service consumer querying for `byConsumer` of a *different* DID MUST be denied (`permission_denied`). Only admin-class Companions can audit across consumers.
+**Visibility scoping.** A Service consumer querying for `byConsumer` of a *different* DID MUST be denied (`permissionDenied`). Only admin-class Companions can audit across consumers.
 
 **No secret leakage.** Usage records carry IDs and decision metadata, never secret material.
 

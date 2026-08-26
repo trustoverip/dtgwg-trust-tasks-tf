@@ -27,10 +27,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
-  - code: did-management/domain/set-default:domain_disabled
+  - code: did-management/domain/set-default:domainDisabled
     meaning: The domain is in the `disabled` state and cannot be promoted to default.
     retryable: false
 related: [did-management/domain/create, did-management/domain/disable]

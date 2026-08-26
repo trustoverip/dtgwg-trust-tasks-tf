@@ -31,13 +31,13 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: governance/capability/enable:unknown_capability
+  - code: governance/capability/enable:unknownCapability
     meaning: The host does not know the named capability/version (not built in, and no manifest supplied).
     retryable: false
-  - code: governance/capability/enable:already_enabled
+  - code: governance/capability/enable:alreadyEnabled
     meaning: The capability is already enabled for this community.
     retryable: false
-  - code: governance/capability/enable:config_invalid
+  - code: governance/capability/enable:configInvalid
     meaning: The supplied config does not validate against the capability manifest's configSchema.
     retryable: false
 related:
@@ -84,7 +84,7 @@ The `manifest` member follows the shared
 [`CapabilityManifest`](../../../_shared/0.1/governance.schema.json) definition.
 The `config` member is opaque to the framework: the recipient MUST validate
 it against the schema named by the manifest's `configSchema` and reject
-`config_invalid` on mismatch. Absent `config` means the capability's most
+`configInvalid` on mismatch. Absent `config` means the capability's most
 restrictive defaults (never its most permissive).
 
 ## Request

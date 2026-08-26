@@ -31,7 +31,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: git-trust/revoke:not_granted
+  - code: git-trust/revoke:notGranted
     meaning: No active grant exists for this subject and resource.
     retryable: false
 related:

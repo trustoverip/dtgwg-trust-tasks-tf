@@ -34,16 +34,16 @@ exposure:
   rationale: Discloses to the approver which task is pending, the subject it acts on, the requesting origin, and the executor-computed effects — descriptive data about a pending operation, but no secret material and no authority exercised.
 subjectPath: /subject
 errorCodes:
-  - code: task-consent/request:untrusted_issuer
+  - code: task-consent/request:untrustedIssuer
     meaning: The request was not signed by an executor this device is enrolled with. The device MUST NOT prompt.
     retryable: false
   - code: task-consent/request:expired
     meaning: The request's `expiresAt` has passed; the device MUST NOT prompt.
     retryable: false
-  - code: task-consent/request:not_eligible
+  - code: task-consent/request:notEligible
     meaning: This device is not a member of the named `approverSet`, or is the `requester` while `excludeRequester` is set.
     retryable: false
-  - code: task-consent/request:no_surface
+  - code: task-consent/request:noSurface
     meaning: The device has no consent surface available (headless, locked, or backgrounded past its wake budget).
     retryable: true
 related:
@@ -143,12 +143,12 @@ A conforming **producer** (the executor) **MUST**:
 
 A conforming **consumer** (the approver device) **MUST**:
 
-1. Verify the `proof` and that the `issuer` is an executor it is enrolled with. An unverifiable request → `untrusted_issuer`; the device **MUST NOT** prompt.
+1. Verify the `proof` and that the `issuer` is an executor it is enrolled with. An unverifiable request → `untrustedIssuer`; the device **MUST NOT** prompt.
 2. Render **only** members of this verified document. With the single, explicitly-quarantined exception of `note`, it **MUST NOT** render, and **MUST NOT** allow the requester or the `origin` to contribute, any prose the human reads as the basis of the decision.
 3. Render every `effects[].summary` verbatim, including for a `kind` it does not recognise. It **MAY** additionally render structured members of kinds it knows. A surface that silently drops an unrecognised effect misinforms the human precisely where the design is weakest.
 4. Where `effects` and `consequences` are **both** empty, tell the approver the consequences could not be determined. It **MUST NOT** present the task as though it had none.
 5. Render `note`, when it renders it at all, attributed to `requester` and visually distinct from `effects`. It **MUST NOT** present `note` as a statement of what the task does, and **MUST NOT** let it substitute for, reorder, or obscure any effect. A surface **MAY** drop `note` entirely; it **MUST NOT** drop an effect.
-6. Refuse to prompt when `expiresAt` has passed (`expired`), when it is not a member of `approverSet`, or when it is the `requester` and `excludeRequester` is set (`not_eligible`).
+6. Refuse to prompt when `expiresAt` has passed (`expired`), when it is not a member of `approverSet`, or when it is the `requester` and `excludeRequester` is set (`notEligible`).
 7. Return a `#response` with `status: prompted` or `status: refused`. The human's answer is **not** a synchronous reply — it returns as a separate `task-consent/decision`.
 
 A conforming consumer **SHOULD**, for a `sideEffects: destructive` task, require the human to **match** a prefix of `payloadDigest` against the same prefix displayed by the requesting surface, rather than to tap "approve". Only a comparison across two independent screens survives a compromised consent surface; a tap is a reflex, and a reflex is what habituation destroys first.

@@ -34,19 +34,19 @@ exposure:
   actsAsSubject: true
   rationale: "Produces a Data Integrity signature as the entry's principal DID."
 errorCodes:
-  - code: vault/sign-trust-task:not_found
+  - code: vault/sign-trust-task:notFound
     meaning: No entry with this id exists in the consumer's scope.
     retryable: false
-  - code: vault/sign-trust-task:permission_denied
+  - code: vault/sign-trust-task:permissionDenied
     meaning: The consumer lacks `SignTrustTask` capability for this entry.
     retryable: false
-  - code: vault/sign-trust-task:not_signable
+  - code: vault/sign-trust-task:notSignable
     meaning: The entry's `secretKind` has no DID-based signing identity (`password`, `passkey`, `oauth-tokens`, `bearer-token`, `ssh-key`, `custom`). Only `did-self-issued` and `didcomm-peer` entries can sign Trust Tasks.
     retryable: false
-  - code: vault/sign-trust-task:envelope_invalid
+  - code: vault/sign-trust-task:envelopeInvalid
     meaning: The supplied `unsignedEnvelope` is missing a framework-required field (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload`) or carries fields the maintainer cannot canonicalise.
     retryable: false
-  - code: vault/sign-trust-task:envelope_issuer_mismatch
+  - code: vault/sign-trust-task:envelopeIssuerMismatch
     meaning: The supplied envelope's `issuer` does not match the entry's `principalDid`. The maintainer refuses to sign — the consumer MUST set `issuer = principalDid` for the entry being used. This guards against the consumer accidentally requesting a signature for an issuer the maintainer can't actually authenticate as.
     retryable: false
     detailsSchema:
@@ -55,14 +55,14 @@ errorCodes:
       properties:
         envelopeIssuer: { type: "string" }
         expectedIssuer: { type: "string" }
-  - code: vault/sign-trust-task:envelope_already_proofed
+  - code: vault/sign-trust-task:envelopeAlreadyProofed
     meaning: The supplied envelope already carries a `proof`. The maintainer refuses to re-sign — strip the existing proof and resubmit.
     retryable: false
-  - code: vault/sign-trust-task:envelope_expired
+  - code: vault/sign-trust-task:envelopeExpired
     meaning: The supplied envelope's `expiresAt` is in the past. Signing it would produce a stale credential.
     retryable: false
-  - code: vault/sign-trust-task:step_up_required
-    meaning: Policy demands a step-up proof before the signature can be issued. Consumer retries with `stepUpProof` populated. Same shape as `vault/proxy-login:step_up_required`.
+  - code: vault/sign-trust-task:stepUpRequired
+    meaning: Policy demands a step-up proof before the signature can be issued. Consumer retries with `stepUpProof` populated. Same shape as `vault/proxy-login:stepUpRequired`.
     retryable: true
     detailsSchema:
       type: object
@@ -72,7 +72,7 @@ errorCodes:
         method: { type: "string", enum: ["webauthn-uv", "push-approval", "totp"] }
         challengeId: { type: "string" }
         ttlSeconds: { type: "integer", minimum: 1 }
-  - code: vault/sign-trust-task:policy_deny
+  - code: vault/sign-trust-task:policyDeny
     meaning: Policy denies sign-trust-task for this consumer + entry combination outright (no step-up will satisfy it).
     retryable: false
 ---
@@ -97,20 +97,20 @@ A maintainer's generic signing oracle (e.g. `POST /keys/{key_id}/sign` in a typi
 
 A conforming **producer** **MUST**:
 
-1. Populate `entryId` with a vault entry the producer knows is `did-self-issued` or `didcomm-peer`. Other `secretKind`s are rejected with `not_signable`.
+1. Populate `entryId` with a vault entry the producer knows is `did-self-issued` or `didcomm-peer`. Other `secretKind`s are rejected with `notSignable`.
 2. Populate `unsignedEnvelope` with a complete Trust Task envelope per the framework (§4.x of SPEC.md): `id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload` are REQUIRED; `threadId`, `expiresAt`, `ext` are OPTIONAL. The envelope MUST NOT carry a `proof`.
 3. Set `unsignedEnvelope.issuer` to the entry's `principalDid`. The producer learns `principalDid` from the entry metadata (`vault/list/0.1` / `vault/get/0.1` returns it; the proxy-login response also carries it implicitly via the minted id_token's `iss`).
 4. Carry a `proof`.
-5. On `step_up_required`, satisfy the demanded method and retry with `stepUpProof`.
+5. On `stepUpRequired`, satisfy the demanded method and retry with `stepUpProof`.
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
 1. Verify proof and the consumer's `SignTrustTask` capability on the entry.
-2. Verify `entry.secretKind` is `did-self-issued` or `didcomm-peer`. Reject with `not_signable` otherwise.
-3. Verify `unsignedEnvelope.issuer == entry.principalDid`. Reject with `envelope_issuer_mismatch` on mismatch.
-4. Verify `unsignedEnvelope` has no `proof` member. Reject with `envelope_already_proofed` if present.
-5. Verify the envelope's framework-required fields (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload`) are all present and well-typed. Reject with `envelope_invalid` otherwise. The maintainer is NOT obligated to validate the inner `payload` against the task type's schema — that's the recipient's job. The maintainer signs the envelope as it stands.
-6. If `expiresAt` is present and in the past, reject with `envelope_expired`.
+2. Verify `entry.secretKind` is `did-self-issued` or `didcomm-peer`. Reject with `notSignable` otherwise.
+3. Verify `unsignedEnvelope.issuer == entry.principalDid`. Reject with `envelopeIssuerMismatch` on mismatch.
+4. Verify `unsignedEnvelope` has no `proof` member. Reject with `envelopeAlreadyProofed` if present.
+5. Verify the envelope's framework-required fields (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload`) are all present and well-typed. Reject with `envelopeInvalid` otherwise. The maintainer is NOT obligated to validate the inner `payload` against the task type's schema — that's the recipient's job. The maintainer signs the envelope as it stands.
+6. If `expiresAt` is present and in the past, reject with `envelopeExpired`.
 7. Evaluate the policy engine against `{ entry, consumer, envelope: { type, recipient }, request: { kind: "sign_trust_task" } }`. Possible outcomes: `allow`, `require_step_up`, `deny`.
 8. On allow, JCS-canonicalise the envelope (proof slot first set to the proof's metadata without `proofValue`, per the eddsa-jcs-2022 Data Integrity rules), sign with the entry's signing key, attach `proof` to the envelope, return.
 9. The proof's `verificationMethod` MUST be `<principalDid>#<signingKeyId>` (same shape the proxy-login id_tokens use). `proof.proofPurpose` MUST be `assertionMethod`. `proof.cryptosuite` MUST be `eddsa-jcs-2022`.
@@ -124,7 +124,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 `payload.consumerContext` (optional).
 
-`payload.stepUpProof` (REQUIRED on retry after `step_up_required`).
+`payload.stepUpProof` (REQUIRED on retry after `stepUpRequired`).
 
 ## Response
 
@@ -224,7 +224,7 @@ Maintainer's first response:
   "recipient": "did:peer:2.Ez6LSc…",
   "issuedAt": "2026-05-16T14:22:00Z",
   "payload": {
-    "code": "vault/sign-trust-task:envelope_issuer_mismatch",
+    "code": "vault/sign-trust-task:envelopeIssuerMismatch",
     "message": "envelope.issuer must equal the entry's principalDid",
     "details": {
       "envelopeIssuer": "did:key:z6MkHolder…",

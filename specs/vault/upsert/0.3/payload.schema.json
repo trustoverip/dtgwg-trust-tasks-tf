@@ -15,7 +15,7 @@
     "expectedVersion": {
       "type": "integer",
       "minimum": 0,
-      "description": "When updating, the consumer's last-observed `version` for the entry. The maintainer rejects with `vault/upsert:version_conflict` if the current version differs. Omit on create."
+      "description": "When updating, the consumer's last-observed `version` for the entry. The maintainer rejects with `vault/upsert:versionConflict` if the current version differs. Omit on create."
     },
     "contextId": {
       "type": "string",
@@ -49,7 +49,7 @@
     "expiresAt": { "type": "string", "format": "date-time" },
     "sealedSecret": {
       "$ref": "../../_shared/0.3/sealed-envelope.schema.json#/$defs/SealedEnvelope",
-      "description": "Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelope_unsupported`. REQUIRED on create unless `secretKind` is `didSelfIssued` or `didcommPeer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated."
+      "description": "Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelopeUnsupported`. REQUIRED on create unless `secretKind` is `didSelfIssued` or `didcommPeer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated."
     },
     "clearFields": {
       "type": "array",

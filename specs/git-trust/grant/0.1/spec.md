@@ -31,7 +31,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: git-trust/grant:already_granted
+  - code: git-trust/grant:alreadyGranted
     meaning: An active grant already exists for this subject and resource.
     retryable: false
 related:

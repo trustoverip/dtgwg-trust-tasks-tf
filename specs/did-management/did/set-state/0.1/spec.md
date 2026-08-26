@@ -30,7 +30,7 @@ errorCodes:
   - code: did-management/did/set-state:notOwner
     meaning: The caller is not the slot's current owner or an admin.
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/did/delete, did-management/did/register]

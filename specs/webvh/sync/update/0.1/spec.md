@@ -27,10 +27,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: webvh/sync/update:not_authorized
+  - code: webvh/sync/update:notAuthorized
     meaning: Sender DID is not the configured control plane for the receiving server.
     retryable: false
-  - code: webvh/sync/update:invalid_log
+  - code: webvh/sync/update:invalidLog
     meaning: The `logContent` failed structural validation or hash-chain verification.
     retryable: false
     detailsSchema:
@@ -61,8 +61,8 @@ Draft.
 
 Producer (control plane) MUST emit `type: https://trusttasks.org/spec/webvh/sync/update/0.1` with `payload.mnemonic`, `payload.didId`, `payload.logContent`, `payload.versionCount`, and optionally `payload.witnessContent`. Consumer (hosting server) MUST:
 
-1. Verify the sender DID is the server's configured control plane, else reject with `webvh/sync/update:not_authorized`.
-2. Validate `logContent` parses as a did:webvh log (one JSON object per line) and that the hash chain verifies, else reject with `webvh/sync/update:invalid_log`.
+1. Verify the sender DID is the server's configured control plane, else reject with `webvh/sync/update:notAuthorized`.
+2. Validate `logContent` parses as a did:webvh log (one JSON object per line) and that the hash chain verifies, else reject with `webvh/sync/update:invalidLog`.
 3. Apply `logContent` and `witnessContent` (when present) as a single atomic batch.
 4. Respond with `status: "applied"` referencing the same `mnemonic`.
 
@@ -92,6 +92,6 @@ Producer (control plane) MUST emit `type: https://trusttasks.org/spec/webvh/sync
 
 ## Security & Privacy
 
-The `not_authorized` gate is load-bearing: any sender that is not the configured control plane DID MUST be refused, since a successful sync overwrites the server's local view of the slot. Servers MUST NOT accept sync updates from arbitrary callers even if the caller authenticates as Service — the gate is specifically against the configured control-plane DID, not against the role generally.
+The `notAuthorized` gate is load-bearing: any sender that is not the configured control plane DID MUST be refused, since a successful sync overwrites the server's local view of the slot. Servers MUST NOT accept sync updates from arbitrary callers even if the caller authenticates as Service — the gate is specifically against the configured control-plane DID, not against the role generally.
 
 Sync messages carry the full current log; a compromised control plane can rewrite history on a slot it controls. Consumers (resolvers) that need byzantine-resistance against a compromised control plane SHOULD rely on the witness-proof chain in `webvh/witness/publish`, which provides independent attestation per version.

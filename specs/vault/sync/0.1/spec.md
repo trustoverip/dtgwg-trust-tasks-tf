@@ -31,7 +31,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vault/sync:seq_too_old
+  - code: vault/sync:seqTooOld
     meaning: The supplied `sinceSeq` is older than the maintainer's retained event horizon; the consumer cannot catch up incrementally and MUST resync from scratch (omit `sinceSeq`). This happens when a consumer has been offline longer than the maintainer's event-retention window.
     retryable: false
     detailsSchema:
@@ -39,7 +39,7 @@ errorCodes:
       additionalProperties: false
       properties:
         oldestRetainedSeq: { type: "integer", minimum: 0 }
-  - code: vault/sync:permission_denied
+  - code: vault/sync:permissionDenied
     meaning: The consumer lacks VaultRead on the requested scope.
     retryable: false
 ---
@@ -64,7 +64,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 1. Filter the event stream by the requesting consumer's ACL: an event referencing an entry the consumer cannot read MUST be omitted (NOT replaced with a redacted stub). The consumer never learns of events outside its scope.
 2. Order events strictly by `seq` within each context. Across contexts, events MAY interleave by occurrence time; consumers apply per-context in order.
-3. Return `seq_too_old` with `details.oldestRetainedSeq` when the consumer's `sinceSeq` is older than the maintainer's retention window. The consumer recovers by resyncing from scratch.
+3. Return `seqTooOld` with `details.oldestRetainedSeq` when the consumer's `sinceSeq` is older than the maintainer's retention window. The consumer recovers by resyncing from scratch.
 4. Garbage-collect events older than the retention window. The window MUST be at least as long as the maintainer's longest documented vault-delete `graceUntil` — otherwise an offline consumer could miss a deletion entirely.
 
 ## Payload
@@ -119,4 +119,4 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 **Replay.** This task is read-only; replay is benign.
 
-**Audit.** Sync calls are typically high-volume; maintainers MAY sample audit records rather than log every call. RECOMMENDED to log first-sync (no `sinceSeq`) and `seq_too_old` errors fully.
+**Audit.** Sync calls are typically high-volume; maintainers MAY sample audit records rather than log every call. RECOMMENDED to log first-sync (no `sinceSeq`) and `seqTooOld` errors fully.

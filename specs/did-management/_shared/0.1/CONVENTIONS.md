@@ -18,7 +18,7 @@ This chain is mandatory across the category. It enables a third-party operator (
 Every specification in this category that accepts a `payload.domain` MUST list the following extended error code in its `errorCodes` declaration:
 
 ```yaml
-- code: did-management:unknown_domain
+- code: did-management:unknownDomain
   meaning: The submitted `domain` is not a known hosting domain on this consumer, or is in the `disabled` state and the operation is not permitted under that status.
   retryable: false
   detailsSchema:
@@ -36,7 +36,7 @@ The code is namespaced under the `did-management/_shared` pseudo-slug because it
 
 ## 3. Per-domain mnemonic disambiguation
 
-For operations that identify a DID slot by `mnemonic`, the `(mnemonic, domain)` pair is the conceptual primary key. Consumers MAY implement a flat mnemonic namespace today (one `mnemonic` per host, regardless of domain), but the wire shape SHOULD always permit the caller to disambiguate by also passing `domain`. A consumer that ignores `domain` on a lookup MUST behave as if the domain matched the slot's recorded value; if the explicit `domain` is inconsistent with the slot's recorded one, the consumer MUST respond with `did-management:unknown_domain` rather than returning the wrong slot.
+For operations that identify a DID slot by `mnemonic`, the `(mnemonic, domain)` pair is the conceptual primary key. Consumers MAY implement a flat mnemonic namespace today (one `mnemonic` per host, regardless of domain), but the wire shape SHOULD always permit the caller to disambiguate by also passing `domain`. A consumer that ignores `domain` on a lookup MUST behave as if the domain matched the slot's recorded value; if the explicit `domain` is inconsistent with the slot's recorded one, the consumer MUST respond with `did-management:unknownDomain` rather than returning the wrong slot.
 
 ## 4. Audit fields
 

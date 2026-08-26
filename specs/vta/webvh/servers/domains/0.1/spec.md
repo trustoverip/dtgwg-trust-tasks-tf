@@ -64,7 +64,7 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is 
 A conforming **consumer** (the agent) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
-2. Refuse with `not_found` where it holds no registration under `serverId`. An unknown server is not an empty domain list — those mean different things, and collapsing them tells a producer that a server it has not registered simply grants it nothing.
+2. Refuse with `notFound` where it holds no registration under `serverId`. An unknown server is not an empty domain list — those mean different things, and collapsing them tells a producer that a server it has not registered simply grants it nothing.
 3. Relay the hosting server's caller-scoped view **without filtering it further**. The scoping decision belongs to the server, which holds the ACL; an agent that narrows the list again would report fewer domains than the producer may actually use.
 4. Return each domain as a `DomainEntry`, preserving the members the server supplied — including `createdAt`.
 5. Report `default` as the server reported it, and **omit** it where the server reported none. Consumers **MUST** treat an absent `default` and an explicit `null` as the same answer — the schema admits both, and a producer that distinguished them would be reading a difference no implementation intends.
@@ -144,7 +144,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/vta/web
 }
 ```
 
-Failures (`not_found` for an unregistered `serverId`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`notFound` for an unregistered `serverId`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

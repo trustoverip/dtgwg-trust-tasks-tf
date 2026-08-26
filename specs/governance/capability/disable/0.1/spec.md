@@ -31,7 +31,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: governance/capability/disable:not_enabled
+  - code: governance/capability/disable:notEnabled
     meaning: The named capability is not currently enabled for this community.
     retryable: false
 related:

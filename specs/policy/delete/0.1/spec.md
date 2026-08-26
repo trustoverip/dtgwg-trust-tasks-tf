@@ -31,16 +31,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: policy/delete:not_found
+  - code: policy/delete:notFound
     meaning: No policy with this id.
     retryable: false
-  - code: policy/delete:permission_denied
+  - code: policy/delete:permissionDenied
     meaning: The consumer lacks PolicyAdmin capability.
     retryable: false
-  - code: policy/delete:version_conflict
+  - code: policy/delete:versionConflict
     meaning: "`expectedVersion` mismatch."
     retryable: true
-  - code: policy/delete:would_orphan_contexts
+  - code: policy/delete:wouldOrphanContexts
     meaning: Deleting this policy would leave one or more contexts with no applicable policy. The maintainer's policy on this is configurable — if deny-by-default is in place, this is benign; if the policy was the only `allow` for the context, you'd be locking yourself out. Override by setting an `ext` flag.
     retryable: false
     detailsSchema:
@@ -52,7 +52,7 @@ errorCodes:
 
 ## Abstract
 
-Removes a policy module. The maintainer SHOULD warn (via `would_orphan_contexts`) if the deletion would leave any context with no applicable policy that allows access; the user can override via `ext` flag if they understand the implications.
+Removes a policy module. The maintainer SHOULD warn (via `wouldOrphanContexts`) if the deletion would leave any context with no applicable policy that allows access; the user can override via `ext` flag if they understand the implications.
 
 ## Conformance
 

@@ -32,7 +32,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/did/register:path_taken
+  - code: did-management/did/register:pathTaken
     meaning: The requested path is already reserved by a different owner and `force` was not set (or the caller lacks authority to force-replace).
     retryable: false
     detailsSchema:
@@ -40,7 +40,7 @@ errorCodes:
       additionalProperties: false
       properties:
         path: { type: string }
-  - code: did-management/did/register:invalid_log
+  - code: did-management/did/register:invalidLog
     meaning: The `didData` payload failed structural or cryptographic-proof validation for the declared `method`.
     retryable: false
     detailsSchema:
@@ -48,7 +48,7 @@ errorCodes:
       additionalProperties: false
       properties:
         reason: { type: string }
-  - code: did-management/did/register:host_mismatch
+  - code: did-management/did/register:hostMismatch
     meaning: The host segment embedded in the log's DID identifier does not match this hosting service or any configured hosting domain.
     retryable: false
     detailsSchema:
@@ -57,8 +57,8 @@ errorCodes:
       properties:
         embeddedHost: { type: string }
         configuredHosts: { type: array, items: { type: string } }
-  - code: did-management/did/register:invalid_path
-    meaning: The submitted `path` violates the host's path grammar (length bounds, character set, reserved roots). Mirrors `did-management/did/check-name:invalid_path` for the atomic register flow.
+  - code: did-management/did/register:invalidPath
+    meaning: The submitted `path` violates the host's path grammar (length bounds, character set, reserved roots). Mirrors `did-management/did/check-name:invalidPath` for the atomic register flow.
     retryable: false
     detailsSchema:
       type: object
@@ -66,7 +66,7 @@ errorCodes:
       properties:
         path: { type: string }
         reason: { type: string }
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain on this consumer. See [the category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
     detailsSchema:
@@ -113,9 +113,9 @@ A conforming **consumer** (the hosting service) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Validate `payload.didData` against the declared `payload.method` — for `webvh`, the consumer walks the log chain and verifies each entry's signature against `parameters.updateKeys`; for `web`, the consumer verifies the document parses as a DID document and embeds an `id` consistent with this host.
-3. Extract the host segment from the embedded DID identifier and refuse the register when it does not match the hosting service's configured hosting domains (`did-management/did/register:host_mismatch`).
+3. Extract the host segment from the embedded DID identifier and refuse the register when it does not match the hosting service's configured hosting domains (`did-management/did/register:hostMismatch`).
 4. Resolve the hosting domain to record on the slot: explicit `payload.domain` → caller's ACL default → system default. Persist the resolved value on the new record so subsequent reads carry it.
-5. On a path collision with `force === false`, respond with `did-management/did/register:path_taken`.
+5. On a path collision with `force === false`, respond with `did-management/did/register:pathTaken`.
 6. On acceptance, commit the slot, log content, and owner-index entry in a single atomic batch — a resolver MUST see either the prior state or the new state, never an intermediate.
 
 ## Definitions

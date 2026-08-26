@@ -32,19 +32,19 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/authenticate:challenge_not_found
+  - code: auth/authenticate:challengeNotFound
     meaning: The `sessionId` does not refer to any challenge the auth service issued, or the challenge was already consumed.
     retryable: false
-  - code: auth/authenticate:challenge_expired
+  - code: auth/authenticate:challengeExpired
     meaning: The challenge's expiresAt is in the past.
     retryable: true
-  - code: auth/authenticate:challenge_mismatch
+  - code: auth/authenticate:challengeMismatch
     meaning: The presented `challenge` value does not equal the one the auth service bound to `sessionId`.
     retryable: false
-  - code: auth/authenticate:subject_mismatch
+  - code: auth/authenticate:subjectMismatch
     meaning: The `issuer` of the authenticate document does not equal the `subject` the challenge was bound to.
     retryable: false
-  - code: auth/authenticate:scope_denied
+  - code: auth/authenticate:scopeDenied
     meaning: One or more requested scopes were refused by the consumer's authorization policy. `details.refused` MAY enumerate the denied scopes.
     retryable: false
     detailsSchema:
@@ -86,12 +86,12 @@ A conforming **producer** (the subject) **MUST**:
 A conforming **consumer** (the auth service) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`. The proof being absent or invalid is a hard failure.
-2. Look up the server-side binding for `payload.sessionId`. If no binding exists, respond with `auth/authenticate:challenge_not_found`.
-3. Compare the binding's stored challenge to `payload.challenge` using a constant-time comparator. Mismatch → `auth/authenticate:challenge_mismatch`.
-4. Reject expired bindings with `auth/authenticate:challenge_expired`.
-5. When the challenge was issued with a bound `subject`, verify the document's `issuer` equals that subject. Mismatch → `auth/authenticate:subject_mismatch`.
+2. Look up the server-side binding for `payload.sessionId`. If no binding exists, respond with `auth/authenticate:challengeNotFound`.
+3. Compare the binding's stored challenge to `payload.challenge` using a constant-time comparator. Mismatch → `auth/authenticate:challengeMismatch`.
+4. Reject expired bindings with `auth/authenticate:challengeExpired`.
+5. When the challenge was issued with a bound `subject`, verify the document's `issuer` equals that subject. Mismatch → `auth/authenticate:subjectMismatch`.
 6. Consume the challenge. The same `(sessionId, challenge)` pair MUST NOT be honored a second time, even on identical authenticate documents.
-7. Apply the consumer's authorization policy. Refused scopes → `auth/authenticate:scope_denied` with `details.refused`.
+7. Apply the consumer's authorization policy. Refused scopes → `auth/authenticate:scopeDenied` with `details.refused`.
 8. Issue a `#response` document carrying a freshly-created `Session` (with `amr` containing at least `"did"` and `acr` defaulting to `"aal1"`) and a `TokenBundle`.
 
 ## Definitions
@@ -208,7 +208,7 @@ Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not
   "recipient": "did:web:alice.example",
   "issuedAt": "2026-05-23T10:00:31Z",
   "payload": {
-    "code": "auth/authenticate:challenge_not_found",
+    "code": "auth/authenticate:challengeNotFound",
     "message": "The sessionId ec5d3c89… does not correspond to an active challenge."
   }
 }
@@ -220,7 +220,7 @@ The framework `proof` carries the entire trust burden. Consumers MUST NOT take a
 
 **Replay across challenges.** A successful authenticate consumes its challenge; consumers MUST persist the consumption marker for at least `challenge.expiresAt` so a replay arriving late can't slip through after the binding row would otherwise be cleaned up.
 
-**Binding skew.** If the consumer issued a subject-agnostic challenge, the `issuer` of the authenticate document is whichever VID the producer chose. The consumer's authorization policy decides whether that VID is recognized — `subject_mismatch` is reserved for the bound-subject case.
+**Binding skew.** If the consumer issued a subject-agnostic challenge, the `issuer` of the authenticate document is whichever VID the producer chose. The consumer's authorization policy decides whether that VID is recognized — `subjectMismatch` is reserved for the bound-subject case.
 
 **Scope downgrade.** The consumer MUST treat `payload.scope` as a *request*, not a grant. Returning a `TokenBundle.scope` narrower than the request is valid and SHOULD NOT trigger an error. Returning broader scope than requested is a policy decision the consumer documents in its trust framework.
 

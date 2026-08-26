@@ -36,10 +36,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/enroll/invite:subject_already_enrolled
+  - code: auth/passkey/enroll/invite:subjectAlreadyEnrolled
     meaning: The invitee VID already has a passkey credential on file. Use auth/passkey/enroll/start (with the existing session) instead.
     retryable: false
-  - code: auth/passkey/enroll/invite:role_not_permitted
+  - code: auth/passkey/enroll/invite:roleNotPermitted
     meaning: The administrator's authority does not allow assigning the requested role.
     retryable: false
 related:
@@ -75,8 +75,8 @@ A conforming **producer** (the administrator) **MUST**:
 A conforming **consumer** (the auth service) **MUST**:
 
 1. Validate the document and verify the `proof`.
-2. Authorize the administrator: their role MUST permit issuing invites for the requested role/scopes. Refuse with `role_not_permitted` otherwise.
-3. Verify the invitee VID is not already enrolled. Refuse with `subject_already_enrolled`.
+2. Authorize the administrator: their role MUST permit issuing invites for the requested role/scopes. Refuse with `roleNotPermitted` otherwise.
+3. Verify the invitee VID is not already enrolled. Refuse with `subjectAlreadyEnrolled`.
 4. Generate a single-use `token` with ≥128 bits of entropy and a `url` containing it (typical: `${auth_base_url}/enroll?token=…`).
 5. Bind the token server-side to: the invitee VID, the role/scopes, the administrator's VID (for audit), an expiry derived from `payload.ttl` (default 1 h if unspecified).
 6. Return a `#response` document carrying `{ invite, subject, expiresAt }`.

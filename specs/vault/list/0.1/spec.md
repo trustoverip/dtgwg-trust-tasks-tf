@@ -32,13 +32,13 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vault/list:context_not_found
+  - code: vault/list:contextNotFound
     meaning: The `contextId` filter does not match any context the maintainer knows about. Distinguished from an empty result so consumers can tell "no entries" from "wrong context id".
     retryable: false
-  - code: vault/list:permission_denied
+  - code: vault/list:permissionDenied
     meaning: The consumer is authenticated but lacks the VaultRead capability for the requested context (or for any context if `contextId` was omitted).
     retryable: false
-  - code: vault/list:filter_conflict
+  - code: vault/list:filterConflict
     meaning: The supplied filter combination is invalid (e.g. both `usedSince` and `neverUsed` set).
     retryable: false
     detailsSchema:
@@ -48,7 +48,7 @@ errorCodes:
         reason:
           type: string
           enum: ["used_since_with_never_used", "page_size_above_ceiling", "cursor_invalid"]
-  - code: vault/list:cursor_invalid
+  - code: vault/list:cursorInvalid
     meaning: The supplied `cursor` cannot be honoured (expired, malformed, or issued by a maintainer state the current maintainer no longer recognises). Consumers SHOULD retry from the first page without a cursor.
     retryable: true
 ---
@@ -79,9 +79,9 @@ A conforming **producer** (the vault consumer) **MUST**:
 A conforming **consumer** (the vault maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). When a `proof` is present, verify it.
-2. Authenticate and authorise the requesting consumer against its ACL. If the consumer lacks `VaultRead` for the requested scope → `vault/list:permission_denied`.
-3. If `contextId` is supplied and unknown → `vault/list:context_not_found`. (The maintainer SHOULD NOT silently degrade to "all contexts" when a `contextId` is supplied — explicit feedback prevents the consumer from believing it queried a narrower scope than it actually did.)
-4. If `usedSince` and `neverUsed` are both present → `vault/list:filter_conflict` with `details.reason = "used_since_with_never_used"`.
+2. Authenticate and authorise the requesting consumer against its ACL. If the consumer lacks `VaultRead` for the requested scope → `vault/list:permissionDenied`.
+3. If `contextId` is supplied and unknown → `vault/list:contextNotFound`. (The maintainer SHOULD NOT silently degrade to "all contexts" when a `contextId` is supplied — explicit feedback prevents the consumer from believing it queried a narrower scope than it actually did.)
+4. If `usedSince` and `neverUsed` are both present → `vault/list:filterConflict` with `details.reason = "used_since_with_never_used"`.
 5. Apply the filter set as the intersection of all populated criteria. For target filters (`targetOriginPrefix`, `targetDid`, `targetIosBundleId`, `targetAndroidPackage`), an entry matches when AT LEAST ONE of its `targets[]` entries satisfies the corresponding criterion. Return the resulting `entries` in metadata-only view (per the `VaultEntry` shared schema). **MUST NOT** populate any field that would carry secret material.
 6. Set `truncated: true` and supply a `cursor` when more pages are available AND the maintainer supports pagination from this point. Set `truncated: true` with no `cursor` when more entries exist but pagination is unsupported beyond this page.
 7. When redacting fields from `VaultEntry` per the consumer's policy (e.g. `lastUsedAt` for a low-trust Service consumer), list the redacted field names in `redactedFields` so the consumer's UI can correctly differentiate "absent" from "redacted".
@@ -278,7 +278,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/vault/l
 
 **Enumeration as signal.** A consumer that can list entries learns the existence, count, and timing of every credential in scope. Maintainers issuing `VaultRead` to a Service consumer (AI agent, sync daemon) SHOULD narrow the consumer's scope to a specific context or target set rather than grant blanket read.
 
-**Cursor stability.** Cursors MUST NOT encode secret state; the maintainer MUST assume a cursor may be persisted by the consumer and replayed weeks later. Recommended implementation: opaque pointer to a server-side query snapshot with a short TTL, returning `cursor_invalid` after expiry.
+**Cursor stability.** Cursors MUST NOT encode secret state; the maintainer MUST assume a cursor may be persisted by the consumer and replayed weeks later. Recommended implementation: opaque pointer to a server-side query snapshot with a short TTL, returning `cursorInvalid` after expiry.
 
 **Timing-data exposure.** `lastUsedAt`, `passwordChangedAt`, and `breachedAt` are side-channels revealing behaviour patterns and risk posture. When the requesting consumer is lower-trust (e.g. a third-party Service), maintainers SHOULD redact these to hour or day precision, or omit them entirely and list the omissions in `redactedFields`.
 

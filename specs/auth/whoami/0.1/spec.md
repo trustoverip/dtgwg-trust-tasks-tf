@@ -31,7 +31,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: auth/whoami:no_session
+  - code: auth/whoami:noSession
     meaning: The producer's subject has no active session with the auth service.
     retryable: false
 related:
@@ -67,7 +67,7 @@ A conforming **producer** **MUST**:
 A conforming **consumer** (the auth service) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Look up the most recently-issued active session whose `subject` equals the document `issuer`. If none, respond with `auth/whoami:no_session`.
+2. Look up the most recently-issued active session whose `subject` equals the document `issuer`. If none, respond with `auth/whoami:noSession`.
 3. Return a `#response` document carrying `{ session, roles?, scopes? }`. Consumers MAY omit `roles` / `scopes` when their model has no concept of either; the `session` field is REQUIRED.
 
 A consumer **MAY** return information about a session distinct from the *most recently-issued* one when its policy is more specific (e.g. tying the introspection to whichever access token was used at the transport layer). The framework deliberately does not pin a multi-session selection policy.
@@ -140,7 +140,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/wh
   "recipient": "did:web:alice.example",
   "issuedAt": "2026-05-23T10:15:01Z",
   "payload": {
-    "code": "auth/whoami:no_session",
+    "code": "auth/whoami:noSession",
     "message": "No active session for did:web:alice.example."
   }
 }

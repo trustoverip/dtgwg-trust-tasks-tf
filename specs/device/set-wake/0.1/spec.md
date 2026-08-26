@@ -34,13 +34,13 @@ related:
   - device/register
   - device/heartbeat
 errorCodes:
-  - code: device/set-wake:not_registered
+  - code: device/set-wake:notRegistered
     meaning: The issuer's DID has no DeviceBinding. The device MUST complete device/register before setting a wake channel.
     retryable: false
-  - code: device/set-wake:invalid_handle
+  - code: device/set-wake:invalidHandle
     meaning: The supplied WakeHandle is malformed, or the named gateway rejected it as unknown/expired when the VTA attempted to provision the allowlist.
     retryable: false
-  - code: device/set-wake:gateway_unreachable
+  - code: device/set-wake:gatewayUnreachable
     meaning: The VTA could not reach or authenticate to the named push gateway to provision the trigger allowlist. The handle is not recorded; the device SHOULD retry.
     retryable: true
 ---
@@ -57,7 +57,7 @@ The task is **idempotent**: a device re-sends it whenever its platform token rot
 
 A conforming **producer** (the device) **MUST**:
 
-1. Have completed [`device/register`](../../register/0.1/spec.md) — the issuer's DID MUST already have a DeviceBinding, else `device/set-wake:not_registered`.
+1. Have completed [`device/register`](../../register/0.1/spec.md) — the issuer's DID MUST already have a DeviceBinding, else `device/set-wake:notRegistered`.
 2. Have registered its platform push token with a push gateway and obtained a [`WakeHandle`](../../_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) **before** issuing this task. The device **MUST NOT** place any platform push token in this payload — only the opaque handle.
 3. Supply `wakeHandle` to set or replace the wake channel, or omit it to clear the channel (the device becomes non-wakeable; the VTA empties the gateway allowlist).
 4. Carry a `proof`.
@@ -65,9 +65,9 @@ A conforming **producer** (the device) **MUST**:
 
 A conforming **consumer** (the VTA / vault maintainer) **MUST**:
 
-1. Verify proof; the producer's DID MUST be in the ACL with a DeviceBinding. If not → `device/set-wake:not_registered`.
+1. Verify proof; the producer's DID MUST be in the ACL with a DeviceBinding. If not → `device/set-wake:notRegistered`.
 2. Compute the [`WakeTriggerPolicy`](../../_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) from its own configuration — **this is VTA-owned policy, not device-supplied.** The default allowlist is the device's mediator DID (queue-driven wake) together with the VTA's own DID (policy-driven wake); operators MAY narrow or widen it by policy. A device-supplied `suggestedTriggers` hint, if present, is advisory only and the VTA MAY ignore it.
-3. Provision the allowlist to the gateway named in the handle, authenticating as the VTA. The gateway records `handle → allowedTriggers`. On unreachable/refused gateway → `device/set-wake:gateway_unreachable` (retryable) or `device/set-wake:invalid_handle` (terminal) per the gateway's response.
+3. Provision the allowlist to the gateway named in the handle, authenticating as the VTA. The gateway records `handle → allowedTriggers`. On unreachable/refused gateway → `device/set-wake:gatewayUnreachable` (retryable) or `device/set-wake:invalidHandle` (terminal) per the gateway's response.
 4. Record the handle against the DeviceBinding and set `pushCapable = true` (or `false` when cleared). The VTA stores the **handle and the allowlist, never the token**.
 5. Return the effective `triggerPolicy` it provisioned, so the device can see who is authorized to wake it.
 

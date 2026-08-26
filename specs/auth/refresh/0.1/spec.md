@@ -31,16 +31,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/refresh:token_not_found
+  - code: auth/refresh:tokenNotFound
     meaning: The refreshToken does not refer to any session the auth service issued.
     retryable: false
-  - code: auth/refresh:token_expired
+  - code: auth/refresh:tokenExpired
     meaning: The refreshToken's refreshExpiresIn has elapsed.
     retryable: false
-  - code: auth/refresh:token_revoked
+  - code: auth/refresh:tokenRevoked
     meaning: The refreshToken was explicitly invalidated (typically via auth/revoke-session, or by a step-up event that rotated all session refresh tokens).
     retryable: false
-  - code: auth/refresh:scope_widening_refused
+  - code: auth/refresh:scopeWideningRefused
     meaning: The requested scope exceeds the original session's scope. Refresh MUST NOT broaden privilege.
     retryable: false
     detailsSchema:
@@ -74,15 +74,15 @@ A conforming **producer** (the subject) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/auth/refresh/0.1`, with itself as `issuer` and the auth service as `recipient`.
 2. Populate `payload.refreshToken` with the value previously received in a `TokenBundle`.
-3. **MAY** include a `payload.scope` request, which MUST be a (non-strict) subset of the session's current scope. A consumer that detects widening MUST respond with `auth/refresh:scope_widening_refused`.
+3. **MAY** include a `payload.scope` request, which MUST be a (non-strict) subset of the session's current scope. A consumer that detects widening MUST respond with `auth/refresh:scopeWideningRefused`.
 
 A conforming **consumer** (the auth service) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). If a `proof` is present it is verified; if absent it is not an error.
-2. Look up the session associated with `payload.refreshToken`. Unknown → `auth/refresh:token_not_found`. Expired → `auth/refresh:token_expired`. Revoked → `auth/refresh:token_revoked`.
+2. Look up the session associated with `payload.refreshToken`. Unknown → `auth/refresh:tokenNotFound`. Expired → `auth/refresh:tokenExpired`. Revoked → `auth/refresh:tokenRevoked`.
 3. Issue a fresh access token. The consumer's policy decides whether to also rotate the refresh token: rotation is RECOMMENDED for tokens older than 24 h or after any suspicious-activity signal.
 4. Preserve `session.amr` and `session.acr` across the refresh — refresh does not elevate or downgrade AAL.
-5. Refuse with `auth/refresh:scope_widening_refused` when `payload.scope` ⊄ session scope.
+5. Refuse with `auth/refresh:scopeWideningRefused` when `payload.scope` ⊄ session scope.
 
 ## Authorization
 
@@ -195,10 +195,10 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/re
 
 **Token theft.** A stolen refresh token grants the attacker access until detected. Consumers SHOULD implement *refresh-token rotation*: each refresh consumes the presented token and issues a new one, and seeing the original token used again after a successful refresh is a strong signal of theft. The recommended response is to revoke the entire session.
 
-**Scope monotonicity.** Refresh MUST NOT broaden scope; widening is reserved for re-authentication. The `scope_widening_refused` error makes this explicit.
+**Scope monotonicity.** Refresh MUST NOT broaden scope; widening is reserved for re-authentication. The `scopeWideningRefused` error makes this explicit.
 
 **Transport confidentiality.** The refresh token is bearer material — both in the request and in the response. Consumers MUST require transport-level confidentiality (TLS, DIDComm authcrypt) for this exchange.
 
-**Audit.** Refresh events are usually too frequent for individual audit logging, but rotation events and `token_revoked` responses MUST be logged — they signal session lifecycle changes that a future incident investigation will need.
+**Audit.** Refresh events are usually too frequent for individual audit logging, but rotation events and `tokenRevoked` responses MUST be logged — they signal session lifecycle changes that a future incident investigation will need.
 
 The optional `ext` extension is part of the producer's signed surface when a proof is included.

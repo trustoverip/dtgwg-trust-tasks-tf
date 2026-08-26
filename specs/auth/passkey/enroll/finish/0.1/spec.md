@@ -32,16 +32,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/enroll/finish:enrollment_not_found
+  - code: auth/passkey/enroll/finish:enrollmentNotFound
     meaning: The `enrollmentId` does not refer to any active enrollment ceremony.
     retryable: false
-  - code: auth/passkey/enroll/finish:enrollment_expired
+  - code: auth/passkey/enroll/finish:enrollmentExpired
     meaning: The enrollment's start-time expiry has elapsed.
     retryable: true
-  - code: auth/passkey/enroll/finish:subject_mismatch
+  - code: auth/passkey/enroll/finish:subjectMismatch
     meaning: The producer's VID differs from the VID the start ceremony was issued to.
     retryable: false
-  - code: auth/passkey/enroll/finish:attestation_invalid
+  - code: auth/passkey/enroll/finish:attestationInvalid
     meaning: The WebAuthn attestation failed verification (challenge mismatch, signature failure, unsupported algorithm, etc.). `details.reason` carries a machine-readable hint.
     retryable: false
     detailsSchema:
@@ -80,13 +80,13 @@ A conforming **producer** **MUST**:
 A conforming **consumer** **MUST**:
 
 1. Verify the document's `proof`.
-2. Look up the enrollment server-side via `payload.enrollmentId`. Unknown → `enrollment_not_found`. Expired → `enrollment_expired`. Mismatched subject → `subject_mismatch`.
+2. Look up the enrollment server-side via `payload.enrollmentId`. Unknown → `enrollmentNotFound`. Expired → `enrollmentExpired`. Mismatched subject → `subjectMismatch`.
 3. Perform full WebAuthn Level 2 §7.1 attestation verification:
    - Decode `clientDataJSON`; verify `type === "webauthn.create"`, `challenge` matches the bound challenge, `origin` matches the consumer's expected origin.
    - Verify `rpIdHash` in `authData` matches the consumer's RP ID.
    - Verify the attestation signature per the format declared in `attestationObject`.
    - Verify the credential public key algorithm is in the start ceremony's accepted `pubKeyCredParams`.
-4. On any verification step failure, respond with `attestation_invalid` and `details.reason` set to the specific gate that failed.
+4. On any verification step failure, respond with `attestationInvalid` and `details.reason` set to the specific gate that failed.
 5. Persist the credential (id, public key, counter, subject VID, deviceLabel) and consume the enrollment record so the same `enrollmentId` cannot be replayed.
 
 ## Authorization
@@ -98,9 +98,9 @@ targets 0.1, where the declaration is not yet required.*
 The authorization evidence for this task is **the enrollment record named by
 `enrollmentId`, together with the subject it was bound to at ceremony start**.
 The consumer looks the record up server-side; an unknown or expired record
-authorizes nothing (`enrollment_not_found`, `enrollment_expired`), and a record
+authorizes nothing (`enrollmentNotFound`, `enrollmentExpired`), and a record
 whose bound subject is not the one presenting is refused with
-`subject_mismatch`. The record is consumed on success, so it authorizes exactly
+`subjectMismatch`. The record is consumed on success, so it authorizes exactly
 one enrollment.
 
 The document `proof` is a distinct check and is not the authorization. It
@@ -108,7 +108,7 @@ attributes the finish request to a signer, and the producer is required to
 carry one whose `verificationMethod` resolves to the same VID the start
 ceremony was bound to — but per
 [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) item 10, establishing
-that the signer is that VID is what makes the `subject_mismatch` comparison
+that the signer is that VID is what makes the `subjectMismatch` comparison
 possible, not a substitute for it. Neither is the WebAuthn attestation
 verification: it establishes that the credential is genuine and well-formed,
 which is a property of the authenticator, not an entitlement to enroll it

@@ -33,10 +33,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vta/memory/put:context_forbidden
+  - code: vta/memory/put:contextForbidden
     meaning: The caller is not permitted to write memory in the named context.
     retryable: false
-  - code: vta/memory/put:value_too_large
+  - code: vta/memory/put:valueTooLarge
     meaning: The value exceeds the VTA's per-item limit.
     retryable: false
 related:
@@ -75,7 +75,7 @@ A conforming **producer** (the agent) **MUST**:
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate + verify the `proof`.
-2. Refuse with `vta/memory/put:context_forbidden` when the caller lacks access to `payload.contextId` (the same context ACL that gates keys).
+2. Refuse with `vta/memory/put:contextForbidden` when the caller lacks access to `payload.contextId` (the same context ACL that gates keys).
 3. Upsert the item under `(contextId, key)` and return the `#response`.
 
 ## Definitions

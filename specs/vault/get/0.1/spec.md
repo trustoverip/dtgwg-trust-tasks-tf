@@ -30,10 +30,10 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vault/get:not_found
+  - code: vault/get:notFound
     meaning: No entry with this id exists in any context the consumer can read.
     retryable: false
-  - code: vault/get:permission_denied
+  - code: vault/get:permissionDenied
     meaning: The entry exists but the consumer lacks VaultRead on its context.
     retryable: false
 ---
@@ -46,9 +46,9 @@ Like `vault/list/0.1`, this task **never returns secret material**. Use `vault/r
 
 ## Conformance
 
-A conforming **producer** **MUST** populate `payload.id` with a non-empty entry identifier. A conforming **consumer** **MUST** authorise the requesting consumer against the context the entry belongs to, return `vault/get:not_found` when the entry is absent OR the consumer lacks visibility into its context (so existence cannot be probed by enumeration), and return the entry in the metadata-only view per the shared `VaultEntry` schema.
+A conforming **producer** **MUST** populate `payload.id` with a non-empty entry identifier. A conforming **consumer** **MUST** authorise the requesting consumer against the context the entry belongs to, return `vault/get:notFound` when the entry is absent OR the consumer lacks visibility into its context (so existence cannot be probed by enumeration), and return the entry in the metadata-only view per the shared `VaultEntry` schema.
 
-Maintainers MAY return `vault/get:permission_denied` instead of `vault/get:not_found` only when the consumer can already prove existence via another channel (e.g. the entry id appeared in a prior list response with redacted fields). The default is to conflate the two to deny enumeration.
+Maintainers MAY return `vault/get:permissionDenied` instead of `vault/get:notFound` only when the consumer can already prove existence via another channel (e.g. the entry id appeared in a prior list response with redacted fields). The default is to conflate the two to deny enumeration.
 
 ## Payload
 
@@ -64,6 +64,6 @@ Maintainers MAY return `vault/get:permission_denied` instead of `vault/get:not_f
 
 ## Security & Privacy
 
-**Enumeration resistance.** Conflating `not_found` and `permission_denied` is the default for a reason: a consumer that can distinguish them can probe id space to map who has what. Maintainers operating in lower-trust environments (e.g. publicly-listed vaults) MUST keep them conflated.
+**Enumeration resistance.** Conflating `notFound` and `permissionDenied` is the default for a reason: a consumer that can distinguish them can probe id space to map who has what. Maintainers operating in lower-trust environments (e.g. publicly-listed vaults) MUST keep them conflated.
 
 Other guidance: see the Security & Privacy section of `vault/list/0.1`. The same secret-leakage, timing-data, and audit considerations apply here, scoped to a single entry.

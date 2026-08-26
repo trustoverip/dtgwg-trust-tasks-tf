@@ -31,10 +31,10 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: did-management/did/info:not_found
+  - code: did-management/did/info:notFound
     meaning: No record exists for the requested mnemonic.
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain on this consumer. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related:
@@ -52,7 +52,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ## Conformance
 
-The producer emits `type: https://trusttasks.org/spec/did-management/did/info/0.1` with `payload.mnemonic`. The consumer validates per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements), looks up the record, and either returns it (success) or replies with `did-management/did/info:not_found`.
+The producer emits `type: https://trusttasks.org/spec/did-management/did/info/0.1` with `payload.mnemonic`. The consumer validates per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements), looks up the record, and either returns it (success) or replies with `did-management/did/info:notFound`.
 
 ## Definitions
 

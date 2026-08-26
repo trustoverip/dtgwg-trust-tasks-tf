@@ -27,10 +27,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: webvh/witness/publish:not_owner
+  - code: webvh/witness/publish:notOwner
     meaning: The caller is not the owner of the named slot.
     retryable: false
-  - code: webvh/witness/publish:invalid_witness
+  - code: webvh/witness/publish:invalidWitness
     meaning: The supplied `witness` object failed structural validation (empty object, missing signature, or signature did not verify against the expected witness DID).
     retryable: false
     detailsSchema:
@@ -38,7 +38,7 @@ errorCodes:
       additionalProperties: false
       properties:
         reason: { type: string }
-  - code: webvh/witness/publish:slot_not_found
+  - code: webvh/witness/publish:slotNotFound
     meaning: The named `mnemonic` does not exist on this hosting service.
     retryable: false
 related:
@@ -62,8 +62,8 @@ Draft.
 
 Producer (DID owner) MUST emit `type: https://trusttasks.org/spec/webvh/witness/publish/0.1` with `payload.mnemonic` (the slot identifier) and `payload.witness` (the witness proof as a JSON object). Consumer (hosting service) MUST:
 
-1. Verify the caller is the owner of `mnemonic`, else reject with `webvh/witness/publish:not_owner`.
-2. Validate that `witness` is a non-empty object conforming to the did:webvh witness-proof shape and that its signature verifies against the configured witness DID(s) for the slot's domain, else reject with `webvh/witness/publish:invalid_witness`.
+1. Verify the caller is the owner of `mnemonic`, else reject with `webvh/witness/publish:notOwner`.
+2. Validate that `witness` is a non-empty object conforming to the did:webvh witness-proof shape and that its signature verifies against the configured witness DID(s) for the slot's domain, else reject with `webvh/witness/publish:invalidWitness`.
 3. Persist the witness proof as the slot's canonical `did-witness.json` and respond with the URL at which it is served.
 4. Trigger fan-out to registered servers via `webvh/sync/update`.
 
