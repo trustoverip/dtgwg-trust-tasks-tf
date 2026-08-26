@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Update Account
 summary: An administrator applies a partial update to a served account — role, access-control capabilities, and queue limits in one task; a member omitted leaves that facet of the account unchanged.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

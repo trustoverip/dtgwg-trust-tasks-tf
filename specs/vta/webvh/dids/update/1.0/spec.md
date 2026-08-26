@@ -4,7 +4,7 @@ version: "1.0"
 title: WebVH DID Update
 summary: A caller asks a Verifiable Trust Agent to publish a new entry in a did:webvh log whose update key the agent holds. The caller proposes the document; the agent decides, and signs.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - did-webvh

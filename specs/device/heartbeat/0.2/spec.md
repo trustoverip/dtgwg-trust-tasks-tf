@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Device — Heartbeat
 summary: Periodic check-in from a Companion or Service that refreshes lastSeenAt, carries optional state digests, and lets the maintainer deliver queued operations (queued wipes especially).
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device

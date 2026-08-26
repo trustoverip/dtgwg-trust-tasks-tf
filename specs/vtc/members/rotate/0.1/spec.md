@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Rotate
 summary: Complete a member DID rotation by proving control of the old and new keys; re-issues credentials to the new DID.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

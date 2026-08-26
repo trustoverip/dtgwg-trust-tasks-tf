@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — List
 summary: A bridge fetches the consent grants it should enforce, so the steady-state inbound path is a local lookup with no per-message round-trip.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

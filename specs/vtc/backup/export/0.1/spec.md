@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Backup — Export
 summary: Export a Verifiable Trust Community's full state as a single password-encrypted envelope (Argon2id + AES-256-GCM), optionally including the audit log.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

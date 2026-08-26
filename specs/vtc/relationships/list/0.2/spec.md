@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Relationships — List
 summary: List the Verifiable Relationship Credentials published about a community member.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

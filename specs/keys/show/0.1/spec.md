@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Show
 summary: A producer asks a key custodian for the record it holds for one key, receiving the public half and lifecycle state.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys

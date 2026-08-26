@@ -4,7 +4,7 @@ version: "0.1"
 title: Vault — Delete
 summary: A vault consumer tombstones a vault entry; the maintainer keeps the tombstone for a grace period so late-syncing consumers wipe their caches before garbage collection.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault

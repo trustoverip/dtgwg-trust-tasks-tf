@@ -4,7 +4,7 @@ version: "0.1"
 title: ACL — Revoke
 summary: A revoking party records, in a verifiable form, that a subject has been removed from an access-control list, or that some of the subject's scopes have been withdrawn.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - acl

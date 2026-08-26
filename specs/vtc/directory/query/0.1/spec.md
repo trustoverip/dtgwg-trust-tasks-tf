@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Directory — Query
 summary: Read the fields a community member has consented to publish, projected through the community's directory policy rather than read straight from the record.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH Servers — Retire Orphan
 summary: A producer asks an agent to remove a slot from a hosting server after the agent has confirmed for itself that the slot is orphaned — served by the host, with no record in the agent that controls it.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - webvh

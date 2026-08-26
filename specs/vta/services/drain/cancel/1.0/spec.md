@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services Drain — Cancel
 summary: An operator ends a drain early, accepting the loss of anything still in flight.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

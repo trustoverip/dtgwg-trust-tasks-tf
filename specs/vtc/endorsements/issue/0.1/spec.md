@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsements — Issue
 summary: A community issues a Verifiable Endorsement Credential of a registered type to a subject, allocating a published status-list slot so foreign verifiers can check revocation.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

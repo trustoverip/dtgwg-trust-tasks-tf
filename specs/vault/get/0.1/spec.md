@@ -4,7 +4,7 @@ version: "0.1"
 title: Vault — Get
 summary: A vault consumer fetches the metadata view of a single vault entry by id; secret material is never returned.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault

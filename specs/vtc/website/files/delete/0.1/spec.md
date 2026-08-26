@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Website — File Delete
 summary: Delete a single file from a community's website root.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, website, files, delete]
 authors:

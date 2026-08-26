@@ -4,7 +4,7 @@ version: "0.1"
 title: Registry — Delete Record
 summary: An administrator deletes, in a verifiable form, a recognition or authorization record from a trust registry.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - trust-registry

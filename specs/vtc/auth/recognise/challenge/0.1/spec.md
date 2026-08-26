@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Auth Recognise — Challenge
 summary: Issue the single-use nonce a foreign community's member binds into the presentation they use to obtain a cross-community session.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vtc

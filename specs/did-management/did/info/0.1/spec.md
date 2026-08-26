@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Info
 summary: A caller reads the canonical metadata record the hosting service holds for a single DID slot.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - did

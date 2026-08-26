@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Add Account
 summary: An administrator registers a new served account at the mediator, declaring the account's DID and optional role, access-control capabilities, and queue limits.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

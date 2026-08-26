@@ -4,7 +4,7 @@ version: "0.1"
 title: Config — Restart
 summary: Request a graceful restart so a process supervisor brings the maintainer back up with restart-gated configuration applied; refuses when no supervisor is present.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - config

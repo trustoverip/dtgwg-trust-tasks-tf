@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Passkey-VM — Enroll Challenge
 summary: An administrator of a VTA-managed DID requests a fresh WebAuthn registration challenge so a browser can create a passkey to be published as a verificationMethod on that DID.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vta

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Passkey-VM — List
 summary: An administrator enumerates the passkey verificationMethods currently published on a VTA-managed DID.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vta

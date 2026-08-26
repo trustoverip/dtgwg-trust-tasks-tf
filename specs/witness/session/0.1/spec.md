@@ -4,7 +4,7 @@ version: "0.1"
 title: Witness — Session
 summary: Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. The witness's response issues the session challenge; this document's id is the value that party's Verifiable Witness Credential later carries as taskContext.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - witness

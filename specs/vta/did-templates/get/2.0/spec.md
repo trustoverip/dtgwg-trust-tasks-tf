@@ -4,7 +4,7 @@ version: "2.0"
 title: VTA DID-Template — Get
 summary: An authenticated caller fetches one DID template by name — global when contextId is absent, context-scoped when present.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

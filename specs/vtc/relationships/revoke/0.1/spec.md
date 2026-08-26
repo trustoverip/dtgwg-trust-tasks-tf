@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Relationships — Revoke
 summary: The issuer revokes a Verifiable Relationship Credential they previously published.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

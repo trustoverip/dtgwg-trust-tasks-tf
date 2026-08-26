@@ -4,7 +4,7 @@ version: "2.0"
 title: VTA DID-Template — Create
 summary: An administrator uploads a new DID template — global (super-admin) when contextId is absent, context-scoped (context admin) when present.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

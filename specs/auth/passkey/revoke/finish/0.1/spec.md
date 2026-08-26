@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Passkey Revoke (finish)
 summary: A subject submits the user-verification assertion that completes a passkey revocation; on success the credential is unbound permanently.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

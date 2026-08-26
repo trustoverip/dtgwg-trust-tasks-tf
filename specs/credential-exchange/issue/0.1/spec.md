@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Issue
 summary: Issuer to holder — the issued credential, either cleartext to a known holder or as a sealed bundle only the holder can open.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

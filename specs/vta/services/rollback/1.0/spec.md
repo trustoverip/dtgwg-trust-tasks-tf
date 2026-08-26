@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Rollback
 summary: An operator reverts a transport to its previous settings by writing a new log entry.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

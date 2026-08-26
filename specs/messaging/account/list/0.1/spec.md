@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — List Accounts
 summary: A requester lists the accounts served by the mediator, paginated by an opaque cursor and a bounded page limit.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

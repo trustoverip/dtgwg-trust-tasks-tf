@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Remove Agent Name
 summary: Release an agent name from a hosted DID. The name stops resolving and becomes claimable by anyone. The submitted DID document must no longer claim it via `alsoKnownAs`.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, agent-name, alsoKnownAs, release]
 authors:

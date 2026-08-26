@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Register
 summary: A DID owner asks a hosting service to atomically claim a path and publish a signed DID log under it in one step, replacing the two-step reserve-then-publish flow for the common case.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - did

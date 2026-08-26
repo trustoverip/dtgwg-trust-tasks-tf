@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Delete
 summary: An administrator deletes a context and everything scoped to it; refused by default while it still holds anything.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

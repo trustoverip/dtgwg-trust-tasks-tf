@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Agent-Name — Remove"
 summary: "An administrator releases an agent name, making it available to anyone else."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

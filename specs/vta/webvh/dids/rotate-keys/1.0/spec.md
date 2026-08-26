@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — Rotate Keys"
 summary: "An administrator rotates a did:webvh's keys by appending a log entry that moves to the pre-committed successor."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Join-Requests — Submit
 summary: An applicant submits a request to join a Verifiable Trust Community, presenting the credentials the community's join policy requires.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

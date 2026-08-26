@@ -4,7 +4,7 @@ version: "0.1"
 title: Vault — Proxy Login
 summary: A vault consumer asks the vault maintainer to perform a login at the bound third-party site on the holder's behalf, returning a session blob the consumer can use without ever seeing the long-term credential.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault

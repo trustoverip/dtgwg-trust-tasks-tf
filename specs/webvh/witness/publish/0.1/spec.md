@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH — Witness Publish
 summary: A did:webvh owner publishes a witness-signed proof over a log entry so the hosting service can append it to the DID's permanent witness file.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [webvh, witness, oracle, did, proof]
 authors:

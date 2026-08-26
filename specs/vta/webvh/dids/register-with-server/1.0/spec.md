@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — Register With Server"
 summary: "A super-administrator hands an existing DID's log to a hosting server so it is served there."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

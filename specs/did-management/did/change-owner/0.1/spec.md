@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Change Owner
 summary: The current owner of a DID slot transfers ownership to a different VID.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, change-owner, transfer]
 authors:

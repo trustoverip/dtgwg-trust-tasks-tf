@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Join-Requests — Show
 summary: Fetch one join request by id, including the applicant's presentation and the recorded policy verdict.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

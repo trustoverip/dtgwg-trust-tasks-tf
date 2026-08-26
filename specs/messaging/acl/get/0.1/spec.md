@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Get ACL
 summary: An administrator reads the mediator's access-control capability flags for one or more served accounts, retrieving the full realized MediatorAcl capability set for each known account in a single batch query.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

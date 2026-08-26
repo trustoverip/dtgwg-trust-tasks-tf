@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Update Access List
 summary: An administrator modifies a served account's access list in one task — clear it, add entries, and remove entries — replacing the separate add, remove, and clear tasks.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Set Default
 summary: An administrator promotes a hosting domain to be the system default — every operation that omits an explicit domain resolves to this one (subject to the per-caller ACL default tier in front of it).
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, set-default, admin]
 authors:

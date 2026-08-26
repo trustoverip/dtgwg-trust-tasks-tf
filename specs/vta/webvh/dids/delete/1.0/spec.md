@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — Delete"
 summary: "An administrator deletes a did:webvh the VTA holds; the published log may outlive the deletion, and the response says when it has."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

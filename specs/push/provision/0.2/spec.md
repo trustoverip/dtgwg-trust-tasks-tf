@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Push — Provision
 summary: The controller VTA sets a wake handle's trigger allowlist on the push gateway — the DIDs (its mediator and/or itself) permitted to wake the device. The gateway enforces it.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: notifications
 keywords:
   - push

@@ -4,7 +4,7 @@ version: "0.1"
 title: Witness — Session Submit
 summary: A participating party submits its presentation, bound to its session challenge; the witness's mandatory response delivers the Verifiable Witness Credential and its digest — the outcome evidence a VWC presentation must ship, and the terminal document a taskContext points at.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - witness

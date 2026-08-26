@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Create
 summary: An administrator adds a new hosting domain to a DID hosting service.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, create, admin]
 authors:

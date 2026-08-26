@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Join-Requests — Manifest
 summary: Discover a community's join criteria — the presentation-definitions an applicant must satisfy — before submitting.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

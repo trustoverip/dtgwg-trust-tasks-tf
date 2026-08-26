@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Ping
 summary: A liveness and capability check against a messaging endpoint — a mediator or an agent; the requester asks "are you there?" and the endpoint answers with its server time, health status, and the transport protocols it supports.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

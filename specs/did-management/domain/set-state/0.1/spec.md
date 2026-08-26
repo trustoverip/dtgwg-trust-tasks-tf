@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Set State
 summary: An administrator sets a hosting domain's service state — `active` restores it to service (cancelling any pending purge), `disabled` moves it to read-only with a purge grace period. Supersedes the separate enable / disable verbs.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, state, enable, disable, admin]
 authors:

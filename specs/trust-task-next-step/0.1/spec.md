@@ -4,7 +4,7 @@ version: "0.1"
 title: Trust Task Next Step
 summary: The framework-defined response a consumer returns when a task was understood but cannot complete in isolation, naming the Trust Task it expects in order to proceed.
 status: draft
-targetFrameworkVersion: "0.3"
+targetFrameworkVersion: "0.5"
 category: framework
 keywords:
   - continuation

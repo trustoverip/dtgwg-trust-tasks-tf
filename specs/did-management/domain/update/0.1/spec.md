@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Update
 summary: An administrator updates the metadata of an existing hosting domain (label only — the `name` itself is immutable).
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, update, admin]
 authors:

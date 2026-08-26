@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Admin-Remove
 summary: An administrator removes a member from the community, choosing the record disposition and recording a reason.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

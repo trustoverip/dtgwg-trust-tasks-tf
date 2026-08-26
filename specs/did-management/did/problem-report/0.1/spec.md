@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Problem Report
 summary: A hosting service emits a problem report to an owner when an async background operation on the owner's slot fails after the original transport has closed.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, problem-report, error, async]
 authors:

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Invitations — Revoke
 summary: Revoke an issued Invitation Credential by flipping its published status-list bit, reporting whether this call was the one that revoked it.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc

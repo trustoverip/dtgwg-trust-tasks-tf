@@ -4,7 +4,7 @@ version: "0.1"
 title: Device — Register
 summary: A newly-onboarded Companion or Service claims its device record on the maintainer, supplying form factor, display name, HPKE public key, and optional device attestation; wraps the maintainer's existing provision-integration → acl/swap-key bootstrap.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device

@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Auth — Step-up Policy
 summary: The relying party's per-operation-class policy deciding whether — and how — a session must step up to a higher assurance level before a gated operation runs, plus how a system-wide floor composes with per-entry overrides.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

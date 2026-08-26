@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Get
 summary: A caller fetches one VTA context by id, and learns definitively whether it exists.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

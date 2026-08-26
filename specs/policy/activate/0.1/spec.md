@@ -4,7 +4,7 @@ version: "0.1"
 title: Policy — Activate
 summary: Make a policy module the single active policy for a named decision slot (purpose), atomically deactivating whatever was active before and returning the displaced id.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy

@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Server Health
 summary: A liveness probe between control plane and a registered server — replaces the legacy `health-ping`/`health-pong` pair with one task and `#response`.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, server, health, ping]
 authors:
