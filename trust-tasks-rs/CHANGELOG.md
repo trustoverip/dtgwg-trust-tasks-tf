@@ -29,6 +29,28 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.14.1] - 2026-08-26
+
+### Fixed
+
+- **`TypeUri` rejected a published framework specification, and accepted a
+  reserved one.** SPEC §6.1 reserves `^trust-(task|ceremony)($|-|/)`;
+  `is_reserved_namespace` checked only the `trust-task` half, and the
+  allowlist of framework slugs permitted inside the reservation had drifted
+  two entries behind `specs/spec.meta.schema.json`. The observable effect:
+
+  ```text
+  REJECTED  trust-task-control      published since 0.1 — its Type URI would not parse
+  PARSES    trust-ceremony-evil     reserved by §6.1, accepted from any party
+  ```
+
+  Both directions are now correct, and a test reads the meta-schema's
+  allowlist and fails if the two hand-maintained copies disagree again.
+
+  A consumer relying on the accepting half — that is, publishing under a
+  `trust-ceremony-*` slug it does not own — was already non-conforming under
+  §6.1, so this is a fix rather than a break.
+
 ## [0.14.0] - 2026-08-26
 
 ### Changed
