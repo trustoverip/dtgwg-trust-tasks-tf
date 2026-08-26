@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Memory — Delete
 summary: An agent forgets a memory item from a VTA context by key.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: ai-agents
 keywords:
   - memory

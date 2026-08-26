@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — Get"
 summary: "Fetch one did:webvh record the VTA holds, optionally with its full log."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

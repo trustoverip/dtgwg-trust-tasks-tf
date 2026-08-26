@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Create
 summary: An administrator creates a VTA context — a new separation boundary for keys, DIDs, vault entries and policy, optionally nested under an existing one.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

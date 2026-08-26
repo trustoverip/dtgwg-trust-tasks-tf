@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Application State — Put
 summary: An application writes one versioned state record to a VTA, optionally conditional on the version it last read, and receives a typed conflict carrying the maintainer's current version and value when that precondition fails.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - vta

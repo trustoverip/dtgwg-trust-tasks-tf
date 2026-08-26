@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Agent-Name — Enable"
 summary: "An administrator makes a held-but-disabled agent name resolve again."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

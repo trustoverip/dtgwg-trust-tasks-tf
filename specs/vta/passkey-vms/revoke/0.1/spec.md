@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Passkey-VM — Revoke
 summary: An administrator removes a passkey verificationMethod from a VTA-managed DID document, identified by its URL fragment, via a WebVH log entry.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vta

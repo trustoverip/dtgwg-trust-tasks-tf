@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Preview Delete
 summary: An administrator asks what deleting a context would destroy, and is told, without anything being destroyed.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

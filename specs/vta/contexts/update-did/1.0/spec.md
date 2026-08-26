@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Update DID
 summary: An administrator sets the DID a context acts as; existing references to the previous DID are not migrated.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

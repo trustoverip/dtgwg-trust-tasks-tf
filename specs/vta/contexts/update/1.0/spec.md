@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Update
 summary: A super-administrator edits a context's name, description, DID or policy; the id is fixed because ACL scopes name it.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

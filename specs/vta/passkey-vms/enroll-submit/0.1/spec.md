@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Passkey-VM — Enroll Submit
 summary: An administrator submits the WebAuthn registration result for an open ceremony; the VTA re-derives the public key from the attestation, rejects browser tampering, and publishes the passkey as a verificationMethod on the DID.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vta

@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — List"
 summary: "Enumerate the did:webvh DIDs a VTA holds, optionally narrowed to a context or hosting server."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

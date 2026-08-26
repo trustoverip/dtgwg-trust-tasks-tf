@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Update
 summary: An operator changes the settings of a transport the agent already advertises.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

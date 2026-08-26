@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Application State — Put Many
 summary: An application flushes up to 64 state writes to a VTA in one round trip, each carrying its own version precondition, applied either independently so one conflict does not block the rest or atomically for records sharing an invariant.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - vta

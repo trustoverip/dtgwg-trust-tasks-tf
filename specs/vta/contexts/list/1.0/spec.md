@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — List
 summary: A caller enumerates the VTA contexts it can reach — the separation boundary that keys, DIDs, vault entries and policy all belong to.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
