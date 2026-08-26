@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The response discloses the audit tail, which is confidential material the caller retains, so both halves of the exchange must be attributable and tamper-evident. On the request side a proof binds who asked for the tail; on the response side it lets the returned records be relied on as evidence by a party that was not present at the read. An audit log that cannot be attributed to the consumer that produced it is not audit evidence, and an unproven request leaves no record of who obtained it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The listing returns audit records, which name who did what and when. A captured list request keeps yielding them as the log grows, so the acceptance window is what limits how much of the log one authorised request can eventually reveal.
 sideEffects:
   level: none
   rationale: "Reads the audit log; persists nothing."
