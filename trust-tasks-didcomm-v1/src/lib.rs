@@ -45,6 +45,21 @@
 //! would reject exchanges that conform on both layers, and a consumer must not
 //! infer exchange continuation from a defaulted `thid`.
 //!
+//! # The guarded inbound path
+//!
+//! [`unpack_trust_task`] gets the document out of the attachment and stops
+//! there. The consumer obligations of SPEC.md §7.2 still have to run over it,
+//! and two of them are stateful: item 11's duplicate-execution record and the
+//! freshness bound that lets that record be dropped.
+//!
+//! [`DidcommV1Consumer`] is that path with both wired, **on by default**. It
+//! matters most here: binding §6 records v1's freshness guarantee as
+//! "**None**", so an ordinary store-and-forward redelivery — no attacker
+//! involved — executes a consequential task twice unless the consumer keeps
+//! the record. The record is keyed on the document `id` and never on the v1
+//! message `@id` or `~thread`, because a redelivery legitimately carries a
+//! fresh transport identifier for the same document.
+//!
 //! # Status
 //!
 //! Implements [`bindings/didcomm-v1/0.2`](https://trusttasks.org/bindings/didcomm-v1/0.2):
@@ -80,10 +95,12 @@
 
 pub mod error;
 pub mod handler;
+pub mod inbound;
 pub mod pack;
 
 pub use error::DidcommV1Error;
 pub use handler::{DidcommV1Handler, BINDING_URI};
+pub use inbound::DidcommV1Consumer;
 pub use pack::{build_message, unpack_trust_task, Carriage, ATTACHMENT_ID, ENVELOPE_TYPE};
 
 /// The `~thread` fields this binding maps onto the framework's thread members,
