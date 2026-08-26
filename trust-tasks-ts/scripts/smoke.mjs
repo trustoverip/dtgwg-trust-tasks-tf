@@ -44,7 +44,7 @@ const outcome = await pkg.consumeInbound({
   spec: grant.SPEC,
   proofPolicy: { kind: "acceptUnverified" },
   payloadPolicy: { kind: "acceptUnvalidated" },
-  // Required as of 0.12.17 (SPEC §7.2 items 4 and 11). This document is
+  // Required as of 0.12.18 (SPEC §7.2 items 4 and 11). This document is
   // refused before the record is ever consulted; `consequentialChecks` is what
   // a real acl/grant consumer passes.
   checks: pkg.notConsequentialChecks(),

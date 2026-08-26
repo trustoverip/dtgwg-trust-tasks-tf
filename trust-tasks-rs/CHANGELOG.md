@@ -29,6 +29,143 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.18] - 2026-08-26
+
+> ### ⚠ This entry is breaking, and the version number understates it
+>
+> Under the rules at the top of this file this change earns **`0.12.0`**: it
+> adds a required argument to `consume_inbound`, adds variants to two public
+> enums, and — most importantly — makes a consumer reject documents it used to
+> accept. It ships as `0.11.17` only because moving the leading component is a
+> workspace event: the six crates that depend on this one each pin
+> `version = "0.11"`, and editing those requirements is out of scope for a
+> change that touches no binding crate. **The release manager should cut this
+> as `0.12.0` together with the six dependent releases**, in the dependency
+> order `publish.yml` uses.
+
+### Added
+
+- **`ReplayGuard` — the duplicate-execution record of SPEC §7.2 item 11.**
+
+  Item 11 is normative and unconditional for a *consequential Trust Task*: a
+  document already accepted under a given `id` **MUST NOT** cause the effect a
+  second time, and a *different* document under the same `id` **MUST** be
+  rejected with `idConflict`. §8.4 is the same rule seen from the producer's
+  end — a retry is a bit-for-bit resend, and it is safe *precisely because*
+  item 11 obliges the consumer to absorb it. §10.1 names it as the defence
+  against replay by the original recipient.
+
+  No runtime implemented it. Every transport binding delegates it: `https/0.2`
+  §5 says "Freshness / replay: None", and `didcomm/0.2` §6, `didcomm-v1/0.2` §6
+  and `tsp/0.1` §7 say the same. There was no id-keyed store anywhere, and
+  `StandardCode::IdConflict` was emitted by nothing. A captured envelope or a
+  bearer-authenticated body, re-sent, executed `acl/grant` or `vault/release`
+  again — and an ordinary mediator retry did it by accident.
+
+  The seam is an object-safe async trait so a replicated deployment can back it
+  with a shared store; `InMemoryReplayGuard` is the batteries-included LRU
+  default and is documented as **not** correct behind a load balancer.
+
+  The record is keyed on the document `id` — which §7.2 requires, to the
+  exclusion of transport message ids and execution handles — and holds a
+  SHA-256 digest of the canonical serialization of the whole document. Not the
+  received octets: a re-indented body, or a member order chosen by an
+  intermediary, would make a legitimate retry look like a different document,
+  and the consumer would answer it with `idConflict` or execute it. The digest
+  covers `proof`, which is a deliberate difference from the §4.9.3 *task
+  digest* over `document ∖ proof`; §4.9.3 spells the distinction out, and §8.4
+  requires a re-signed `proof` over identical content to be `idConflict` rather
+  than an absorbed retry.
+
+- **`FreshnessPolicy` — the acceptance window of SPEC §4.2 / §7.2 item 4.**
+
+  `validate_basic` checked `expiresAt` and nothing else; `issuedAt` was parsed
+  and looked at by nobody. So a document stamped a year in the future was
+  accepted — and accepted again for the whole of that year — and one whose
+  `expiresAt` sat at or before its own `issuedAt` was accepted whenever the
+  clock happened to sit before the expiry.
+
+  It is also what makes item 11 implementable. §7.2 (*Bounding the record*)
+  makes the acceptance window and the replay record's retention **the same
+  bound**; without a window the record would have to be kept forever, and a
+  document the consumer can place in no window at all is one §7.2 forbids
+  executing a consequential task on. `consume_inbound` refuses that case rather
+  than pretending to guard it.
+
+- `TrustTask::validate_freshness`, `ConsumeChecks`, `ReplayPolicy`,
+  `document_digest`, `DocumentDigest`, `ReplayVerdict`, `ReplayGuardError`,
+  `canonical_json`, `sha256_hex`, and `RejectReason::malformed_from_serde`.
+- `trust_task_error_type_uri()` is now `pub` — the single source of truth for
+  the emitted `trust-task-error` version, as `CLAUDE.md` already assumed it
+  was. Three answers were in circulation (`0.5` here and in the TS runtime,
+  `0.2` in the HTTPS server, `0.1` in the READMEs).
+- Wire-message constants: `PROOF_INVALID_WIRE_MESSAGE`,
+  `IDENTITY_MISMATCH_WIRE_MESSAGE`, `WRONG_RECIPIENT_WIRE_MESSAGE`,
+  `STALE_WIRE_MESSAGE`, `UNAVAILABLE_WIRE_MESSAGE`.
+
+### Changed — behavioural
+
+- **`consume_inbound` takes a fourth argument, `ConsumeChecks`.** Required, not
+  defaulted, for the reason `PayloadPolicy` is: whether the task a consumer
+  implements is *consequential* is a decision only that consumer can make, and
+  the failure mode of getting it wrong silently is an ACL grant applied twice
+  by a mediator retry. Use `ConsumeChecks::consequential(&guard)` or
+  `ConsumeChecks::not_consequential()`.
+
+- **`consume_inbound` now enforces freshness.** Under any policy it rejects an
+  `issuedAt` beyond the skew tolerance (`malformedRequest`) and an `expiresAt`
+  at or before `issuedAt` (`malformedRequest`). Neither is emitted by a
+  conforming producer, but a deployment whose producers are not conforming will
+  see documents refused that previously passed.
+
+- **`ConsumeOutcome` gains `Duplicate { prior_response, in_flight }`.** It is
+  **not** an error: §7.2 (*Disposition of a duplicate*) — "In no case is a
+  duplicate reported as `taskFailed`; the task did not fail, it already
+  happened." Callers matching exhaustively must handle it.
+
+- **`RejectReason` gains `IdConflict` and `Stale`.** Callers matching
+  exhaustively must add arms. `RejectReason::code()` maps `Stale` to `expired`:
+  §8.3 defines no separate code, and the window is the consumer's own bound on
+  when it is still willing to act.
+
+- **`consume_inbound` requires `R: Serialize`**, so a completed execution's
+  response can be retained for the duplicate that follows it.
+
+### Fixed — security
+
+- **`proofInvalid` no longer carries verifier internals on the wire.**
+  `wire_message` sanitised only `IdentityMismatch` and `WrongRecipient`, so
+  `ProofInvalid { reason }` passed the verifier's own text through — strings
+  such as `resolve did:web:x: <error>`, `verificationMethod … not present in DID
+  document`, and `verificationMethod is controlled by {vm_did}, not the
+  document issuer {issuer}`. The recipient of that message is by construction
+  *unauthenticated* — the proof did not verify — so it was a
+  resolver-reachability and DID-document oracle, answered at the sender's
+  chosen rate. SPEC §10.4 makes the rule explicit for `identityMismatch` and
+  generalises it to every code. The detail remains on the `Display` impl, which
+  is what the operator logs.
+
+  `Unavailable` and `Stale` are sanitised on the same reasoning: the first
+  would otherwise name a backing store, the second the size of the consumer's
+  acceptance window.
+
+- **`RejectReason::malformed_from_serde` categorises deserializer failures**
+  instead of echoing `serde_json`'s member path and byte offset, which describe
+  the consumer's internal type layout to anyone willing to send malformed JSON.
+
+### Documentation
+
+- README: the `consume_inbound` example took 7 arguments and the function took
+  8 (`payload_policy` was added later); it now takes 9 and compiles. The
+  `trust-task-error/0.1` claims and the "`0.1.0` — tracks `SPEC.md` version
+  `0.1`" status line were both years stale.
+
+### Not in this release
+
+The binding crates still do not apply either check to the documents they
+consume themselves — see the PR body. They are owned by concurrent work and
+were deliberately left untouched.
+
 ## [0.11.17] - 2026-08-26
 
 ### Added

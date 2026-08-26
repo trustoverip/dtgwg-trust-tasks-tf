@@ -89,7 +89,7 @@ use crate::replay::{document_digest, DocumentDigest, ReplayGuard, ReplayPolicy, 
 use crate::transport::{ResolvedParties, TransportHandler};
 
 /// The two stateful consumer checks SPEC.md §7.2 requires and that no runtime
-/// in this repo implemented before 0.11.17: the freshness bound over
+/// in this repo implemented before 0.11.18: the freshness bound over
 /// `issuedAt` / `expiresAt`, and the duplicate-execution record of item 11.
 ///
 /// They travel together because the spec ties them together. §7.2 (*Bounding
@@ -1174,7 +1174,7 @@ mod tests {
     /// Verifier returns `Err` → `consume_inbound` maps to `proofInvalid` and
     /// the wire message is the constant, **not** the verifier's error text.
     ///
-    /// This test asserted the opposite until 0.11.17. The verifier's text is
+    /// This test asserted the opposite until 0.11.18. The verifier's text is
     /// the only place a consumer's DID-resolution behaviour is described in
     /// English, and the party receiving it is by construction unauthenticated
     /// — the proof did not verify. SPEC §10.4 extends the §8.1

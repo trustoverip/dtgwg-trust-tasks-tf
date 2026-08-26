@@ -18,7 +18,10 @@ The framework specification this crate implements is [`SPEC.md`](../SPEC.md).
 | `TrustTask<P>` | The framework document envelope | §4.2 |
 | `TypeUri` | Parsed `https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>` + `#request`/`#response` variant | §4.4, §6.1 |
 | `Proof` | W3C Data Integrity proof attachment | §4.7 |
-| `ErrorPayload`, `StandardCode`, `TrustTaskCode` | The `trust-task-error/0.1` payload + standard codes + extension codes | §8.2, §8.3, §8.5 |
+| `ErrorPayload`, `StandardCode`, `TrustTaskCode` | The `trust-task-error` payload + standard codes + extension codes | §8.2, §8.3, §8.5 |
+| `trust_task_error_type_uri()` | The one definition of the `trust-task-error` version this library emits | §8.1 |
+| `ReplayGuard`, `InMemoryReplayGuard` | Duplicate-execution record: absorbs a bit-for-bit retry, rejects a reused `id` with `idConflict` | §7.2 item 11, §8.4 |
+| `FreshnessPolicy` | Acceptance window over `issuedAt` / `expiresAt` — the bound that makes the replay record droppable | §4.2, §7.2 |
 | `RejectReason`, `ErrorResponse` | Typed rejection conditions + `TrustTask<ErrorPayload>` alias, both `?`-propagatable | §7.2, §8 |
 | `TransportHandler` | Trait for transport bindings: derive party identity, prepare outbound, cross-check inbound | §4.8.1, §9.2 |
 | `handlers::NoopHandler` | Transport contributes nothing; in-band members are authoritative | reference impl |
@@ -81,17 +84,27 @@ validation pipeline stays unchanged.
 
 ## Request → response → error
 
-The framework's request/response model (SPEC §4.4.1) and `trust-task-error/0.1`
+The framework's request/response model (SPEC §4.4.1) and `trust-task-error`
 response (SPEC §8) are first-class. The recommended consumer-side pipeline is
-[`consume_inbound`], which runs the full SPEC §7.2 list (items 4–8) for you and
-hands the accepted document plus the resolved parties to your handler:
+[`consume_inbound`], which runs the SPEC §7.2 checks (item 2 and items 4–8, plus
+the freshness bound and item 11's duplicate-execution record) and hands the
+accepted document plus the resolved parties to your handler:
 
 ```rust,ignore
-use trust_tasks_rs::{consume_inbound, ConsumeOutcome, ProofPolicy};
+use trust_tasks_rs::{
+    consume_inbound, ConsumeChecks, ConsumeOutcome, InMemoryReplayGuard,
+    NoValidator, PayloadPolicy, ProofPolicy,
+};
+
+// The guard *is* the duplicate-execution record — one per consumer, held for
+// the process's lifetime. Back it with a shared store if you run replicas.
+static GUARD: LazyLock<InMemoryReplayGuard> = LazyLock::new(Default::default);
 
 let outcome = consume_inbound(
     transport,
     ProofPolicy::Verify(verifier),         // or RejectIfPresent / AcceptUnverified
+    PayloadPolicy::Validate(validator),    // or ::<NoValidator>::AcceptUnvalidated
+    ConsumeChecks::consequential(&*GUARD), // or ::not_consequential()
     inbound,                                // TrustTask<KycHandoff>
     MY_VID,
     Utc::now(),
@@ -107,6 +120,11 @@ match outcome {
     ConsumeOutcome::Handled(response) => emit(response),
     ConsumeOutcome::Rejected(error)   => emit(error),
     ConsumeOutcome::Suppressed        => {} // identity_mismatch w/o transport sender
+    // §7.2 item 11: this document already executed. Not an error — return the
+    // prior result where the spec defines one, otherwise emit nothing.
+    ConsumeOutcome::Duplicate { prior_response, .. } => {
+        if let Some(prior) = prior_response { emit_json(prior) }
+    }
 }
 ```
 
@@ -158,7 +176,7 @@ The output is committed (no `OUT_DIR` magic), so PRs that change a schema
 should include the regenerated `src/specs/` diff. CI can enforce this with a
 `git diff --exit-code src/specs/` after running the generator.
 
-The framework-defined `trust-task-error/0.1` spec is the one exception — its
+The framework-defined `trust-task-error` spec is the one exception — its
 payload is modelled by hand in `ErrorPayload` because the framework needs the
 richer `TrustTaskCode` enum (standard codes + namespaced extension codes) the
 codegen can't produce.
@@ -172,10 +190,16 @@ codegen can't produce.
 
 ## Status
 
-`0.1.0` — tracks `SPEC.md` version `0.1`. The framework spec is itself a
-Working Draft; this crate is a reference implementation maintained alongside
-it. Breaking changes are expected until the framework reaches `candidate`.
-See [`CHANGELOG.md`](CHANGELOG.md) for what's landed.
+The crate version is semver over **this library's own API**, deliberately
+decoupled from the `SPEC.md` framework version — the two move for different
+reasons, and one number cannot answer both questions. A document's framework
+version is carried by its specification's `targetFrameworkVersion` declaration
+(SPEC §7.3 item 3).
+
+The framework spec is itself a Working Draft; this crate is a reference
+implementation maintained alongside it. Breaking changes are expected until the
+framework reaches `candidate`. See [`CHANGELOG.md`](CHANGELOG.md) for what has
+landed and for the versioning rules.
 
 ## License
 

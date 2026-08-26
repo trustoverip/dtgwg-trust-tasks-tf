@@ -369,7 +369,7 @@ export async function consumeInbound<P, R>(
   // this option exists to remove.
   if (checks === undefined) {
     throw new TypeError(
-      "consumeInbound: `checks` is required as of 0.12.17 (SPEC §7.2 items 4 and 11). " +
+      "consumeInbound: `checks` is required as of 0.12.18 (SPEC §7.2 items 4 and 11). " +
         "Pass consequentialChecks(guard) for a task whose execution grants access, " +
         "moves value or is otherwise irreversible, or notConsequentialChecks() to " +
         "state that repeated execution of this task is safe and intended.",
