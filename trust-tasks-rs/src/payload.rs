@@ -93,6 +93,44 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// Consumers consult this via [`crate::consume_inbound`].
     const IS_RECIPIENT_REQUIRED: bool = false;
 
+    /// Whether the originating *Trust Task specification* obliges a *consumer*
+    /// to reject a document that arrives without an `issuedAt`, per SPEC.md
+    /// §7.3 item 17 (`issuedAtRequirement` declared `REQUIRED`).
+    ///
+    /// Item 17 raises the framework's §4.2 **SHOULD** to a **MUST** for the
+    /// documents of the specification that declares it, and obliges every
+    /// specification defining a *consequential Trust Task* (§2) to declare it.
+    /// The reason is §7.2 item 11: duplicate-execution protection is
+    /// implementable only over a bounded window, and a document carrying
+    /// neither `expiresAt` nor `issuedAt` cannot be placed in one — so a
+    /// consumer would have to retain its record forever or refuse to execute.
+    ///
+    /// Defaults to `false`, so a hand-written [`Payload`] impl (the crate's own
+    /// `trust-task-error`, or any downstream one) keeps compiling unchanged.
+    /// The codegen emits an explicit
+    /// `const IS_ISSUED_AT_REQUIRED: bool = true;` override only when the
+    /// spec's front matter declares it, exactly as it does for
+    /// [`IS_PROOF_REQUIRED`](Self::IS_PROOF_REQUIRED).
+    ///
+    /// # Not the same thing as [`crate::FreshnessPolicy::require_issued_at`]
+    ///
+    /// That field is the **consumer's** own posture, chosen at the call site
+    /// and applied to every document it sees. This constant is the
+    /// **specification's** requirement, published in the registry and true of
+    /// the type regardless of which consumer holds it. A consumer running the
+    /// permissive [`FreshnessPolicy::default`](crate::FreshnessPolicy::default)
+    /// still rejects a document of a spec that declares this, because the
+    /// obligation is not the consumer's to relax.
+    ///
+    /// When `true`, a document with no `issuedAt` is rejected with
+    /// `malformedRequest` — §8.3 defines no dedicated code, and `expired`
+    /// would misdescribe a document that was never acceptable. It is the same
+    /// code §7.2 item 13 already uses for the freshness rejections.
+    ///
+    /// Like [`IS_BEARER`](Self::IS_BEARER), this constant is emitted on both
+    /// the request `Payload` impl and the response `Response` impl.
+    const IS_ISSUED_AT_REQUIRED: bool = false;
+
     /// Raw text of the `payload.schema.json` describing values of this type,
     /// or `None` where this build has no schema for it.
     ///

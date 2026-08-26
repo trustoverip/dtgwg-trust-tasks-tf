@@ -247,6 +247,19 @@ pub const EXPIRY_NOT_AFTER_ISSUANCE: &str =
 pub const ISSUED_AT_REQUIRED: &str =
     "issuedAt is required by consumer policy (SPEC §7.2, bounding the duplicate-execution record)";
 
+/// Wire-safe reason for a `malformedRequest` raised by a missing `issuedAt`
+/// on a specification that declares it REQUIRED (SPEC §7.3 item 17).
+///
+/// Distinct from [`ISSUED_AT_REQUIRED`], which names the *consumer's* own
+/// policy: this one names an obligation published by the specification, so
+/// the producer can fix it by reading the registry entry rather than by
+/// guessing at the consumer's configuration. Raised by
+/// [`TrustTask::enforce_spec_policy`](crate::TrustTask::enforce_spec_policy),
+/// not by [`TrustTask::validate_freshness`], because it is keyed on the
+/// payload type rather than on a policy value.
+pub const ISSUED_AT_REQUIRED_BY_SPEC: &str =
+    "issuedAt is required by this Trust Task specification (SPEC §7.3 item 17)";
+
 /// Which of the two acceptance-window failures produced a
 /// [`RejectReason::Stale`].
 ///

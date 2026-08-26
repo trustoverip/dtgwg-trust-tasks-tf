@@ -258,6 +258,33 @@ function renderProofRequirement(proof) {
   ].join('\n');
 }
 
+/*
+ * SPEC §7.3 item 17. A consequential task MUST require `issuedAt`, and the
+ * scaffold's claim is that what it emits validates and conforms — so it
+ * declares it rather than leaving the author a floor to trip over. A
+ * non-consequential task gets nothing: absent means the §4.2 SHOULD applies,
+ * and inventing a RECOMMENDED restatement of the baseline would be noise.
+ *
+ * Returns a leading newline with the block, or '' — so the caller can splice
+ * it into the front matter without leaving a blank line behind.
+ */
+function renderIssuedAtRequirement(ctx) {
+  if (!ctx.consequential) return '';
+  const triggers = [`sideEffects.level: ${ctx.sideEffects}`]
+    .concat(ctx.discloses === 'secret' ? ['exposure.discloses: secret'] : [])
+    .concat(ctx.actsAsSubject ? ['exposure.actsAsSubject: true'] : [])
+    .join(', ');
+  return '\n' + [
+    'issuedAtRequirement:',
+    '  requirement: REQUIRED',
+    '  rationale: >-',
+    `    TODO: name what makes this task's documents worth placing in time. REQUIRED is the`,
+    `    floor SPEC §7.3 item 17 sets for a consequential Trust Task (${triggers}) — §7.2`,
+    `    item 11 can only absorb a duplicate inside a bounded window, and a document with no`,
+    `    issuedAt cannot be placed in one. The build rejects anything weaker.`
+  ].join('\n');
+}
+
 /* YAML-quote a scalar. Every author-facing default here contains prose, and
  * prose contains ": " — which YAML reads as a nested mapping and rejects. The
  * scaffold's whole claim is that its output parses, so quote unconditionally
@@ -363,7 +390,7 @@ parties:
   - role: "TODO: the party that acts on it"
     requirement: REQUIRED
     member: recipient
-${renderProofRequirement(ctx.proof)}
+${renderProofRequirement(ctx.proof)}${renderIssuedAtRequirement(ctx)}
 sideEffects:
   level: ${ctx.sideEffects}
   rationale: >-

@@ -214,6 +214,63 @@
         }
       ]
     },
+    "issuedAtRequirement": {
+      "description": "Freshness declaration per SPEC \u00a77.3 item 17 \u2014 whether a document conforming to this specification must carry the `issuedAt` envelope member. Deliberately shaped like `proofRequirement` above: both declare a requirement on an *envelope* member rather than on the payload, both admit a per-variant form because the request and the response are relied on differently, and both carry a `rationale` so the reason survives into review. Reading one teaches the other.\n\nThe framework baseline is **SHOULD** (\u00a74.2), which is `RECOMMENDED` here; absent means the baseline applies and nothing is claimed. A specification defining a *consequential Trust Task* (\u00a72 \u2014 `sideEffects.level` of `mutating` or `destructive`, `exposure.discloses: secret`, or `exposure.actsAsSubject: true`) **MUST** declare `REQUIRED`, raising the baseline to a **MUST** for its own documents. The build derives that floor from items 13/14 and reports every specification that has not met it, so the obligation cannot sit unmet in silence; a declaration *weaker* than the derived floor is a hard error.\n\nWhy this is declared rather than derived outright: items 13 and 14 are DESCRIPTIVE, and a spec author correcting `sideEffects.level` for accuracy must not thereby change, invisibly, which documents a consumer is obliged to reject. \u00a72 also makes the *handler* authoritative for consequentiality, not this front matter \u2014 so a value silently computed from a descriptive declaration would enforce something the declaration does not authoritatively state. Declaring it keeps the requirement where a reader of the front matter can see it and where a reviewer can see it change. A specification that is *not* consequential MAY still declare `REQUIRED` where freshness matters to it for its own reasons; the derived floor is a floor, not a ceiling.\n\nOnly `REQUIRED` obliges a consumer to reject; it is emitted as `Payload::IS_ISSUED_AT_REQUIRED` / `isIssuedAtRequired` in the generated bindings, and a document arriving without `issuedAt` is then rejected with `malformedRequest` (\u00a78.3) \u2014 the same code \u00a77.2 item 13 already uses for the freshness rejections, because \u00a78.3 defines no dedicated code and `expired` would name a document that was once acceptable. The acceptance window \u00a77.3 item 17 **SHOULD**s, and the `expiresAt` it **MAY**s, stay prose in `spec.md`: they are consumer-facing guidance rather than a per-document accept/reject predicate, and encoding a duration here would invite consumers to treat one specification's guess as their own policy.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requirement",
+            "rationale"
+          ],
+          "properties": {
+            "requirement": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL",
+                "RECOMMENDED",
+                "REQUIRED"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "request",
+            "rationale"
+          ],
+          "properties": {
+            "request": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL",
+                "RECOMMENDED",
+                "REQUIRED"
+              ]
+            },
+            "response": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL",
+                "RECOMMENDED",
+                "REQUIRED"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
     "sideEffects": {
       "type": "object",
       "additionalProperties": false,

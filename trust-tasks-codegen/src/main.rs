@@ -285,6 +285,73 @@ fn read_proof_required_flag(spec_md_path: &Path) -> Result<ProofRequired> {
     })
 }
 
+/// The `issuedAt` requirement each document variant carries, per SPEC.md §7.3
+/// item 17.
+///
+/// Declared with the same shape as item 8's `proofRequirement` — a single
+/// `requirement` covering every variant, or a per-variant `request` /
+/// `response` pair — and normalised the same way, so the emitter never
+/// branches and a reader of one declaration understands the other.
+#[derive(Debug, Clone, Copy, Default)]
+struct IssuedAtRequired {
+    request: bool,
+    response: bool,
+}
+
+/// Scan a `spec.md`'s YAML front matter for the §7.3 item 17 `issuedAt`
+/// declaration.
+///
+/// Only `REQUIRED` obliges a consumer to reject a document with no `issuedAt`
+/// — the framework baseline of §4.2 is already a SHOULD, and `RECOMMENDED`
+/// restates it — so each variant reduces to a bool. Returns both `false` when
+/// the field is absent or the file is missing. A per-variant declaration that
+/// omits `response` takes the request's value, matching
+/// [`read_proof_required_flag`]: the only reading that cannot weaken a variant
+/// by omission.
+fn read_issued_at_required_flag(spec_md_path: &Path) -> Result<IssuedAtRequired> {
+    if !spec_md_path.exists() {
+        return Ok(IssuedAtRequired::default());
+    }
+    let text = fs::read_to_string(spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+
+    let mut lines = text.lines();
+    if lines.next().unwrap_or("").trim() != "---" {
+        return Ok(IssuedAtRequired::default());
+    }
+    let mut front_matter = String::new();
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        front_matter.push_str(line);
+        front_matter.push('\n');
+    }
+
+    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
+    let Some(ir) = value.get("issuedAtRequirement") else {
+        return Ok(IssuedAtRequired::default());
+    };
+    let level = |key: &str| {
+        ir.get(key)
+            .and_then(|v| v.as_str())
+            .map(|s| s == "REQUIRED")
+    };
+
+    if let Some(all) = level("requirement") {
+        return Ok(IssuedAtRequired {
+            request: all,
+            response: all,
+        });
+    }
+    let request = level("request").unwrap_or(false);
+    Ok(IssuedAtRequired {
+        request,
+        response: level("response").unwrap_or(request),
+    })
+}
+
 /// Read whether the party filling the framework `member` (`"issuer"` or
 /// `"recipient"`) is declared `requirement: REQUIRED` in the spec's front
 /// matter. Returns `false` when no party carries that `member`, when its
@@ -807,6 +874,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     let invalid_examples = read_invalid_examples(spec)?;
     let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
     let is_proof_required = read_proof_required_flag(&spec.spec_md_path())?;
+    let is_issued_at_required = read_issued_at_required_flag(&spec.spec_md_path())?;
     // Request `recipient` member tracks the recipient party; the response swaps
     // parties, so its `recipient` member tracks the issuer party (§7.2 item 5).
     let recipient_required = read_member_required_flag(&spec.spec_md_path(), "recipient")?;
@@ -819,6 +887,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         &invalid_examples,
         is_bearer,
         is_proof_required,
+        is_issued_at_required,
         recipient_required,
         issuer_required,
         &raw,
@@ -1147,6 +1216,7 @@ fn render_module(
     invalid_examples: &[InvalidExample],
     is_bearer: bool,
     is_proof_required: ProofRequired,
+    is_issued_at_required: IssuedAtRequired,
     recipient_required: bool,
     issuer_required: bool,
     schema_json: &str,
@@ -1176,6 +1246,23 @@ fn render_module(
     };
     let resp_proof_const = if is_proof_required.response {
         quote! { const IS_PROOF_REQUIRED: bool = true; }
+    } else {
+        quote! {}
+    };
+
+    // Per SPEC §7.3 item 17, only `REQUIRED` overrides
+    // Payload::IS_ISSUED_AT_REQUIRED; anything else (or absent) leaves the
+    // trait default `false` in place, which is §4.2's SHOULD. Emitted per
+    // variant on the same reasoning as the proof consts above: a spec may
+    // require a stamped instant on the request that causes the effect without
+    // requiring one on the acknowledgement it sends back.
+    let req_issued_at_const = if is_issued_at_required.request {
+        quote! { const IS_ISSUED_AT_REQUIRED: bool = true; }
+    } else {
+        quote! {}
+    };
+    let resp_issued_at_const = if is_issued_at_required.response {
+        quote! { const IS_ISSUED_AT_REQUIRED: bool = true; }
     } else {
         quote! {}
     };
@@ -1220,6 +1307,7 @@ fn render_module(
                 const TYPE_URI: &'static str = #response_uri;
                 #bearer_const
                 #resp_proof_const
+                #resp_issued_at_const
                 #resp_recipient_const
                 #resp_schema_const
             }
@@ -1248,6 +1336,7 @@ fn render_module(
             const TYPE_URI: &'static str = #type_uri;
             #bearer_const
             #req_proof_const
+            #req_issued_at_const
             #req_recipient_const
             const PAYLOAD_SCHEMA: Option<&'static str> = Some(#schema_json);
         }
