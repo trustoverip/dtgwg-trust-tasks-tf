@@ -73,6 +73,7 @@ The server **SHOULD** map the *Trust Task document* response to an HTTP status a
 | Outcome                                                  | HTTP status                           |
 |----------------------------------------------------------|---------------------------------------|
 | Success (a `#response`-variant document)                 | `200 OK`                              |
+| Success for a specification that defines **no** success response ([SPEC §4.4.1](/SPEC.md#441-request-and-response-variants) fire-and-forget) | `204 No Content` |
 | Duplicate of a document whose execution is still in progress ([§5.1](#51-freshness-and-duplicate-execution)) | `202 Accepted`, empty body |
 | Duplicate of a completed execution for which no response was retained ([§5.1](#51-freshness-and-duplicate-execution)) | `204 No Content` |
 | `malformedRequest`                                       | `400 Bad Request`                     |

@@ -6,6 +6,30 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.16.0] - 2026-08-26
+
+### Changed
+
+- **BREAKING: `HttpsServer::on` takes one type parameter and requires
+  `RequestPayload`.** It was `on::<P, Resp, _>` with `Resp` unconstrained, so
+  `on::<acl::grant::Payload, acl::revoke::Response, _>` compiled and
+  registered a handler answering `acl/grant` with an `acl/revoke` document.
+  The response type is now `P::Response`, inferred, and a mismatched pair is
+  a compile error — the same correction #287 made to `HttpsClient::send`.
+
+  Migration: drop the response type parameter.
+  `.on::<grant::v0_1::Payload, grant::v0_1::Response, _>(h)` →
+  `.on::<grant::v0_1::Payload, _>(h)`.
+
+- **Added `HttpsServer::on_ack` for fire-and-forget specifications.** A spec
+  defining no `$defs.Response` gets no `RequestPayload` impl, so `on` cannot
+  take it — without this, those specs would have become unregisterable. The
+  handler returns `Ok(())` and the server answers `204 No Content`, matching
+  the status the binding already gives a duplicate of a completed
+  fire-and-forget execution. `DispatchFn` now returns `Option<Value>`:
+  SPEC §4.4.1 distinguishes a `#response` whose payload is empty (200 with a
+  body) from a specification with no response at all (204).
+
 ## [0.15.0] - 2026-08-26
 
 ### Changed

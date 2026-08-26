@@ -54,7 +54,7 @@ async fn receiver(alice_did: String) -> std::io::Result<()> {
         // Without a verifier the server only checks a proof is *present*.
         // `for_did_key()` resolves `did:key` offline — no network, no DID doc.
         .with_verifier(Verifier::for_did_key())
-        .on::<grant::Payload, grant::Response, _>(|req, ctx| {
+        .on::<grant::Payload, _>(|req, ctx| {
             println!(
                 "  [server] acl/grant from {} → subject={} role={}",
                 ctx.authenticated_sender.as_deref().unwrap_or("<unauth>"),
