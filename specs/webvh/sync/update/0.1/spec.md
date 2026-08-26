@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH — Sync Update
 summary: A did:webvh control plane replicates a DID's current log and witness content to a registered hosting server.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [webvh, sync, replication, control-plane, hosting-server]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Sync messages travel between trusted infrastructure nodes already bound by Service-role authentication on the receiving server; a transport-independent proof is valuable for audit replay but not required for steady-state replication.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A sync update overwrites what the target serves, so a stale copy republishes a superseded log state that resolvers will read as current.
 sideEffects:
   level: mutating
   rationale: "Replicates a DID's current log and witness content to a hosting server."

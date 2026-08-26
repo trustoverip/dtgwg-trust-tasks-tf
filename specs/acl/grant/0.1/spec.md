@@ -4,7 +4,7 @@ version: "0.1"
 title: ACL — Grant
 summary: A granting authority records, in a verifiable form, that a subject has been added to an access-control list with a named role and optional scopes.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - acl
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A grant is an evidentiary record that may be replayed by an auditor, used by a downstream service to corroborate authorization decisions, or relied on after the original transport has closed; transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A grant is the record every later authorization decision is read from, so a replayed grant re-admits a subject that has since been revoked. Only the duplicate-execution record of SPEC §7.2 item 11 stops the second execution, and that record is bounded by the acceptance window this member supplies.
 sideEffects:
   level: mutating
   rationale: "Adds a subject to the ACL with a role; recoverable via acl/revoke."

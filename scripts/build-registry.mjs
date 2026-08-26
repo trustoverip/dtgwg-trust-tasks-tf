@@ -576,20 +576,34 @@ function isConsequential(meta) {
  * declares it, the build derives the floor, and the two are compared:
  *
  *   declared weaker than the floor -> hard error, immediately.
- *   floor unmet because nothing is declared -> counted and reported below,
- *     because 272 draft specs predate the declaration and failing the build
- *     for all of them would only teach contributors to ignore the message.
- *     TT_STRICT_ISSUED_AT=1 makes it fatal; that becomes the default once the
- *     registry has caught up.
+ *   floor unmet because nothing is declared -> hard error, as of the commit
+ *     that took the registry to 100%. It was reported as a count while the
+ *     177 live consequential drafts predating `issuedAtRequirement` caught up,
+ *     because failing the build for all of them at once would only have taught
+ *     contributors to ignore the message. That backlog is gone, so the report
+ *     is now a ratchet: a new consequential spec that says nothing about
+ *     freshness fails, the same way `checkProofFloor` fails one that declares
+ *     proof too weakly. There is no opt-out env var — a floor with an escape
+ *     hatch is a warning wearing a different hat.
+ *
+ * `retired` specs are exempt from the *undeclared* case. §5.3 freezes a retired
+ * specification's schema and prose at the moment of retirement, and declaring
+ * REQUIRED on one would change which documents every consumer must reject for
+ * a spec that is terminal and cannot take the MAJOR increment §5.2 would
+ * demand for that change. They are counted and reported separately, the way the
+ * error-code lints report their frozen populations: exempt, not debt. A retired
+ * spec that *does* carry a declaration is still held to it — the check below
+ * runs on every consequential spec — because that can only arrive by an edit.
  *
  * A non-consequential spec MAY still declare REQUIRED. The floor is a floor.
  */
 function checkIssuedAtFloor(meta, rel, hasResponse) {
   const declared = resolveIssuedAtRequirement(meta);
   const consequential = isConsequential(meta);
-  if (!consequential) return { consequential, unmet: false };
+  if (!consequential) return { consequential, unmet: false, frozen: false };
 
-  if (!declared.declared) return { consequential, unmet: true };
+  const frozen = meta.status === 'retired';
+  if (!declared.declared) return { consequential, unmet: !frozen, frozen };
 
   const variants = hasResponse ? ['request', 'response'] : ['request'];
   let unmet = false;
@@ -609,7 +623,7 @@ function checkIssuedAtFloor(meta, rel, hasResponse) {
       );
     }
   }
-  return { consequential, unmet };
+  return { consequential, unmet, frozen };
 }
 
 /*
@@ -1417,11 +1431,13 @@ function main() {
   const tasks = [];
   const seen = new Set();
   let disclosureFloorOffenders = 0;
-  // SPEC §7.3 item 17 — see checkIssuedAtFloor. Counted rather than warned
-  // per-spec: 272 draft specs predate `issuedAtRequirement`, and 272 warnings
-  // is a wall of text nobody reads, while one line with a count is a number
-  // that visibly has to go to zero.
+  // SPEC §7.3 item 17 — see checkIssuedAtFloor. The count is still reported as
+  // one line rather than one message per spec, but it is now a line that reads
+  // N/N: the undeclared case fails the build, so the only way the numerator and
+  // denominator part is by adding a consequential spec that declares nothing.
+  // `issuedAtFloorFrozen` holds the retired specs §5.3 exempts.
   let consequentialSpecs = 0;
+  let issuedAtFloorFrozen = 0;
   const issuedAtFloorUnmet = [];
 
   for (const entry of entries) {
@@ -1467,8 +1483,14 @@ function main() {
     checkProofFloor(meta, rel, Boolean(schema.$defs?.Response));
     const freshness = checkIssuedAtFloor(meta, rel, Boolean(schema.$defs?.Response));
     if (freshness.consequential) {
-      consequentialSpecs++;
-      if (freshness.unmet) issuedAtFloorUnmet.push(rel);
+      // A frozen spec is out of the ratio entirely — including the weaker-than-
+      // REQUIRED case, which `checkIssuedAtFloor` has already failed on its own.
+      if (freshness.frozen) {
+        issuedAtFloorFrozen++;
+      } else {
+        consequentialSpecs++;
+        if (freshness.unmet) issuedAtFloorUnmet.push(rel);
+      }
     }
     const payloadSchemaPath = path.join(dir, 'payload.schema.json');
     // The machine-checkable half of the same question checkProofFloor asks:
@@ -1499,25 +1521,28 @@ function main() {
       `while returning released material` +
       `${disclosureFloorOffenders ? ' (warning — set TT_STRICT_DISCLOSURE=1 to fail the build)' : ''}`
   );
-  const strictIssuedAt = process.env.TT_STRICT_ISSUED_AT === '1';
   console.log(
     `  Freshness floor (§7.3 item 17): ${consequentialSpecs - issuedAtFloorUnmet.length}/` +
-      `${consequentialSpecs} consequential spec(s) declare issuedAtRequirement: REQUIRED` +
+      `${consequentialSpecs} live consequential spec(s) declare issuedAtRequirement: REQUIRED; ` +
+      `${issuedAtFloorFrozen} frozen in retired spec(s) (§5.3 — exempt, not debt)` +
       `${
         issuedAtFloorUnmet.length
           ? ` — ${issuedAtFloorUnmet.length} undeclared, e.g. ${issuedAtFloorUnmet
               .slice(0, 3)
-              .join(', ')} (${strictIssuedAt ? 'error' : 'warning — set TT_STRICT_ISSUED_AT=1 to fail the build'})`
+              .join(', ')} (error)`
           : ''
       }`
   );
-  if (strictIssuedAt) {
-    for (const rel of issuedAtFloorUnmet) {
-      fail(
-        `${rel}/spec.md`,
-        'consequential Trust Task with no issuedAtRequirement declaration (SPEC §7.3 item 17)'
-      );
-    }
+  for (const rel of issuedAtFloorUnmet) {
+    fail(
+      `${rel}/spec.md`,
+      `consequential Trust Task with no issuedAtRequirement declaration. SPEC §7.3 item 17 makes ` +
+        `issuedAt REQUIRED for a specification defining a consequential Trust Task — the ` +
+        `duplicate-execution protection of §7.2 item 11 is implementable only over a window, and ` +
+        `a document with no issuedAt cannot be placed in one. Add an issuedAtRequirement block ` +
+        `declaring REQUIRED with a rationale saying why this task needs a bounded acceptance ` +
+        `window, or correct the item 13/14 declarations if this task is not in fact consequential.`
+    );
   }
   errorCodeCasing.report();
   console.log(

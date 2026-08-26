@@ -4,7 +4,7 @@ version: "0.1"
 title: Config — Patch
 summary: Write per-key overrides into a maintainer's runtime configuration, reporting which took effect, which await a restart, and which were rejected.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - config
@@ -22,6 +22,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A configuration change alters the maintainer's runtime posture — a log level, a storage path, a feature flag. The producer's identity MUST be verifiable for audit and to prevent a stealth reconfiguration.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A patch is applied against whatever the configuration currently is, not against the state its author saw, so a document that cannot be placed in time is a change of unknown provenance being merged into live settings.
 sideEffects:
   level: mutating
   rationale: "Writes per-key configuration overrides; recoverable by patching the keys back."

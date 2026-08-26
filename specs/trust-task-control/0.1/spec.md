@@ -4,7 +4,7 @@ version: "0.1"
 title: Trust Task Control
 summary: The framework-defined request by which a producer cancels, suspends, or resumes work a consumer has already accepted. Cancellation prevents future effects; it never undoes past ones, and the response reports what already occurred.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: framework
 keywords:
   - control
@@ -35,6 +35,9 @@ proofRequirement:
     carries the record of what effects occurred before the operation took hold,
     which a producer relies on to decide whether to compensate, and which a third
     party may later need to evaluate.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A control document changes how a running task is executed, so its meaning depends entirely on when it arrives. A control instruction that cannot be dated cannot be matched to the phase of the task it was written for.
 sideEffects:
   level: mutating
   rationale: "Changes the execution state the consumer holds for another task — stopping it, pausing it, or restarting it. Recoverable in the sense that no external effect is produced by this document itself; the task it controls may be another matter, which is what the response reports."

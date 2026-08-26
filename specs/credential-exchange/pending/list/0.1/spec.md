@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Pending List
 summary: List the presentation requests this holder deferred for consent, showing who asked, why, and exactly which claims answering would disclose.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange
@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The response enumerates which credentials the wallet holds and what a verifier asked of them. That is the wallet's contents by another name, so the caller must be authenticated and attributable — transport authentication alone is not enough for a surface whose output is an inventory.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Listing pending requests is performed under the subject's own authority, so a captured list request keeps enumerating the subject's exchange queue for as long as it remains acceptable. The window is what ends that.
 sideEffects:
   level: none
   rationale: Reads the deferral backlog; decides nothing.

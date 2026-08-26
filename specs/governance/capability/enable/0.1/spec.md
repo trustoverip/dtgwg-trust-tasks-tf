@@ -4,7 +4,7 @@ version: "0.1"
 title: Governance — Enable Capability
 summary: A community operator enables a pluggable capability (its Trust Task handlers, registry vocabulary, lifecycle hooks, and management surfaces) for a community.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - governance
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Enabling a capability changes what the community's registry answers for and which handlers execute on its behalf — an evidentiary, state-changing governance act that may be audited after the transport has closed.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Enabling a capability, replayed after it was disabled for cause, re-opens exactly what the disable closed. The maintainer needs to be able to refuse the older document, which means being able to date it.
 sideEffects:
   level: mutating
   rationale: "Activates handlers, discovery advertisement, and lifecycle hooks for the capability; reversible via governance/capability/disable."

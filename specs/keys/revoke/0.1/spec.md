@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Revoke
 summary: A producer retires a key from further use; the record is kept so signatures it already made remain attributable.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation withdraws signing capacity and is irreversible. An unattributable revocation is a denial-of-service against whoever depended on the key, with no record of who caused it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation destroys the key's usability irreversibly. Replayed after a replacement has been created under the same alias it revokes the replacement, and only a window in which the document is too old to execute prevents that.
 sideEffects:
   level: destructive
   rationale: "Irreversible: a revoked key MUST NOT be reactivated. The record survives, but the key's usefulness does not."

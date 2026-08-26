@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Remove Account
 summary: An administrator removes a served account from the mediator, refusing to remove protected mediator or rootAdmin accounts.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Removing an account is a destructive administrative mutation whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Removing an account detaches it irreversibly, and replayed after the account has been re-added it detaches the new attachment instead. The document identifies the account but not which attachment of it, so the timestamp does that work.
 sideEffects:
   level: destructive
   rationale: "Removes a served account and its queue state; re-adding creates a fresh account, not a restoration."

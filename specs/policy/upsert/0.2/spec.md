@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Policy — Upsert
 summary: Create or update a Rego policy module on the maintainer. New policies take effect on the next request evaluation; no restart required.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Policy changes alter the maintainer's security posture for every subsequent request. The producer's identity MUST be verifiable for audit and to prevent stealth modifications.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An upsert writes the policy body wholesale, so two copies applied out of order leave the older text in force. The acceptance window is what lets the maintainer refuse the older one rather than write it.
 sideEffects:
   level: mutating
   rationale: "Creates or updates a Rego policy module; recoverable by upserting again."

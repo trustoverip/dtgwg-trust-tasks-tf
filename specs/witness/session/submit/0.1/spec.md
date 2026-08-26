@@ -4,7 +4,7 @@ version: "0.1"
 title: Witness — Session Submit
 summary: A participating party submits its presentation, bound to its session challenge; the witness's mandatory response delivers the Verifiable Witness Credential and its digest — the outcome evidence a VWC presentation must ship, and the terminal document a taskContext points at.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - witness
@@ -37,6 +37,9 @@ proofRequirement:
     condition in its purest form. An unproofed response here would make the
     VWC's completion evidence unattributable — the exact defect the
     qualifying profile exists to exclude.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The submission is made under the subject's own authority and carries secret material into the session. A replayed submission re-submits it into whatever session now holds the same identity.
 sideEffects:
   level: mutating
   rationale: "Successful execution mints a Verifiable Witness Credential. Not compensatable by this exchange; revocation is the witness's own act."

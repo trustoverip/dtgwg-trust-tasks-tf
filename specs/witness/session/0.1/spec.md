@@ -4,7 +4,7 @@ version: "0.1"
 title: Witness — Session
 summary: Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. The witness's response issues the session challenge; this document's id is the value that party's Verifiable Witness Credential later carries as taskContext.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - witness
@@ -33,6 +33,9 @@ proofRequirement:
     to — and because this session's documents are retained as the context of
     outcome evidence relied on by parties outside the exchange: a forged or
     unattributable challenge poisons everything built on it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A witnessing session is opened for one occasion. Replayed, it opens a second session against a witness who agreed to one, and the session is what subsequent submissions are accepted under.
 sideEffects:
   level: mutating
   rationale: "The witness opens session state it must hold until the session terminates or expires."

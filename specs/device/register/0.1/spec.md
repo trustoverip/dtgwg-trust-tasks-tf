@@ -4,7 +4,7 @@ version: "0.1"
 title: Device — Register
 summary: A newly-onboarded Companion or Service claims its device record on the maintainer, supplying form factor, display name, HPKE public key, and optional device attestation; wraps the maintainer's existing provision-integration → acl/swap-key bootstrap.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Registration binds a device identity to operator-significant capabilities. The producer's identity MUST be verifiable so the maintainer can attribute the registration to a specific consumer key (the one the operator authorised in provision-integration).
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Registration binds a device to the account. A replayed registration re-admits a device the owner has since removed, which is the second execution SPEC §7.2 item 11 exists to absorb and can only absorb inside a bounded window.
 sideEffects:
   level: mutating
   rationale: "Claims a device record on the maintainer; revocable via disable/wipe."

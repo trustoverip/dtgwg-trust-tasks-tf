@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — Request
 summary: A messaging bridge asks a Verifiable-Trust Agent whether an inbound conversation may proceed to an AI agent, prompting operator consent on first contact.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

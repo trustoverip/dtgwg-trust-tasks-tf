@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Website — Generations List
 summary: List a managed-mode website's deploy generations, marking the current one.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, website, generations, list]
 authors:

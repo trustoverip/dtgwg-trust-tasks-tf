@@ -728,6 +728,10 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
@@ -774,6 +778,10 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
@@ -816,6 +824,10 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
@@ -940,6 +952,10 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-3", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         // No proof.
 
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
@@ -978,6 +994,10 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-4", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> =
@@ -1028,6 +1048,10 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-5", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
@@ -1092,6 +1116,10 @@ mod tests {
         );
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         // No proof, no IS_PROOF_REQUIRED — handler should run.
 
         let outcome: ConsumeOutcome<list::Response> = consume_inbound(
@@ -1141,6 +1169,10 @@ mod tests {
         );
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<list::Response> =
@@ -1189,6 +1221,10 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-pi-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
         doc.proof = Some(dummy_proof());
 
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
@@ -1247,6 +1283,10 @@ mod tests {
         // member filled from the transport-authenticated peer (§4.8.1), which is
         // the behaviour under test.
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
 
         let outcome: ConsumeOutcome<list::Response> =
             consume_inbound::<_, _, _, StubVerifier, NoValidator, _, _>(
@@ -1300,6 +1340,10 @@ mod tests {
         );
         doc.issuer = Some("did:web:attacker.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // item 17), so a document meant to be judged on any other ground has
+        // to carry a stamped instant to be placed in an acceptance window.
+        doc.issued_at = Some(Utc::now());
 
         // Reaching Suppressed needs two things at once: resolve_parties
         // must flag a mismatch, and derive_parties must report no

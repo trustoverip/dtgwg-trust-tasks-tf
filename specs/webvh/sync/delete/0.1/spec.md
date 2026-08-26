@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH — Sync Delete
 summary: A did:webvh control plane replicates a DID deletion to a registered hosting server.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [webvh, sync, replication, delete, control-plane, hosting-server]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Where `webvh/sync/update` is recoverable replication, this task is not. The effect is destructive — the hosting server removes the DID's content, and there is no counterpart task that puts it back — so it is held to a higher bar than the rest of the sync family. Service-role authentication binds the producer only to the immediate peer and leaves nothing behind, meaning a deletion could not afterwards be attributed to whoever ordered it. Forged or repudiated deletion is the threat addressed.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Sync deletion removes published log state from the target irreversibly. Replayed after the target was re-populated, it deletes the new content.
 sideEffects:
   level: destructive
   rationale: "Replicates a DID deletion to a hosting server; the server removes the DID's content."

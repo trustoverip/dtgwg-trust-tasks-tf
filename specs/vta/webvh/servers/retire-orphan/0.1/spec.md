@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH Servers — Retire Orphan
 summary: A producer asks an agent to remove a slot from a hosting server after the agent has confirmed for itself that the slot is orphaned — served by the host, with no record in the agent that controls it.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - webvh
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The act is destructive, has no undo, and removes an identifier from the public record. The document is the only durable evidence of who asked for it — the slot it names ceases to exist, so the request cannot be reconstructed from the result.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Retirement destroys an orphaned server record irreversibly, and whether a record is orphaned is a fact about the moment the task runs rather than about the payload. A stale document therefore retires a record that has since been adopted.
 sideEffects:
   level: destructive
   rationale: "Irreversible at the hosting server. A retired slot stops being served, and any DID it published stops resolving. Nothing recreates it; a re-created slot is a new allocation with a new history."

@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — Delete"
 summary: "An administrator deletes a did:webvh the VTA holds; the published log may outlive the deletion, and the response says when it has."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "Destroying a DID's keys ends an identity third parties may still be relying on. The audit record is what remains, so the VTA must attribute it independently of the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a webvh DID makes it unresolvable, and the log entry recording the deletion cannot be withdrawn. Replayed after the identifier was re-created, it deletes the new one.
 sideEffects:
   level: destructive
   rationale: "Destroys the VTA's record and keys for the DID. Anything issued under it becomes unverifiable against a live document."

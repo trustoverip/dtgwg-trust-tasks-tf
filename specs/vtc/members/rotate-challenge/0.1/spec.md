@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Rotate Challenge
 summary: Open a DID-rotation ceremony for the calling member and return the challenge bytes to sign with the old and new keys.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The binding proof for the rotation itself remains the paired old/new signatures presented to vtc/members/rotate — that is unchanged. Opening the ceremony is nonetheless an act taken under the subject's authority against their key material, and an unattributable open lets anyone who can reach the endpoint mint rotation challenges in a member's name, which is a denial-of-rotation and phishing surface even though the challenge alone confers nothing. The proof binds the open to the party entitled to make it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The challenge is issued under the member's authority to rotate, and it is meaningful only while that rotation is still open. Without an issue time a captured challenge stays answerable after the rotation has closed.
 sideEffects:
   level: none
   rationale: "Issues a single-use rotation challenge; the ceremony is completed by a separate task."

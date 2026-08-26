@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Create
 summary: An administrator creates a VTA context — a new separation boundary for keys, DIDs, vault entries and policy, optionally nested under an existing one.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Creating a context creates a scope that ACL grants will later name, so the VTA must attribute it to a specific administrator in the audit record — independently of the transport that carried it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A context is the isolation boundary other tasks are scoped by. A replayed create leaves a second context the operator did not ask for, and anything scoped into it sits outside the boundary they believe they have.
 sideEffects:
   level: mutating
   rationale: "Creates a durable context. Re-creatable, but grants made against it are not."

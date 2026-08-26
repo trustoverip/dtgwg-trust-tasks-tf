@@ -4,7 +4,7 @@ version: "0.1"
 title: Git Trust — Revoke Commit-Signing Trust
 summary: A community operator revokes a member's commit-signing grant; the host marks the TRQP tuple unauthorized (retained for audit) so CI verifiers observe the denial on their next query.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - git
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation is delivery- and audit-critical; it changes what CI enforcement answers and must carry transport-independent integrity.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revoking commit-signing trust, replayed after the signer has been trusted again, removes the new trust instead of the old. Verification decisions are read from whichever record survives, so the ordering the timestamp supplies is load-bearing.
 sideEffects:
   level: mutating
   rationale: "Marks the grant tuple unauthorized; the record is retained for audit, not deleted."

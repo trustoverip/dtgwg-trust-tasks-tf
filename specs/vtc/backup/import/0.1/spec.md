@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Backup — Import
 summary: Restore a Verifiable Trust Community from an encrypted backup envelope. Previews by default; `confirm` clears the backed-up keyspaces and applies it.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A confirmed import clears and replaces every backed-up keyspace. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An import overwrites live community state with the contents of an archive and cannot be undone. Replayed, it rolls the community back to the archive’s moment a second time, discarding everything done since.
 sideEffects:
   level: destructive
   rationale: "With `confirm: true` the backed-up keyspaces are cleared and replaced wholesale. With `confirm: false` nothing is written."

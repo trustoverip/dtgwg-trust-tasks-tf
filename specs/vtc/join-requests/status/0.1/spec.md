@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Join-Requests — Status
 summary: An applicant polls the state of their pending join request, learning what more is needed if deferred.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

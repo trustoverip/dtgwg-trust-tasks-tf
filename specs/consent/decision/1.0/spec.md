@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — Decision
 summary: An approver allows or denies an AI agent's access to a messaging conversation, recording a consent grant at the Verifiable-Trust Agent.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The decision IS the authorization that lets a conversation reach an agent. The proof binds it to the approver — the operator's DID for a directly-signed decision, or an enrolled bridge's DID when it attests the operator's out-of-band choice.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A decision document is a person's answer to one specific request. Replaying it applies that answer to a second request they never considered, which is the duplicate-execution case of SPEC §7.2 item 11, and item 11 needs a window to recognise the duplicate in.
 sideEffects:
   level: mutating
   rationale: "Records a consent grant at the agent; recoverable via consent/revoke."

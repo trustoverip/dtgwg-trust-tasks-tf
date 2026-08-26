@@ -4,7 +4,7 @@ version: "0.2"
 title: Auth — Step-up Approve Response
 summary: An approver's signed answer to a step-up approve-request — the proof on this document is the cryptographic gate the relying party uses to elevate the subject's session.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Exactly one cryptographic gate MUST back the elevation. For `evidence.kind = did-signed` (the default when `evidence` is absent) the gate IS the framework proof — a signature from the approver's authoritative key (the subject's own key in self step-up, the delegated approver's key in delegated step-up) — so proof is mandatory in that case. For `evidence.kind = webauthn` the gate is the carried WebAuthn assertion over the challenge, and the framework proof MAY be omitted; WebAuthn supplies its own audience binding via rpId/origin. The requirement is therefore RECOMMENDED at the spec level and made conditional in the conformance rules below.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: This document carries a human's approval of one specific elevated operation. A replayed approval spends that decision a second time on an operation they never saw, which is the case SPEC §7.2 item 11 exists for, and item 11 cannot recognise the duplicate outside a bounded window.
 sideEffects:
   level: mutating
   rationale: "The signed approval that elevates the subject's session assurance level."

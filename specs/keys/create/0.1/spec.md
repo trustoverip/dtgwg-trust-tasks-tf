@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Create
 summary: A producer asks a key custodian to generate a new key and hold it, receiving only the public half.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Creating a key establishes material the custodian will later sign with on request, so the request has to be attributable to a party authorized to add to the custodian's key set.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Creating a key adds material the agent will sign with. A replayed create leaves a second, unaccounted-for key in the store, and an operator auditing the store cannot tell it from one they asked for.
 sideEffects:
   level: mutating
   rationale: "Generates and stores a new key record."

@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Check Name
 summary: A prospective DID owner asks a hosting service whether a given path is available, and optionally — in the same round-trip — reserves it; or asks the host to auto-assign and reserve a fresh path.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - did
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: An availability probe is short-lived and consumed over an authenticated transport; a reservation outcome may be retained but the reservation's evidentiary record is the subsequent register/publish, not this check.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The check reserves the name it asks about, so it mutates registry state on every execution and a replay consumes a reservation slot for a name the caller no longer wants.
 sideEffects:
   level: mutating
   rationale: "Checks path availability and MAY reserve it in the same round-trip; a reservation is recoverable, expiring state."

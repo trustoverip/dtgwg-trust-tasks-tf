@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Memory — Put
 summary: An agent stores a key/value memory item in a VTA context, so it persists across sessions while staying scoped to that context.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: ai-agents
 keywords:
   - memory
@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A memory write mutates durable per-context state the VTA audits and may replay; transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A put overwrites what the agent remembers, and the agent acts on it. A stale copy therefore restores a superseded belief rather than merely an old value.
 sideEffects:
   level: mutating
   rationale: "Stores a key/value memory item in a context."

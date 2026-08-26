@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Change Owner
 summary: The current owner of a DID slot transfers ownership to a different VID.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, change-owner, transfer]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A change-owner irrevocably removes the prior owner's authority on the slot. The maintainer SHOULD retain a signed evidentiary record.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Transferring ownership of a DID is irreversible without the new owner’s cooperation, so a replayed transfer hands the DID to a party the current owner never chose. Nothing else in the document bounds how long a captured transfer stays executable.
 sideEffects:
   level: destructive
   rationale: "Transfers ownership of the DID slot to a different VID; the prior owner loses control."

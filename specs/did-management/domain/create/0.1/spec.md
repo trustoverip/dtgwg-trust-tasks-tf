@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Create
 summary: An administrator adds a new hosting domain to a DID hosting service.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, create, admin]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Adding a hosting domain enables every downstream operation under that domain. The maintainer SHOULD retain a signed record of who created the domain.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Creating a domain claims a namespace other tasks resolve against. A replay re-creates a namespace an operator has deliberately torn down.
 sideEffects:
   level: mutating
   rationale: "Adds a hosting domain; reversible via disable/purge."

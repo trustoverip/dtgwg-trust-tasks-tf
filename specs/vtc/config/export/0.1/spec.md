@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Config — Export
 summary: Export a Verifiable Trust Community's portable configuration — its profile and its stored configuration overrides — as one self-describing document.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

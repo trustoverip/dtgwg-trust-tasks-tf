@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Update
 summary: An administrator updates the metadata of an existing hosting domain (label only — the `name` itself is immutable).
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, update, admin]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An update is an admin action with audit value.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A domain update overwrites the domain's settings, so a replayed copy reverts them to an earlier revision without any part of the payload showing that it has.
 sideEffects:
   level: mutating
   rationale: "Updates a domain's label metadata; the name itself is immutable."

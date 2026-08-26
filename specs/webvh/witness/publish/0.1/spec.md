@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH — Witness Publish
 summary: A did:webvh owner publishes a witness-signed proof over a log entry so the hosting service can append it to the DID's permanent witness file.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [webvh, witness, oracle, did, proof]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: The witness proof object inside `payload.witness` carries its own cryptographic signature from the witness oracle; an outer Trust Task `proof` becomes valuable only when the request is replayed for audit and is not strictly required when the producer is bound by an authenticated transport.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A witness publication is evidence other parties verify against, and evidence is only evidence if it can be placed in time. A witness statement with no issue time cannot be aged out and can be re-presented as though newly made.
 sideEffects:
   level: mutating
   rationale: "Appends a witness-signed proof to the DID's permanent witness file."

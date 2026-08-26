@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Purge
 summary: An administrator force-removes a disabled hosting domain, bypassing the standard grace period and optionally fanning a purge directive out to every server instance currently serving the domain.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, purge, admin, destructive]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Purge is irreversible and may delete every DID hosted under the domain. The maintainer MUST retain a signed authorisation.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A purge destroys every DID under the domain and cannot be undone. It is the clearest case for a bounded window in this family, because a captured purge with no issue time is an unexpiring instruction to empty a namespace.
 sideEffects:
   level: destructive
   rationale: "Force-removes a disabled domain, bypassing the grace period and optionally purging it from every serving instance."

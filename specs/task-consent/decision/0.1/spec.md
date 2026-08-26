@@ -4,7 +4,7 @@ version: "0.1"
 title: Task Consent — Decision
 summary: An enrolled approver authorizes or refuses one pending privileged task, bound to the exact payload they were shown. The proof on the decision — not the session that carried it — is the authorization.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent
@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The decision IS the authorization, so the proof is the only thing that carries it. The executor takes the approver's identity from the verified proof and never from the transport session — a bearer token proves who opened the channel, not who agreed. Without a proof an attacker holding any authenticated session to the executor could approve their own pending task.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The decision authorises one particular Trust Task to proceed. Replayed, it authorises a second execution of that task on the strength of a human's single answer, which is exactly the case SPEC §7.2 item 11 is written for.
 sideEffects:
   level: mutating
   rationale: Records an approval against the pending request and, at the threshold, issues a single-use grant the requester's re-submit consumes. A denial deletes the pending request.

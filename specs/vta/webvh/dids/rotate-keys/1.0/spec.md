@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH DIDs — Rotate Keys"
 summary: "An administrator rotates a did:webvh's keys by appending a log entry that moves to the pre-committed successor."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "A rotation changes which keys speak for an identity. The VTA must attribute the change to a specific administrator independently of the transport that carried it."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Rotation retires the DID's current keys. Replayed, it retires the keys installed by a later rotation, which restores the very key material the operator was rotating away from.
 sideEffects:
   level: mutating
   rationale: "Appends a log entry and replaces the DID's active keys. The previous keys stop being authoritative."

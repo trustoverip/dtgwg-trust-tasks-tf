@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Deliver VMC
 summary: A member delivers their issued Membership Credential to the community, which stores it and returns a receipt naming the stored credential.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The community must bind the delivered credential to the member who sent it before storing it as their half of the membership pair.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The credential is delivered under the member's own authority and is relied on by the community afterwards. A replayed delivery re-installs a credential that a later rotation may already have superseded.
 sideEffects:
   level: mutating
   rationale: "Stores the member-issued credential against the membership record."

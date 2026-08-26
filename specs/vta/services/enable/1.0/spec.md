@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Enable
 summary: An operator advertises a transport, writing it into the agent's signed DID document.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A change to what the world believes about how to reach this agent. The log entry it writes is signed, and the request that caused it should be attributable too.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Enabling a service, replayed after it was disabled for cause, restarts exactly what the operator stopped, and does so with no record that a stale instruction rather than a decision caused it.
 sideEffects:
   level: mutating
   rationale: "Edits the agent's DID document and republishes its signed log; other parties resolve the result."

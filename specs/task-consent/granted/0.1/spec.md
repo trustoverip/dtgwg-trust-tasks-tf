@@ -4,7 +4,7 @@ version: "0.1"
 title: Task Consent — Granted
 summary: A fire-and-forget notice from the executor to the requester that its pending task has reached the approval threshold and a single-use grant is waiting, so the requester re-submits immediately instead of polling.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent

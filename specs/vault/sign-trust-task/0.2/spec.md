@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Vault — Sign Trust Task
 summary: A vault consumer asks the vault maintainer to attach a Data Integrity proof to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` (or `didcommPeer`) vault entry. The long-term signing key never leaves the maintainer.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vault
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Sign-trust-task causes the maintainer to sign an arbitrary Trust Task envelope as the holder's principal DID — equivalent in power to a session-mint, performed inline whenever the consumer needs to issue a follow-up task in an already-authenticated session. The consumer's identity MUST be verifiable so every signature the maintainer produces is attributable to a specific Companion or Service.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Signing acts with the subject's authority and produces a document other parties rely on independently of this exchange. A signing request that cannot be aged out can be re-presented for further signatures over the same content indefinitely.
 sideEffects:
   level: mutating
   rationale: "Attaches a Data Integrity proof as the entry's principal DID; the long-term key never leaves the maintainer."

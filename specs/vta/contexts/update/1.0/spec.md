@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Update
 summary: A super-administrator edits a context's name, description, DID or policy; the id is fixed because ACL scopes name it.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A policy edit changes what the context permits for everyone inside it, so the VTA must attribute the change to a specific administrator independently of the transport.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An update overwrites the context's settings, so a stale copy reverts the isolation boundary's configuration to an earlier revision without saying that it has.
 sideEffects:
   level: mutating
   rationale: "Edits a context's metadata and, where supplied, replaces its policy."

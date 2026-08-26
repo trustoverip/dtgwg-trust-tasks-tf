@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — Set Approver
 summary: An admin binds the operator who approves inbound-messaging consent for a platform within a context, and how the prompt reaches them.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The binding decides who may approve a conversation reaching an agent; it must be bound to an admin so a third party cannot install themselves as the approver.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Naming who may approve on a principal's behalf is the configuration every later consent decision is checked against, so a replayed copy reinstates an approver that has since been removed.
 sideEffects:
   level: mutating
   rationale: "Binds the operator who approves inbound-messaging consent; reconfigurable."

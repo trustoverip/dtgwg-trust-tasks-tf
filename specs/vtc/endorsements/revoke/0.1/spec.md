@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsements — Revoke
 summary: Revoke an issued endorsement credential by flipping its published status-list bit; reports alreadyRevoked on re-revocation rather than succeeding silently.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation withdraws a credential third parties rely on. The instruction MUST be attributable and non-repudiable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revoking an endorsement, replayed after the member was endorsed again, removes the new endorsement. Endorsements are read by third parties, so the wrong one disappearing is visible to everyone and explicable by no one.
 sideEffects:
   level: mutating
   rationale: "Flips the credential's published revocation bit; not reversible through this task."

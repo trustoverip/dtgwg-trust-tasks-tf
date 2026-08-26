@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Step-up Approve Request
 summary: A relying party asks a wallet or verifiable-trust agent to ratify an authentication step-up — issuing a challenge that the approver will sign in the follow-up approve-response.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth

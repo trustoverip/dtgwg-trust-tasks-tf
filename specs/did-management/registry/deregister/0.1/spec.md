@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Registry Deregister
 summary: An administrator removes a server instance from the control-plane registry.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, registry, admin, deregister]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Deregister cuts the instance off from outbound fleet messages. The maintainer SHOULD retain a signed record of the change.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deregistration removes a DID from the registry other parties resolve against. Replayed after re-registration it removes the new entry, and the registry has nothing but this timestamp to date the instruction by.
 sideEffects:
   level: mutating
   rationale: "Removes a server instance from the control-plane registry; the instance may re-register."

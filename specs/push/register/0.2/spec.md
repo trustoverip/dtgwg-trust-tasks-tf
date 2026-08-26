@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Push — Register
 summary: A device registers its platform push token (APNs / FCM / Web Push) with a push gateway and receives an opaque WakeHandle in exchange. The raw token is held by the gateway only.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: notifications
 keywords:
   - push
@@ -29,6 +29,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Over the DIDComm binding the authcrypt sender authenticates the registering device intrinsically, so a document proof is redundant. Over the HTTPS binding a caller MAY carry a did-signed proof. Registration is low-stakes — the issued handle is opaque and useless until the device's VTA provisions a trigger allowlist for it (push/provision) — so proof is RECOMMENDED, not REQUIRED.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Registration attaches a push endpoint to the account. Replayed after the endpoint was removed it re-attaches it, and the account holder has no signal that an old document rather than a new decision caused it.
 sideEffects:
   level: mutating
   rationale: "Registers a device's push token and mints an opaque WakeHandle."

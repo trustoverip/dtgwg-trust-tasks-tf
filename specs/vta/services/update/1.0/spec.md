@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Update
 summary: An operator changes the settings of a transport the agent already advertises.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Re-points live traffic; the request should be as attributable as the log entry it produces.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An update replaces the service's running configuration or version wholesale, so an out-of-order copy redeploys a superseded release as though it were current.
 sideEffects:
   level: mutating
   rationale: "Edits the agent's DID document and republishes its signed log."

@@ -4,7 +4,7 @@ version: "0.1"
 title: Provision — Integration
 summary: A relayer presents a VP-signed bootstrap request from an integration holder; the maintainer mints the integration's DIDs and admin credential from a registered DID template and returns the material in a sealed bundle the holder can open.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - provision
@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Provisioning mints DIDs, issues an authorization VC, and grants the resulting admin DID an ACL row at the maintainer — the equivalent of "create an account with admin powers." Two distinct proofs are involved (the relayer's transport-level credential authenticating the *caller*, and the holder's VP `DataIntegrityProof` authenticating *who the bundle belongs to*); both MUST be present and verified before the maintainer mints anything. See "Two-proof model" in the spec body.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Provisioning hands the integration long-lived secret material and creates the binding it is used under. A replayed provision re-issues that material to a party whose access may have been withdrawn since, and the secret cannot be recalled once delivered.
 sideEffects:
   level: mutating
   rationale: "Mints the integration's DIDs and admin credential from a template and returns a sealed bundle; the credential is revocable."

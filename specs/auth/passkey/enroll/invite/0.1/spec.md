@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Passkey Enroll (invite)
 summary: An administrator issues a single-use invite URL that an unenrolled subject can redeem to bind their first passkey, bridging the cold-start gap where the subject has no existing authentication factor.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth
@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An invite assigns a role + scopes to a VID the auth service has never seen authenticate. The administrator's signed proof is the entire trust chain — without it, a token-stealing attacker could mint admin-tier invites pointing at attacker-controlled VIDs.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An enrolment invite is an offer to bind an authenticator, and an offer with no issue time is an offer that never lapses. Requiring it gives the maintainer an outer bound on how long a captured invite stays usable, independent of whatever expiry the invite body carries.
 sideEffects:
   level: mutating
   rationale: "Issues a single-use enrollment invite; consumable/expiring state."

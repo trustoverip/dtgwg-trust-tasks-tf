@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Auth — Passkey Login (finish)
 summary: A party submits the WebAuthn assertion completing a passkey login or step-up; the auth service verifies the assertion and either issues a fresh session (login) or elevates an existing session's AAL (step-up).
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth
@@ -27,6 +27,9 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: The cryptographic gate is the WebAuthn assertion itself; the framework proof adds value only when the producer is signing on behalf of an existing session (step-up against a session held by a different VID). Consumers MAY require it for the step-up flow.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Login completion mints a session. A replayed completion mints a second one, for the same principal and out of that principal’s sight, so the duplicate-execution record of SPEC §7.2 item 11 is the control that matters here and it is implementable only over a bounded window.
 sideEffects:
   level: mutating
   rationale: "Issues a fresh session or elevates an existing session's AAL."

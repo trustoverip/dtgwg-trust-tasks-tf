@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Device — Set Wake
 summary: A device tells its VTA the opaque WakeHandle it obtained from a push gateway, so the VTA can own the trigger allowlist and provision the gateway. Idempotent; carries no platform push token.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device
@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Setting the wake channel determines who can cause this device to be woken and what the VTA provisions to the gateway. It is security-significant and infrequent (only on token rotation), so — unlike the high-volume device/heartbeat — it carries a REQUIRED holder proof and is fully audited.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A wake schedule is an overwrite, so an out-of-order copy silently reverts the device to a schedule the owner has already changed. Ordering the two requires a timestamp.
 sideEffects:
   level: mutating
   rationale: "Sets the device's opaque WakeHandle on the VTA; idempotent config write."

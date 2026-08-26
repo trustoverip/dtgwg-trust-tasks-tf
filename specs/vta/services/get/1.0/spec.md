@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Get
 summary: An operator reads the current state of one transport.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

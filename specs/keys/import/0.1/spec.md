@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Import
 summary: A producer hands an externally-created private key to a custodian, which stores it and thereafter exercises it like any key it generated.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: This request installs signing material the custodian will afterwards exercise on request. An unauthenticated import lets anyone who can reach the endpoint plant a key and then ask for signatures under it, so the producer's authority must be established before the material is stored — not after.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Importing key material places a caller-supplied key under the agent's control. A replayed import reinstates material an operator has deliberately removed from the store.
 sideEffects:
   level: mutating
   rationale: "Creates a durable key record the custodian will sign with. Not destructive: an import never replaces existing material — a collision is refused."

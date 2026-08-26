@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — Update Account
 summary: An administrator applies a partial update to a served account — role, access-control capabilities, and queue limits in one task; a member omitted leaves that facet of the account unchanged.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Updating an account is an administrative mutation — and, when it assigns a role, a privilege grant — whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An account update overwrites credentials and endpoints wholesale, so a stale copy points the mailbox back at a host or credential the owner has already rotated away from.
 sideEffects:
   level: mutating
   rationale: "Partial update of a served account's role, capabilities, and queue limits; reversible."

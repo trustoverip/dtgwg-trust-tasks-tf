@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Servers — Remove"
 summary: "A super-administrator removes a hosting registration; DIDs the server already serves keep resolving."
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "Removing a registration severs the VTA's route for updating every DID published through it. Attribution must not depend on the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Removing a server stops it serving the operator’s logs. Replayed after a server was re-registered it removes the new registration, and can leave DIDs with nothing publishing them.
 sideEffects:
   level: mutating
   rationale: "Removes the registration. Published DIDs are unaffected and keep resolving."

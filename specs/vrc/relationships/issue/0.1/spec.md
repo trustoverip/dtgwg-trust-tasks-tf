@@ -4,7 +4,7 @@ version: "0.1"
 title: VRC Relationships — Issue
 summary: Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange, and returns a delivery receipt. Performed once in each direction — the exchange is mutual.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vrc
@@ -30,6 +30,9 @@ proofRequirement:
     envelope proof is what attributes the delivery itself on a relayed path.
     On the response, OPTIONAL: the receipt is consumed inside the exchange by
     the connected peer, and the transport's authcrypt authenticates it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Issuing a relationship credential creates a record third parties read as current. A replayed issuance re-asserts a relationship that may have been ended, and the credential outlives the exchange that produced it.
 sideEffects:
   level: mutating
   rationale: "The receiving party stores a credential. Not compensatable by this exchange; revocation is the issuer's own act."

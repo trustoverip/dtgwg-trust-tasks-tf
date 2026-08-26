@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Website — File Delete
 summary: Delete a single file from a community's website root.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, website, files, delete]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Deleting a served file changes the live site and destroys content; it MUST be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a published file removes it irreversibly and the deletion is visible to every visitor. Replayed after a file was uploaded to the same path, it deletes the replacement.
 sideEffects:
   level: destructive
   rationale: "Removes a file from the website root; the bytes are gone unless separately backed up."

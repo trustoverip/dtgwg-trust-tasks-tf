@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Query
 summary: Verifier to holder — a DCQL query with a freshness nonce and a mandatory stated purpose, which the holder answers, defers for consent, or refuses.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange
@@ -27,6 +27,9 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: An authcrypted transport proves which DID is asking, and the verifier's identity is the input the holder's consent decision turns on. A document proof is permitted where the envelope's authentication does not survive relaying.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The query mutates exchange state and returns nothing, so the consumer has no reply to correlate a duplicate against and must fall back on the record of SPEC §7.2 item 11, which is bounded by this timestamp and nothing else.
 sideEffects:
   level: mutating
   rationale: A query the holder does not auto-consent to is PERSISTED as a deferral awaiting an out-of-band decision. Asking therefore leaves durable state at the holder even when nothing is presented — which is also why an unbounded query rate is a storage concern, not merely a nuisance.

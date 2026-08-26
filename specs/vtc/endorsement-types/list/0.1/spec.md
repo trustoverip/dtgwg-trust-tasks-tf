@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsement-Types — List
 summary: List the endorsement types a community recognises.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, endorsements, endorsement-types, list]
 authors:

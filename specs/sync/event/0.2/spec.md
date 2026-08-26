@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Sync — Event
 summary: One-way push notification from the maintainer to a subscribing consumer, carrying a single vault/ACL/policy change event. Pairs with vault/sync/0.1 for offline catch-up.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - sync
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A push event causes the consumer to mutate cache state (apply an upsert, wipe a tombstone, surface a device-disabled warning). The maintainer's authority MUST be verifiable so the consumer cannot be tricked by a mediator or man-in-the-middle into mutating cache against a spoofed event.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A sync event mutates state and has no response, so the consumer cannot correlate a duplicate against a reply and depends entirely on the record of SPEC §7.2 item 11, which is bounded by the acceptance window this member supplies. Re-delivered events are the ordinary failure mode of a sync channel, not an exotic one.
 sideEffects:
   level: mutating
   rationale: "Delivers a single change event that the subscriber applies to its replicated cache."

@@ -4,7 +4,7 @@ version: "0.1"
 title: Registry — Rotate DID Keys
 summary: An administrator rotates the keys of a trust registry's own agent-managed did:webvh in place, preserving the registry's DID while refreshing its key material.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - trust-registry
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rotating the registry's identity keys is the most consequential administrative act the registry accepts; the instruction must be attributable and verifiable independently of the transport, and auditable after the fact.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Rotating the registry's own DID keys retires the previous key irreversibly. A replayed rotation retires the key the registry is currently signing with, so this is the family's availability risk as much as its integrity one.
 sideEffects:
   level: destructive
   rationale: Advances the registry's did:webvh log irreversibly and supersedes the current signing keys — material signed under the old keys can no longer be freshly produced, and the rotation cannot be undone, only followed by another rotation.

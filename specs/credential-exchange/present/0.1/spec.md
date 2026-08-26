@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Present
 summary: Holder to verifier — an OID4VP vp_token disclosing exactly the consented claims, bound to the verifier's nonce and audience.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange
@@ -27,6 +27,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The `vp_token` already carries holder binding over the verifier's nonce and audience, and that remains the proof that establishes the presentation — an envelope proof does not strengthen it. The envelope proof is required for a different reason. Execution exercises the subject's own authority and the response discloses secret material the caller retains, so the exchange is one a third party may later be asked to rely on, which is the case §4.7.1 makes a MUST. Without a document proof the transaction as a whole is repudiable even though the presentation inside it is not, and an intermediary can relay a genuine `vp_token` under an envelope of its own.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A presentation carries the subject's credential material to a verifier under the subject's authority, with no response document to close the exchange. A presentation that cannot be dated is one a verifier can forward indefinitely.
 sideEffects:
   level: none
   rationale: Presenting asserts; it does not mutate the verifier. Any record the verifier keeps is its own.

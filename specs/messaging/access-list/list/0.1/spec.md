@@ -4,7 +4,7 @@ version: "0.1"
 title: Messaging — List Access List
 summary: A requester pages through a served account's full access list — the per-account set of other DIDs that, combined with the account's accessListMode, governs who may send to that account.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: messaging
 keywords:
   - messaging

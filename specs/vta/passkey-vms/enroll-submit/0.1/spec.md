@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Passkey-VM — Enroll Submit
 summary: An administrator submits the WebAuthn registration result for an open ceremony; the VTA re-derives the public key from the attestation, rejects browser tampering, and publishes the passkey as a verificationMethod on the DID.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vta
@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Submission mutates a DID document (a passkey verificationMethod is appended via a WebVH log entry) and is admin-gated. The VTA MUST attribute the change to a producer holding the admin role on the target DID's context; transport-independent producer identity is required so the published change is non-repudiable and auditable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Enrolment submission binds an authenticator into the agent's verification method set. A replayed submission re-binds one the owner has since removed.
 sideEffects:
   level: mutating
   rationale: "Publishes a passkey as a verificationMethod on the DID via a log entry."

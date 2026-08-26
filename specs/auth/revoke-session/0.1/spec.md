@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Revoke Session
 summary: A subject (or an administrator acting on their behalf) tells an auth service to invalidate a specific session or every session bound to the subject.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - auth
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation is an evidentiary event that affects every device or process holding a token for this subject. Requiring a verified proof prevents an attacker who has captured one token from invalidating other sessions (denial-of-service via revocation) without controlling the subject's signing key.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Session revocation replayed after the principal has signed in again terminates the new session instead of the old one. The issue time is what tells the maintainer which session the instruction was written about.
 sideEffects:
   level: mutating
   rationale: "Invalidates one or all of the subject's sessions; recoverable by re-authenticating."

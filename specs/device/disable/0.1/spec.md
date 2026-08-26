@@ -4,7 +4,7 @@ version: "0.1"
 title: Device — Disable
 summary: Disable a Companion or Service; the maintainer revokes its ACL entry and refuses subsequent authentication, but does not actively instruct the device to wipe its cache.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device
@@ -22,6 +22,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Disable is a state-changing operation that withdraws access — high-trust, audited.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Disabling a device replayed after it has legitimately been re-enabled takes it out of service again, and the payload alone cannot distinguish a stale instruction from a current one.
 sideEffects:
   level: mutating
   rationale: "Revokes a device's ACL entry and refuses its authentication; recoverable by re-enrolling."

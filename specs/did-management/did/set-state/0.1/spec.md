@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Set State
 summary: A DID owner (or admin) sets a hosted DID's hosting state — `active` for live resolution, `suspended` to serve a deactivation marker while content is retained. Supersedes the separate enable / disable verbs.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, state, suspend, restore, enable, disable]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A hosting-state transition is evidentiary in both directions — suspension is a change auditors corroborate, and restoring resolution has real downstream consequences (resolution traffic resumes, witness watchers re-engage) — so the maintainer retains a signed record.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: State is set rather than advanced, so a stale copy of this document moves the DID back into a state an operator has already left, deactivated to active being the case that matters.
 sideEffects:
   level: mutating
   rationale: "Moves a DID slot between live resolution and suspension. Both directions are reversible with another set-state; content is retained throughout."

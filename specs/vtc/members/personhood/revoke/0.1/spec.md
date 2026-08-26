@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members Personhood — Revoke
 summary: An administrator revokes a member's personhood, re-issuing their credentials with the personhood flag cleared.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revoking a member's personhood downgrades their standing; it MUST be attributable to the operator who ordered it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revoking a personhood assertion, replayed after it was asserted again, removes the new assertion. Personhood gates other privileges in the community, so the wrong one being removed cascades.
 sideEffects:
   level: mutating
   rationale: "Clears the member's personhood flag and re-issues their credentials; reversible via a fresh personhood/assert."

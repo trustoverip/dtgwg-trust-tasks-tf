@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Application State — Get Many
 summary: An application reads up to 256 of its state records from one namespace in a single round trip, with every requested key accounted for as found, missing, or deferred to a follow-up request.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - vta

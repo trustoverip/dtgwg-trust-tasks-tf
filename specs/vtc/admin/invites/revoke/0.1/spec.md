@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Admin Invites — Revoke
 summary: Revoke an outstanding administrator invite by its `jti`, so the install URL can no longer be redeemed.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - vtc
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Withdraws a pending grant of administrator access. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revoking an administrative invite, replayed after a new invite was issued to the same person, revokes the new one instead. The community loses the admission it intended and gains no signal that a stale document caused it.
 sideEffects:
   level: mutating
   rationale: "Marks an issued invite unusable. Consumed invites are immutable and are refused."

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsements — Issue
 summary: A community issues a Verifiable Endorsement Credential of a registered type to a subject, allocating a published status-list slot so foreign verifiers can check revocation.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An issuance instruction mints a credential a third party will rely on; it is replayed by an auditor and corroborates the resulting credential's provenance, so transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An endorsement is a statement about a member that others rely on, and issuance returns material that leaves the community's control. A replayed issuance re-endorses a member whose standing may have changed since.
 sideEffects:
   level: mutating
   rationale: "Mints a signed endorsement credential and consumes a status-list slot; revocable, but the slot is not reclaimed."

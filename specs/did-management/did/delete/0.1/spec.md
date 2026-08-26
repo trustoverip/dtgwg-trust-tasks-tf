@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Delete
 summary: A DID owner soft-deletes a hosted DID — the slot is taken off the public resolution path but content is retained for the host's recovery window.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, delete, soft-delete]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A delete is an evidentiary record of authorised removal; auditors retain the document to corroborate the action.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deletion removes the DID's registry entry irreversibly. Replayed after the identifier has been re-registered it deletes the new registration, and only an acceptance window lets the registry refuse the stale document.
 sideEffects:
   level: destructive
   rationale: Takes the DID off the public resolution path. Reversible only within the host's recovery window, after which resolution fails permanently — a human is consenting to making the identity unresolvable.

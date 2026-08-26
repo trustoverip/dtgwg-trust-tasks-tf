@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Sign
 summary: A producer asks a key custodian to sign a supplied byte string with a named key it holds, without the private key ever leaving the custodian.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The request asks a custodian to exercise a private key on the producer's say-so, so the custodian must be able to attribute the request. Where the transport does not already authenticate the producer, a proof is the only thing standing between the key and anyone who can reach the endpoint — which is why it is REQUIRED rather than left to the transport. Forgery of the request is the threat, and the resulting signature is a durable artefact that outlives the exchange and will be relied on by parties who never saw it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Signing acts with the subject's authority and produces evidence that outlives the exchange. A signing request that cannot be placed in an acceptance window can be re-presented indefinitely to obtain further signatures over the same material.
 sideEffects:
   level: none
   rationale: "No stored state changes. The signature itself is a durable, externally-verifiable artefact, so the operation is not repeatable-without-consequence in the way a read is."

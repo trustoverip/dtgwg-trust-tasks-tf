@@ -4,7 +4,7 @@ version: "0.1"
 title: ACL — Swap Key
 summary: An ACL holder atomically replaces the VID bound to one of their own AclEntries with a new VID — preserving role, scopes, and label, and closing the old VID's access in the same transaction.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - acl
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Swap-key is a high-trust mutation — the holder is changing which key controls future access to their resources. Without a verified proof the maintainer cannot tell the swap apart from a hostile takeover by an attacker who has captured a single access token.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Swapping the key on an ACL entry displaces the previous key irreversibly, so a replayed swap restores a key a later swap had already retired, re-arming a holder the maintainer meant to cut off. The maintainer needs a window in which to refuse the stale document.
 sideEffects:
   level: destructive
   rationale: "Replaces the VID bound to an ACL entry and closes the old VID's access in the same transaction — the retired key can no longer authorize."

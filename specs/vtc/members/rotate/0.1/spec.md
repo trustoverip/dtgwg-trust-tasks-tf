@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Rotate
 summary: Complete a member DID rotation by proving control of the old and new keys; re-issues credentials to the new DID.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -22,6 +22,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rotating a member's DID reassigns their identity in the community. It MUST be attributable, in addition to the in-payload dual-key signatures that authorize the rotation itself.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Rotation replaces the member's key and retires the old one. Replayed, it re-installs a key the member has already rotated away from, which is the compromise the rotation was performed to end.
 sideEffects:
   level: mutating
   rationale: "Repoints the member to a new DID and re-issues their credentials; recoverable only by a further rotation."

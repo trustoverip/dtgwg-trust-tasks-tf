@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Admin Invites — Create
 summary: Mint a one-shot install URL and claim code that lets a named DID enrol an administrator passkey for a Verifiable Trust Community.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: access-control
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Mints a credential-bearing URL that grants administrator access. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The invite carries secret material that admits its bearer as an administrator. Replayed, it mints a second such invite, and the material is out of the community’s hands the moment it is returned.
 sideEffects:
   level: mutating
   rationale: "Persists an invite and, when the target DID has no entry, creates its ACL row."

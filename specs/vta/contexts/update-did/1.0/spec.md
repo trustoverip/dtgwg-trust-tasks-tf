@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Contexts — Update DID
 summary: An administrator sets the DID a context acts as; existing references to the previous DID are not migrated.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: This changes the identity a context acts as, which downstream parties will see as the author of everything it signs afterwards. The VTA must attribute the change independently of the transport.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Repointing a context's DID changes which identity the agent acts as inside it. Replayed out of order it restores a DID the operator has already moved the context off, typically one whose keys were being retired.
 sideEffects:
   level: mutating
   rationale: "Changes the DID a context acts as. Reversible as a write, but signatures made under either DID remain attributed to it."

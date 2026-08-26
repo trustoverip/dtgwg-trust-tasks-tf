@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Relationships — Revoke
 summary: The issuer revokes a Verifiable Relationship Credential they previously published.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Only the credential's issuer may revoke it; the proof signer is checked against the stored issuer, and the revocation must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revoking a relationship, replayed after it was re-established, severs the new one. Both parties act on the published state, so the severance is immediately load-bearing and not merely recorded.
 sideEffects:
   level: mutating
   rationale: "Revokes a relationship credential; reversible by publishing a fresh one."

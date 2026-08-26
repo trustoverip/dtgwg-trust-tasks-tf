@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — List
 summary: A producer enumerates the keys a custodian holds, optionally filtered by lifecycle state or scope, with the total so a partial page is never mistaken for the whole set.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Purge
 summary: Irreversibly delete a removed member's tombstone and residual records from a Verifiable Trust Community, refusing when it would orphan the last administrator.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Irreversible erasure of a member record. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A purge erases the member and their records irrecoverably. A purge document that cannot be aged out is a standing instruction to erase whoever now holds that membership.
 sideEffects:
   level: destructive
   rationale: "Deletes the membership record and its tombstone. Not recoverable."

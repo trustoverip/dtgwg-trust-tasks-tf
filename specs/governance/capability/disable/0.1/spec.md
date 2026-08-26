@@ -4,7 +4,7 @@ version: "0.1"
 title: Governance — Disable Capability
 summary: A community operator disables a previously enabled capability; its handlers stop, it leaves discovery, and its lifecycle hooks stop firing, while its registry records are retained for audit.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - governance
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Disabling a capability is a state-changing governance act with the same audit requirements as enabling one.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Disabling a capability is a control action whose value is in its timing. Replayed, it disables a capability an operator has deliberately restored, and does so with no visible cause.
 sideEffects:
   level: mutating
   rationale: "Deactivates handlers, discovery advertisement, and lifecycle hooks; the capability's registry records are retained (auditable), not deleted."

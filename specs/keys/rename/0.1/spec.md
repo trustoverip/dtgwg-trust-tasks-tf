@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Rename
 summary: A producer changes the identifier a custodian addresses a key by, leaving the key material untouched.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: key-management
 keywords:
   - keys
@@ -22,6 +22,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The identifier is what signing requests name, so changing it changes which requests reach this key. That is an authorization-relevant edit and must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Names are how other tasks select a key, so a stale rename repoints a name at a key the operator has already moved it off, and every subsequent signing request follows the name.
 sideEffects:
   level: mutating
   rationale: "Changes the stored identifier. The key material and its public half are unchanged."

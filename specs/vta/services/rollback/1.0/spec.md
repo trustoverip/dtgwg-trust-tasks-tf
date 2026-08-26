@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Rollback
 summary: An operator reverts a transport to its previous settings by writing a new log entry.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Changes what the world believes about reaching this agent, exactly as enable and update do.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A rollback reverts the service to a previous release, so what it discards is decided by when it runs. Replayed, it discards a release deployed since the first execution.
 sideEffects:
   level: mutating
   rationale: "Writes a new DID-document log entry restoring earlier settings."

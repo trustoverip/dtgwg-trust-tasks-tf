@@ -4,7 +4,7 @@ version: "1.0"
 title: Consent — Revoke
 summary: An operator revokes a standing consent grant so a previously-allowed messaging conversation no longer reaches the AI agent.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: consent
 keywords:
   - consent
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation withdraws a previously-granted authorization; it must be bound to an approver so a third party cannot silently cut off a conversation.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation withdraws a consent that may since have been granted again. Without a window the recipient cannot tell a withdrawal written about the current grant from one written about its predecessor.
 sideEffects:
   level: mutating
   rationale: "Revokes a standing consent grant; recoverable via consent/decision."

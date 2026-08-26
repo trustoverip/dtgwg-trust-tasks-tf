@@ -4,7 +4,7 @@ version: "0.5"
 title: Trust Task Error
 summary: The framework-defined response type a consumer returns when it cannot or will not act upon a received Trust Task document.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: framework
 keywords:
   - error

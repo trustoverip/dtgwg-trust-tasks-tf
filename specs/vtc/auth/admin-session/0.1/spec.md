@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Auth — Admin Session
 summary: Exchange a bearer access token for an HttpOnly cookie session, so a browser administration UI can call the community without exposing the token to scripts.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: authentication
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The presented access token was minted against a proven identity, but the token is a bearer artefact — anyone who obtains it can replay it, and the envelope proof is what binds the presentation to the party entitled to make it. Execution mints an admin session in the subject's name and returns secret session material the caller retains, so token theft and replay are the threats addressed. Requiring the proof also brings the audience-binding rule of §4.8.2 into force, which pins the session to a named recipient rather than to whoever presents the token.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An admin session is minted under the administrator's own authority and returns the session secret to the caller. A replayed request mints a second concurrent session for that administrator, the highest-privilege duplicate the community can suffer.
 sideEffects:
   level: mutating
   rationale: "Mints a cookie-backed session bound to the token's identity."

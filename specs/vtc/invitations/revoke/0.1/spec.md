@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Invitations — Revoke
 summary: Revoke an issued Invitation Credential by flipping its published status-list bit, reporting whether this call was the one that revoked it.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Withdraws a live credential. The revoking party is recorded and must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation cancels one invitation, and a stale copy cancels whichever invitation now occupies the same identity, typically the replacement issued to the same person.
 sideEffects:
   level: mutating
   rationale: "Flips the credential's bit in the community's published BitstringStatusList. Idempotent."

@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Credentials — Issue
 summary: A context authority issues a scoped, time-boxed Verifiable Credential to a holder after operator step-up approval — the basis for an explicit, revocable cross-context share.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credentials
@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: An issuance instruction authorizes the minting of a bearer-usable credential; it is replayed by an auditor and corroborates the resulting credential's provenance, so transport-independent integrity is required. The operator step-up that gates it is itself a separately-verifiable signed artifact.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Issuance acts with the subject's authority and returns credential material that leaves the agent's control. A replayed issuance mints a second credential over the same claims, and a holder cannot tell which of the two the subject meant to exist.
 sideEffects:
   level: mutating
   rationale: "Issues a scoped, time-boxed credential after step-up approval; revocable."

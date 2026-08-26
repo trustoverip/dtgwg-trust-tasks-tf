@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — List
 summary: An operator enumerates the transports an agent advertises in its DID document.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - vta

@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Rollback
 summary: A DID owner reverts the slot's log chain to a prior published version, discarding the entries above that point.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, rollback, revert]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Rollback is destructive (entries above the target are discarded); the maintainer SHOULD retain a signed record of who authorised the revert and at what point in the chain.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A rollback discards log entries irreversibly, and which entries it discards depends on when it executes rather than on anything in the payload. A document with no issue time therefore names a different destruction every time it is replayed.
 sideEffects:
   level: destructive
   rationale: "Reverts the log chain to a prior version, discarding all entries above that point."

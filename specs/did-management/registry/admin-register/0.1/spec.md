@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Registry Admin Register
 summary: An administrator manually inserts a server instance into the control-plane registry — used to seed a known instance from configuration before the instance has had a chance to self-register.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, registry, admin, seed]
 authors:
@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Admin-register is privileged — a forged record could let an attacker direct fleet messages at an instance they control. The maintainer SHOULD retain a signed authorisation.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An administrative registration bypasses the ordinary claim path, so a captured one is a standing ability to register on the registry’s own authority until the acceptance window closes it.
 sideEffects:
   level: mutating
   rationale: "Inserts a server instance into the control-plane registry; reversible via deregister."

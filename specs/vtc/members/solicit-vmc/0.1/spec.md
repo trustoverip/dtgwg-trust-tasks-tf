@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Solicit VMC
 summary: Ask the community to request a reciprocal Membership Credential from one of its members; the community dispatches the request and the member answers asynchronously.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vtc
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Triggers an outbound request to a member. Recommended for attribution.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Solicitation asks a member for a fresh membership credential. Replayed, it re-solicits indefinitely, and the member has no way to tell a renewed request from a captured one except by when it was written.
 sideEffects:
   level: mutating
   rationale: "Dispatches a request/1.0 message to the member's agent and opens a thread; no credential is created here."

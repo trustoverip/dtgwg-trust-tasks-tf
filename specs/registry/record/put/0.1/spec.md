@@ -4,7 +4,7 @@ version: "0.1"
 title: Registry — Put Record
 summary: An administrator creates or replaces, in a verifiable form, the recognition or authorization record at a trust registry key — one task for both halves of the superseded create/update pair.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - trust-registry
@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Putting a trust record is an evidentiary, state-changing administrative act that may be audited or replayed after the original transport has closed; transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A put replaces the record wholesale, so an out-of-order copy silently restores an earlier revision that resolvers will then serve as current.
 sideEffects:
   level: mutating
   rationale: "Creates or replaces a trust record; deletable and re-puttable."

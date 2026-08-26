@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Application State — Put Many
 summary: An application flushes up to 64 state writes to a VTA in one round trip, each carrying its own version precondition, applied either independently so one conflict does not block the rest or atomically for records sharing an invariant.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: data-exchange
 keywords:
   - vta
@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A batch write mutates durable state that an account's recoverability depends on, and the maintainer audits it. Attribution must survive the transport that carried the request, so that an audit record read later names the application key that wrote rather than the session it arrived on.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: "A batched put overwrites several keys at once, which multiplies the ordering problem rather than changing it: a stale batch reverts every key it names to an earlier revision in a single execution."
 sideEffects:
   level: mutating
   rationale: "Creates or replaces up to 64 records. Recoverable — prior values are overwritten but addresses remain, and a conditional write cannot clobber a version it did not see."

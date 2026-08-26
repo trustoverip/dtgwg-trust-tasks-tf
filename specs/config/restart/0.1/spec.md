@@ -4,7 +4,7 @@ version: "0.1"
 title: Config — Restart
 summary: Request a graceful restart so a process supervisor brings the maintainer back up with restart-gated configuration applied; refuses when no supervisor is present.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - config
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A restart interrupts the maintainer's availability and is a denial-of-service vector if unattributed. It MUST be non-repudiable — who requested the bounce, and when.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A restart interrupts service. A captured restart with no acceptance window is an availability primitive an attacker can fire whenever it suits them, and the duplicate-execution record of SPEC §7.2 item 11 is what makes an honest resend safe.
 sideEffects:
   level: mutating
   rationale: "Triggers a graceful shutdown and supervisor-driven restart; persistent state is preserved (not destructive) but the running process is replaced."

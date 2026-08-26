@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Memory — List
 summary: An agent recalls all memory items stored in a VTA context — cross-session recall, scoped to that context.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: ai-agents
 keywords:
   - memory
@@ -32,6 +32,9 @@ proofRequirement:
     `discloses: secret` response applies — what was released has to stay
     attributable to the VTA that released it, on any transport, including one that
     authenticates only hop by hop.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Listing returns the agent's stored memories, which are secret to their owner. A captured list request keeps returning them for as long as it stays acceptable, so the acceptance window is what bounds the exposure.
 sideEffects:
   level: none
   rationale: "Read-only recall of a context's memory items."

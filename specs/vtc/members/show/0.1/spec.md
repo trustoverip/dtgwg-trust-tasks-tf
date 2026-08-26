@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Show
 summary: Fetch one Verifiable Trust Community member by DID, joined with its ACL role. The read-one companion to vtc/members/list.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc

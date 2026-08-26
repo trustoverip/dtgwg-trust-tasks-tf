@@ -4,7 +4,7 @@ version: "0.1"
 title: Policy — Delete
 summary: Delete a Rego policy module; takes effect on the next request evaluation.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - policy
@@ -21,6 +21,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Removing a policy changes the maintainer's security posture; producer identity MUST be verifiable for audit.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a policy is irreversible and leaves whatever it governed under the fallback. Replayed after a replacement policy was created under the same name, it deletes the replacement.
 sideEffects:
   level: destructive
   rationale: "Deletes a Rego policy module; it stops shaping evaluation immediately and is gone from the maintainer."

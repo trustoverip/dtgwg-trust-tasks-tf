@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Install Claim — Start
 summary: Begin first-admin enrolment against a fresh community — exchange the install token for a WebAuthn registration challenge.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords: [vtc, install, bootstrap, passkey]
 authors:

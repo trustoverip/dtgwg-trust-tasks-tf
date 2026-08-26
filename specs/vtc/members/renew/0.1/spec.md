@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Renew
 summary: A member renews their community membership, re-issuing their membership and role credentials.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A member renewing their own membership is gated by the authenticated session, but the session authenticates only to the immediate consumer. Execution re-issues the member's membership and role credentials under their own authority, producing durable artefacts that third parties verify long after the session has gone, so the request that caused them must remain attributable. Session hijack and later repudiation of the renewal are the threats addressed.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Renewal extends the member's own credential under their authority, and its effect is measured from when it executes. A renewal that cannot be dated extends membership by an interval nobody chose.
 sideEffects:
   level: mutating
   rationale: "Re-issues the member's membership and role credentials; recoverable by renewing again."

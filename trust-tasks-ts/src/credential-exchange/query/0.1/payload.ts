@@ -100,6 +100,6 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: false,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;

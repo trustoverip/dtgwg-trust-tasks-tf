@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Join-Requests — Decide
 summary: An administrator decides a pending join request — approving admits the applicant as a member, rejecting refuses them — optionally recording a reason.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - vtc
@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Admitting or refusing an applicant changes (or forecloses) community membership; the decision MUST be attributable to the operator who made it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The decision admits or refuses a specific applicant. Replayed against a later request from the same applicant, it decides that one too, on reasoning the deciding member never applied to it.
 sideEffects:
   level: mutating
   rationale: "Resolves the pending request: `approved` admits the applicant as a member; `rejected` refuses them, recoverable only by the applicant re-applying."
