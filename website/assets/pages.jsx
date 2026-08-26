@@ -85,6 +85,103 @@ function renderSupersededBy(ref, setRoute) {
   );
 }
 
+/* ---------- Classification rationales ----------------------
+ *
+ * `proofRequirement.rationale`, `sideEffects.rationale` and `exposure.rationale`
+ * are REQUIRED by the meta-schema, are the most carefully written prose in the
+ * registry — an author has to name the irreversible effect, the disclosed
+ * material, the threat model — and until now were rendered **nowhere**. They
+ * went into `registry.json` for machine consumers and never reached a human
+ * reader, which meant the one place the registry explains *why* a task is
+ * classified the way it is was invisible on the page that classifies it.
+ *
+ * The panel sits between the Metadata grid and the spec's own prose, because
+ * that is where the question arises: the grid states the levels, this says why,
+ * and the prose then assumes you know both.
+ */
+
+/* Human-readable summary of a proofRequirement, which is either a single
+ * `requirement` covering both variants or a per-variant `{request, response}`
+ * pair (SPEC §7.3 item 8). The Metadata row above reads `.requirement`
+ * directly, which renders blank for the per-variant form. */
+function proofLevels(pr) {
+  if (!pr) return null;
+  if (typeof pr.requirement === "string") return pr.requirement;
+  const parts = [];
+  if (pr.request) parts.push(`request ${pr.request}`);
+  if (pr.response) parts.push(`response ${pr.response}`);
+  return parts.length ? parts.join(" · ") : null;
+}
+
+function ClassificationRow({ label, level, rationale, accent }) {
+  if (!level && !rationale) return null;
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(9rem, 12rem) 1fr", gap: "var(--tt-space-4)", padding: "var(--tt-space-4) 0", borderTop: "1px solid var(--tt-border)" }}>
+      <div>
+        <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)" }}>{label}</div>
+        {level && (
+          <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)", marginTop: "var(--tt-space-2)", color: accent || "var(--tt-text)" }}>{level}</div>
+        )}
+      </div>
+      <div style={{ color: rationale ? "var(--tt-text)" : "var(--tt-text-muted)" }}>
+        {rationale || "No rationale declared."}
+      </div>
+    </div>
+  );
+}
+
+function ClassificationPanel({ task, setRoute }) {
+  const pr = task.proofRequirement;
+  const se = task.sideEffects;
+  const ex = task.exposure;
+  const rt = task.retention;
+  if (!pr && !se && !ex && !rt) return null;
+
+  const exposureLevel = ex
+    ? [
+        `discloses ${ex.discloses}`,
+        ex.ingests ? `ingests ${ex.ingests}` : null,
+        ex.actsAsSubject ? "acts as subject" : null
+      ].filter(Boolean).join(" · ")
+    : null;
+
+  return (
+    <section style={{ margin: "var(--tt-space-6) 0" }}>
+      <h2 id="classification">Why this task is classified as it is</h2>
+      <p style={{ color: "var(--tt-text-muted)" }}>
+        Each declaration below is <b>descriptive</b>: it states what this task does and what it moves,
+        never whether a consumer must obtain consent, approval or a step-up. That decision belongs to
+        the consumer's own policy (<SpecRef section="7.3" setRoute={() => {}}>§7.3</SpecRef> item 13).
+      </p>
+      <div style={{ borderBottom: "1px solid var(--tt-border)" }}>
+        <ClassificationRow
+          label="Proof"
+          level={proofLevels(pr)}
+          rationale={pr && pr.rationale}
+        />
+        <ClassificationRow
+          label="Side effects"
+          level={se && se.level}
+          rationale={se && se.rationale}
+          accent={se && se.level === "destructive" ? "var(--tt-coral)" : undefined}
+        />
+        <ClassificationRow
+          label="Exposure"
+          level={exposureLevel}
+          rationale={ex && ex.rationale}
+          accent={ex && (ex.discloses === "secret" || ex.actsAsSubject) ? "var(--tt-coral)" : undefined}
+        />
+        {/* Framework 0.5.0 and OPTIONAL, so the row appears only when declared —
+            an "undeclared" row on every spec in the registry would be noise, and
+            an absent declaration is read as `durable` by consumers regardless. */}
+        {rt && (
+          <ClassificationRow label="Retention" level={rt.class} rationale={rt.rationale} />
+        )}
+      </div>
+    </section>
+  );
+}
+
 /* GitHub-style heading slug: strip HTML, strip punctuation (including `.`),
  * collapse whitespace into single hyphens. Matches the anchors that SPEC.md's
  * own cross-references use (e.g. "4.8.1 Precedence..." -> "481-precedence-..."). */
@@ -1309,7 +1406,7 @@ function SpecPage({ slug, version, id, setRoute }) {
   }, [proseHtml]);
 
   useE(() => {
-    const ids = ["metadata", ...proseToc.map(t => t.id), "schema", "uses", "related"];
+    const ids = ["metadata", "classification", ...proseToc.map(t => t.id), "schema", "uses", "related"];
     const onScroll = () => {
       for (const sid of ids) {
         const el = document.getElementById(sid);
@@ -1362,7 +1459,11 @@ function SpecPage({ slug, version, id, setRoute }) {
           <span><b>Status</b> &nbsp; <TTStatus status={task.status} /></span>
           <span><b>Category</b> &nbsp; <a href="/categories" onClick={(e) => { e.preventDefault(); setRoute({ name: "categories" }); }} style={{ color: catColor(task.category), borderBottom: 0 }}>{cat ? cat.name : task.category}</a></span>
           <span><b>Updated</b> &nbsp; {task.updated}</span>
-          <span><b>Editors</b> &nbsp; {renderAuthorList(task.authors)}</span>
+          <span>
+            <b>Editors</b> &nbsp; {renderAuthorList(task.authors)}
+            {task.authorsSource === "codeowners" && <span style={{ color: "var(--tt-text-muted)" }}> (CODEOWNERS)</span>}
+            {task.authorsSource === "git" && <span style={{ color: "var(--tt-text-muted)" }}> (from history)</span>}
+          </span>
         </div>
 
         <h2 id="metadata">Metadata</h2>
@@ -1388,7 +1489,17 @@ function SpecPage({ slug, version, id, setRoute }) {
           <dt>Parties</dt><dd>{task.parties.join(" ↔ ")}</dd>
           <dt>Proof requirement</dt><dd>{task.proofRequirement ? task.proofRequirement.requirement : "—"}</dd>
           <dt>Category</dt><dd>{cat ? cat.name : task.category}</dd>
-          <dt>Keywords</dt><dd>{task.keywords.join(", ")}</dd>
+          <dt>Keywords</dt>
+          <dd>
+            {task.keywords.join(", ")}
+            {/* `keywords` and `authors` are optional front matter; when a spec
+                omits them the build derives them (slug + category, and
+                CODEOWNERS/git respectively). Saying which is which keeps a
+                derived value from reading as an editorial claim. */}
+            {task.keywordsSource && task.keywordsSource !== "declared" && (
+              <span style={{ color: "var(--tt-text-muted)" }}> — derived from the slug and category</span>
+            )}
+          </dd>
           {/* Adoption evidence. Always rendered, because the absence is itself
               the thing a reader came for: a draft with implementations behind
               it is a different proposition from a draft that is only a
@@ -1426,6 +1537,8 @@ function SpecPage({ slug, version, id, setRoute }) {
             </>
           )}
         </dl>
+
+        <ClassificationPanel task={task} setRoute={setRoute} />
 
         {proseError && (
           <div className="tt-empty" style={{ padding: "var(--tt-space-5)", margin: "var(--tt-space-5) 0" }}>
@@ -1501,6 +1614,7 @@ function SpecPage({ slug, version, id, setRoute }) {
         <ol className="tt-toc">
           {[
             { id: "metadata", text: "Metadata" },
+            { id: "classification", text: "Why this classification" },
             ...proseToc,
             { id: "schema", text: "JSON Schema" },
             { id: "uses", text: "Shared Schemas Used" },

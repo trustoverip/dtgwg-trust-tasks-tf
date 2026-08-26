@@ -518,7 +518,7 @@ function checkProofFloor(meta, rel, hasResponse) {
  * The check is deliberately cheap and deliberately a warning: it asks only that
  * the body discuss the declaration at all, on the reasoning that a lint cannot
  * tell a justification from a sentence, but it can tell a justification from
- * silence \u2014 and silence is the failure mode the framework text is aimed at.
+ * silence — and silence is the failure mode the framework text is aimed at.
  */
 function checkIdentifierScopeJustification(meta, body, rel) {
   const publicParties = (meta.parties || []).filter((p) => p?.identifierScope === 'public');
@@ -529,8 +529,8 @@ function checkIdentifierScopeJustification(meta, body, rel) {
       .map((p) => `'${p.role}'`)
       .join(', ')} but the prose never discusses it. Framework 0.5.0 asks a specification ` +
       `to justify a public identifier scope: say what the task needs a recognisable, ` +
-      `reusable identifier for, and what a pairwise one would break. Add a paragraph \u2014 ` +
-      `Security & Privacy \u2192 Correlation is the natural home.`
+      `reusable identifier for, and what a pairwise one would break. Add a paragraph — ` +
+      `Security & Privacy → Correlation is the natural home.`
   );
 }
 
@@ -788,21 +788,134 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
   return out;
 }
 
+/* ---------- Derived front matter: authors, keywords ----------
+ *
+ * Both were `required`, and both had stopped carrying information. `authors`
+ * was byte-identical in 345 of 349 specs; 46% of declared keywords were
+ * literally a slug segment or the spec's own category. A required field whose
+ * value is the same everywhere is not metadata, it is a toll — every author
+ * pays it and no reader learns anything.
+ *
+ * So they became OPTIONAL in the meta-schema and are derived when omitted. The
+ * derivation has to be good enough that omitting is the *right* default rather
+ * than the lazy one, which means it has to reach the same answer a
+ * conscientious author would have typed:
+ *
+ *   authors  — from CODEOWNERS, which already names who reviews each slug and
+ *              is kept current because GitHub enforces it. Falling back to the
+ *              spec folder's git history, which is who actually wrote it.
+ *   keywords — from the slug's own segments plus the category, which is exactly
+ *              what 46% of hand-written keyword lists already were.
+ *
+ * A spec that declares either wins outright: the derivation exists to remove
+ * ceremony, not to overrule an author who has something real to say.
+ */
+
+let codeownersRules = null;
+
+/* CODEOWNERS, reduced to what this needs: (pattern, owners) in file order, last
+ * match winning, as GitHub does. Only path-prefix patterns are honoured — the
+ * file uses nothing else, and implementing the full gitignore grammar to serve
+ * a display string would be a poor trade. */
+function loadCodeowners() {
+  if (codeownersRules) return codeownersRules;
+  codeownersRules = [];
+  for (const candidate of ['.github/CODEOWNERS', 'CODEOWNERS', 'docs/CODEOWNERS']) {
+    const p = path.join(ROOT, candidate);
+    if (!fs.existsSync(p)) continue;
+    for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
+      const stripped = line.replace(/#.*$/, '').trim();
+      if (!stripped) continue;
+      const [pattern, ...owners] = stripped.split(/\s+/);
+      const handles = owners.filter((o) => o.startsWith('@'));
+      if (!handles.length) continue;
+      codeownersRules.push({ pattern, owners: handles });
+    }
+    break;
+  }
+  return codeownersRules;
+}
+
+function codeownersFor(relPath) {
+  let match = null;
+  for (const rule of loadCodeowners()) {
+    const p = rule.pattern;
+    if (p === '*') { match = rule; continue; }
+    const needle = p.startsWith('/') ? p.slice(1) : p;
+    if (relPath === needle || relPath.startsWith(needle.endsWith('/') ? needle : `${needle}/`)) {
+      match = rule;
+    }
+  }
+  return match ? match.owners : [];
+}
+
+/* A GitHub handle rendered in the same "Name (url)" shape the declared authors
+ * use, so the spec page's existing renderer links it without a special case. */
+function handleToAuthor(handle) {
+  const login = handle.replace(/^@/, '');
+  // A team handle (@org/team) has no user profile page; link the org.
+  if (login.includes('/')) {
+    const [org, team] = login.split('/');
+    return `${login} (https://github.com/orgs/${org}/teams/${team})`;
+  }
+  return `${login} (https://github.com/${login})`;
+}
+
+function gitAuthorsFor(dirRel) {
+  try {
+    const out = execSync(`git log --format=%an -- "${dirRel}"`, { cwd: ROOT, encoding: 'utf8' }).trim();
+    if (!out) return [];
+    return [...new Set(out.split('\n').map((s) => s.trim()).filter(Boolean))];
+  } catch {
+    return [];
+  }
+}
+
+function deriveAuthors(meta, entry) {
+  if (Array.isArray(meta.authors) && meta.authors.length) {
+    return { authors: meta.authors, source: 'declared' };
+  }
+  const specRel = path.relative(ROOT, entry.specPath).split(path.sep).join('/');
+  const owners = codeownersFor(specRel);
+  if (owners.length) return { authors: owners.map(handleToAuthor), source: 'codeowners' };
+  const fromGit = gitAuthorsFor(path.relative(ROOT, entry.dir));
+  if (fromGit.length) return { authors: fromGit, source: 'git' };
+  // Never empty: TT_STATS iterates authors unconditionally, and a spec with no
+  // attribution at all should read as the working group's rather than as a gap.
+  return { authors: ['Trust Tasks Task Force'], source: 'fallback' };
+}
+
+function deriveKeywords(meta) {
+  if (Array.isArray(meta.keywords) && meta.keywords.length) {
+    return { keywords: meta.keywords, source: 'declared' };
+  }
+  const fromSlug = String(meta.slug || '').split('/').flatMap((seg) => seg.split('-'));
+  const derived = [...new Set([...fromSlug, meta.category].filter(Boolean))];
+  return { keywords: derived.length ? derived : [meta.slug], source: 'slug+category' };
+}
+
 function buildTask(entry, meta, schema, uses) {
   const hasResponse = !!(schema && schema.$defs && schema.$defs.Response);
+  const { authors, source: authorsSource } = deriveAuthors(meta, entry);
+  const { keywords, source: keywordsSource } = deriveKeywords(meta);
   return {
     id: meta.slug,
     slug: meta.slug,
     title: meta.title,
     summary: meta.summary,
     category: meta.category,
-    keywords: meta.keywords,
+    keywords,
+    // Which way each of these was arrived at, so a reader (and a future audit
+    // of this decision) can tell an author's deliberate choice from the
+    // build's default without diffing the front matter.
+    keywordsSource,
     status: meta.status,
     version: meta.version,
     targetFrameworkVersion: meta.targetFrameworkVersion,
     created: firstAdded(path.relative(ROOT, entry.dir)),
     updated: lastModified(path.relative(ROOT, entry.dir)),
-    authors: meta.authors,
+    authors,
+    authorsSource,
     parties: meta.parties.map((p) => p.role),
     partiesDetail: meta.parties,
     proofRequirement: meta.proofRequirement,

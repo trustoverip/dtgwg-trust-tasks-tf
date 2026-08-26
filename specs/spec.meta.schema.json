@@ -13,8 +13,6 @@
     "status",
     "targetFrameworkVersion",
     "category",
-    "keywords",
-    "authors",
     "parties",
     "proofRequirement",
     "sideEffects",
@@ -104,7 +102,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Free-text keywords used by registry search."
+      "description": "Free-text keywords used by registry search. OPTIONAL. When omitted the build derives them from the slug's own path segments plus the category — which is what 46% of hand-written keyword lists already were, word for word. Declare them only where that derivation would miss the term a searcher would actually use (`revocation` for `acl/revoke`, `passkey` for `auth/webauthn/*`). Made optional because a required field whose value is mechanically implied by another field is a toll on every author that buys no reader anything."
     },
     "authors": {
       "type": "array",
@@ -113,7 +111,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Editor names or working group attributions."
+      "description": "Editor names or working group attributions, in the form `Name (https://…)` so the registry site can link them. OPTIONAL. When omitted the build derives the list from CODEOWNERS — which already names who reviews each slug and is kept current because GitHub enforces it — falling back to the spec folder's git history. Made optional because the declared value was byte-identical in 345 of 349 specs: a field that says the same thing everywhere is attribution theatre, and the two places that do know who owns a spec are already maintained."
     },
     "parties": {
       "type": "array",
@@ -145,7 +143,7 @@
               "public",
               "any"
             ],
-            "description": "The identifier correlation scope this party's VID is expected to have, per framework 0.5.0. `pairwise`: an identifier minted for this relationship and not reused across counterparties, so documents of this task cannot be joined to that party's activity elsewhere. `public`: a stable, widely-known identifier \u2014 the task is only meaningful when the counterparty can recognise the same identifier it sees elsewhere. `any`: the specification takes no position and either is conforming. OPTIONAL and SHOULD-strength: omitting it claims nothing. Declaring `public` narrows the privacy properties available to every producer of the task, so the framework requires the specification's prose to justify it; checkIdentifierScopeJustification() in scripts/build-registry.mjs warns when a `public` declaration is never discussed in the body."
+            "description": "The identifier correlation scope this party's VID is expected to have, per framework 0.5.0. `pairwise`: an identifier minted for this relationship and not reused across counterparties, so documents of this task cannot be joined to that party's activity elsewhere. `public`: a stable, widely-known identifier — the task is only meaningful when the counterparty can recognise the same identifier it sees elsewhere. `any`: the specification takes no position and either is conforming. OPTIONAL and SHOULD-strength: omitting it claims nothing. Declaring `public` narrows the privacy properties available to every producer of the task, so the framework requires the specification's prose to justify it; checkIdentifierScopeJustification() in scripts/build-registry.mjs warns when a `public` declaration is never discussed in the body."
           },
           "member": {
             "type": "string",
