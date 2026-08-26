@@ -9,3 +9,9 @@
 export interface VTCSharedCeremonyDefinitions {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { Verdict, VerdictEffect, VerdictWith } from "../../../_shared/components.js";

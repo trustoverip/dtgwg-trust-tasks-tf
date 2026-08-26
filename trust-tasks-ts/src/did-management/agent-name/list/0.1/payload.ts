@@ -3,6 +3,9 @@
  * Source: specs/did-management/agent-name/list/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface DIDManagementListAgentNamesPayload {
   /**
    * The hosted DID slot whose agent-name registry is being read.
@@ -13,12 +16,6 @@ export interface DIDManagementListAgentNamesPayload {
    */
   domain?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface DIDManagementListAgentNamesResponsePayload {
   /**
@@ -49,6 +46,9 @@ export interface AgentNameEntry {
    */
   createdAt: string;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/agent-name/list/0.1" as const;

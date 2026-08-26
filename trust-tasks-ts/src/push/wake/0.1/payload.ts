@@ -3,6 +3,9 @@
  * Source: specs/push/wake/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * A trigger (the device's mediator or its VTA) asks the push gateway to deliver a contentless wake to a handle. Carries ONLY the push binding's contentless hint fields — never Trust Task content. The gateway authorizes against the handle's allowlist, then fires the doorbell. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
  */
@@ -29,12 +32,6 @@ export interface PushWakePayload {
   urgency?: "interactive" | "background";
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface PushWakeResponsePayload {
   /**
    * Outcome of the wake: `delivered` (push service accepted) or `token-unregistered` (dead token; handle dropped — see push/wake:token_unregistered).
@@ -42,6 +39,9 @@ export interface PushWakeResponsePayload {
   status: "delivered" | "token-unregistered";
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/push/wake/0.1" as const;

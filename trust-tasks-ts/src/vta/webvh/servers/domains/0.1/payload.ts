@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/servers/domains/0.1/payload.schema.json
  */
 
+import type { DomainEntry, Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Ask an agent which hosting domains it may use on one of the hosting servers it has registered. The agent answers by relaying the server's own caller-scoped view; the response items are the same DomainEntry the did-management family defines.
  */
@@ -11,13 +14,10 @@ export interface WebVHServerDomainsPayload {
    * Identifier of the registered hosting server to ask. Required: an agent may know several, and they do not share a domain namespace — omitting it would make the answer ambiguous rather than general.
    */
   serverId: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/webvh/servers/domains/0.1#response.
@@ -31,48 +31,11 @@ export interface WebVHServerDomainsResponsePayload {
    * The domain used when a request names none — the caller's own default where the server records one, else the server's system default. Producers SHOULD omit it when there is neither; `null` is accepted as the same answer, and consumers MUST NOT read a difference between the two.
    */
   default?: string | null;
-  ext?: Ext2;
+  ext?: Ext;
 }
-export interface DomainEntry {
-  /**
-   * Hosting domain name (e.g. `did.example.com`). Compared case-insensitively; producers SHOULD emit lowercase canonical form.
-   */
-  name: string;
-  /**
-   * Optional human-readable label.
-   */
-  label?: string;
-  /**
-   * Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible.
-   */
-  status: "active" | "disabled";
-  /**
-   * When `true`, this domain is the host's default — new DIDs created without an explicit domain are hosted here. Exactly one entry SHOULD carry `defaultDomain: true`.
-   */
-  defaultDomain?: boolean;
-  createdAt: string;
-  /**
-   * Present iff `status === "disabled"`.
-   */
-  disabledAt?: string;
-  /**
-   * Earliest RFC3339 timestamp at which the host's background sweep is allowed to purge content for a disabled domain. Operators with administrative authority MAY override the wait via `domain/purge`.
-   */
-  purgeAt?: string;
-  ext?: Ext1;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext2 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DomainEntry, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/servers/domains/0.1" as const;

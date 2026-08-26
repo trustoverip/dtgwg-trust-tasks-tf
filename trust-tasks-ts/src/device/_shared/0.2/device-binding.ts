@@ -9,3 +9,9 @@
 export interface DeviceBindingSharedDefinitionForTheDeviceSpecFamily {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { Capability_DeviceV0_2 as Capability, ConsumerKind_DeviceV0_2 as ConsumerKind, DeviceAttestation_DeviceV0_2 as DeviceAttestation, DeviceBinding_DeviceV0_2 as DeviceBinding, KeyCustody, PushRegistration, WakeHandle, WakeTriggerPolicy } from "../../../_shared/components.js";

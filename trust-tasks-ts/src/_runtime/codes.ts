@@ -25,6 +25,44 @@ export const STANDARD_CODES = [
   "internalError",
 ] as const;
 
+/**
+ * The framework-defined standard error codes, as a **closed** union.
+ *
+ * ── The asymmetry with Rust, and why it is kept ────────────────────────────
+ *
+ * `trust-tasks-rs` marks its `StandardCode` `#[non_exhaustive]` (since 0.7.0),
+ * so adding a framework standard code there is additive: a downstream `match`
+ * already carries a wildcard arm. TypeScript has no `#[non_exhaustive]`, and
+ * this union is exhaustive by construction, so the same addition is a
+ * **breaking change on this side** — a `switch` that covers every member today
+ * stops being exhaustive, and `never`-typed default arms start erroring.
+ * `@openvtc/trust-tasks` went to 0.7.0 for exactly that reason.
+ *
+ * The obvious defence is to widen the type — `StandardCode | (string & {})` —
+ * and it was considered and rejected. Widening pays a permanent cost for an
+ * occasional event: it makes every `StandardCode`-typed position accept any
+ * string, so a misspelled `"proofRequred"` would compile everywhere the union
+ * is used, including `RejectReason.code`, which is how this runtime decides
+ * what error document to emit. That is a worse failure than a release
+ * that tells you where to add an arm, and it would be paid on every line of
+ * every consumer, forever, to soften a break that arrives once per framework
+ * minor and arrives *as a compile error naming the exact sites*.
+ *
+ * ── What a consumer should do instead ──────────────────────────────────────
+ *
+ * Nothing on the receive path forces the closed union on you. Wire values
+ * arrive as `string` and narrow through {@link isStandardCode}, which is the
+ * supported pattern:
+ *
+ * ```ts
+ * if (isStandardCode(code)) handleStandard(code); // narrowed to StandardCode
+ * else handleExtended(code);                      // §8.5 extended code
+ * ```
+ *
+ * Write `switch` statements over a value narrowed that way, and keep a
+ * `default` arm rather than relying on exhaustiveness, and a new standard code
+ * costs you a recompile rather than a rewrite.
+ */
 export type StandardCode = (typeof STANDARD_CODES)[number];
 
 /**

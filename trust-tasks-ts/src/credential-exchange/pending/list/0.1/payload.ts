@@ -3,17 +3,14 @@
  * Source: specs/credential-exchange/pending/list/0.1/payload.schema.json
  */
 
+import type { DeferredPresentation, Ext, RequestedCredential } from "../../../../_shared/components.js";
+
+
 /**
  * List the presentation requests this holder deferred for consent and that can still be acted on. Takes no parameters: the caller's authenticated identity is the scope, and a holder agent answers only for its own wallet.
  */
 export interface CredentialExchangePendingListPayload {
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface CredentialExchangePendingListResponsePayload {
   /**
@@ -22,54 +19,9 @@ export interface CredentialExchangePendingListResponsePayload {
   pending: DeferredPresentation[];
   ext?: Ext;
 }
-/**
- * One presentation request awaiting the holder's decision, as the approver sees it.
- *
- * This is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer "should I disclose this": who is asking, why, and precisely which claims of which held credentials would leave the wallet.
- */
-export interface DeferredPresentation {
-  /**
-   * Approval handle for this deferral — the value `pending/approve` and `pending/deny` act on.
-   */
-  id: string;
-  /**
-   * The verifier that asked. An approved presentation binds to this audience, so approving is a decision about *this* party and not a standing permission.
-   */
-  verifierDid: string;
-  /**
-   * Every held credential the query would disclose, resolved against what the holder actually holds. This is the authorization surface: the approver is consenting to these claims leaving the wallet, not to the query in the abstract.
-   */
-  requested: RequestedCredential[];
-  /**
-   * The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request.
-   */
-  purpose: string;
-  /**
-   * When the deferral was recorded.
-   */
-  createdAt: string;
-  /**
-   * After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check.
-   */
-  expiresAt: string;
-}
-/**
- * One held credential a deferred query asked for, and the claims of it that would be disclosed.
- */
-export interface RequestedCredential {
-  /**
-   * The DCQL `credential_query_id` this held credential satisfied.
-   */
-  credentialQueryId: string;
-  /**
-   * The held credential that would satisfy it.
-   */
-  credentialId: string;
-  /**
-   * The claims the query asks to disclose from this credential. An empty array means the query matched the credential without naming claims — a consumer SHOULD treat that as a request for the whole credential and present it to the approver as such.
-   */
-  claims: string[];
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DeferredPresentation, Ext, RequestedCredential };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/credential-exchange/pending/list/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/vault/usage/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * Consumer queries the maintainer's audit log of recent vault uses (proxy-logins, releases). Drives UIs like "recent activity" and "which AI agent has been using my GitHub credential". Read-only.
  */
@@ -25,12 +28,6 @@ export interface VaultUsagePayload {
   pageSize?: number;
   cursor?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VaultUsageResponsePayload {
   uses: UsageRecord[];
@@ -70,6 +67,9 @@ export interface UsageRecord {
    */
   errorCode?: string;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/usage/0.1" as const;

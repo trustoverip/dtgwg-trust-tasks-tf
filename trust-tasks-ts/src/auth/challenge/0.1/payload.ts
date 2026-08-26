@@ -3,6 +3,9 @@
  * Source: specs/auth/challenge/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * Request a one-time challenge nonce that the subject will sign to prove control of their VID.
  */
@@ -15,13 +18,10 @@ export interface AuthChallenge {
    * Producer-declared intent (e.g. "login", "step-up", "sign-out"). Consumers MAY surface this in audit logs or use it to scope the issued nonce. Free-form; ecosystems define the vocabulary.
    */
   purpose?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.
@@ -39,14 +39,14 @@ export interface AuthChallengeResponsePayload {
    * ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes.
    */
   expiresAt: string;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/challenge/0.1" as const;

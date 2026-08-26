@@ -3,6 +3,9 @@
  * Source: specs/provision/integration/0.2/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * What the holder is asking the maintainer to do. Tagged on `type`; see `TemplateBootstrapAsk` and `AdminRotationAsk`.
  */
@@ -29,6 +32,9 @@ export interface ProvisionIntegrationPayload {
    * When `true`, the maintainer provisions the target context inline if it does not already exist. Requires super-admin role on the maintainer; context-admin callers MUST receive `provision/integration:forbidden` against a missing context. Idempotent when the context already exists.
    */
   createContext?: boolean;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
 /**
@@ -168,12 +174,6 @@ export interface DataIntegrityProof {
   [k: string]: unknown | undefined;
 }
 /**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Carried in a Trust Task document whose type is https://trusttasks.org/spec/provision/integration/0.1#response. The sealed `bundle` is the secret-bearing artefact; `summary` is non-secret audit metadata.
  */
 export interface ProvisionIntegrationResponsePayload {
@@ -186,7 +186,7 @@ export interface ProvisionIntegrationResponsePayload {
    */
   digest: string;
   summary: ProvisionSummary;
-  ext?: Ext1;
+  ext?: Ext;
 }
 /**
  * Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field.
@@ -241,12 +241,9 @@ export interface ProvisionSummary {
    */
   contextCreated?: boolean;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.2" as const;

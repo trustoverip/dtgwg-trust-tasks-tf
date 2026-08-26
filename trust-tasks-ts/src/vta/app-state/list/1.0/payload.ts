@@ -3,26 +3,8 @@
  * Source: specs/vta/app-state/list/1.0/payload.schema.json
  */
 
-/**
- * Restrict to one namespace. Optional in snapshot mode, where omitting it enumerates every namespace the caller can read in the context. REQUIRED in change-feed mode, because the version counter `sinceVersion` is compared against is maintained per (contextId, namespace) and a watermark spanning namespaces would name no single point in time.
- */
-export type Namespace = string;
-/**
- * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
- */
-export type Namespace1 = string;
-/**
- * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
- */
-export type Key = string;
-/**
- * The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
- */
-export type Version = number;
-/**
- * The namespace's current counter value. Present whenever `namespace` was supplied. This is what a consumer stores as its next `sinceVersion` — NOT the maximum version among `records`, which is wrong whenever a `prefix` filtered a later change out, and undefined when the page is empty. A paginating consumer MUST NOT advance its stored watermark until it has drained the final page, because the pages of one feed share this value and adopting it early would skip the records still to come.
- */
-export type Version1 = number;
+import type { AppStateRecord, Ext, Key, Namespace, Version } from "../../../../_shared/components.js";
+
 
 /**
  * Enumerate application-state records in a context. Two modes, distinguished by whether `sinceVersion` is supplied. Without it this is a SNAPSHOT of live records, optionally narrowed by `prefix`. With it this is a CHANGE FEED: every record in the namespace whose version exceeds the watermark, tombstones included, which is what lets an incremental consumer converge. Pagination is opaque-cursor based.
@@ -32,6 +14,9 @@ export interface VTAApplicationStateListPayload {
    * The VTA context to enumerate; the isolation boundary.
    */
   contextId: string;
+  /**
+   * Restrict to one namespace. Optional in snapshot mode, where omitting it enumerates every namespace the caller can read in the context. REQUIRED in change-feed mode, because the version counter `sinceVersion` is compared against is maintained per (contextId, namespace) and a watermark spanning namespaces would name no single point in time.
+   */
   namespace?: Namespace;
   /**
    * Restrict to records whose `key` begins with this byte prefix, compared over the UTF-8 encoding. Lets a consumer read one record family — `community/`, `contact/` — without dragging every record in the namespace through the response.
@@ -57,13 +42,10 @@ export interface VTAApplicationStateListPayload {
    * Opaque continuation token from a previous response. Consumers MUST treat it as opaque: never construct, decode, mutate, or infer meaning from one.
    */
   cursor?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/app-state/list. Type https://trusttasks.org/spec/vta/app-state/list/1.0#response.
@@ -81,57 +63,22 @@ export interface VTAApplicationStateListResponsePayload {
    * Opaque continuation token for the next page. Present only when `truncated` is true.
    */
   cursor?: string;
-  highWatermark?: Version1;
+  /**
+   * The namespace's current counter value. Present whenever `namespace` was supplied. This is what a consumer stores as its next `sinceVersion` — NOT the maximum version among `records`, which is wrong whenever a `prefix` filtered a later change out, and undefined when the page is empty. A paginating consumer MUST NOT advance its stored watermark until it has drained the final page, because the pages of one feed share this value and adopting it early would skip the records still to come.
+   */
+  highWatermark?: Version;
   /**
    * How long this maintainer retains tombstones before reaping them. Advisory, and present at the maintainer's discretion, so a consumer can schedule its syncs to stay inside the window rather than discovering it has fallen out of it via vta/app-state/list:watermarkTooOld.
    */
   tombstoneRetentionSeconds?: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
- */
-export interface AppStateRecord {
-  /**
-   * The VTA context the record is scoped to; the isolation boundary.
-   */
-  contextId: string;
-  namespace: Namespace1;
-  key: Key;
-  version: Version;
-  /**
-   * The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.
-   */
-  value?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
-   */
-  valueBytes?: number;
-  /**
-   * True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`.
-   */
-  deleted: boolean;
-  /**
-   * When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded.
-   */
-  createdAt?: string;
-  /**
-   * When the write that produced this `version` was applied. For a tombstone, when the delete was applied.
-   */
-  updatedAt: string;
-  /**
-   * When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.
-   */
-  deletedAt?: string;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AppStateRecord, Ext, Key, Namespace, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/list/1.0" as const;

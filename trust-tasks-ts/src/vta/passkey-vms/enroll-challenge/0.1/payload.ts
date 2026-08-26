@@ -3,6 +3,9 @@
  * Source: specs/vta/passkey-vms/enroll-challenge/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Request a fresh WebAuthn registration challenge for adding a passkey verificationMethod to a VTA-managed DID. Step 1 of the two-step enrolment ceremony (challenge → submit). The producer must hold the admin role on the target DID's context.
  */
@@ -15,13 +18,10 @@ export interface VTAPasskeyVMEnrollChallengePayload {
    * Optional operator-supplied label for the new passkey (e.g. "MacBook Touch ID"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.
    */
   label?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.
@@ -59,14 +59,14 @@ export interface VTAPasskeyVMEnrollChallengeResponsePayload {
    * Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.
    */
   timeoutMs?: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1" as const;

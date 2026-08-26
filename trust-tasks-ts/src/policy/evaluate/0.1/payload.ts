@@ -3,14 +3,8 @@
  * Source: specs/policy/evaluate/0.1/payload.schema.json
  */
 
-/**
- * A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
- */
-export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
-/**
- * Discriminator: is this consumer a user-driven Companion or a headless Service?
- */
-export type ConsumerKind = Companion | Service;
+import type { AndroidApp_VaultV0_1 as AndroidApp, Companion_DeviceV0_1 as Companion, ConsumerKind_DeviceV0_1 as ConsumerKind, Did_VaultV0_1 as Did, Ext, IosApp_VaultV0_1 as IosApp, PolicyDecision_PolicyV0_1 as PolicyDecision, PolicyInput_PolicyV0_1 as PolicyInput, Service_DeviceV0_1 as Service, SiteTarget_VaultV0_1 as SiteTarget, WebOrigin_VaultV0_1 as WebOrigin } from "../../../_shared/components.js";
+
 
 /**
  * Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected deny/allow outcomes.
@@ -25,75 +19,6 @@ export interface PolicyEvaluatePayload {
   includeTrace?: boolean;
   ext?: Ext;
 }
-/**
- * The structured input fed to a policy evaluator on every vault/proxy-login, vault/release, and policy/evaluate call.
- */
-export interface PolicyInput {
-  request: {
-    kind: "proxy_login" | "release" | "step_up_response";
-  };
-  site: SiteTarget;
-  contextId: string;
-  consumer: {
-    did: string;
-    kind?: ConsumerKind;
-    deviceId?: string;
-    lastUserVerificationAt?: string;
-    networkClass?: "unknown" | "home" | "corp" | "public" | "vpn";
-  };
-}
-export interface WebOrigin {
-  kind: "web-origin";
-  /**
-   * Web origin per RFC 6454 (scheme + host + optional port), e.g. "https://github.com". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.
-   */
-  origin: string;
-}
-export interface Did {
-  kind: "did";
-  /**
-   * DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.
-   */
-  did: string;
-}
-export interface IosApp {
-  kind: "ios-app";
-  /**
-   * iOS bundle identifier in reverse-DNS form (e.g. "com.github.stwalkerster.codehub"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).
-   */
-  bundleId: string;
-  /**
-   * Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.
-   */
-  teamId?: string;
-}
-export interface AndroidApp {
-  kind: "android-app";
-  /**
-   * Android package name in reverse-DNS form (e.g. "com.github.android").
-   */
-  packageName: string;
-  /**
-   * SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).
-   *
-   * @minItems 1
-   */
-  sha256CertFingerprints: [string, ...string[]];
-}
-export interface Companion {
-  kind: "companion";
-  formFactor: "browser" | "mobile" | "desktop";
-}
-export interface Service {
-  kind: "service";
-  serviceKind: "mediator" | "ai-agent" | "daemon";
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface PolicyEvaluateResponsePayload {
   decision: PolicyDecision;
   /**
@@ -106,28 +31,9 @@ export interface PolicyEvaluateResponsePayload {
   trace?: string[];
   ext?: Ext;
 }
-export interface PolicyDecision {
-  decision: "allow" | "deny" | "require_step_up";
-  /**
-   * When decision == "allow", whether the maintainer should proxy-login or release-for-fill. Default: proxy.
-   */
-  mode?: "proxy" | "fill";
-  /**
-   * When decision == "require_step_up", which method to demand.
-   */
-  stepUp?: {
-    method: "webauthn-uv" | "push-approval" | "totp";
-    ttlSeconds?: number;
-  };
-  /**
-   * When decision == "allow", maximum lifetime of the issued session blob / released secret.
-   */
-  ttlSecondsCap?: number;
-  /**
-   * Human-readable explanation for diagnostic display.
-   */
-  explanation?: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AndroidApp, Companion, ConsumerKind, Did, Ext, IosApp, PolicyDecision, PolicyInput, Service, SiteTarget, WebOrigin };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/servers/reconcile/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Ask an agent to compare the DIDs a hosting server holds for it against the DIDs it has records for, and report where the two disagree. Neither party can answer this alone: the producer holds no credentials for the hosting server, and the server has no view of the agent's records.
  */
@@ -11,13 +14,10 @@ export interface WebVHServersReconcilePayload {
    * Identifier of the registered hosting server to compare against. Required for the same reason as on `vta/webvh/servers/domains/0.1`: an agent may hold registrations with several servers, and a comparison that merged them would place every DID in a report without saying which host it was — or was not — on.
    */
   serverId: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The comparison. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1#response.
@@ -39,7 +39,7 @@ export interface WebVHServersReconcileResponsePayload {
    * How many the two agree on. Required, and required even when both arrays are empty: it is what distinguishes 'compared them, all matched' from 'compared nothing'. A consumer that rendered only the divergences would show an identical screen for a clean estate and for a listing that silently returned no rows.
    */
   inBoth: number;
-  ext?: Ext1;
+  ext?: Ext;
 }
 export interface ADIDTheHostingServerServesAndTheAgentHasNoRecordOf {
   /**
@@ -73,12 +73,9 @@ export interface ADIDTheAgentRecordsAsHostedOnThisServerWhichTheServerDoesNotHav
    */
   contextId?: string;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1" as const;

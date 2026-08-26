@@ -3,6 +3,9 @@
  * Source: specs/vtc/auth/recognise/0.2/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface VTCAuthRecognisePayload {
   /**
    * A holder-signed W3C Verifiable Presentation embedding the foreign membership and endorsement credentials in `verifiableCredential`.
@@ -11,12 +14,6 @@ export interface VTCAuthRecognisePayload {
    */
   presentation: {};
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VTCAuthRecogniseResponsePayload {
   /**
@@ -37,6 +34,9 @@ export interface VTCAuthRecogniseResponsePayload {
   };
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/0.2" as const;

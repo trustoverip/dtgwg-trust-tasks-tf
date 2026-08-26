@@ -3,6 +3,9 @@
  * Source: specs/vtc/relationships/request/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.
  */
@@ -12,12 +15,6 @@ export interface VTCRelationshipsRequestPayload {
    */
   reason?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.
@@ -33,6 +30,9 @@ export interface VTCRelationshipsRequestResponsePayload {
   vrcSha256?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/request/0.1" as const;

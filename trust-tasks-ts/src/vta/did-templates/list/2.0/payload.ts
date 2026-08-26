@@ -3,10 +3,8 @@
  * Source: specs/vta/did-templates/list/2.0/payload.schema.json
  */
 
-/**
- * Resolved scope of the stored template.
- */
-export type Scope = Builtin | Global | Context;
+import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplateRecord, Ext, Global_VtaV0_1 as Global, Scope_VtaV0_1 as Scope } from "../../../../_shared/components.js";
+
 
 /**
  * List the DID templates in one scope on a VTA. Omit `contextId` to list the global templates (any authenticated caller); set it to list the templates scoped to that context (requires access to the context). The success response is the array of persisted DidTemplateRecords for the selected scope.
@@ -16,13 +14,10 @@ export interface VTADIDTemplateListPayload {
    * Scope selector. Absent: the global scope. Present: the context whose templates are listed; the caller MUST have access to that context.
    */
   contextId?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Every stored template in the selected scope, in an array.
@@ -32,55 +27,14 @@ export interface VTADIDTemplateListResponsePayload {
    * Every stored template in the selected scope, sorted by name; empty when none exist.
    */
   templates: DidTemplateRecord[];
-  ext?: Ext1;
-}
-/**
- * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
- */
-export interface DidTemplateRecord {
-  schemaVersion: 1;
-  name: string;
-  kind: string;
-  description?: string | null;
-  methods?: string[];
-  requiredVars?: string[];
-  optionalVars?: {
-    [k: string]: unknown | undefined;
-  };
-  defaults?: {
-    [k: string]: unknown | undefined;
-  };
-  document: {};
-  scope: Scope;
   /**
-   * UTC unix-epoch seconds the template was first stored.
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
-  createdAt: number;
-  /**
-   * UTC unix-epoch seconds of the last write.
-   */
-  updatedAt: number;
-  /**
-   * DID of the admin who last wrote the template.
-   */
-  createdBy: string;
+  ext?: Ext;
 }
-export interface Builtin {
-  type: "builtin";
-}
-export interface Global {
-  type: "global";
-}
-export interface Context {
-  type: "context";
-  contextId: string;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Builtin, Context, DidTemplateRecord, Ext, Global, Scope };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/list/2.0" as const;

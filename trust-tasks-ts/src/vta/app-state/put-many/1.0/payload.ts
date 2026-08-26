@@ -3,10 +3,9 @@
  * Source: specs/vta/app-state/put-many/1.0/payload.schema.json
  */
 
-/**
- * One namespace per batch. Atomicity is only meaningful within the counter the writes take their versions from, and that counter is per (contextId, namespace).
- */
-export type Namespace = string;
+import type { Ext, Key, Namespace, Version, WriteResult } from "../../../../_shared/components.js";
+
+
 /**
  * One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.
  */
@@ -17,22 +16,6 @@ export type Write =
   | {
       [k: string]: unknown | undefined;
     };
-/**
- * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
- */
-export type Key = string;
-/**
- * The new version, on `written`.
- */
-export type Version = number;
-/**
- * On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).
- */
-export type Version1 = number;
-/**
- * The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.
- */
-export type Version2 = number;
 
 /**
  * Write up to 64 application-state records in one round trip, each carrying its own optimistic-concurrency precondition. The batch `mode` decides what a single failure costs: `independent` (the default) applies each write on its own merits, `atomic` applies all or none.
@@ -42,6 +25,9 @@ export interface VTAApplicationStatePutManyPayload {
    * The VTA context the records are scoped to; the isolation boundary.
    */
   contextId: string;
+  /**
+   * One namespace per batch. Atomicity is only meaningful within the counter the writes take their versions from, and that counter is per (contextId, namespace).
+   */
   namespace: Namespace;
   /**
    * `independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.
@@ -54,13 +40,10 @@ export interface VTAApplicationStatePutManyPayload {
    * @maxItems 64
    */
   writes: [Write, ...Write[]];
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.
@@ -77,49 +60,18 @@ export interface VTAApplicationStatePutManyResponsePayload {
    * @maxItems 64
    */
   results: [WriteResult, ...WriteResult[]];
-  highWatermark?: Version2;
-  ext?: Ext1;
+  /**
+   * The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.
+   */
+  highWatermark?: Version;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.
- */
-export interface WriteResult {
-  key: Key;
-  /**
-   * `written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.
-   */
-  outcome: "written" | "conflict" | "tooLarge" | "notFound" | "skipped";
-  version?: Version;
-  /**
-   * On `written`: true when no live record existed at the address beforehand.
-   */
-  created?: boolean;
-  currentVersion?: Version1;
-  /**
-   * On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists.
-   */
-  currentValue?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * On `conflict`: true when the address holds a tombstone rather than a live record.
-   */
-  currentDeleted?: boolean;
-  /**
-   * On `tooLarge`: the maintainer's per-record cap in bytes.
-   */
-  limitBytes?: number;
-  /**
-   * On `tooLarge`: the size of the rejected value in bytes.
-   */
-  actualBytes?: number;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Key, Namespace, Version, WriteResult };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/put-many/1.0" as const;

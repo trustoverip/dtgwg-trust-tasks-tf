@@ -3,6 +3,9 @@
  * Source: specs/policy/list/0.2/payload.schema.json
  */
 
+import type { Ext, PolicyModule } from "../../../_shared/components.js";
+
+
 export interface PolicyListPayload {
   contextId?: string;
   enabledOnly?: boolean;
@@ -10,43 +13,15 @@ export interface PolicyListPayload {
   cursor?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface PolicyListResponsePayload {
   policies: PolicyModule[];
   truncated: boolean;
   cursor?: string;
   ext?: Ext;
 }
-export interface PolicyModule {
-  id: string;
-  /**
-   * Human-readable name (e.g. "default vault policy", "bank-site step-up").
-   */
-  name: string;
-  description?: string;
-  /**
-   * Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.
-   */
-  module: string;
-  /**
-   * List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).
-   */
-  appliesTo?: string[];
-  /**
-   * When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.
-   */
-  priority?: number;
-  enabled?: boolean;
-  version: number;
-  createdAt: string;
-  updatedAt: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, PolicyModule };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/list/0.2" as const;

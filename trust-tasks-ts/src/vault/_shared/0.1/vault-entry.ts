@@ -11,3 +11,9 @@
 export interface VaultEntrySharedDefinitionForTheVaultSpecFamily {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { AttachmentRef_VaultV0_1 as AttachmentRef, SecretKind_VaultV0_1 as SecretKind, SiteTarget_VaultV0_1 as SiteTarget, VaultEntry_VaultV0_1 as VaultEntry } from "../../../_shared/components.js";

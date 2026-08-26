@@ -3,6 +3,9 @@
  * Source: specs/auth/passkey/enroll/finish/0.1/payload.schema.json
  */
 
+import type { AuthenticatorAttestationResponseRegistration, Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Submit the WebAuthn attestation that completes a passkey-enrollment ceremony. On success the auth service binds the credential to the subject's VID.
  */
@@ -11,33 +14,18 @@ export interface AuthPasskeyEnrollFinish {
    * The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim.
    */
   enrollmentId: string;
+  /**
+   * AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded.
+   */
   credential: AuthenticatorAttestationResponseRegistration;
   /**
    * Final operator-facing label for the credential. Overrides any label passed at start.
    */
   deviceLabel?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded.
- */
-export interface AuthenticatorAttestationResponseRegistration {
-  id: string;
-  rawId: string;
-  type: "public-key";
-  response: {
-    clientDataJSON: string;
-    attestationObject: string;
-    transports?: string[];
-  };
-  authenticatorAttachment?: "platform" | "cross-platform";
-  clientExtensionResults?: {};
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1#response.
@@ -56,14 +44,14 @@ export interface AuthPasskeyEnrollFinishResponsePayload {
    */
   deviceLabel?: string;
   registeredAt: string;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AuthenticatorAttestationResponseRegistration, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1" as const;

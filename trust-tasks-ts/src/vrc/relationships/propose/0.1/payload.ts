@@ -3,6 +3,9 @@
  * Source: specs/vrc/relationships/propose/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * One person proposes a peer-to-peer relationship to another, naming the pairwise DID they will use for it. The counterparty accepts or declines; a decline is a trust-task-error carrying `vrc/relationships/propose:declined`.
  */
@@ -22,12 +25,6 @@ export interface VRCRelationshipsProposePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.
  */
 export interface VRCRelationshipsProposeResponsePayload {
@@ -45,6 +42,9 @@ export interface VRCRelationshipsProposeResponsePayload {
   witnessed?: boolean;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vrc/relationships/propose/0.1" as const;

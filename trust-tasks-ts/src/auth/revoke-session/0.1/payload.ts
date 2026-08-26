@@ -3,6 +3,9 @@
  * Source: specs/auth/revoke-session/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * Invalidate one or all sessions for the producer. The auth service drops the named session(s); any future use of their access or refresh tokens MUST fail.
  */
@@ -19,17 +22,14 @@ export type AuthRevokeSession = {
    * Optional human-readable rationale (e.g. "logout", "device-lost", "key-rotation"). Surfaced in audit logs; the framework imposes no vocabulary.
    */
   reason?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 } & {
   [k: string]: unknown | undefined;
 };
 
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 /**
  * Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.1#response.
  */
@@ -38,14 +38,14 @@ export interface AuthRevokeSessionResponsePayload {
    * Number of sessions invalidated by this call. Zero is a valid outcome (e.g. the named sessionId was already revoked).
    */
   revokedCount: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/revoke-session/0.1" as const;

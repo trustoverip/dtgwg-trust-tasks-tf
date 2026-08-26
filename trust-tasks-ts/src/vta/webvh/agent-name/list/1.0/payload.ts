@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/agent-name/list/1.0/payload.schema.json
  */
 
+import type { AgentNameEntry, Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Every agent name held for a DID, enabled or not.
  */
@@ -12,12 +15,6 @@ export interface VTAWebVHAgentNameListPayload {
    */
   did: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/webvh/agent-name/list. Type https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0#response.
@@ -30,24 +27,9 @@ export interface VTAWebVHAgentNameListResponsePayload {
   names: AgentNameEntry[];
   ext?: Ext;
 }
-/**
- * An agent name bound to a DID. A name is only ever authoritative in the DID→name direction: the DID document's `alsoKnownAs` is what proves the binding, because anyone controlling a domain can point a name at somebody else's DID.
- */
-export interface AgentNameEntry {
-  /**
-   * The name, without the host — the full form is `<host>/@<name>`.
-   */
-  name: string;
-  /**
-   * Whether the name currently resolves. A disabled name is still held — it is not available for anyone else to take.
-   */
-  enabled: boolean;
-  /**
-   * Unix epoch seconds.
-   */
-  createdAt?: number;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AgentNameEntry, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0" as const;

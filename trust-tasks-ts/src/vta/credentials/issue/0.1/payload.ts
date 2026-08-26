@@ -3,10 +3,8 @@
  * Source: specs/vta/credentials/issue/0.1/payload.schema.json
  */
 
-/**
- * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
- */
-export type CredentialId = string;
+import type { CredentialId, Ext } from "../../../../_shared/components.js";
+
 
 export interface VTACredentialsIssuePayload {
   /**
@@ -29,13 +27,10 @@ export interface VTACredentialsIssuePayload {
    * Optional human-readable rationale, recorded for audit.
    */
   purpose?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
@@ -56,14 +51,14 @@ export interface VTACredentialsIssueResponsePayload {
    * credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced.
    */
   supersedes?: string;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CredentialId, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/credentials/issue/0.1" as const;

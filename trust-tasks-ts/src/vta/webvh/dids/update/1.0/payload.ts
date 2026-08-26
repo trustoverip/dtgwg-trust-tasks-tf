@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/dids/update/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the update key for. The agent decides whether to do so; the caller proposes.
  */
@@ -44,12 +47,6 @@ export interface WebVHDIDUpdatePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.
  */
 export interface WebVHDIDUpdateResponsePayload {
@@ -77,6 +74,9 @@ export interface WebVHDIDUpdateResponsePayload {
   serverless?: boolean;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" as const;

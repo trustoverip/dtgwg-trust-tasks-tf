@@ -3,10 +3,8 @@
  * Source: specs/vtc/endorsements/issue/0.1/payload.schema.json
  */
 
-/**
- * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
- */
-export type CredentialId = string;
+import type { CredentialId, CredentialReference, Endorsement, Ext } from "../../../../_shared/components.js";
+
 
 export interface VTCEndorsementsIssuePayload {
   /**
@@ -27,12 +25,6 @@ export interface VTCEndorsementsIssuePayload {
   validitySeconds?: number;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCEndorsementsIssueResponsePayload {
   endorsement: Endorsement;
   /**
@@ -41,47 +33,9 @@ export interface VTCEndorsementsIssueResponsePayload {
   credential: {};
   ext?: Ext;
 }
-export interface Endorsement {
-  /**
-   * Community-scoped identifier for this endorsement row.
-   */
-  endorsementId: string;
-  /**
-   * The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
-   */
-  typeUri: string;
-  /**
-   * DID of the endorsement's subject (becomes credentialSubject.id).
-   */
-  subjectDid: string;
-  /**
-   * The attested claim body, validated against the endorsement type's claimSchema when it declares one.
-   */
-  claim?: {};
-  issued: CredentialReference;
-  /**
-   * The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.
-   */
-  statusListIndex: number;
-  /**
-   * When the endorsement was revoked, or null while live.
-   */
-  revokedAt?: string | null;
-}
-/**
- * A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
- */
-export interface CredentialReference {
-  credentialId: CredentialId;
-  /**
-   * When the credential was minted.
-   */
-  issuedAt?: string;
-  /**
-   * When it lapses, or null when it does not.
-   */
-  expiresAt?: string | null;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CredentialId, CredentialReference, Endorsement, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/endorsements/issue/0.1" as const;

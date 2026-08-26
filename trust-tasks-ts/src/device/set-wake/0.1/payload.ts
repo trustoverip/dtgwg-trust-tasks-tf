@@ -3,10 +3,16 @@
  * Source: specs/device/set-wake/0.1/payload.schema.json
  */
 
+import type { Ext, WakeHandle, WakeTriggerPolicy } from "../../../_shared/components.js";
+
+
 /**
  * A device conveys to its VTA the opaque WakeHandle it obtained from a push gateway, so the VTA can own the trigger allowlist and provision the gateway. Carries no platform push token — only the handle. Present `wakeHandle` sets/replaces the wake channel; absent clears it (device becomes non-wakeable). Idempotent; re-issued on token rotation. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
  */
 export interface DeviceSetWakePayload {
+  /**
+   * OPTIONAL. The opaque gateway-issued handle for this device's push channel. Omit to clear the wake channel (the VTA empties the gateway allowlist; the device becomes non-wakeable).
+   */
   wakeHandle?: WakeHandle;
   /**
    * OPTIONAL, advisory. The abstract platform behind the handle, for device/list visibility only. The VTA never sees the token; this is a non-authoritative hint.
@@ -18,26 +24,10 @@ export interface DeviceSetWakePayload {
   suggestedTriggers?: string[];
   ext?: Ext;
 }
-/**
- * OPTIONAL. The opaque gateway-issued handle for this device's push channel. Omit to clear the wake channel (the VTA empties the gateway allowlist; the device becomes non-wakeable).
- */
-export interface WakeHandle {
-  /**
-   * The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.
-   */
-  gateway: string;
-  /**
-   * Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.
-   */
-  handle: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface DeviceSetWakeResponsePayload {
+  /**
+   * The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared.
+   */
   triggerPolicy?: WakeTriggerPolicy;
   /**
    * Whether the device now has a usable wake channel (true after a successful set, false after a clear).
@@ -45,15 +35,9 @@ export interface DeviceSetWakeResponsePayload {
   pushCapable: boolean;
   ext?: Ext;
 }
-/**
- * The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared.
- */
-export interface WakeTriggerPolicy {
-  /**
-   * DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
-   */
-  allowedTriggers: string[];
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, WakeHandle, WakeTriggerPolicy };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/set-wake/0.1" as const;

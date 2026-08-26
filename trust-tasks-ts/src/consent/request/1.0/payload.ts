@@ -3,10 +3,8 @@
  * Source: specs/consent/request/1.0/payload.schema.json
  */
 
-/**
- * Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content.
- */
-export type DigestMultibase = string;
+import type { ConsentSubject, DigestMultibase, Ext, Kind, Scope_ConsentV0_1 as Scope } from "../../../_shared/components.js";
+
 
 /**
  * A bridge asks the VTA whether an inbound conversation may reach an AI agent, prompting operator consent on first contact.
@@ -16,7 +14,7 @@ export interface ConsentRequestPayload {
   /**
    * The access the bridge seeks for the agent on this conversation.
    */
-  scope: "receive" | "converse";
+  scope: Scope;
   /**
    * base64url-encoded nonce (≥128 bits entropy) echoed by the matching consent/decision, so the bridge can correlate the decision to this request.
    */
@@ -25,39 +23,15 @@ export interface ConsentRequestPayload {
    * Optional operator-facing label (e.g. "Signal group 'Family'"). MUST NOT contain a raw platform address.
    */
   displayHint?: string;
+  /**
+   * Optional multibase-encoded multihash over the rfc 8785 (jcs) canonicalization of the held first message, binding the request to concrete content.
+   */
   firstMessageDigest?: DigestMultibase;
   /**
    * Optional VTA context path the bridge runs under, to scope approver resolution.
    */
   contextHint?: string;
   ext?: Ext;
-}
-/**
- * The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.
- */
-export interface ConsentSubject {
-  /**
-   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
-   */
-  platform: string;
-  /**
-   * The bridge's OPAQUE conversation handle (e.g. "sig-1a2b3c4d"). NEVER the raw platform address — the VTA never learns the phone number / chat id.
-   */
-  conversationRef: string;
-  /**
-   * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
-   */
-  kind: "dm" | "group" | "channel";
-  /**
-   * VID (DID) of the AI agent the conversation would reach.
-   */
-  agent: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.
@@ -77,6 +51,9 @@ export interface ConsentRequestResponsePayload {
   reason?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ConsentSubject, DigestMultibase, Ext, Kind, Scope };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/request/1.0" as const;

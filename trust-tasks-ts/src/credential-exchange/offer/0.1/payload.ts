@@ -3,6 +3,9 @@
  * Source: specs/credential-exchange/offer/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * Issuer to holder: an OID4VCI Credential Offer. Opens the issuance thread; the holder replies with credential-exchange/request.
  */
@@ -13,12 +16,9 @@ export interface CredentialExchangeOfferPayload {
   credential_offer: {};
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/credential-exchange/offer/0.1" as const;

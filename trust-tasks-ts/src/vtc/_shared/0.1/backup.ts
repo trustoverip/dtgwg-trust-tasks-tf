@@ -9,3 +9,9 @@
 export interface VTCSharedBackupDefinitions {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { BackupEnvelope, EncryptionParams, KdfParams } from "../../../_shared/components.js";

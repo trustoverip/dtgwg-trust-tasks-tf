@@ -3,10 +3,8 @@
  * Source: specs/vtc/relationships/list/0.2/payload.schema.json
  */
 
-/**
- * Digest over the RFC 8785 canonicalization of the stored VRC — the value vtc/relationships/publish returned when this entry was lodged.
- */
-export type DigestMultibase = string;
+import type { DigestMultibase, Ext } from "../../../../_shared/components.js";
+
 
 export interface VTCRelationshipsListPayload {
   /**
@@ -17,12 +15,6 @@ export interface VTCRelationshipsListPayload {
   limit?: number;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCRelationshipsListResponsePayload {
   items: {
     id: string;
@@ -32,6 +24,9 @@ export interface VTCRelationshipsListResponsePayload {
      * The relationship credential as JSON-LD (opaque here).
      */
     vrcJsonld: {};
+    /**
+     * Digest over the RFC 8785 canonicalization of the stored VRC — the value vtc/relationships/publish returned when this entry was lodged.
+     */
     vrcDigestMultibase: DigestMultibase;
     createdAt: string;
   }[];
@@ -39,6 +34,9 @@ export interface VTCRelationshipsListResponsePayload {
   totalEstimate?: number | null;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/list/0.2" as const;

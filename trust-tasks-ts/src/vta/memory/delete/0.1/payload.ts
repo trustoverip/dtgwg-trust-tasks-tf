@@ -3,6 +3,9 @@
  * Source: specs/vta/memory/delete/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface VTAMemoryDeletePayload {
   /**
    * The VTA context the item lives in.
@@ -15,12 +18,6 @@ export interface VTAMemoryDeletePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/memory/delete. Type https://trusttasks.org/spec/vta/memory/delete/0.1#response.
  */
 export interface VTAMemoryDeleteResponsePayload {
@@ -30,6 +27,9 @@ export interface VTAMemoryDeleteResponsePayload {
   key: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/memory/delete/0.1" as const;

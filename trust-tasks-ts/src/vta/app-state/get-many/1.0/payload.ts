@@ -3,22 +3,8 @@
  * Source: specs/vta/app-state/get-many/1.0/payload.schema.json
  */
 
-/**
- * Required, unlike in list: a batch read addresses records by key, and a key is only unique within a namespace.
- */
-export type Namespace = string;
-/**
- * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
- */
-export type Key = string;
-/**
- * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
- */
-export type Namespace1 = string;
-/**
- * The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
- */
-export type Version = number;
+import type { AppStateRecord, Ext, Key, Namespace, Version } from "../../../../_shared/components.js";
+
 
 /**
  * Read up to 256 application-state records from one namespace in a single round trip. A rebuild or a reconnect is N records, and round-tripping each one separately is the difference between a usable reconnect and an unusable one.
@@ -28,6 +14,9 @@ export interface VTAApplicationStateGetManyPayload {
    * The VTA context the records are scoped to; the isolation boundary.
    */
   contextId: string;
+  /**
+   * Required, unlike in list: a batch read addresses records by key, and a key is only unique within a namespace.
+   */
   namespace: Namespace;
   /**
    * The keys to read. Duplicates are refused rather than deduplicated, because a caller that sent one did not mean to and would otherwise never find out.
@@ -40,13 +29,10 @@ export interface VTAApplicationStateGetManyPayload {
    * Defaults to false. When true, an address holding a tombstone yields a record with `deleted: true` rather than appearing in `missing`.
    */
   includeDeleted?: boolean;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/app-state/get-many. Type https://trusttasks.org/spec/vta/app-state/get-many/1.0#response. Every requested key appears in exactly one of `records`, `missing` or `deferred`, so a caller can account for all of them without comparing sets itself.
@@ -64,52 +50,14 @@ export interface VTAApplicationStateGetManyResponsePayload {
    * Requested keys the maintainer did not evaluate because the response had reached its size budget. The caller re-requests exactly these. This exists because the per-record cap multiplied by the key ceiling exceeds any sane response limit, and the alternative — refusing the whole batch — would make a caller guess at a batch size instead of being told one.
    */
   deferred?: Key[];
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
- */
-export interface AppStateRecord {
-  /**
-   * The VTA context the record is scoped to; the isolation boundary.
-   */
-  contextId: string;
-  namespace: Namespace1;
-  key: Key;
-  version: Version;
-  /**
-   * The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.
-   */
-  value?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
-   */
-  valueBytes?: number;
-  /**
-   * True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`.
-   */
-  deleted: boolean;
-  /**
-   * When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded.
-   */
-  createdAt?: string;
-  /**
-   * When the write that produced this `version` was applied. For a tombstone, when the delete was applied.
-   */
-  updatedAt: string;
-  /**
-   * When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.
-   */
-  deletedAt?: string;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AppStateRecord, Ext, Key, Namespace, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/get-many/1.0" as const;

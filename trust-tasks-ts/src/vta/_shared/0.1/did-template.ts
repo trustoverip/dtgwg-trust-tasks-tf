@@ -9,3 +9,9 @@
 export interface DidTemplateDidTemplateRecordSharedDefinitionsForTheVtaDidTemplatesSpecFamily {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { DidTemplate, DidTemplateRecord, Scope_VtaV0_1 as Scope } from "../../../_shared/components.js";

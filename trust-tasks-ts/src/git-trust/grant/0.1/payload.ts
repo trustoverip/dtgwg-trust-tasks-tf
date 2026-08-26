@@ -3,6 +3,9 @@
  * Source: specs/git-trust/grant/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * A community operator grants a member's DID the authority to sign git commits for a resource (an org or org/repo). The host records the grant as a TRQP authorization tuple {entity: subject, authority: the community's authority DID, action: git.commit.sign, resource} in the community's trust registry, where CI verifiers (e.g. did-git-sign verify-trust) query it anonymously.
  */
@@ -17,12 +20,6 @@ export interface GitTrustGrantPayload {
   resource: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface GitTrustGrantResponsePayload {
   subject: string;
   resource: string;
@@ -36,6 +33,9 @@ export interface GitTrustGrantResponsePayload {
   message?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-trust/grant/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/vault/sign-trust-task/0.2/payload.schema.json
  */
 
+import type { ConsumerContext, Ext, StepUpProof_VaultV0_2 as StepUpProof } from "../../../_shared/components.js";
+
+
 /**
  * Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` or `didcommPeer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.1`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.
  */
@@ -12,7 +15,13 @@ export interface VaultSignTrustTaskPayload {
    */
   entryId: string;
   unsignedEnvelope: UnsignedTrustTaskEnvelope;
+  /**
+   * Caller's situational context — fed to the policy engine.
+   */
   consumerContext?: ConsumerContext;
+  /**
+   * Step-up proof on retry after `stepUpRequired`.
+   */
   stepUpProof?: StepUpProof;
   ext?: Ext;
 }
@@ -56,43 +65,6 @@ export interface UnsignedTrustTaskEnvelope {
   };
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
- * Caller's situational context — fed to the policy engine.
- */
-export interface ConsumerContext {
-  /**
-   * Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.
-   */
-  deviceId?: string;
-  /**
-   * Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.
-   */
-  lastUserVerificationAt?: string;
-  /**
-   * Producer-supplied network classification. Advisory.
-   */
-  networkClass?: "unknown" | "home" | "corp" | "public" | "vpn";
-}
-/**
- * Step-up proof on retry after `stepUpRequired`.
- */
-export interface StepUpProof {
-  kind: "webauthnUv" | "pushApproval" | "totp";
-  /**
-   * Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.
-   */
-  proof: string;
-  /**
-   * Maintainer-issued challenge id the proof responds to.
-   */
-  challengeId: string;
-}
 export interface VaultSignTrustTaskResponsePayload {
   /**
    * The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.
@@ -100,6 +72,9 @@ export interface VaultSignTrustTaskResponsePayload {
   signedEnvelope: {};
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ConsumerContext, Ext, StepUpProof };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/sign-trust-task/0.2" as const;

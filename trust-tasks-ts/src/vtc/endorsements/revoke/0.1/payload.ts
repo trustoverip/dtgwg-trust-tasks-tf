@@ -3,10 +3,8 @@
  * Source: specs/vtc/endorsements/revoke/0.1/payload.schema.json
  */
 
-/**
- * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
- */
-export type CredentialId = string;
+import type { CredentialId, Ext, RevocationReceipt } from "../../../../_shared/components.js";
+
 
 export interface VTCEndorsementsRevokePayload {
   endorsementId: string;
@@ -16,14 +14,11 @@ export interface VTCEndorsementsRevokePayload {
   reason?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCEndorsementsRevokeResponsePayload {
   endorsementId: string;
+  /**
+   * The registry-wide revocation receipt for the underlying VEC.
+   */
   revocation: RevocationReceipt;
   /**
    * The status-list slot whose bit was flipped, so a verifier can confirm the published effect.
@@ -31,16 +26,9 @@ export interface VTCEndorsementsRevokeResponsePayload {
   statusListIndex: number;
   ext?: Ext;
 }
-/**
- * The registry-wide revocation receipt for the underlying VEC.
- */
-export interface RevocationReceipt {
-  credentialId: CredentialId;
-  /**
-   * When the revocation was recorded.
-   */
-  revokedAt: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CredentialId, Ext, RevocationReceipt };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1" as const;

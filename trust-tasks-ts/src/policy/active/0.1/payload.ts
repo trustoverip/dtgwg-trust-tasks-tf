@@ -3,6 +3,9 @@
  * Source: specs/policy/active/0.1/payload.schema.json
  */
 
+import type { Ext, PolicyModule } from "../../../_shared/components.js";
+
+
 export interface PolicyActivePayload {
   /**
    * Return the active binding for this decision slot only. Omitted = return every active binding (optionally scoped by contextId).
@@ -13,12 +16,6 @@ export interface PolicyActivePayload {
    */
   contextId?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface PolicyActiveResponsePayload {
   /**
@@ -38,31 +35,9 @@ export interface ActiveBinding {
   contextId?: string;
   policy: PolicyModule;
 }
-export interface PolicyModule {
-  id: string;
-  /**
-   * Human-readable name (e.g. "default vault policy", "bank-site step-up").
-   */
-  name: string;
-  description?: string;
-  /**
-   * Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.
-   */
-  module: string;
-  /**
-   * List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).
-   */
-  appliesTo?: string[];
-  /**
-   * When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.
-   */
-  priority?: number;
-  enabled?: boolean;
-  version: number;
-  createdAt: string;
-  updatedAt: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, PolicyModule };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/active/0.1" as const;

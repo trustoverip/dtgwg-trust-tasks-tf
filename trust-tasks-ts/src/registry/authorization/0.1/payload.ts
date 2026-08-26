@@ -3,6 +3,9 @@
  * Source: specs/registry/authorization/0.1/payload.schema.json
  */
 
+import type { Ext, QueryContext } from "../../../_shared/components.js";
+
+
 /**
  * TRQP v2.0 authorization query: ask a trust registry whether an entity is authorized by an authority for a given action+resource. Field names are verbatim from the TRQP authorization request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.
  */
@@ -25,26 +28,6 @@ export interface RegistryAuthorizationPayload {
   resource: string;
   context?: QueryContext;
   ext?: Ext;
-}
-/**
- * Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.
- */
-export interface QueryContext {
-  /**
-   * Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.
-   */
-  time?: string;
-  /**
-   * Optional hint for systems that need extra information to locate the records in question (authorization queries).
-   */
-  locator?: string;
-  [k: string]: string | undefined;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface RegistryAuthorizationResponsePayload {
   entity_id: string;
@@ -70,6 +53,9 @@ export interface RegistryAuthorizationResponsePayload {
   context?: QueryContext;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, QueryContext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/authorization/0.1" as const;

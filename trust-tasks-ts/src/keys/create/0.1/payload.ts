@@ -3,24 +3,13 @@
  * Source: specs/keys/create/0.1/payload.schema.json
  */
 
-/**
- * Algorithm to generate.
- */
-export type KeyType = "ed25519" | "x25519" | "p256";
-/**
- * Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).
- */
-export type KeyType1 = "ed25519" | "x25519" | "p256";
-/**
- * Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.
- */
-export type KeyStatus = "active" | "revoked";
-/**
- * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
- */
-export type KeyOrigin = "derived" | "imported" | "internal";
+import type { Ext, KeyOrigin, KeyRecord, KeyStatus, KeyType } from "../../../_shared/components.js";
+
 
 export interface KeysCreatePayload {
+  /**
+   * Algorithm to generate.
+   */
   keyType: KeyType;
   /**
    * Hierarchical-deterministic path to derive at. Where the custodian derives from a seed, supplying the path makes the key reproducible from that seed; omitting it leaves the choice to the custodian. MUST NOT be combined with `internal: true`, which derives from no seed and records no path — a request carrying both is contradictory and the maintainer SHOULD reject it.
@@ -48,68 +37,24 @@ export interface KeysCreatePayload {
    * Scope to file the key under. Absence is the most restrictive reading, not a wildcard — see KeyRecord.contextId.
    */
   contextId?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a keys/create request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/create/0.1#response.
  */
 export interface KeysCreateResponsePayload {
+  /**
+   * The realized record, carrying the public half. The private half is never returned.
+   */
   key: KeyRecord;
-  ext?: Ext1;
+  ext?: Ext;
 }
-/**
- * The realized record, carrying the public half. The private half is never returned.
- */
-export interface KeyRecord {
-  /**
-   * Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.
-   */
-  keyId: string;
-  keyType: KeyType1;
-  status: KeyStatus;
-  /**
-   * The public half, multibase-encoded. The private half is never carried by any keys/* response.
-   */
-  publicKey: string;
-  /**
-   * Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.
-   */
-  derivationPath?: string;
-  /**
-   * Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.
-   */
-  seedId?: number;
-  origin?: KeyOrigin;
-  /**
-   * Optional human-readable label. Operator-facing only; carries no authorization meaning.
-   */
-  label?: string;
-  /**
-   * Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.
-   */
-  contextId?: string;
-  /**
-   * RFC 3339 timestamp at which the key was created or imported.
-   */
-  createdAt: string;
-  /**
-   * RFC 3339 timestamp of the last change to the record (rename, revocation).
-   */
-  updatedAt?: string;
-  ext?: Ext1;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, KeyOrigin, KeyRecord, KeyStatus, KeyType };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/create/0.1" as const;

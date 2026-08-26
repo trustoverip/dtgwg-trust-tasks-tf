@@ -3,18 +3,15 @@
  * Source: specs/vtc/website/rollback/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface VTCWebsiteRollbackPayload {
   /**
    * The past generation to make current (e.g. gen-3).
    */
   generation: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VTCWebsiteRollbackResponsePayload {
   generation: string;
@@ -28,6 +25,9 @@ export interface VTCWebsiteRollbackResponsePayload {
   noop: boolean;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/website/rollback/0.1" as const;

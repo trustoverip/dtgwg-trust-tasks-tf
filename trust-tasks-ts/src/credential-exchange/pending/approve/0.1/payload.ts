@@ -3,6 +3,9 @@
  * Source: specs/credential-exchange/pending/approve/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Approve a deferred presentation request. The holder mints the presentation against the verifier's original query and nonce and returns it; the deferral is then terminal.
  */
@@ -13,12 +16,6 @@ export interface CredentialExchangePendingApprovePayload {
   id: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface CredentialExchangePendingApproveResponsePayload {
   /**
    * The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.
@@ -26,6 +23,9 @@ export interface CredentialExchangePendingApproveResponsePayload {
   vp_token: string | {};
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/credential-exchange/pending/approve/0.1" as const;

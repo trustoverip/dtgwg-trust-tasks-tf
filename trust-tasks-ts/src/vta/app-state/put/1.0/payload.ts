@@ -3,6 +3,9 @@
  * Source: specs/vta/app-state/put/1.0/payload.schema.json
  */
 
+import type { ExpectedVersion, Ext, Key, Namespace, Version } from "../../../../_shared/components.js";
+
+
 /**
  * Write one application-state record at its `(contextId, namespace, key)` address. Exactly one of `value` (whole-record replacement) or `mergePatch` (RFC 7386 partial update) is supplied. `expectedVersion` makes the write conditional: a positive value requires the record to be at exactly that version, and zero requires that no live record exists.
  */
@@ -23,34 +26,18 @@ export type VTAApplicationStatePutPayload = {
    * An RFC 7386 JSON Merge Patch applied to the record's current value. Cuts payload, and more usefully cuts conflicts: two instances editing different members of one record stop colliding entirely rather than serialising behind `expectedVersion`. Requires a live record at the address. Note RFC 7386's one sharp edge — a member set to `null` in the patch DELETES that member from the value, and there is no way to set a member to the JSON literal null through a patch; a writer that needs to do so must send a whole `value`. Mutually exclusive with `value`.
    */
   mergePatch?: {};
+  /**
+   * Optional precondition. Omit for a last-writer-wins upsert. Supply the version a prior read returned to make the write conditional; supply 0 to create only.
+   */
   expectedVersion?: ExpectedVersion;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 } & {
   [k: string]: unknown | undefined;
 };
-/**
- * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
- */
-export type Namespace = string;
-/**
- * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
- */
-export type Key = string;
-/**
- * Optional precondition. Omit for a last-writer-wins upsert. Supply the version a prior read returned to make the write conditional; supply 0 to create only.
- */
-export type ExpectedVersion = number;
-/**
- * The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read.
- */
-export type Version = number;
 
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 /**
  * Success response to vta/app-state/put. Type https://trusttasks.org/spec/vta/app-state/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying vta/app-state/put:versionConflict, whose details carry the maintainer's current version and value.
  */
@@ -61,6 +48,9 @@ export interface VTAApplicationStatePutResponsePayload {
   contextId: string;
   namespace: Namespace;
   key: Key;
+  /**
+   * The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read.
+   */
   version: Version;
   /**
    * True when no live record existed at the address beforehand — including when the address held a tombstone, since a tombstone is not a live record.
@@ -74,14 +64,14 @@ export interface VTAApplicationStatePutResponsePayload {
    * Size of the stored value in bytes as the maintainer measured it against its per-record cap. Lets a writer see how close it is to the limit before it hits it.
    */
   valueBytes?: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ExpectedVersion, Ext, Key, Namespace, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/put/1.0" as const;

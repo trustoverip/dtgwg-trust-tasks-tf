@@ -3,10 +3,8 @@
  * Source: specs/vta/services/rollback/1.0/payload.schema.json
  */
 
-/**
- * Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
- */
-export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
+import type { Ext, RollbackResult, ServiceKind } from "../../../../_shared/components.js";
+
 
 /**
  * Request payload for vta/services/rollback. Reverts a transport to its previous advertised settings by writing a NEW log entry — the history is append-only, so a rollback is a forward step that restores an earlier state, never an erasure of what happened.
@@ -16,52 +14,15 @@ export interface VTAServicesRollbackPayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.
  */
 export interface VTAServicesRollbackResponsePayload {
   result: RollbackResult;
   ext?: Ext;
 }
-/**
- * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
- */
-export interface RollbackResult {
-  /**
-   * What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
-   */
-  kind: "disabled" | "enabled" | "updated" | "noOp";
-  /**
-   * Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.
-   */
-  logEntryVersionId?: string;
-  /**
-   * RFC 3339 instant the rollback took effect. Absent for `noOp`.
-   */
-  effectiveAt?: string;
-  /**
-   * Present when rolling back DIDComm left a mediator draining.
-   */
-  drainingMediator?: string;
-  /**
-   * When that drain completes.
-   */
-  drainUntil?: string;
-  /**
-   * The agent's own DID.
-   */
-  vtaDid?: string;
-  /**
-   * True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.
-   */
-  serverless?: boolean;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, RollbackResult, ServiceKind };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/services/rollback/1.0" as const;
