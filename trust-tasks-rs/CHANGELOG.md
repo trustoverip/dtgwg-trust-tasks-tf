@@ -31,6 +31,154 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.14.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.14.0...trust-tasks-rs-v0.14.1) — 2026-08-26
+
+
+### Added
+
+- **rs**: Make SPEC §7.3 item 17's issuedAt MUST expressible ([#300](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/300))
+
+Framework 0.5.0's §7.3 item 17 says a Trust Task specification defining a
+  consequential Trust Task MUST require the `issuedAt` member, raising §4.2's
+  SHOULD to a MUST for documents conforming to it. There was no way to declare
+  that: the meta-schema had `proofRequirement` for the `proof` envelope member
+  and nothing equivalent for `issuedAt`, so the MUST was unexpressible and none
+  of the 209 consequential specs in the registry could comply.
+
+  Adds `issuedAtRequirement` to the front-matter meta-schema, modelled on
+  `proofRequirement` — same two forms (a single `requirement`, or a per-variant
+  `request`/`response` pair), same enum, same `rationale`. It governs an envelope
+  member, admits a per-variant reading because request and response are relied on
+  differently, and reading one declaration now teaches the other.
+
+  Declared rather than derived, with the derived floor checked and reported:
+
+    * `sideEffects` and `exposure` are DESCRIPTIVE (§7.3 items 13/14). Deriving
+      `issuedAt`-REQUIRED from them would mean that correcting `sideEffects.level`
+      from `none` to `mutating` for accuracy silently changed which documents
+      every consumer of that spec must reject.
+    * §2 makes the *handler* authoritative for consequentiality, not the front
+      matter — so a value computed from the front matter would enforce something
+      the front matter does not authoritatively state.
+    * A non-consequential spec may legitimately require `issuedAt` anyway; a
+      derived-only mechanism cannot express that.
+    * Deriving would flip 209 specs' wire behaviour in one commit, invisibly.
+
+  So the build derives the floor instead of substituting for the declaration.
+  `npm run validate` prints a `Freshness floor (§7.3 item 17)` line counting the
+  consequential specs that have not declared it (currently 0/209), *fails* on a
+  spec that declares something weaker than REQUIRED, and escalates the undeclared
+  case to a hard error under `TT_STRICT_ISSUED_AT=1` — the ratchet that becomes
+  the default once the registry has caught up.
+
+  Enforcement reaches consumers the same way `IS_PROOF_REQUIRED` does:
+
+    * `Payload::IS_ISSUED_AT_REQUIRED` (Rust) and `SpecPolicy.isIssuedAtRequired`
+      (TypeScript), emitted per variant by both generators from the front matter.
+    * `TrustTask::enforce_spec_policy` / `enforceSpecPolicy` reject a document
+      with no `issuedAt` as `malformedRequest`. Not `expired`: §8.3 defines no
+      dedicated code, `expired` names a document that was once acceptable, and
+      §7.2 item 13 already uses `malformedRequest` for the other freshness
+      rejections.
+    * The trait constant has a default of `false`, so hand-written impls — the
+      crate's own `trust-task-error`, hand-modelled in `error.rs` because it is
+      in the codegen's SKIP_SLUGS, and every downstream impl — keep compiling.
+    * `check-bindings` compares the new key across front matter, Rust and
+      TypeScript, so the two languages cannot drift on it.
+
+  Distinct from `FreshnessPolicy::require_issued_at`, which is a *consumer's*
+  own posture applied to every document it sees. This is the *specification's*
+  requirement, published in the registry and not the consumer's to relax.
+
+  No specification declares `issuedAtRequirement` yet — that is a follow-up,
+  spec by spec. The generated Rust tree is therefore byte-identical (the const is
+  emitted only on override) and the generated TypeScript gains one
+  `isIssuedAtRequired: false` line per policy object. Nothing that was accepted
+  before is rejected now.
+
+  Also documents the declaration in CONTRIBUTING-SPECS.md, and teaches
+  `npm run new-spec` to emit it on a scaffold whose declared classes make the
+  task consequential.
+
+
+
+### Fixed
+
+- **rs**: Enforce both halves of the SPEC §6.1 slug reservation ([#293](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/293))
+
+* fix(rs): enforce both halves of the SPEC 6.1 slug reservation
+
+  TypeUri rejected a published framework specification and accepted a reserved
+  one, in the same function pair:
+
+    REJECTED  trust-task-control     published since 0.1; its Type URI would not parse
+    PARSES    trust-ceremony-evil    reserved by 6.1, accepted from any party
+
+  is_reserved_namespace checked only the trust-task half of
+  ^trust-(task|ceremony)($|-|/), so the ceremony half of the reservation — which
+  exists precisely so the ceremony layer has a namespace no other party can claim
+  first — protected nothing. And is_allowed_framework_slug listed five slugs
+  where specs/spec.meta.schema.json lists seven, so two published specs sat
+  inside the reservation with no permission to be there.
+
+  The allowlist is one of two hand-maintained copies. The new test reads the
+  meta-schema's copy and fails naming the missing slug if they drift again;
+  verified by removing trust-task-control and watching it fail.
+
+  Found while retiring trust-task-ok ([#292](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/292)), which swept for references to the
+  slug and noticed the two lists disagreed.
+
+
+
+### Specifications
+
+- Bound every free-text payload member with a maxLength (§7.3) ([#296](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/296))
+
+* spec: bound every free-text payload member with a maxLength
+
+  SPEC.md §7.3 (framework 0.5.0) requires that any member holding free
+  text declare a `maxLength`. 92 free-text string members across 83 draft
+  schemas carried none, leaving the wire contract unbounded and every
+  consumer to invent its own ceiling — or none, which is what §10.3
+  (schema-validation DoS) exists to prevent.
+
+  Bounds are chosen per member from the vocabulary the registry already
+  uses rather than applied uniformly:
+
+    256   `label`, `comment` — a display name or an OpenSSH key comment;
+          matches the existing 256 on provision/integration `label` and
+          the `name` members alongside it.
+    500   requester-authored prose that a surface renders to a human who
+          is deciding something; matches task-consent/request/0.1 `note`,
+          the registry's considered consent-surface bound.
+    1024  `reason`, `description`, `message` — operator or service prose
+          recorded for audit or returned as a diagnostic; matches the six
+          existing `reason: 1024` and the `description: 1024` in policy/
+          and vtc/endorsement-type.
+    16384 chat/message `text` — the task's actual content rather than
+          metadata about it; matches the corpus's long-form bound on
+          vault `secureNotes`.
+
+  All amended specifications are `status: draft`, so the change is made in
+  place per SPEC §5.2. Deliberately untouched:
+
+    * 17 members in `retired` specifications, frozen by SPEC §6.4.
+    * messaging/_shared/0.1 `AuditEntry.detail` and did-management/
+      _shared/0.1 `DomainEntry.label` — shared $defs reachable from a
+      retired specification, so bounding them would change a frozen
+      specification's effective wire contract.
+    * vault/_shared/{0.1,0.2,0.3} `TspMessageEnvelope.message` — opaque
+      base64url TSP bytes, not free text.
+
+  The `label` description in vault/_shared/*/vault-entry.schema.json said
+  the wire spec enforced no maximum length. It now does, so the sentence
+  is corrected rather than left contradicting the schema it annotates.
+
+  `npm run validate` re-checks all 533 fenced example documents against
+  the amended schemas; none is rejected by a new bound.
+
+
+
 **No version has been taken for this entry yet, deliberately.** The change below
 is breaking under the rules at the top of this file, so releasing it moves the
 leading component and drags the six dependent crates with it — the workspace
