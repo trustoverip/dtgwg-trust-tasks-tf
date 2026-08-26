@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-didcomm-v1"
-version = "0.9.0"
+version = "0.10.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -10,9 +10,26 @@ keywords = ["trust-tasks", "didcomm", "aries", "did", "transport"]
 categories = ["network-programming", "cryptography"]
 publish = true
 
+[features]
+# Binding didcomm-v1/0.2 §2.3 — accept the superseded `0.1` `basic-message`
+# carriage as well as this binding's dedicated message type.
+#
+# ON BY DEFAULT, and that is a spec obligation rather than a preference: §2.3
+# says a `0.2` consumer **MUST** also accept the `0.1` carriage, and nothing
+# in this repo depends on it either way. It is a feature at all because
+# `basic-message` is the Aries *chat* type — while the gate is open, any chat
+# message from any established connection that carries a `trust-task`
+# attachment is a framework input, from every peer, with no sunset. §2.3 puts
+# the contraction in a future MAJOR; this is the switch that lands it, and in
+# the meantime a deployment whose peers have all migrated can close the
+# surface early with `default-features = false`.
+default = ["legacy-basic-message"]
+legacy-basic-message = []
+
 [dependencies]
 trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.11" }
 affinidi-messaging-didcomm-v1 = "0.2"
+log = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

@@ -6453,7 +6453,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-capability-client"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "chrono",
  "serde",
@@ -6496,7 +6496,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "affinidi-messaging-didcomm",
  "affinidi-messaging-sdk",
@@ -6504,6 +6504,7 @@ dependencies = [
  "affinidi-secrets-resolver",
  "affinidi-tdk",
  "affinidi-tdk-common",
+ "base64 0.22.1",
  "chrono",
  "serde",
  "serde_json",
@@ -6515,9 +6516,10 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm-v1"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "affinidi-messaging-didcomm-v1",
+ "log",
  "serde",
  "serde_json",
  "thiserror 2.0.18",

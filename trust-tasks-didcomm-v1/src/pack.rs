@@ -44,6 +44,7 @@
 //! **must not** infer exchange continuation from that defaulted value, which
 //! is why the comparison below reads `explicit_thid()`.
 
+#[cfg(any(feature = "legacy-basic-message", test))]
 use affinidi_messaging_didcomm_v1::protocols::basic_message;
 use affinidi_messaging_didcomm_v1::{MessageV1, UnpackResult};
 use serde::{de::DeserializeOwned, Serialize};
@@ -135,8 +136,13 @@ where
 ///
 /// Applies, in order: the authenticated-sender gate, the message-type check, the
 /// attachment lookup, and the `~thread` cross-check. Returns the typed document
-/// alongside a [`DidcommV1Handler`] carrying the connection's `theirDid`, ready
-/// for the framework's §7.2 pipeline.
+/// alongside a [`DidcommV1Handler`] carrying the connection's `theirDid` and the
+/// [`Carriage`] the message arrived on, ready for the framework's §7.2 pipeline.
+///
+/// The `0.1` `basic-message` carriage (§2.3) is accepted only when the
+/// `legacy-basic-message` feature is enabled — it is **on by default**, because
+/// §2.3 makes accepting it a MUST for a conforming `0.2` consumer — and its use
+/// is logged as superseded and reported on the handler.
 pub fn unpack_trust_task<P>(
     unpacked: UnpackResult,
 ) -> Result<(TrustTask<P>, DidcommV1Handler), DidcommV1Error>
@@ -156,13 +162,26 @@ where
     };
 
     let msg = &authenticated.message;
-    // §2.3, receivers move first: accept the dedicated type AND 0.1's
-    // basic-message carriage. `is_basic_message` rather than comparing `typ`
-    // for the legacy half — v1 message types have two interchangeable document
-    // URIs and Credo emits the `https://didcomm.org` one by default, so exact
-    // comparison silently drops conforming peers.
-    if msg.typ != ENVELOPE_TYPE && !basic_message::is_basic_message(msg) {
-        return Err(DidcommV1Error::WrongMessageType(msg.typ.clone()));
+    let carriage =
+        detect_carriage(msg).ok_or_else(|| DidcommV1Error::WrongMessageType(msg.typ.clone()))?;
+
+    // §2.3: "A consumer SHOULD surface such a message as using a superseded
+    // carriage, so an operator can see which peers have not migrated." Logged
+    // here rather than left to the caller because this is the only place that
+    // knows which gate the message came through; also surfaced as data on the
+    // handler ([`DidcommV1Handler::carriage`]) for callers that would rather
+    // meter it than grep logs.
+    #[cfg(feature = "legacy-basic-message")]
+    if carriage == Carriage::LegacyBasicMessage {
+        log::warn!(
+            "trust-tasks-didcomm-v1: accepted a Trust Task on the superseded 0.1 \
+             basic-message carriage from {sender} (@type {typ:?}); that peer has not \
+             migrated to the dedicated type. This carriage sits behind the \
+             `legacy-basic-message` feature and is dropped in a future MAJOR \
+             (binding didcomm-v1/0.2 §2.3, §7.1).",
+            sender = authenticated.sender,
+            typ = msg.typ,
+        );
     }
 
     let document = attachment(msg)?;
@@ -193,8 +212,61 @@ where
     let handler = DidcommV1Handler::new(
         Some(authenticated.recipient.to_string()),
         Some(authenticated.sender.to_string()),
-    );
+    )
+    .with_carriage(carriage);
     Ok((doc, handler))
+}
+
+/// Which of the binding's two carriages a message arrived on.
+///
+/// Exposed on [`DidcommV1Handler::carriage`] so an operator can see which
+/// peers still emit the superseded form — binding §2.3 SHOULDs exactly that,
+/// and a count per peer is more use than a log line when deciding whether the
+/// legacy gate can be closed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Carriage {
+    /// The binding's dedicated message type ([`ENVELOPE_TYPE`], §2).
+    #[default]
+    Dedicated,
+    /// `0.1`'s Aries `basic-message` carriage (§2.3). Accepted only when the
+    /// `legacy-basic-message` feature is enabled, and superseded.
+    LegacyBasicMessage,
+}
+
+/// The type gate of §2 / §2.3. `None` means the message is not a Trust Task
+/// carriage at all.
+///
+/// **The legacy half is a Cargo feature, and that is a security control rather
+/// than packaging.** `basic-message` is the Aries *chat* message type: with the
+/// legacy gate open, any chat message from any established connection that
+/// happens to carry a `trust-task` attachment is a framework input, from every
+/// peer, indefinitely. Binding §2.3 makes accepting it a **MUST** for a
+/// conforming `0.2` consumer, so the feature is **on by default** — but a
+/// deployment whose peers have all migrated can now close the surface with
+/// `default-features = false`, and §2.3's own contraction ("dropping `0.1`
+/// acceptance … belongs to a future `MAJOR`") has a switch to land on when it
+/// comes.
+#[cfg(feature = "legacy-basic-message")]
+fn detect_carriage(msg: &MessageV1) -> Option<Carriage> {
+    if msg.typ == ENVELOPE_TYPE {
+        Some(Carriage::Dedicated)
+    } else if basic_message::is_basic_message(msg) {
+        // `is_basic_message` rather than comparing `typ` — v1 message types
+        // have two interchangeable document URIs and Credo emits the
+        // `https://didcomm.org` one by default, so exact comparison silently
+        // drops conforming peers.
+        Some(Carriage::LegacyBasicMessage)
+    } else {
+        None
+    }
+}
+
+/// The type gate with the legacy carriage compiled out: only the binding's own
+/// message type carries a Trust Task. See the feature note on the other
+/// variant of this function.
+#[cfg(not(feature = "legacy-basic-message"))]
+fn detect_carriage(msg: &MessageV1) -> Option<Carriage> {
+    (msg.typ == ENVELOPE_TYPE).then_some(Carriage::Dedicated)
 }
 
 /// Pull the reserved attachment's inline JSON out of a message.
@@ -348,12 +420,11 @@ mod tests {
         assert!(representable("-_./AZaz09-_./AZaz09"));
     }
 
-    /// §2.3, receivers move first: the consumer-side type gate accepts the 0.1
-    /// basic-message carriage alongside the dedicated type.
-    #[test]
-    fn legacy_basic_message_carriage_still_passes_the_type_gate() {
+    /// A `0.1`-carriage message: an Aries `basic-message` — the *chat* type —
+    /// that happens to carry a `trust-task` attachment.
+    fn legacy_message() -> MessageV1 {
         use affinidi_messaging_didcomm_v1::protocols::basic_message::BasicMessage;
-        let legacy = BasicMessage::new("Trust Task: legacy")
+        BasicMessage::new("Trust Task: legacy")
             .unwrap()
             .field(
                 "~attach",
@@ -363,12 +434,72 @@ mod tests {
                     "data": { "json": serde_json::to_value(doc()).unwrap() }
                 }]),
             )
-            .finalize();
-        // The gate in unpack_trust_task: dedicated type OR basic-message.
+            .finalize()
+    }
+
+    /// The gate always admits the binding's own type, whatever the feature
+    /// flags say.
+    #[test]
+    fn the_dedicated_type_always_passes_the_gate() {
+        let msg = build_message(&doc()).unwrap();
+        assert_eq!(detect_carriage(&msg), Some(Carriage::Dedicated));
+    }
+
+    /// A message that is neither carriage is not a Trust Task under either
+    /// configuration.
+    #[test]
+    fn an_unrelated_type_never_passes_the_gate() {
+        let msg = MessageV1::new("https://didcomm.org/trust-ping/1.0/ping", json!({})).unwrap();
+        assert_eq!(detect_carriage(&msg), None);
+    }
+
+    /// §2.3, receivers move first: with the default feature set the consumer
+    /// accepts the `0.1` `basic-message` carriage alongside the dedicated type,
+    /// **and reports it as superseded** so an operator can see which peers have
+    /// not migrated. Reporting it is the half that was missing: before, the
+    /// legacy carriage was indistinguishable from the current one downstream.
+    #[cfg(feature = "legacy-basic-message")]
+    #[test]
+    fn the_legacy_carriage_is_accepted_and_reported_as_superseded() {
+        let legacy = legacy_message();
         assert!(basic_message::is_basic_message(&legacy));
+        assert_eq!(
+            detect_carriage(&legacy),
+            Some(Carriage::LegacyBasicMessage),
+            "§2.3 makes accepting the 0.1 carriage a MUST for a 0.2 consumer"
+        );
+        // The document is reachable exactly as it is on the dedicated type —
+        // only the carrier differs (§2.3).
         let recovered: TrustTask<grant::Payload> =
             serde_json::from_value(attachment(&legacy).unwrap()).unwrap();
         assert_eq!(recovered.id, "req-0001");
+        // And it is distinguishable downstream, which is what §2.3's SHOULD
+        // asks for.
+        let handler = DidcommV1Handler::new(Some("did:sov:me".to_string()), None)
+            .with_carriage(detect_carriage(&legacy).unwrap());
+        assert_eq!(handler.carriage(), Carriage::LegacyBasicMessage);
+        assert_ne!(handler.carriage(), Carriage::Dedicated);
+    }
+
+    /// The sunset. `basic-message` is Aries **chat**: while §2.3's gate is open,
+    /// any chat message from any established connection carrying a `trust-task`
+    /// attachment is a framework input — from every peer, indefinitely. Before
+    /// this release there was no way to close it at all. With
+    /// `default-features = false` the carriage is compiled out and such a
+    /// message is `WrongMessageType`.
+    #[cfg(not(feature = "legacy-basic-message"))]
+    #[test]
+    fn the_legacy_carriage_is_refused_when_the_feature_is_off() {
+        let legacy = legacy_message();
+        assert_eq!(
+            detect_carriage(&legacy),
+            None,
+            "with the feature off, an Aries chat message is not a Trust Task carriage"
+        );
+        // The attachment is still *there* — the gate refuses on carriage, not
+        // on content, which is what makes the surface actually closed rather
+        // than narrowed.
+        assert!(attachment(&legacy).is_ok());
     }
 
     #[test]

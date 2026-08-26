@@ -51,6 +51,29 @@
 //! the dedicated message type ([`pack::ENVELOPE_TYPE`]) as producer, both
 //! carriages as consumer (§2.3 — receivers move first), and the `~thread`
 //! omit rule of §4. Discussion on issue #173.
+//!
+//! # The `legacy-basic-message` feature
+//!
+//! §2.3's `basic-message` carriage is a real attack surface as well as a
+//! compatibility obligation: `basic-message` is the Aries **chat** type, so
+//! while that gate is open, any chat message from any established connection
+//! carrying a `trust-task` attachment is a framework input — from every peer,
+//! with no end date.
+//!
+//! It therefore sits behind the `legacy-basic-message` Cargo feature, which is
+//! **enabled by default** because §2.3 makes accepting the carriage a MUST for
+//! a conforming `0.2` consumer; turning it off is a deliberate, documented
+//! departure from that MUST, available to a deployment that knows all its peers
+//! have migrated:
+//!
+//! ```toml
+//! trust-tasks-didcomm-v1 = { version = "0.10", default-features = false }
+//! ```
+//!
+//! With the feature on, every message that arrives on the legacy carriage is
+//! logged at `warn` through the [`log`] facade and reported as
+//! [`Carriage::LegacyBasicMessage`] on the handler, which is §2.3's SHOULD that
+//! an operator be able to see which peers have not moved.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
@@ -61,7 +84,7 @@ pub mod pack;
 
 pub use error::DidcommV1Error;
 pub use handler::{DidcommV1Handler, BINDING_URI};
-pub use pack::{build_message, unpack_trust_task, ATTACHMENT_ID, ENVELOPE_TYPE};
+pub use pack::{build_message, unpack_trust_task, Carriage, ATTACHMENT_ID, ENVELOPE_TYPE};
 
 /// The `~thread` fields this binding maps onto the framework's thread members,
 /// documented as data so a consumer can assert the mapping rather than restate

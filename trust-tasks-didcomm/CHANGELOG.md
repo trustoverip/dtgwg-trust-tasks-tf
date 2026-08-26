@@ -4,6 +4,85 @@ All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.11.0] - 2026-08-26
+
+Four fail-open paths in the inbound gate, closed. All of them change what a
+consumer observes — envelopes this crate used to accept are now rejected — so
+this is **BREAKING** even though no wire format moved.
+
+### Changed
+
+- **BREAKING — a signed-only (bare JWS) envelope is rejected.**
+  `unpack_trust_task` accepted `UnpackResult::Signed` and set the local DID to
+  `None`. Binding `didcomm/0.2` §2 makes authcrypt a **MUST** and §4 states
+  that an envelope with no authenticated sender "MUST NOT enter the framework
+  pipeline". A JWS is signed but sealed to nobody: it has no recipient binding,
+  so one message could be delivered to every party in a deployment and each
+  would accept it — and because the local DID was `None`, SPEC §4.8.1's
+  `recipient` cross-check was not failed but *skipped*. Now
+  `DidcommError::SignedNotAuthcrypted`.
+
+- **BREAKING — a `sender_kid` with no `#fragment` is an error.** It previously
+  reduced to `None`, which downgraded an authenticated identity to an
+  unauthenticated one: the pipeline then fell back to the in-band `issuer` with
+  the transport cross-check skipped, so a sender with a malformed `kid` could
+  name any issuer it liked. Now `DidcommError::UnqualifiedSenderKid`. A
+  fragment-less *recipient* kid is still passed through as-is — unlike the
+  sender case that fails closed, since a non-DID value simply fails §4.8.1's
+  comparison.
+
+- **BREAKING — `expected_sender_did` is enforced, not just used as a lookup
+  key.** The authcrypt `skid`/`apu` is chosen by the sender, so the DID it
+  carries is a claim; the DID that actually authenticated is the one whose
+  public key opened the ECDH-1PU wrap. A peer could authenticate as itself
+  while labelling the envelope with another party's DID and have the label
+  handed to §4.8.1 as the transport-authenticated sender. The two must now
+  agree — `DidcommError::SenderKidMismatch`.
+
+- `BINDING_URI` is `https://trusttasks.org/binding/didcomm/0.2`, matching the
+  current binding specification. `ENVELOPE_TYPE` is deliberately unchanged at
+  `…/didcomm/0.1/envelope` — binding §1 and §7.1 keep it pinned so `0.1` and
+  `0.2` implementations stay mutually intelligible on the wire.
+
+### Added
+
+- `SenderAllowlist`, `unpack_trust_task_from`, and `advertised_sender_did`.
+
+  The crate previously told a multi-peer server to loop over its known senders
+  retrying `unpack_trust_task` on `IdentityNotFound` — O(known peers) ECDH-1PU
+  decrypts per inbound message. That loop *was* the sender allowlist, but only
+  incidentally: it held because a peer the agent had never been given could not
+  be unpacked, a property invisible in the type signature and easy to lose.
+
+  `unpack_trust_task_from` reads the envelope's `skid` from the JWE protected
+  header, checks the DID it names against a declared `SenderAllowlist` **before
+  any decryption**, and unpacks once. An empty allowlist permits nothing;
+  `SenderAllowlist::from_agent_peers` reproduces exactly the set the old loop
+  could accept, so the migration is behaviour-preserving.
+
+  The `skid` is unauthenticated at the point it is read — it selects a key, it
+  proves nothing — which is why the verified sender is re-checked against it
+  afterwards (see `SenderKidMismatch` above).
+
+- `base64` is a new dependency, for reading the JWE protected header.
+
+### Migration
+
+```rust
+// before
+for peer in known_peers {
+    match unpack_trust_task::<P>(&wire, &agent, Some(peer)) { .. }
+}
+
+// after
+let allow = SenderAllowlist::from_agent_peers(&agent); // or ::new([..])
+let (doc, handler) = unpack_trust_task_from::<P>(&wire, &agent, &allow)?;
+```
+
+A deployment that relied on signed-only envelopes has no compatibility path
+here by design: authcrypt them, or carry an in-band `proof` and use a binding
+that admits unauthenticated transport.
+
 ## [0.8.0] - 2026-08-16
 
 ### Changed
