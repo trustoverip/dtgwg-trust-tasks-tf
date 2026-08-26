@@ -111,7 +111,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 `payload.consumerContext` (optional, RECOMMENDED).
 
-`payload.stepUpProof` (REQUIRED on retry after step_up_required).
+`payload.stepUpProof` (REQUIRED on retry after `stepUpRequired`).
 
 `payload.nonce` (optional) — caller-supplied nonce the maintainer embeds verbatim in the session credential when the driver has a nonce concept. The canonical use is SIOPv2: the RP's authorization-request `nonce` MUST appear as the `nonce` claim in the SIOP id_token the maintainer mints, or the RP rejects the token. Drivers without a nonce concept (Password POST, OAuth refresh, cookie-injection drivers) ignore the field. When omitted, the maintainer generates its own nonce; appropriate for push-mode flows that don't pre-fetch a challenge.
 
