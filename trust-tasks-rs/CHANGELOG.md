@@ -29,6 +29,71 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.13.4] - 2026-08-26
+
+### Added
+
+- **One Cargo feature per top-level spec family, so a consumer can compile the
+  three tasks it uses instead of all 344.** `specs/` is 15 MB of generated
+  types and every consumer paid for the whole registry; the largest consumer in
+  the ecosystem keeps 172 hand-maintained URI string constants rather than
+  depend on these types at all, and compile weight is part of why.
+
+  Each of the 26 non-framework families — `acl`, `audit`, `auth`, `chat`,
+  `config`, `confirm`, `consent`, `credential-exchange`, `device`,
+  `did-management`, `git-trust`, `governance`, `keys`, `messaging`, `policy`,
+  `provision`, `push`, `registry`, `sync`, `task-consent`, `vault`, `vrc`,
+  `vta`, `vtc`, `webvh`, `witness` — now has a feature of the same name, and
+  `all-specs` enables all of them.
+
+  Measured on one machine, dependencies cached, `CARGO_INCREMENTAL=0`,
+  `cargo clean -p trust-tasks-rs` before each run:
+
+  | selection | before | after |
+  |---|---|---|
+  | default features | 21.7 s | 22.4 s |
+  | `--features validate` | 21.3 s | 22.2 s |
+  | `--no-default-features --features vault` | n/a | **4.0 s** |
+  | `--no-default-features --features vault,validate` | n/a | **4.0 s** |
+  | `--no-default-features --features acl` | n/a | **1.2 s** |
+
+  The default column is deliberately flat: it compiles the same 344 modules it
+  always did, and the difference between the two figures is run-to-run
+  variance. The saving is entirely in what a consumer can now decline. The
+  generated tree is still 15 MB on disk — this changes what is compiled, not
+  what ships.
+
+  ("before" was measured at `cd170a1`, i.e. 0.13.2; 0.13.3 added hand-written
+  code only and does not move the generated tree.)
+
+  The feature table and the `#[cfg]` gates are written by
+  `trust-tasks-codegen` from what is on disk under `specs/`, and
+  `tests/spec_feature_manifest.rs` re-derives the family set from `specs/`
+  and fails if the two disagree. `CLAUDE.md` documents three separate
+  incidents of a hand-maintained list drifting from the tree; this list is
+  not one of them.
+
+  The five framework-reserved families of SPEC §6.1
+  (`trust-task-control`, `trust-task-discovery`, `trust-task-next-step`,
+  `trust-task-ok`, `trust-ceremony-receipt`) are **not** gated. The crate's own
+  framework machinery depends on them unconditionally — `discovery.rs` does
+  `use crate::specs::trust_task_discovery::v0_1` at module scope — and they are
+  1.4% of the generated tree, so gating them would cost every consumer the
+  framework surface and save nothing.
+
+### Changed
+
+- `schema_index::schema_for` returns `None` for a Type URI whose family was not
+  selected. That is the documented meaning of `None` ("this build knows no spec
+  for it") and is unreachable under `default`, which enables every family.
+
+> **Non-breaking under `default`, with one caveat.** `default = ["all-specs"]`,
+> so a consumer who configures nothing compiles exactly the module tree it
+> compiled in 0.13.3. The exception is a consumer that already wrote
+> `default-features = false` — a no-op against 0.13.3's empty `default`, but
+> from 0.13.4 it deselects every family. Such a consumer adds `"all-specs"`
+> (or the families it uses) to `features`.
+
 ## [0.13.3] - 2026-08-26
 
 ### Added

@@ -222,8 +222,37 @@ codegen can't produce.
 
 | Feature | What it enables |
 |---|---|
-| _(default)_ | The framework crate (no extra deps) |
+| _(default)_ | `all-specs` — the framework crate plus every generated spec family, which is what the crate has always shipped |
+| `all-specs` | Every top-level spec family |
+| one per family | `acl`, `audit`, `auth`, `chat`, `config`, `confirm`, `consent`, `credential-exchange`, `device`, `did-management`, `git-trust`, `governance`, `keys`, `messaging`, `policy`, `provision`, `push`, `registry`, `sync`, `task-consent`, `vault`, `vrc`, `vta`, `vtc`, `webvh`, `witness` — the `specs::<family>` module tree and nothing else |
 | `validate` | Runtime JSON Schema validation. Pulls in [`jsonschema`](https://crates.io/crates/jsonschema) and exposes a `validate` module + `ValidatedPayload` impls for every generated request payload. Belt-and-suspenders over serde's structural decoding — catches `pattern`, `minItems`, and `additionalProperties` constraints that the typed structs can't always encode. |
+
+### Compiling only the families you use
+
+`specs/` is 344 generated modules and ~15 MB of source. Depending on the crate
+with default features compiles all of it. If you use three tasks, say so:
+
+```toml
+[dependencies]
+trust-tasks-rs = { version = "0.13", default-features = false, features = ["vault"] }
+```
+
+Measured on one machine with dependencies cached and `CARGO_INCREMENTAL=0`:
+**22 s** for the default feature set, **4.0 s** for `vault` alone, **1.2 s**
+for `acl` alone.
+
+The framework surface — `TrustTask`, the §7.2 consume pipeline, the transport
+traits, `ErrorPayload`, discovery — is always compiled, along with the five
+framework-reserved slugs of SPEC §6.1 (`trust-task-control`,
+`trust-task-discovery`, `trust-task-next-step`, `trust-task-ok`,
+`trust-ceremony-receipt`) that it depends on. Only the task families are
+selectable, and each is self-contained: no family's types reference another's,
+so any subset compiles.
+
+`schema_index::schema_for` returns `None` for a Type URI whose family you did
+not select. That is what `None` already means — "this build knows no spec for
+it" — but if you dispatch on Type URIs across the whole registry, take
+`all-specs`.
 
 ## Status
 

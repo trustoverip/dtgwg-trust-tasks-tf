@@ -27,6 +27,43 @@ use walkdir::WalkDir;
 /// `trust_tasks_rs::ErrorPayload`, so we never emit a generated version.
 const SKIP_SLUGS: &[&str] = &["trust-task-error"];
 
+/// Cargo feature that turns on every task family at once. `default` is
+/// exactly this one feature, so a consumer who says nothing keeps the
+/// pre-0.14 module tree; `default-features = false` plus a handful of
+/// family features is what buys the compile-time saving.
+const ALL_SPECS_FEATURE: &str = "all-specs";
+
+/// Whether a top-level family is one of the framework-reserved slugs of
+/// SPEC §6.1 (`^trust-(task|ceremony)($|-|/)`).
+///
+/// These are **not** feature-gated. The crate's own hand-written framework
+/// machinery depends on them unconditionally (`discovery.rs` does
+/// `use crate::specs::trust_task_discovery::v0_1 as wire;` at module scope),
+/// so gating them would mean gating the framework surface that every consumer
+/// needs whatever families they picked. They are also 1.4% of the generated
+/// tree, so there is nothing to win by it.
+///
+/// Derived from the reserved-slug pattern rather than a hard-coded list, so a
+/// new `trust-task-*` slug is classified without anybody remembering to.
+fn is_reserved_family(family: &str) -> bool {
+    for prefix in ["trust-task", "trust-ceremony"] {
+        if let Some(rest) = family.strip_prefix(prefix) {
+            if rest.is_empty() || rest.starts_with('-') {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// The Cargo feature name for a gated family: the family's directory name,
+/// verbatim. Cargo permits `-` in feature names, so `credential-exchange`
+/// needs no mangling and the feature a consumer types matches the path
+/// segment they see in the registry.
+fn feature_name(family: &str) -> &str {
+    family
+}
+
 /// One spec to generate for.
 #[derive(Debug)]
 struct Spec {
@@ -51,6 +88,12 @@ impl Spec {
             .iter()
             .map(|s| s.replace('-', "_"))
             .collect()
+    }
+
+    /// `"acl"` — the first slug segment, which is the top-level family and
+    /// the unit a Cargo feature gates.
+    fn family(&self) -> &str {
+        self.slug.split('/').next().unwrap_or(&self.slug)
     }
 
     /// `"v0_1"` — the leaf module name encoding the version.
@@ -406,14 +449,102 @@ fn main() -> Result<()> {
         fs::write(path, contents)?;
     }
 
+    // Every gated family, in the order the feature table and the `mod.rs`
+    // declarations both use. Derived from what is on disk, never listed by
+    // hand — the whole point of generating the feature table is that a new
+    // family cannot silently arrive without one.
+    let gated: Vec<String> = {
+        let mut set: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+        for spec in &specs {
+            if !is_reserved_family(spec.family()) {
+                set.insert(spec.family().to_string());
+            }
+        }
+        set.into_iter().collect()
+    };
+    if gated.iter().any(|f| feature_name(f) == ALL_SPECS_FEATURE) {
+        return Err(anyhow!(
+            "a spec family is named {ALL_SPECS_FEATURE:?}, which collides with the umbrella feature"
+        ));
+    }
+
     write_mod_tree(&specs, &out_root)?;
     write_schema_index(&specs, &repo_root)?;
+    write_cargo_features(&gated, &repo_root)?;
 
     println!(
         "\nGenerated {} payload modules into {}",
         specs.len(),
         out_root.display()
     );
+    println!(
+        "Feature-gated {} spec families ({} framework-reserved families are always compiled)",
+        gated.len(),
+        specs
+            .iter()
+            .map(Spec::family)
+            .filter(|f| is_reserved_family(f))
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+    );
+    Ok(())
+}
+
+/// Rewrite the generated block of `trust-tasks-rs/Cargo.toml`'s `[features]`
+/// table: one feature per top-level spec family, an `all-specs` umbrella
+/// enabling every one of them, and `default = ["all-specs"]`.
+///
+/// Generated rather than hand-maintained on purpose. `CLAUDE.md` records three
+/// separate incidents of a hand-kept list drifting from the tree; a family
+/// whose feature was forgotten would simply vanish from the crate, and the
+/// `codegen-drift` job would not see it because it only diffs `src/specs`.
+/// `trust-tasks-rs/tests/spec_feature_manifest.rs` closes that gap by
+/// re-deriving the family set from `specs/` and asserting the table matches.
+fn write_cargo_features(gated: &[String], repo_root: &Path) -> Result<()> {
+    let mut body = String::new();
+    body.push_str("# One feature per top-level spec family. `default` is the umbrella, so an\n");
+    body.push_str("# unconfigured consumer gets every family exactly as before; the saving is\n");
+    body.push_str("# `default-features = false, features = [\"vault\"]` and friends.\n");
+    body.push_str("default = [\"");
+    body.push_str(ALL_SPECS_FEATURE);
+    body.push_str("\"]\n");
+    body.push_str(ALL_SPECS_FEATURE);
+    body.push_str(" = [\n");
+    for family in gated {
+        body.push_str(&format!("    {:?},\n", feature_name(family)));
+    }
+    body.push_str("]\n");
+    for family in gated {
+        // Every family name is a valid TOML bare key (the registry restricts
+        // slugs to `[a-z0-9-]`), so no quoting is needed on the left-hand side.
+        let name = feature_name(family);
+        if !name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+        {
+            return Err(anyhow!(
+                "family {name:?} is not a valid Cargo feature / TOML bare key"
+            ));
+        }
+        body.push_str(&format!("{name} = []\n"));
+    }
+
+    let path = repo_root.join("trust-tasks-rs/Cargo.toml");
+    let existing = fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
+    if !existing.contains(TOML_BEGIN_MARKER) {
+        return Err(anyhow!(
+            "{} has no `{}` marker; the [features] table cannot be regenerated",
+            path.display(),
+            TOML_BEGIN_MARKER
+        ));
+    }
+    let updated = replace_between(
+        &existing,
+        TOML_BEGIN_MARKER,
+        TOML_END_MARKER,
+        body.trim_end(),
+    );
+    fs::write(&path, updated).with_context(|| format!("write {}", path.display()))?;
     Ok(())
 }
 
@@ -1200,6 +1331,19 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
             .map(|s| s.as_str())
             .collect::<Vec<_>>()
             .join("::");
+        // A family the consumer did not select has no module to name, so the
+        // arm has to go with it. `schema_for` then answers `None` for that
+        // Type URI, which is exactly what its doc comment says `None` means:
+        // "this build knows no spec for it".
+        let gate = if is_reserved_family(spec.family()) {
+            String::new()
+        } else {
+            format!(
+                "        #[cfg(feature = {:?})]\n",
+                feature_name(spec.family())
+            )
+        };
+        arms.push_str(&gate);
         arms.push_str(&format!(
             "        {:?} => <crate::specs::{}::{}::Payload as crate::Payload>::PAYLOAD_SCHEMA,\n",
             spec.type_uri(),
@@ -1219,6 +1363,7 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
             .and_then(|v| v.get("$defs").and_then(|d| d.get("Response")).cloned())
             .is_some();
         if has_response {
+            arms.push_str(&gate);
             arms.push_str(&format!(
                 "        {:?} => <crate::specs::{}::{}::Response as crate::Payload>::PAYLOAD_SCHEMA,\n",
                 format!("{}#response", spec.type_uri()),
@@ -1266,29 +1411,49 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {{
 }
 
 /// Write `mod.rs` files at every level of the generated tree.
+///
+/// The root `mod.rs` is the only level that carries `#[cfg(feature = …)]`:
+/// gating happens per top-level family, so once a family is in, everything
+/// under it is in.
 fn write_mod_tree(specs: &[Spec], out_root: &Path) -> Result<()> {
     let mut root = ModNode::default();
+    // Root module name (`credential_exchange`) → family directory name
+    // (`credential-exchange`), for the families that get a feature.
+    let mut gates: BTreeMap<String, String> = BTreeMap::new();
     for spec in specs {
+        let segments = spec.module_segments();
+        if !is_reserved_family(spec.family()) {
+            if let Some(root_module) = segments.first() {
+                gates.insert(root_module.clone(), spec.family().to_string());
+            }
+        }
         let mut cursor = &mut root;
-        for seg in spec.module_segments() {
+        for seg in segments {
             cursor = cursor.children.entry(seg).or_default();
         }
         cursor.leaves.push(spec.version_module());
     }
 
-    write_node(&root, out_root, true)?;
+    write_node(&root, out_root, true, &gates)?;
     Ok(())
 }
 
-fn write_node(node: &ModNode, dir: &Path, is_root: bool) -> Result<()> {
-    let mut decls: Vec<String> = node
-        .children
-        .keys()
-        .map(|n| format!("pub mod {n};"))
-        .chain(node.leaves.iter().map(|n| format!("pub mod {n};")))
-        .collect();
-    decls.sort();
-    let body = decls.join("\n");
+fn write_node(
+    node: &ModNode,
+    dir: &Path,
+    is_root: bool,
+    gates: &BTreeMap<String, String>,
+) -> Result<()> {
+    let decl = |name: &String| match gates.get(name) {
+        Some(family) => format!(
+            "#[cfg(feature = {:?})]\npub mod {name};",
+            feature_name(family)
+        ),
+        None => format!("pub mod {name};"),
+    };
+    let mut names: Vec<&String> = node.children.keys().chain(node.leaves.iter()).collect();
+    names.sort();
+    let body = names.into_iter().map(decl).collect::<Vec<_>>().join("\n");
 
     if is_root {
         // Preserve the hand-written preamble in specs/mod.rs; only the block
@@ -1305,8 +1470,9 @@ fn write_node(node: &ModNode, dir: &Path, is_root: bool) -> Result<()> {
         fs::write(&path, content)?;
     }
 
+    // Only the root level gates: a family's feature covers its whole subtree.
     for (name, child) in &node.children {
-        write_node(child, &dir.join(name), false)?;
+        write_node(child, &dir.join(name), false, &BTreeMap::new())?;
     }
     Ok(())
 }
@@ -1314,13 +1480,22 @@ fn write_node(node: &ModNode, dir: &Path, is_root: bool) -> Result<()> {
 const BEGIN_MARKER: &str = "// trust-tasks-codegen:begin";
 const END_MARKER: &str = "// trust-tasks-codegen:end";
 
+/// TOML comments start with `#`, so `trust-tasks-rs/Cargo.toml` carries its own
+/// pair of markers around the generated `[features]` entries.
+const TOML_BEGIN_MARKER: &str = "# trust-tasks-codegen:begin";
+const TOML_END_MARKER: &str = "# trust-tasks-codegen:end";
+
 fn replace_between_markers(existing: &str, body: &str) -> String {
-    match (existing.find(BEGIN_MARKER), existing.find(END_MARKER)) {
+    replace_between(existing, BEGIN_MARKER, END_MARKER, body)
+}
+
+fn replace_between(existing: &str, begin: &str, end: &str, body: &str) -> String {
+    match (existing.find(begin), existing.find(end)) {
         (Some(b), Some(e)) if e > b => {
-            let before = &existing[..b + BEGIN_MARKER.len()];
+            let before = &existing[..b + begin.len()];
             let after = &existing[e..];
             format!("{before}\n{body}\n{after}")
         }
-        _ => format!("{existing}\n{BEGIN_MARKER}\n{body}\n{END_MARKER}\n"),
+        _ => format!("{existing}\n{begin}\n{body}\n{end}\n"),
     }
 }
