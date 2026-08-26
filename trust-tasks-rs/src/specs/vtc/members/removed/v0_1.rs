@@ -157,6 +157,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -166,6 +167,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`RemovedMember`
@@ -213,6 +219,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct RemovedMember {
     ///DID of the departed member.
     pub did: RemovedMemberDid,
@@ -228,6 +235,11 @@ pub struct RemovedMember {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status_list_index: ::std::option::Option<u64>,
+}
+impl RemovedMember {
+    pub fn builder() -> builder::RemovedMember {
+        Default::default()
+    }
 }
 ///DID of the departed member.
 ///
@@ -397,11 +409,190 @@ impl<'de> ::serde::Deserialize<'de> for RemovedMemberStatus {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///One entry per tombstone. Purged members are absent.
     pub removed: ::std::vec::Vec<RemovedMember>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RemovedMember {
+        did: ::std::result::Result<super::RemovedMemberDid, ::std::string::String>,
+        removed_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        status: ::std::result::Result<super::RemovedMemberStatus, ::std::string::String>,
+        status_list_index: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for RemovedMember {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                removed_at: Err("no value supplied for removed_at".to_string()),
+                status: Err("no value supplied for status".to_string()),
+                status_list_index: Ok(Default::default()),
+            }
+        }
+    }
+    impl RemovedMember {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RemovedMemberDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn removed_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.removed_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for removed_at: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RemovedMemberStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn status_list_index<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status_list_index = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status_list_index: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RemovedMember> for super::RemovedMember {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RemovedMember,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                removed_at: value.removed_at?,
+                status: value.status?,
+                status_list_index: value.status_list_index?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RemovedMember> for RemovedMember {
+        fn from(value: super::RemovedMember) -> Self {
+            Self {
+                did: Ok(value.did),
+                removed_at: Ok(value.removed_at),
+                status: Ok(value.status),
+                status_list_index: Ok(value.status_list_index),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        removed:
+            ::std::result::Result<::std::vec::Vec<super::RemovedMember>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                removed: Err("no value supplied for removed".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn removed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RemovedMember>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.removed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for removed: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                removed: value.removed?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                removed: Ok(value.removed),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/members/removed/0.1";
@@ -416,6 +607,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RemovedMember\": {\n      \"$anchor\": \"removedMember\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"DID of the departed member.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"removedAt\": {\n          \"description\": \"When the removal took effect.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Tombstone state, e.g. how the departure was dispositioned.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"Slot in the community's published status list holding this member's revocation bit.\",\n          \"minimum\": 0,\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"removedAt\",\n        \"status\"\n      ],\n      \"title\": \"RemovedMember\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"removed\": {\n          \"description\": \"One entry per tombstone. Purged members are absent.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RemovedMember\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"removed\"\n      ],\n      \"title\": \"VTC Members Removed — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

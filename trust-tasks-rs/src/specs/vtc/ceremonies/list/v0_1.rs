@@ -91,6 +91,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CeremonyManifest {
     ///One-line explanation shown beside the label.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -120,6 +121,11 @@ pub struct CeremonyManifest {
     ///Whether the ceremony is actually reachable in this deployment.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub wired: ::std::option::Option<CeremonyManifestWired>,
+}
+impl CeremonyManifest {
+    pub fn builder() -> builder::CeremonyManifest {
+        Default::default()
+    }
 }
 ///Human-readable name for an operator UI.
 ///
@@ -594,6 +600,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -603,6 +610,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -635,11 +647,264 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Every ceremony this maintainer implements.
     pub ceremonies: ::std::vec::Vec<CeremonyManifest>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct CeremonyManifest {
+        blurb: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        facts_template: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        fields: ::std::result::Result<
+            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        label: ::std::result::Result<super::CeremonyManifestLabel, ::std::string::String>,
+        nature: ::std::result::Result<super::CeremonyManifestNature, ::std::string::String>,
+        pkg: ::std::result::Result<
+            ::std::option::Option<super::CeremonyManifestPkg>,
+            ::std::string::String,
+        >,
+        purpose: ::std::result::Result<super::CeremonyManifestPurpose, ::std::string::String>,
+        wired: ::std::result::Result<
+            ::std::option::Option<super::CeremonyManifestWired>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for CeremonyManifest {
+        fn default() -> Self {
+            Self {
+                blurb: Ok(Default::default()),
+                facts_template: Ok(Default::default()),
+                fields: Ok(Default::default()),
+                label: Err("no value supplied for label".to_string()),
+                nature: Err("no value supplied for nature".to_string()),
+                pkg: Ok(Default::default()),
+                purpose: Err("no value supplied for purpose".to_string()),
+                wired: Ok(Default::default()),
+            }
+        }
+    }
+    impl CeremonyManifest {
+        pub fn blurb<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.blurb = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for blurb: {e}"));
+            self
+        }
+        pub fn facts_template<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.facts_template = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for facts_template: {e}"));
+            self
+        }
+        pub fn fields<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.fields = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for fields: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CeremonyManifestLabel>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn nature<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CeremonyManifestNature>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.nature = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for nature: {e}"));
+            self
+        }
+        pub fn pkg<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::CeremonyManifestPkg>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pkg = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pkg: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CeremonyManifestPurpose>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+        pub fn wired<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::CeremonyManifestWired>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.wired = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for wired: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CeremonyManifest> for super::CeremonyManifest {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CeremonyManifest,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                blurb: value.blurb?,
+                facts_template: value.facts_template?,
+                fields: value.fields?,
+                label: value.label?,
+                nature: value.nature?,
+                pkg: value.pkg?,
+                purpose: value.purpose?,
+                wired: value.wired?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CeremonyManifest> for CeremonyManifest {
+        fn from(value: super::CeremonyManifest) -> Self {
+            Self {
+                blurb: Ok(value.blurb),
+                facts_template: Ok(value.facts_template),
+                fields: Ok(value.fields),
+                label: Ok(value.label),
+                nature: Ok(value.nature),
+                pkg: Ok(value.pkg),
+                purpose: Ok(value.purpose),
+                wired: Ok(value.wired),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ceremonies:
+            ::std::result::Result<::std::vec::Vec<super::CeremonyManifest>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ceremonies: Err("no value supplied for ceremonies".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ceremonies<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::CeremonyManifest>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ceremonies = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ceremonies: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ceremonies: value.ceremonies?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ceremonies: Ok(value.ceremonies),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/ceremonies/list/0.1";
@@ -654,6 +919,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CeremonyManifest\": {\n      \"$anchor\": \"ceremonyManifest\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"blurb\": {\n          \"description\": \"One-line explanation shown beside the label.\",\n          \"type\": \"string\"\n        },\n        \"factsTemplate\": {\n          \"description\": \"A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\\n\\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one.\",\n          \"type\": \"object\"\n        },\n        \"fields\": {\n          \"description\": \"Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"label\": {\n          \"description\": \"Human-readable name for an operator UI.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nature\": {\n          \"description\": \"Whether the ceremony is automatic, operator-driven, or advisory.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"pkg\": {\n          \"description\": \"Policy package backing the decision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Governance purpose this ceremony decides, e.g. join, removal.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"wired\": {\n          \"description\": \"Whether the ceremony is actually reachable in this deployment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"purpose\",\n        \"label\",\n        \"nature\"\n      ],\n      \"title\": \"CeremonyManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ceremonies\": {\n          \"description\": \"Every ceremony this maintainer implements.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CeremonyManifest\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"ceremonies\"\n      ],\n      \"title\": \"VTC Ceremonies List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

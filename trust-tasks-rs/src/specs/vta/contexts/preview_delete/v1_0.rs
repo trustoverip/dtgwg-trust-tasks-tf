@@ -166,11 +166,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Context to preview the deletion of.
     pub id: PayloadId,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Context to preview the deletion of.
 ///
@@ -308,6 +314,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Subjects whose ACL entry would be removed outright, because this context was its only scope.
     #[serde(rename = "aclEntriesRemoved")]
@@ -332,6 +339,192 @@ pub struct Response {
     #[serde(rename = "webvhDids")]
     pub webvh_dids: ::std::vec::Vec<::std::string::String>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::PayloadId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                id: value.id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        acl_entries_removed:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        acl_entries_updated:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        did_templates:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        keys: ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        webvh_dids:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                acl_entries_removed: Err("no value supplied for acl_entries_removed".to_string()),
+                acl_entries_updated: Err("no value supplied for acl_entries_updated".to_string()),
+                did_templates: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                keys: Err("no value supplied for keys".to_string()),
+                webvh_dids: Err("no value supplied for webvh_dids".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn acl_entries_removed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acl_entries_removed = value.try_into().map_err(|e| {
+                format!("error converting supplied value for acl_entries_removed: {e}")
+            });
+            self
+        }
+        pub fn acl_entries_updated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acl_entries_updated = value.try_into().map_err(|e| {
+                format!("error converting supplied value for acl_entries_updated: {e}")
+            });
+            self
+        }
+        pub fn did_templates<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did_templates = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did_templates: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn keys<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.keys = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for keys: {e}"));
+            self
+        }
+        pub fn webvh_dids<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.webvh_dids = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for webvh_dids: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acl_entries_removed: value.acl_entries_removed?,
+                acl_entries_updated: value.acl_entries_updated?,
+                did_templates: value.did_templates?,
+                ext: value.ext?,
+                id: value.id?,
+                keys: value.keys?,
+                webvh_dids: value.webvh_dids?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                acl_entries_removed: Ok(value.acl_entries_removed),
+                acl_entries_updated: Ok(value.acl_entries_updated),
+                did_templates: Ok(value.did_templates),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                keys: Ok(value.keys),
+                webvh_dids: Ok(value.webvh_dids),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -346,6 +539,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.\",\n      \"properties\": {\n        \"aclEntriesRemoved\": {\n          \"description\": \"Subjects whose ACL entry would be removed outright, because this context was its only scope.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"aclEntriesUpdated\": {\n          \"description\": \"Subjects whose ACL entry would be narrowed — they hold other scopes and keep them.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"didTemplates\": {\n          \"description\": \"DID templates scoped to this context that would be removed.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"The context previewed.\",\n          \"type\": \"string\"\n        },\n        \"keys\": {\n          \"description\": \"Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"webvhDids\": {\n          \"description\": \"did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"keys\",\n        \"webvhDids\",\n        \"aclEntriesRemoved\",\n        \"aclEntriesUpdated\"\n      ],\n      \"title\": \"VTA Contexts Preview-Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

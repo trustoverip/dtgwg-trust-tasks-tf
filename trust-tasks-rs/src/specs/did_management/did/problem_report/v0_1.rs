@@ -182,6 +182,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     pub code: PayloadCode,
     ///Free-form structured context. Hosts SHOULD avoid leaking other tenants' data here.
@@ -193,6 +194,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     pub message: PayloadMessage,
     pub mnemonic: PayloadMnemonic,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadCode`
 ///
@@ -396,6 +402,125 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        code: ::std::result::Result<super::PayloadCode, ::std::string::String>,
+        ctx: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        domain: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        message: ::std::result::Result<super::PayloadMessage, ::std::string::String>,
+        mnemonic: ::std::result::Result<super::PayloadMnemonic, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                code: Err("no value supplied for code".to_string()),
+                ctx: Ok(Default::default()),
+                domain: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                message: Err("no value supplied for message".to_string()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn code<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadCode>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.code = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for code: {e}"));
+            self
+        }
+        pub fn ctx<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ctx = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ctx: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadMessage>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadMnemonic>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                code: value.code?,
+                ctx: value.ctx?,
+                domain: value.domain?,
+                ext: value.ext?,
+                message: value.message?,
+                mnemonic: value.mnemonic?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                code: Ok(value.code),
+                ctx: Ok(value.ctx),
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                message: Ok(value.message),
+                mnemonic: Ok(value.mnemonic),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

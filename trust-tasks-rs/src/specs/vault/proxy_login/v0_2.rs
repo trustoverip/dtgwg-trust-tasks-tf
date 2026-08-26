@@ -66,6 +66,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ConsumerContext {
     ///Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.
     #[serde(
@@ -96,6 +97,11 @@ impl ::std::default::Default for ConsumerContext {
             last_user_verification_at: Default::default(),
             network_class: Default::default(),
         }
+    }
+}
+impl ConsumerContext {
+    pub fn builder() -> builder::ConsumerContext {
+        Default::default()
     }
 }
 ///Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.
@@ -197,6 +203,7 @@ impl<'de> ::serde::Deserialize<'de> for ConsumerContextDeviceId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ConsumerContextNetworkClass {
     #[serde(rename = "unknown")]
     Unknown,
@@ -287,10 +294,16 @@ M2A is the only implementation today; this is also the canonical default for new
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DidcommAuthcryptEnvelope {
     pub envelope: ::serde_json::Value,
     ///Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
     pub jwe: DidcommAuthcryptEnvelopeJwe,
+}
+impl DidcommAuthcryptEnvelope {
+    pub fn builder() -> builder::DidcommAuthcryptEnvelope {
+        Default::default()
+    }
 }
 ///Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
 ///
@@ -517,6 +530,7 @@ No open-source implementation reads this yet outside vta-sdk's `sealed_transfer`
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct HpkeArmoredEnvelope {
     ///ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
     pub armored: HpkeArmoredEnvelopeArmored,
@@ -530,6 +544,11 @@ pub struct HpkeArmoredEnvelope {
     ///did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.
     #[serde(rename = "recipientKeyId")]
     pub recipient_key_id: HpkeArmoredEnvelopeRecipientKeyId,
+}
+impl HpkeArmoredEnvelope {
+    pub fn builder() -> builder::HpkeArmoredEnvelope {
+        Default::default()
+    }
 }
 ///ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
 ///
@@ -629,6 +648,7 @@ impl<'de> ::serde::Deserialize<'de> for HpkeArmoredEnvelopeArmored {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum HpkeArmoredEnvelopeProducerAssertion {
     #[serde(rename = "didSigned")]
     DidSigned,
@@ -806,6 +826,7 @@ impl<'de> ::serde::Deserialize<'de> for HpkeArmoredEnvelopeRecipientKeyId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Caller's situational context — fed to the maintainer's policy engine to decide proxy vs fill, require step-up, etc. Producers populate what they can observe; fields are advisory and the maintainer MUST cross-check anything security-relevant against its own state.
     #[serde(
@@ -839,6 +860,11 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds_hint: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Vault entry id to log in with.
 ///
@@ -1009,12 +1035,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.
     #[serde(rename = "sealedSessionBlob")]
     pub sealed_session_blob: SealedEnvelope,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Discriminated by `envelope`. Exactly one variant matches per document.
 ///
@@ -1040,6 +1072,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum SealedEnvelope {
     DidcommAuthcryptEnvelope(DidcommAuthcryptEnvelope),
     HpkeArmoredEnvelope(HpkeArmoredEnvelope),
@@ -1170,6 +1203,7 @@ impl ::std::convert::From<TspMessageEnvelope> for SealedEnvelope {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum SiteTarget {
     ///WebOrigin
     #[serde(rename = "webOrigin")]
@@ -1617,6 +1651,7 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetTeamId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct StepUpProof {
     ///Maintainer-issued challenge id the proof responds to.
     #[serde(rename = "challengeId")]
@@ -1624,6 +1659,11 @@ pub struct StepUpProof {
     pub kind: StepUpProofKind,
     ///Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.
     pub proof: ::std::string::String,
+}
+impl StepUpProof {
+    pub fn builder() -> builder::StepUpProof {
+        Default::default()
+    }
 }
 ///Maintainer-issued challenge id the proof responds to.
 ///
@@ -1721,6 +1761,7 @@ impl<'de> ::serde::Deserialize<'de> for StepUpProofChallengeId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum StepUpProofKind {
     #[serde(rename = "webauthnUv")]
     WebauthnUv,
@@ -1800,10 +1841,16 @@ impl ::std::convert::TryFrom<::std::string::String> for StepUpProofKind {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct TspMessageEnvelope {
     pub envelope: ::serde_json::Value,
     ///Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
     pub message: TspMessageEnvelopeMessage,
+}
+impl TspMessageEnvelope {
+    pub fn builder() -> builder::TspMessageEnvelope {
+        Default::default()
+    }
 }
 ///Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
 ///
@@ -1874,6 +1921,535 @@ impl<'de> ::serde::Deserialize<'de> for TspMessageEnvelopeMessage {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ConsumerContext {
+        device_id: ::std::result::Result<
+            ::std::option::Option<super::ConsumerContextDeviceId>,
+            ::std::string::String,
+        >,
+        last_user_verification_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        network_class: ::std::result::Result<
+            ::std::option::Option<super::ConsumerContextNetworkClass>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ConsumerContext {
+        fn default() -> Self {
+            Self {
+                device_id: Ok(Default::default()),
+                last_user_verification_at: Ok(Default::default()),
+                network_class: Ok(Default::default()),
+            }
+        }
+    }
+    impl ConsumerContext {
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ConsumerContextDeviceId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn last_user_verification_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_user_verification_at = value.try_into().map_err(|e| {
+                format!("error converting supplied value for last_user_verification_at: {e}")
+            });
+            self
+        }
+        pub fn network_class<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ConsumerContextNetworkClass>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.network_class = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for network_class: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ConsumerContext> for super::ConsumerContext {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ConsumerContext,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_id: value.device_id?,
+                last_user_verification_at: value.last_user_verification_at?,
+                network_class: value.network_class?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ConsumerContext> for ConsumerContext {
+        fn from(value: super::ConsumerContext) -> Self {
+            Self {
+                device_id: Ok(value.device_id),
+                last_user_verification_at: Ok(value.last_user_verification_at),
+                network_class: Ok(value.network_class),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct DidcommAuthcryptEnvelope {
+        envelope: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        jwe: ::std::result::Result<super::DidcommAuthcryptEnvelopeJwe, ::std::string::String>,
+    }
+    impl ::std::default::Default for DidcommAuthcryptEnvelope {
+        fn default() -> Self {
+            Self {
+                envelope: Err("no value supplied for envelope".to_string()),
+                jwe: Err("no value supplied for jwe".to_string()),
+            }
+        }
+    }
+    impl DidcommAuthcryptEnvelope {
+        pub fn envelope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.envelope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for envelope: {e}"));
+            self
+        }
+        pub fn jwe<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DidcommAuthcryptEnvelopeJwe>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.jwe = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for jwe: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DidcommAuthcryptEnvelope> for super::DidcommAuthcryptEnvelope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DidcommAuthcryptEnvelope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                envelope: value.envelope?,
+                jwe: value.jwe?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DidcommAuthcryptEnvelope> for DidcommAuthcryptEnvelope {
+        fn from(value: super::DidcommAuthcryptEnvelope) -> Self {
+            Self {
+                envelope: Ok(value.envelope),
+                jwe: Ok(value.jwe),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct HpkeArmoredEnvelope {
+        armored: ::std::result::Result<super::HpkeArmoredEnvelopeArmored, ::std::string::String>,
+        envelope: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        producer_assertion: ::std::result::Result<
+            super::HpkeArmoredEnvelopeProducerAssertion,
+            ::std::string::String,
+        >,
+        recipient_key_id:
+            ::std::result::Result<super::HpkeArmoredEnvelopeRecipientKeyId, ::std::string::String>,
+    }
+    impl ::std::default::Default for HpkeArmoredEnvelope {
+        fn default() -> Self {
+            Self {
+                armored: Err("no value supplied for armored".to_string()),
+                envelope: Err("no value supplied for envelope".to_string()),
+                producer_assertion: Ok(super::defaults::hpke_armored_envelope_producer_assertion()),
+                recipient_key_id: Err("no value supplied for recipient_key_id".to_string()),
+            }
+        }
+    }
+    impl HpkeArmoredEnvelope {
+        pub fn armored<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::HpkeArmoredEnvelopeArmored>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.armored = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for armored: {e}"));
+            self
+        }
+        pub fn envelope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.envelope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for envelope: {e}"));
+            self
+        }
+        pub fn producer_assertion<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::HpkeArmoredEnvelopeProducerAssertion>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.producer_assertion = value.try_into().map_err(|e| {
+                format!("error converting supplied value for producer_assertion: {e}")
+            });
+            self
+        }
+        pub fn recipient_key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::HpkeArmoredEnvelopeRecipientKeyId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recipient_key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recipient_key_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<HpkeArmoredEnvelope> for super::HpkeArmoredEnvelope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: HpkeArmoredEnvelope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                armored: value.armored?,
+                envelope: value.envelope?,
+                producer_assertion: value.producer_assertion?,
+                recipient_key_id: value.recipient_key_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::HpkeArmoredEnvelope> for HpkeArmoredEnvelope {
+        fn from(value: super::HpkeArmoredEnvelope) -> Self {
+            Self {
+                armored: Ok(value.armored),
+                envelope: Ok(value.envelope),
+                producer_assertion: Ok(value.producer_assertion),
+                recipient_key_id: Ok(value.recipient_key_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        consumer_context: ::std::result::Result<
+            ::std::option::Option<super::ConsumerContext>,
+            ::std::string::String,
+        >,
+        entry_id: ::std::result::Result<super::PayloadEntryId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        nonce: ::std::result::Result<
+            ::std::option::Option<super::PayloadNonce>,
+            ::std::string::String,
+        >,
+        step_up_proof:
+            ::std::result::Result<::std::option::Option<super::StepUpProof>, ::std::string::String>,
+        target:
+            ::std::result::Result<::std::option::Option<super::SiteTarget>, ::std::string::String>,
+        ttl_seconds_hint: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                consumer_context: Ok(Default::default()),
+                entry_id: Err("no value supplied for entry_id".to_string()),
+                ext: Ok(Default::default()),
+                nonce: Ok(Default::default()),
+                step_up_proof: Ok(Default::default()),
+                target: Ok(Default::default()),
+                ttl_seconds_hint: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn consumer_context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ConsumerContext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumer_context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consumer_context: {e}"));
+            self
+        }
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadEntryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn nonce<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadNonce>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.nonce = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for nonce: {e}"));
+            self
+        }
+        pub fn step_up_proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::StepUpProof>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.step_up_proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for step_up_proof: {e}"));
+            self
+        }
+        pub fn target<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::SiteTarget>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target: {e}"));
+            self
+        }
+        pub fn ttl_seconds_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ttl_seconds_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ttl_seconds_hint: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                consumer_context: value.consumer_context?,
+                entry_id: value.entry_id?,
+                ext: value.ext?,
+                nonce: value.nonce?,
+                step_up_proof: value.step_up_proof?,
+                target: value.target?,
+                ttl_seconds_hint: value.ttl_seconds_hint?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                consumer_context: Ok(value.consumer_context),
+                entry_id: Ok(value.entry_id),
+                ext: Ok(value.ext),
+                nonce: Ok(value.nonce),
+                step_up_proof: Ok(value.step_up_proof),
+                target: Ok(value.target),
+                ttl_seconds_hint: Ok(value.ttl_seconds_hint),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        sealed_session_blob: ::std::result::Result<super::SealedEnvelope, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                sealed_session_blob: Err("no value supplied for sealed_session_blob".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn sealed_session_blob<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SealedEnvelope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sealed_session_blob = value.try_into().map_err(|e| {
+                format!("error converting supplied value for sealed_session_blob: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                sealed_session_blob: value.sealed_session_blob?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                sealed_session_blob: Ok(value.sealed_session_blob),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct StepUpProof {
+        challenge_id: ::std::result::Result<super::StepUpProofChallengeId, ::std::string::String>,
+        kind: ::std::result::Result<super::StepUpProofKind, ::std::string::String>,
+        proof: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for StepUpProof {
+        fn default() -> Self {
+            Self {
+                challenge_id: Err("no value supplied for challenge_id".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+            }
+        }
+    }
+    impl StepUpProof {
+        pub fn challenge_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::StepUpProofChallengeId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge_id: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::StepUpProofKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<StepUpProof> for super::StepUpProof {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: StepUpProof,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                challenge_id: value.challenge_id?,
+                kind: value.kind?,
+                proof: value.proof?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::StepUpProof> for StepUpProof {
+        fn from(value: super::StepUpProof) -> Self {
+            Self {
+                challenge_id: Ok(value.challenge_id),
+                kind: Ok(value.kind),
+                proof: Ok(value.proof),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct TspMessageEnvelope {
+        envelope: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        message: ::std::result::Result<super::TspMessageEnvelopeMessage, ::std::string::String>,
+    }
+    impl ::std::default::Default for TspMessageEnvelope {
+        fn default() -> Self {
+            Self {
+                envelope: Err("no value supplied for envelope".to_string()),
+                message: Err("no value supplied for message".to_string()),
+            }
+        }
+    }
+    impl TspMessageEnvelope {
+        pub fn envelope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.envelope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for envelope: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TspMessageEnvelopeMessage>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<TspMessageEnvelope> for super::TspMessageEnvelope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: TspMessageEnvelope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                envelope: value.envelope?,
+                message: value.message?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::TspMessageEnvelope> for TspMessageEnvelope {
+        fn from(value: super::TspMessageEnvelope) -> Self {
+            Self {
+                envelope: Ok(value.envelope),
+                message: Ok(value.message),
+            }
+        }
+    }
+}
 /// Generation of default values for serde.
 pub mod defaults {
     pub(super) fn hpke_armored_envelope_producer_assertion(
@@ -1896,6 +2472,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ConsumerContext\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deviceId\": {\n          \"description\": \"Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastUserVerificationAt\": {\n          \"description\": \"Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"networkClass\": {\n          \"description\": \"Producer-supplied network classification. Advisory.\",\n          \"enum\": [\n            \"unknown\",\n            \"home\",\n            \"corp\",\n            \"public\",\n            \"vpn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"ConsumerContext\",\n      \"type\": \"object\"\n    },\n    \"DidcommAuthcryptEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\\n\\nM2A is the only implementation today; this is also the canonical default for new code.\",\n      \"properties\": {\n        \"envelope\": {\n          \"const\": \"didcommAuthcrypt\"\n        },\n        \"jwe\": {\n          \"description\": \"Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"jwe\"\n      ],\n      \"title\": \"DidcommAuthcryptEnvelope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"HpkeArmoredEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.\\n\\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.\",\n      \"properties\": {\n        \"armored\": {\n          \"description\": \"ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"envelope\": {\n          \"const\": \"hpkeArmored\"\n        },\n        \"producerAssertion\": {\n          \"default\": \"didSigned\",\n          \"description\": \"Producer-assertion mode per the sealed-transfer framework. `didSigned` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinnedOnly` = OOB SHA-256 digest only (dev/test, NOT for production).\",\n          \"enum\": [\n            \"didSigned\",\n            \"attested\",\n            \"pinnedOnly\"\n          ],\n          \"type\": \"string\"\n        },\n        \"recipientKeyId\": {\n          \"description\": \"did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"armored\",\n        \"recipientKeyId\"\n      ],\n      \"title\": \"HpkeArmoredEnvelope\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sealedSessionBlob\": {\n          \"$ref\": \"#/$defs/SealedEnvelope\",\n          \"description\": \"Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.\"\n        }\n      },\n      \"required\": [\n        \"sealedSessionBlob\"\n      ],\n      \"title\": \"Vault Proxy-Login — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedEnvelope\": {\n      \"description\": \"Discriminated by `envelope`. Exactly one variant matches per document.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/DidcommAuthcryptEnvelope\"\n        },\n        {\n          \"$ref\": \"#/$defs/HpkeArmoredEnvelope\"\n        },\n        {\n          \"$ref\": \"#/$defs/TspMessageEnvelope\"\n        }\n      ],\n      \"title\": \"SealedEnvelope\"\n    },\n    \"SiteTarget\": {\n      \"description\": \"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"webOrigin\"\n            },\n            \"origin\": {\n              \"description\": \"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"origin\"\n          ],\n          \"title\": \"WebOrigin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"did\": {\n              \"description\": \"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"did\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"did\"\n          ],\n          \"title\": \"Did\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"bundleId\": {\n              \"description\": \"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"iosApp\"\n            },\n            \"teamId\": {\n              \"description\": \"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Z0-9]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"bundleId\"\n          ],\n          \"title\": \"IosApp\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"androidApp\"\n            },\n            \"packageName\": {\n              \"description\": \"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\n              \"type\": \"string\"\n            },\n            \"sha256CertFingerprints\": {\n              \"description\": \"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\n              \"items\": {\n                \"pattern\": \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"packageName\",\n            \"sha256CertFingerprints\"\n          ],\n          \"title\": \"AndroidApp\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SiteTarget\"\n    },\n    \"StepUpProof\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"challengeId\": {\n          \"description\": \"Maintainer-issued challenge id the proof responds to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"enum\": [\n            \"webauthnUv\",\n            \"pushApproval\",\n            \"totp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"proof\",\n        \"challengeId\"\n      ],\n      \"title\": \"StepUpProof\",\n      \"type\": \"object\"\n    },\n    \"TspMessageEnvelope\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.\",\n      \"properties\": {\n        \"envelope\": {\n          \"const\": \"tspMessage\"\n        },\n        \"message\": {\n          \"description\": \"Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"envelope\",\n        \"message\"\n      ],\n      \"title\": \"TspMessageEnvelope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

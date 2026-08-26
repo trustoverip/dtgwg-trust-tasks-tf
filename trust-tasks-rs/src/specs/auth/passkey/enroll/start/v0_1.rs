@@ -169,6 +169,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialCreationOptions {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub attestation: ::std::option::Option<CredentialCreationOptionsAttestation>,
@@ -202,6 +203,11 @@ pub struct CredentialCreationOptions {
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     pub user: CredentialCreationOptionsUser,
 }
+impl CredentialCreationOptions {
+    pub fn builder() -> builder::CredentialCreationOptions {
+        Default::default()
+    }
+}
 ///`CredentialCreationOptionsAttestation`
 ///
 /// <details><summary>JSON schema</summary>
@@ -229,6 +235,7 @@ pub struct CredentialCreationOptions {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CredentialCreationOptionsAttestation {
     #[serde(rename = "none")]
     None,
@@ -321,6 +328,7 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialCreationOption
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialCreationOptionsAuthenticatorSelection {
     #[serde(
         rename = "authenticatorAttachment",
@@ -361,6 +369,11 @@ impl ::std::default::Default for CredentialCreationOptionsAuthenticatorSelection
         }
     }
 }
+impl CredentialCreationOptionsAuthenticatorSelection {
+    pub fn builder() -> builder::CredentialCreationOptionsAuthenticatorSelection {
+        Default::default()
+    }
+}
 ///`CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment`
 ///
 /// <details><summary>JSON schema</summary>
@@ -386,6 +399,7 @@ impl ::std::default::Default for CredentialCreationOptionsAuthenticatorSelection
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment {
     #[serde(rename = "platform")]
     Platform,
@@ -468,6 +482,7 @@ impl ::std::convert::TryFrom<::std::string::String>
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CredentialCreationOptionsAuthenticatorSelectionResidentKey {
     #[serde(rename = "discouraged")]
     Discouraged,
@@ -548,6 +563,7 @@ impl ::std::convert::TryFrom<::std::string::String>
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CredentialCreationOptionsAuthenticatorSelectionUserVerification {
     #[serde(rename = "discouraged")]
     Discouraged,
@@ -630,11 +646,17 @@ impl ::std::convert::TryFrom<::std::string::String>
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialCreationOptionsPubKeyCredParamsItem {
     ///COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).
     pub alg: i64,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl CredentialCreationOptionsPubKeyCredParamsItem {
+    pub fn builder() -> builder::CredentialCreationOptionsPubKeyCredParamsItem {
+        Default::default()
+    }
 }
 ///`CredentialCreationOptionsRp`
 ///
@@ -663,9 +685,15 @@ pub struct CredentialCreationOptionsPubKeyCredParamsItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialCreationOptionsRp {
     pub id: CredentialCreationOptionsRpId,
     pub name: CredentialCreationOptionsRpName,
+}
+impl CredentialCreationOptionsRp {
+    pub fn builder() -> builder::CredentialCreationOptionsRp {
+        Default::default()
+    }
 }
 ///`CredentialCreationOptionsRpId`
 ///
@@ -834,12 +862,18 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsRpName {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialCreationOptionsUser {
     #[serde(rename = "displayName")]
     pub display_name: ::std::string::String,
     ///base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.
     pub id: ::std::string::String,
     pub name: CredentialCreationOptionsUserName,
+}
+impl CredentialCreationOptionsUser {
+    pub fn builder() -> builder::CredentialCreationOptionsUser {
+        Default::default()
+    }
 }
 ///`CredentialCreationOptionsUserName`
 ///
@@ -949,6 +983,7 @@ impl<'de> ::serde::Deserialize<'de> for CredentialCreationOptionsUserName {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialDescriptor {
     ///base64url-encoded credential id.
     pub id: ::std::string::String,
@@ -956,6 +991,11 @@ pub struct CredentialDescriptor {
     pub transports: ::std::vec::Vec<CredentialDescriptorTransportsItem>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl CredentialDescriptor {
+    pub fn builder() -> builder::CredentialDescriptor {
+        Default::default()
+    }
 }
 ///`CredentialDescriptorTransportsItem`
 ///
@@ -985,6 +1025,7 @@ pub struct CredentialDescriptor {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CredentialDescriptorTransportsItem {
     #[serde(rename = "usb")]
     Usb,
@@ -1177,6 +1218,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Operator-facing label for the credential (e.g. "Alice's MacBook"). Surfaced in the credential list for later management.
     #[serde(
@@ -1195,6 +1237,11 @@ impl ::std::default::Default for Payload {
             device_label: Default::default(),
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.
@@ -1232,6 +1279,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.
     #[serde(rename = "enrollmentId")]
@@ -1241,6 +1289,11 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///PublicKeyCredentialCreationOptions for navigator.credentials.create.
     pub options: CredentialCreationOptions,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.
 ///
@@ -1311,6 +1364,676 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEnrollmentId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct CredentialCreationOptions {
+        attestation: ::std::result::Result<
+            ::std::option::Option<super::CredentialCreationOptionsAttestation>,
+            ::std::string::String,
+        >,
+        authenticator_selection: ::std::result::Result<
+            ::std::option::Option<super::CredentialCreationOptionsAuthenticatorSelection>,
+            ::std::string::String,
+        >,
+        challenge: ::std::result::Result<::std::string::String, ::std::string::String>,
+        exclude_credentials: ::std::result::Result<
+            ::std::vec::Vec<super::CredentialDescriptor>,
+            ::std::string::String,
+        >,
+        extensions: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        pub_key_cred_params: ::std::result::Result<
+            ::std::vec::Vec<super::CredentialCreationOptionsPubKeyCredParamsItem>,
+            ::std::string::String,
+        >,
+        rp: ::std::result::Result<super::CredentialCreationOptionsRp, ::std::string::String>,
+        timeout: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        user: ::std::result::Result<super::CredentialCreationOptionsUser, ::std::string::String>,
+    }
+    impl ::std::default::Default for CredentialCreationOptions {
+        fn default() -> Self {
+            Self {
+                attestation: Ok(Default::default()),
+                authenticator_selection: Ok(Default::default()),
+                challenge: Err("no value supplied for challenge".to_string()),
+                exclude_credentials: Ok(Default::default()),
+                extensions: Ok(Default::default()),
+                pub_key_cred_params: Err("no value supplied for pub_key_cred_params".to_string()),
+                rp: Err("no value supplied for rp".to_string()),
+                timeout: Ok(Default::default()),
+                user: Err("no value supplied for user".to_string()),
+            }
+        }
+    }
+    impl CredentialCreationOptions {
+        pub fn attestation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::CredentialCreationOptionsAttestation>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attestation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for attestation: {e}"));
+            self
+        }
+        pub fn authenticator_selection<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::CredentialCreationOptionsAuthenticatorSelection>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authenticator_selection = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authenticator_selection: {e}")
+            });
+            self
+        }
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn exclude_credentials<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::CredentialDescriptor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.exclude_credentials = value.try_into().map_err(|e| {
+                format!("error converting supplied value for exclude_credentials: {e}")
+            });
+            self
+        }
+        pub fn extensions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extensions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extensions: {e}"));
+            self
+        }
+        pub fn pub_key_cred_params<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::vec::Vec<super::CredentialCreationOptionsPubKeyCredParamsItem>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pub_key_cred_params = value.try_into().map_err(|e| {
+                format!("error converting supplied value for pub_key_cred_params: {e}")
+            });
+            self
+        }
+        pub fn rp<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialCreationOptionsRp>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rp = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rp: {e}"));
+            self
+        }
+        pub fn timeout<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.timeout = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for timeout: {e}"));
+            self
+        }
+        pub fn user<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialCreationOptionsUser>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialCreationOptions> for super::CredentialCreationOptions {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialCreationOptions,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                attestation: value.attestation?,
+                authenticator_selection: value.authenticator_selection?,
+                challenge: value.challenge?,
+                exclude_credentials: value.exclude_credentials?,
+                extensions: value.extensions?,
+                pub_key_cred_params: value.pub_key_cred_params?,
+                rp: value.rp?,
+                timeout: value.timeout?,
+                user: value.user?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialCreationOptions> for CredentialCreationOptions {
+        fn from(value: super::CredentialCreationOptions) -> Self {
+            Self {
+                attestation: Ok(value.attestation),
+                authenticator_selection: Ok(value.authenticator_selection),
+                challenge: Ok(value.challenge),
+                exclude_credentials: Ok(value.exclude_credentials),
+                extensions: Ok(value.extensions),
+                pub_key_cred_params: Ok(value.pub_key_cred_params),
+                rp: Ok(value.rp),
+                timeout: Ok(value.timeout),
+                user: Ok(value.user),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CredentialCreationOptionsAuthenticatorSelection {
+        authenticator_attachment: ::std::result::Result<
+            ::std::option::Option<
+                super::CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment,
+            >,
+            ::std::string::String,
+        >,
+        require_resident_key:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        resident_key: ::std::result::Result<
+            ::std::option::Option<
+                super::CredentialCreationOptionsAuthenticatorSelectionResidentKey,
+            >,
+            ::std::string::String,
+        >,
+        user_verification: ::std::result::Result<
+            ::std::option::Option<
+                super::CredentialCreationOptionsAuthenticatorSelectionUserVerification,
+            >,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for CredentialCreationOptionsAuthenticatorSelection {
+        fn default() -> Self {
+            Self {
+                authenticator_attachment: Ok(Default::default()),
+                require_resident_key: Ok(Default::default()),
+                resident_key: Ok(Default::default()),
+                user_verification: Ok(Default::default()),
+            }
+        }
+    }
+    impl CredentialCreationOptionsAuthenticatorSelection {
+        pub fn authenticator_attachment<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<
+                    super::CredentialCreationOptionsAuthenticatorSelectionAuthenticatorAttachment,
+                >,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authenticator_attachment = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authenticator_attachment: {e}")
+            });
+            self
+        }
+        pub fn require_resident_key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.require_resident_key = value.try_into().map_err(|e| {
+                format!("error converting supplied value for require_resident_key: {e}")
+            });
+            self
+        }
+        pub fn resident_key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<
+                    super::CredentialCreationOptionsAuthenticatorSelectionResidentKey,
+                >,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resident_key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resident_key: {e}"));
+            self
+        }
+        pub fn user_verification<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<
+                    super::CredentialCreationOptionsAuthenticatorSelectionUserVerification,
+                >,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user_verification = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user_verification: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialCreationOptionsAuthenticatorSelection>
+        for super::CredentialCreationOptionsAuthenticatorSelection
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialCreationOptionsAuthenticatorSelection,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                authenticator_attachment: value.authenticator_attachment?,
+                require_resident_key: value.require_resident_key?,
+                resident_key: value.resident_key?,
+                user_verification: value.user_verification?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialCreationOptionsAuthenticatorSelection>
+        for CredentialCreationOptionsAuthenticatorSelection
+    {
+        fn from(value: super::CredentialCreationOptionsAuthenticatorSelection) -> Self {
+            Self {
+                authenticator_attachment: Ok(value.authenticator_attachment),
+                require_resident_key: Ok(value.require_resident_key),
+                resident_key: Ok(value.resident_key),
+                user_verification: Ok(value.user_verification),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CredentialCreationOptionsPubKeyCredParamsItem {
+        alg: ::std::result::Result<i64, ::std::string::String>,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for CredentialCreationOptionsPubKeyCredParamsItem {
+        fn default() -> Self {
+            Self {
+                alg: Err("no value supplied for alg".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl CredentialCreationOptionsPubKeyCredParamsItem {
+        pub fn alg<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<i64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.alg = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for alg: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialCreationOptionsPubKeyCredParamsItem>
+        for super::CredentialCreationOptionsPubKeyCredParamsItem
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialCreationOptionsPubKeyCredParamsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                alg: value.alg?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialCreationOptionsPubKeyCredParamsItem>
+        for CredentialCreationOptionsPubKeyCredParamsItem
+    {
+        fn from(value: super::CredentialCreationOptionsPubKeyCredParamsItem) -> Self {
+            Self {
+                alg: Ok(value.alg),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CredentialCreationOptionsRp {
+        id: ::std::result::Result<super::CredentialCreationOptionsRpId, ::std::string::String>,
+        name: ::std::result::Result<super::CredentialCreationOptionsRpName, ::std::string::String>,
+    }
+    impl ::std::default::Default for CredentialCreationOptionsRp {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                name: Err("no value supplied for name".to_string()),
+            }
+        }
+    }
+    impl CredentialCreationOptionsRp {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialCreationOptionsRpId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialCreationOptionsRpName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialCreationOptionsRp> for super::CredentialCreationOptionsRp {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialCreationOptionsRp,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialCreationOptionsRp> for CredentialCreationOptionsRp {
+        fn from(value: super::CredentialCreationOptionsRp) -> Self {
+            Self {
+                id: Ok(value.id),
+                name: Ok(value.name),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CredentialCreationOptionsUser {
+        display_name: ::std::result::Result<::std::string::String, ::std::string::String>,
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        name:
+            ::std::result::Result<super::CredentialCreationOptionsUserName, ::std::string::String>,
+    }
+    impl ::std::default::Default for CredentialCreationOptionsUser {
+        fn default() -> Self {
+            Self {
+                display_name: Err("no value supplied for display_name".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                name: Err("no value supplied for name".to_string()),
+            }
+        }
+    }
+    impl CredentialCreationOptionsUser {
+        pub fn display_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.display_name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for display_name: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialCreationOptionsUserName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialCreationOptionsUser>
+        for super::CredentialCreationOptionsUser
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialCreationOptionsUser,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                display_name: value.display_name?,
+                id: value.id?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialCreationOptionsUser> for CredentialCreationOptionsUser {
+        fn from(value: super::CredentialCreationOptionsUser) -> Self {
+            Self {
+                display_name: Ok(value.display_name),
+                id: Ok(value.id),
+                name: Ok(value.name),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CredentialDescriptor {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        transports: ::std::result::Result<
+            ::std::vec::Vec<super::CredentialDescriptorTransportsItem>,
+            ::std::string::String,
+        >,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for CredentialDescriptor {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                transports: Ok(Default::default()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl CredentialDescriptor {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn transports<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::CredentialDescriptorTransportsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.transports = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for transports: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialDescriptor> for super::CredentialDescriptor {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialDescriptor,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                transports: value.transports?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialDescriptor> for CredentialDescriptor {
+        fn from(value: super::CredentialDescriptor) -> Self {
+            Self {
+                id: Ok(value.id),
+                transports: Ok(value.transports),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        device_label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                device_label: Ok(Default::default()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn device_label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_label: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_label: value.device_label?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                device_label: Ok(value.device_label),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        enrollment_id: ::std::result::Result<super::ResponseEnrollmentId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        options: ::std::result::Result<super::CredentialCreationOptions, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                enrollment_id: Err("no value supplied for enrollment_id".to_string()),
+                ext: Ok(Default::default()),
+                options: Err("no value supplied for options".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn enrollment_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseEnrollmentId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enrollment_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enrollment_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn options<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialCreationOptions>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.options = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for options: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                enrollment_id: value.enrollment_id?,
+                ext: value.ext?,
+                options: value.options?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                enrollment_id: Ok(value.enrollment_id),
+                ext: Ok(value.ext),
+                options: Ok(value.options),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -1327,6 +2050,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CredentialCreationOptions\": {\n      \"$anchor\": \"credentialCreationOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.\",\n      \"properties\": {\n        \"attestation\": {\n          \"enum\": [\n            \"none\",\n            \"indirect\",\n            \"direct\",\n            \"enterprise\"\n          ]\n        },\n        \"authenticatorSelection\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorAttachment\": {\n              \"enum\": [\n                \"platform\",\n                \"cross-platform\"\n              ]\n            },\n            \"requireResidentKey\": {\n              \"type\": \"boolean\"\n            },\n            \"residentKey\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            },\n            \"userVerification\": {\n              \"enum\": [\n                \"discouraged\",\n                \"preferred\",\n                \"required\"\n              ]\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"excludeCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"pubKeyCredParams\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"alg\": {\n                \"description\": \"COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).\",\n                \"type\": \"integer\"\n              },\n              \"type\": {\n                \"const\": \"public-key\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"alg\"\n            ],\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"rp\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\"\n          ],\n          \"type\": \"object\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"user\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"displayName\": {\n              \"type\": \"string\"\n            },\n            \"id\": {\n              \"description\": \"base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.\",\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"name\",\n            \"displayName\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"rp\",\n        \"user\",\n        \"pubKeyCredParams\"\n      ],\n      \"title\": \"PublicKeyCredentialCreationOptions\",\n      \"type\": \"object\"\n    },\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.\",\n      \"properties\": {\n        \"enrollmentId\": {\n          \"description\": \"Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"options\": {\n          \"$ref\": \"#/$defs/CredentialCreationOptions\",\n          \"description\": \"PublicKeyCredentialCreationOptions for navigator.credentials.create.\"\n        }\n      },\n      \"required\": [\n        \"enrollmentId\",\n        \"options\"\n      ],\n      \"title\": \"Auth Passkey Enroll Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

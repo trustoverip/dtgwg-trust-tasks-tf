@@ -69,6 +69,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ConsentSubject {
     ///VID (DID) of the AI agent the conversation would reach.
     pub agent: ConsentSubjectAgent,
@@ -78,6 +79,11 @@ pub struct ConsentSubject {
     pub kind: Kind,
     ///Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
     pub platform: ConsentSubjectPlatform,
+}
+impl ConsentSubject {
+    pub fn builder() -> builder::ConsentSubject {
+        Default::default()
+    }
 }
 ///VID (DID) of the AI agent the conversation would reach.
 ///
@@ -512,6 +518,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum Kind {
     #[serde(rename = "dm")]
     Dm,
@@ -612,6 +619,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Kind {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///base64url-encoded nonce (≥128 bits entropy) echoed by the matching consent/decision, so the bridge can correlate the decision to this request.
     pub challenge: PayloadChallenge,
@@ -641,6 +649,11 @@ pub struct Payload {
     ///The access the bridge seeks for the agent on this conversation.
     pub scope: Scope,
     pub subject: ConsentSubject,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///base64url-encoded nonce (≥128 bits entropy) echoed by the matching consent/decision, so the bridge can correlate the decision to this request.
 ///
@@ -751,6 +764,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -766,6 +780,11 @@ pub struct Response {
     pub request_id: ::std::option::Option<::std::string::String>,
     ///`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set.
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set.
 ///
@@ -794,6 +813,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "accepted")]
     Accepted,
@@ -867,6 +887,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum Scope {
     #[serde(rename = "receive")]
     Receive,
@@ -913,6 +934,309 @@ impl ::std::convert::TryFrom<::std::string::String> for Scope {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ConsentSubject {
+        agent: ::std::result::Result<super::ConsentSubjectAgent, ::std::string::String>,
+        conversation_ref:
+            ::std::result::Result<super::ConsentSubjectConversationRef, ::std::string::String>,
+        kind: ::std::result::Result<super::Kind, ::std::string::String>,
+        platform: ::std::result::Result<super::ConsentSubjectPlatform, ::std::string::String>,
+    }
+    impl ::std::default::Default for ConsentSubject {
+        fn default() -> Self {
+            Self {
+                agent: Err("no value supplied for agent".to_string()),
+                conversation_ref: Err("no value supplied for conversation_ref".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                platform: Err("no value supplied for platform".to_string()),
+            }
+        }
+    }
+    impl ConsentSubject {
+        pub fn agent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ConsentSubjectAgent>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.agent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for agent: {e}"));
+            self
+        }
+        pub fn conversation_ref<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ConsentSubjectConversationRef>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.conversation_ref = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for conversation_ref: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Kind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ConsentSubjectPlatform>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for platform: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ConsentSubject> for super::ConsentSubject {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ConsentSubject,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                agent: value.agent?,
+                conversation_ref: value.conversation_ref?,
+                kind: value.kind?,
+                platform: value.platform?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ConsentSubject> for ConsentSubject {
+        fn from(value: super::ConsentSubject) -> Self {
+            Self {
+                agent: Ok(value.agent),
+                conversation_ref: Ok(value.conversation_ref),
+                kind: Ok(value.kind),
+                platform: Ok(value.platform),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        challenge: ::std::result::Result<super::PayloadChallenge, ::std::string::String>,
+        context_hint: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        display_hint: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        first_message_digest: ::std::result::Result<
+            ::std::option::Option<super::DigestMultibase>,
+            ::std::string::String,
+        >,
+        scope: ::std::result::Result<super::Scope, ::std::string::String>,
+        subject: ::std::result::Result<super::ConsentSubject, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                challenge: Err("no value supplied for challenge".to_string()),
+                context_hint: Ok(Default::default()),
+                display_hint: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                first_message_digest: Ok(Default::default()),
+                scope: Err("no value supplied for scope".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn context_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_hint: {e}"));
+            self
+        }
+        pub fn display_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.display_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for display_hint: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn first_message_digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DigestMultibase>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.first_message_digest = value.try_into().map_err(|e| {
+                format!("error converting supplied value for first_message_digest: {e}")
+            });
+            self
+        }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Scope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ConsentSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                challenge: value.challenge?,
+                context_hint: value.context_hint?,
+                display_hint: value.display_hint?,
+                ext: value.ext?,
+                first_message_digest: value.first_message_digest?,
+                scope: value.scope?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                challenge: Ok(value.challenge),
+                context_hint: Ok(value.context_hint),
+                display_hint: Ok(value.display_hint),
+                ext: Ok(value.ext),
+                first_message_digest: Ok(value.first_message_digest),
+                scope: Ok(value.scope),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        request_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                request_id: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn request_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.request_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for request_id: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                request_id: value.request_id?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                request_id: Ok(value.request_id),
+                status: Ok(value.status),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/consent/request/1.0";
     const IS_PROOF_REQUIRED: bool = true;
@@ -928,6 +1252,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ConsentSubject\": {\n      \"additionalProperties\": false,\n      \"description\": \"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"VID (DID) of the AI agent the conversation would reach.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/Kind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Kind\": {\n      \"description\": \"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the VTA: a prompt was routed (accepted) or the request was refused. The actual decision arrives out-of-band as a consent/decision.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"type\": \"string\"\n        },\n        \"requestId\": {\n          \"description\": \"The VTA's id for the pending consent (set when accepted), for correlation and polling.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` = a pending consent was minted and an approval prompt routed. `refused` = not actionable; `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Consent Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"Scope\": {\n      \"description\": \"What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.\",\n      \"enum\": [\n        \"receive\",\n        \"converse\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

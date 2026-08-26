@@ -167,6 +167,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -188,6 +189,11 @@ impl ::std::default::Default for Payload {
             platform: Default::default(),
             vault_seq: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`QueuedOperation`
@@ -222,11 +228,17 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct QueuedOperation {
     ///Discriminator. The framework currently supports wipe; future versions may add others.
     pub kind: QueuedOperationKind,
     ///The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.
     pub task: ::serde_json::Value,
+}
+impl QueuedOperation {
+    pub fn builder() -> builder::QueuedOperation {
+        Default::default()
+    }
 }
 ///Discriminator. The framework currently supports wipe; future versions may add others.
 ///
@@ -256,6 +268,7 @@ pub struct QueuedOperation {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum QueuedOperationKind {
     #[serde(rename = "wipe")]
     Wipe,
@@ -350,6 +363,7 @@ impl ::std::convert::TryFrom<::std::string::String> for QueuedOperationKind {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -370,6 +384,11 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sync_hint: ::std::option::Option<ResponseSyncHint>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Tells the consumer whether to call vault/sync.
 ///
@@ -399,6 +418,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseSyncHint {
     #[serde(rename = "upToDate")]
     UpToDate,
@@ -449,6 +469,217 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseSyncHint {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        platform: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        vault_seq: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                platform: Ok(Default::default()),
+                vault_seq: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for platform: {e}"));
+            self
+        }
+        pub fn vault_seq<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vault_seq = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vault_seq: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                platform: value.platform?,
+                vault_seq: value.vault_seq?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                platform: Ok(value.platform),
+                vault_seq: Ok(value.vault_seq),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct QueuedOperation {
+        kind: ::std::result::Result<super::QueuedOperationKind, ::std::string::String>,
+        task: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for QueuedOperation {
+        fn default() -> Self {
+            Self {
+                kind: Err("no value supplied for kind".to_string()),
+                task: Err("no value supplied for task".to_string()),
+            }
+        }
+    }
+    impl QueuedOperation {
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::QueuedOperationKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn task<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.task = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for task: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<QueuedOperation> for super::QueuedOperation {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: QueuedOperation,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                kind: value.kind?,
+                task: value.task?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::QueuedOperation> for QueuedOperation {
+        fn from(value: super::QueuedOperation) -> Self {
+            Self {
+                kind: Ok(value.kind),
+                task: Ok(value.task),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        queued_operations:
+            ::std::result::Result<::std::vec::Vec<super::QueuedOperation>, ::std::string::String>,
+        server_time:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        sync_hint: ::std::result::Result<
+            ::std::option::Option<super::ResponseSyncHint>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                queued_operations: Ok(Default::default()),
+                server_time: Err("no value supplied for server_time".to_string()),
+                sync_hint: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn queued_operations<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::QueuedOperation>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.queued_operations = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for queued_operations: {e}"));
+            self
+        }
+        pub fn server_time<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_time = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_time: {e}"));
+            self
+        }
+        pub fn sync_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseSyncHint>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sync_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for sync_hint: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                queued_operations: value.queued_operations?,
+                server_time: value.server_time?,
+                sync_hint: value.sync_hint?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                queued_operations: Ok(value.queued_operations),
+                server_time: Ok(value.server_time),
+                sync_hint: Ok(value.sync_hint),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/heartbeat/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -462,6 +693,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueuedOperation\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"description\": \"Discriminator. The framework currently supports wipe; future versions may add others.\",\n          \"enum\": [\n            \"wipe\",\n            \"policyReload\",\n            \"configUpdate\"\n          ],\n          \"type\": \"string\"\n        },\n        \"task\": {\n          \"description\": \"The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"task\"\n      ],\n      \"title\": \"QueuedOperation\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"queuedOperations\": {\n          \"description\": \"Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/QueuedOperation\"\n          },\n          \"type\": \"array\"\n        },\n        \"serverTime\": {\n          \"description\": \"Authoritative timestamp — consumers MAY use to detect clock drift.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"syncHint\": {\n          \"description\": \"Tells the consumer whether to call vault/sync.\",\n          \"enum\": [\n            \"upToDate\",\n            \"syncDue\",\n            \"fullResyncRequired\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverTime\"\n      ],\n      \"title\": \"Device Heartbeat — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

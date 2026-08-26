@@ -177,6 +177,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope.
     #[serde(
@@ -191,6 +192,11 @@ pub struct Payload {
     pub id: PayloadId,
     ///The decision slot this policy becomes authoritative for. At most one policy is active per (contextId, purpose) at a time; activating this one deactivates whatever was active before. An opaque maintainer-scoped string — the framework does not enumerate its values, so each maintainer defines its own set (e.g. a community governance stage such as `join` or `removal`).
     pub purpose: PayloadPurpose,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope.
 ///
@@ -449,6 +455,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPurpose {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The id now active for `purpose` — equal to the request `id`.
     pub activated: ResponseActivated,
@@ -470,6 +477,11 @@ pub struct Response {
     pub previous_policy_id: ::std::option::Option<::std::string::String>,
     ///Echoed from the request.
     pub purpose: ResponsePurpose,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The id now active for `purpose` — equal to the request `id`.
 ///
@@ -678,6 +690,192 @@ impl<'de> ::serde::Deserialize<'de> for ResponsePurpose {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadContextId>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::PayloadId, ::std::string::String>,
+        purpose: ::std::result::Result<super::PayloadPurpose, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                purpose: Err("no value supplied for purpose".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadPurpose>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                ext: value.ext?,
+                id: value.id?,
+                purpose: value.purpose?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                purpose: Ok(value.purpose),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        activated: ::std::result::Result<super::ResponseActivated, ::std::string::String>,
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::ResponseContextId>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        previous_policy_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        purpose: ::std::result::Result<super::ResponsePurpose, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                activated: Err("no value supplied for activated".to_string()),
+                context_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                previous_policy_id: Ok(Default::default()),
+                purpose: Err("no value supplied for purpose".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn activated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseActivated>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.activated = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for activated: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn previous_policy_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.previous_policy_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for previous_policy_id: {e}")
+            });
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponsePurpose>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                activated: value.activated?,
+                context_id: value.context_id?,
+                ext: value.ext?,
+                previous_policy_id: value.previous_policy_id?,
+                purpose: value.purpose?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                activated: Ok(value.activated),
+                context_id: Ok(value.context_id),
+                ext: Ok(value.ext),
+                previous_policy_id: Ok(value.previous_policy_id),
+                purpose: Ok(value.purpose),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/activate/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -693,6 +891,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"activated\": {\n          \"description\": \"The id now active for `purpose` — equal to the request `id`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"Echoed from the request when it was supplied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"previousPolicyId\": {\n          \"description\": \"The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"purpose\": {\n          \"description\": \"Echoed from the request.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"activated\",\n        \"purpose\"\n      ],\n      \"title\": \"Policy Activate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

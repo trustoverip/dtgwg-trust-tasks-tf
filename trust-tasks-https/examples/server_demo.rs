@@ -52,10 +52,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 req.payload.entry.subject,
                 &*req.payload.entry.role,
             );
-            Ok(grant::v0_1::Response {
-                entry: req.payload.entry.clone(),
-                ext: None,
-            })
+            Ok(grant::v0_1::Response::builder()
+                .entry(req.payload.entry.clone())
+                .try_into()
+                .expect("acl grant response builder"))
         })
         // Handler for acl/revoke: returns null entry meaning "removed".
         // Demonstrates RejectReason as the error path.
@@ -75,10 +75,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     reason: "revoke requires an authenticated did:web sender".into(),
                 });
             }
-            Ok(revoke::v0_1::Response {
-                entry: None,
-                ext: None,
-            })
+            Ok(revoke::v0_1::Response::builder()
+                .entry(Option::<revoke::v0_1::AclEntry>::None)
+                .try_into()
+                .expect("acl revoke response builder"))
         })
         .build();
 

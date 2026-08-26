@@ -71,6 +71,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct EndorsementType {
     ///Optional JSON Schema the endorsement's claims must satisfy (opaque here).
     #[serde(
@@ -97,6 +98,11 @@ pub struct EndorsementType {
     ///The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.
     #[serde(rename = "typeUri")]
     pub type_uri: EndorsementTypeTypeUri,
+}
+impl EndorsementType {
+    pub fn builder() -> builder::EndorsementType {
+        Default::default()
+    }
 }
 ///`EndorsementTypeDescription`
 ///
@@ -383,6 +389,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional JSON Schema the endorsement's claims must satisfy (opaque here).
     #[serde(
@@ -397,6 +404,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "typeUri")]
     pub type_uri: PayloadTypeUri,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadDescription`
 ///
@@ -564,11 +576,272 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTypeUri {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "endorsementType")]
     pub endorsement_type: EndorsementType,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct EndorsementType {
+        claim_schema: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        created_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        created_by_did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        description: ::std::result::Result<
+            ::std::option::Option<super::EndorsementTypeDescription>,
+            ::std::string::String,
+        >,
+        type_uri: ::std::result::Result<super::EndorsementTypeTypeUri, ::std::string::String>,
+    }
+    impl ::std::default::Default for EndorsementType {
+        fn default() -> Self {
+            Self {
+                claim_schema: Ok(Default::default()),
+                created_at: Ok(Default::default()),
+                created_by_did: Ok(Default::default()),
+                description: Ok(Default::default()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+            }
+        }
+    }
+    impl EndorsementType {
+        pub fn claim_schema<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claim_schema = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claim_schema: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn created_by_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_by_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_by_did: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::EndorsementTypeDescription>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EndorsementTypeTypeUri>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<EndorsementType> for super::EndorsementType {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: EndorsementType,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claim_schema: value.claim_schema?,
+                created_at: value.created_at?,
+                created_by_did: value.created_by_did?,
+                description: value.description?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::EndorsementType> for EndorsementType {
+        fn from(value: super::EndorsementType) -> Self {
+            Self {
+                claim_schema: Ok(value.claim_schema),
+                created_at: Ok(value.created_at),
+                created_by_did: Ok(value.created_by_did),
+                description: Ok(value.description),
+                type_uri: Ok(value.type_uri),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        claim_schema: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        description: ::std::result::Result<
+            ::std::option::Option<super::PayloadDescription>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        type_uri: ::std::result::Result<super::PayloadTypeUri, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                claim_schema: Ok(Default::default()),
+                description: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                type_uri: Err("no value supplied for type_uri".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn claim_schema<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claim_schema = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claim_schema: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadDescription>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadTypeUri>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claim_schema: value.claim_schema?,
+                description: value.description?,
+                ext: value.ext?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                claim_schema: Ok(value.claim_schema),
+                description: Ok(value.description),
+                ext: Ok(value.ext),
+                type_uri: Ok(value.type_uri),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        endorsement_type: ::std::result::Result<super::EndorsementType, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                endorsement_type: Err("no value supplied for endorsement_type".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn endorsement_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EndorsementType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.endorsement_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for endorsement_type: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                endorsement_type: value.endorsement_type?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                endorsement_type: Ok(value.endorsement_type),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/endorsement-types/register/0.1";
@@ -586,6 +859,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"EndorsementType\": {\n      \"$anchor\": \"endorsementType\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claimSchema\": {\n          \"description\": \"Optional JSON Schema the endorsement's claims must satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"title\": \"EndorsementType\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementType\": {\n          \"$ref\": \"#/$defs/EndorsementType\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsementType\"\n      ],\n      \"title\": \"VTC Endorsement-Types Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

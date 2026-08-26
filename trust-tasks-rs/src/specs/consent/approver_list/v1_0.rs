@@ -73,6 +73,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ApproverBinding {
     ///VID (DID) of the operator authorized to decide consent for this platform/context.
     pub approver: ApproverBindingApprover,
@@ -90,6 +91,11 @@ pub struct ApproverBinding {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub route_hint: ::std::option::Option<::std::string::String>,
+}
+impl ApproverBinding {
+    pub fn builder() -> builder::ApproverBinding {
+        Default::default()
+    }
 }
 ///VID (DID) of the operator authorized to decide consent for this platform/context.
 ///
@@ -437,6 +443,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional. Restrict to this context path.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -454,6 +461,11 @@ impl ::std::default::Default for Payload {
             ext: Default::default(),
             platform: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Optional. Restrict to this context path.
@@ -624,11 +636,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPlatform {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Matching approver bindings.
     pub approvers: ::std::vec::Vec<ApproverBinding>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
 ///
@@ -657,6 +675,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum Route {
     #[serde(rename = "wake")]
     Wake,
@@ -703,6 +722,233 @@ impl ::std::convert::TryFrom<::std::string::String> for Route {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ApproverBinding {
+        approver: ::std::result::Result<super::ApproverBindingApprover, ::std::string::String>,
+        context: ::std::result::Result<super::ApproverBindingContext, ::std::string::String>,
+        platform: ::std::result::Result<super::ApproverBindingPlatform, ::std::string::String>,
+        route: ::std::result::Result<::std::option::Option<super::Route>, ::std::string::String>,
+        route_hint: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ApproverBinding {
+        fn default() -> Self {
+            Self {
+                approver: Err("no value supplied for approver".to_string()),
+                context: Err("no value supplied for context".to_string()),
+                platform: Err("no value supplied for platform".to_string()),
+                route: Ok(Default::default()),
+                route_hint: Ok(Default::default()),
+            }
+        }
+    }
+    impl ApproverBinding {
+        pub fn approver<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ApproverBindingApprover>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approver = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approver: {e}"));
+            self
+        }
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ApproverBindingContext>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ApproverBindingPlatform>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for platform: {e}"));
+            self
+        }
+        pub fn route<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Route>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.route = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for route: {e}"));
+            self
+        }
+        pub fn route_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.route_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for route_hint: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ApproverBinding> for super::ApproverBinding {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ApproverBinding,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                approver: value.approver?,
+                context: value.context?,
+                platform: value.platform?,
+                route: value.route?,
+                route_hint: value.route_hint?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ApproverBinding> for ApproverBinding {
+        fn from(value: super::ApproverBinding) -> Self {
+            Self {
+                approver: Ok(value.approver),
+                context: Ok(value.context),
+                platform: Ok(value.platform),
+                route: Ok(value.route),
+                route_hint: Ok(value.route_hint),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context: ::std::result::Result<
+            ::std::option::Option<super::PayloadContext>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        platform: ::std::result::Result<
+            ::std::option::Option<super::PayloadPlatform>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                platform: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadPlatform>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for platform: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context: value.context?,
+                ext: value.ext?,
+                platform: value.platform?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context: Ok(value.context),
+                ext: Ok(value.ext),
+                platform: Ok(value.platform),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        approvers:
+            ::std::result::Result<::std::vec::Vec<super::ApproverBinding>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                approvers: Err("no value supplied for approvers".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn approvers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ApproverBinding>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approvers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approvers: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                approvers: value.approvers?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                approvers: Ok(value.approvers),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/consent/approver-list/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -716,6 +962,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ApproverBinding\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.\",\n      \"properties\": {\n        \"approver\": {\n          \"description\": \"VID (DID) of the operator authorized to decide consent for this platform/context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"context\": {\n          \"description\": \"The VTA context path this binding applies to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"route\": {\n          \"$ref\": \"#/$defs/Route\",\n          \"description\": \"Optional. How to deliver the prompt; defaults to bridge-relay when omitted.\"\n        },\n        \"routeHint\": {\n          \"description\": \"Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"context\",\n        \"approver\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvers\": {\n          \"description\": \"Matching approver bindings.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ApproverBinding\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approvers\"\n      ],\n      \"title\": \"Consent List Approvers — response payload\",\n      \"type\": \"object\"\n    },\n    \"Route\": {\n      \"description\": \"How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.\",\n      \"enum\": [\n        \"wake\",\n        \"bridge-relay\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -197,6 +197,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     pub did: PayloadDid,
     ///DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh'].
@@ -223,6 +224,11 @@ pub struct Payload {
     pub public_url: ::std::string::String,
     #[serde(rename = "servedDomains")]
     pub served_domains: ::std::vec::Vec<::std::string::String>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadDid`
 ///
@@ -532,6 +538,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadProtocolVersion {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub accepted: bool,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -540,6 +547,241 @@ pub struct Response {
     pub instance_id: ::std::string::String,
     #[serde(rename = "lastSeen")]
     pub last_seen: ::chrono::DateTime<::chrono::offset::Utc>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        enabled_methods: ::std::result::Result<
+            ::std::vec::Vec<super::PayloadEnabledMethodsItem>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        instance_id: ::std::result::Result<super::PayloadInstanceId, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        protocol_version: ::std::result::Result<
+            ::std::option::Option<super::PayloadProtocolVersion>,
+            ::std::string::String,
+        >,
+        public_url: ::std::result::Result<::std::string::String, ::std::string::String>,
+        served_domains:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                enabled_methods: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                instance_id: Err("no value supplied for instance_id".to_string()),
+                label: Ok(Default::default()),
+                protocol_version: Ok(Default::default()),
+                public_url: Err("no value supplied for public_url".to_string()),
+                served_domains: Err("no value supplied for served_domains".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn enabled_methods<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadEnabledMethodsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled_methods = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled_methods: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn instance_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadInstanceId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.instance_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for instance_id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn protocol_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadProtocolVersion>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.protocol_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for protocol_version: {e}"));
+            self
+        }
+        pub fn public_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.public_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for public_url: {e}"));
+            self
+        }
+        pub fn served_domains<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.served_domains = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for served_domains: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                enabled_methods: value.enabled_methods?,
+                ext: value.ext?,
+                instance_id: value.instance_id?,
+                label: value.label?,
+                protocol_version: value.protocol_version?,
+                public_url: value.public_url?,
+                served_domains: value.served_domains?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                enabled_methods: Ok(value.enabled_methods),
+                ext: Ok(value.ext),
+                instance_id: Ok(value.instance_id),
+                label: Ok(value.label),
+                protocol_version: Ok(value.protocol_version),
+                public_url: Ok(value.public_url),
+                served_domains: Ok(value.served_domains),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        accepted: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        instance_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        last_seen:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                accepted: Err("no value supplied for accepted".to_string()),
+                ext: Ok(Default::default()),
+                instance_id: Err("no value supplied for instance_id".to_string()),
+                last_seen: Err("no value supplied for last_seen".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn accepted<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.accepted = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for accepted: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn instance_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.instance_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for instance_id: {e}"));
+            self
+        }
+        pub fn last_seen<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_seen = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_seen: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                accepted: value.accepted?,
+                ext: value.ext?,
+                instance_id: value.instance_id?,
+                last_seen: value.last_seen?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                accepted: Ok(value.accepted),
+                ext: Ok(value.ext),
+                instance_id: Ok(value.instance_id),
+                last_seen: Ok(value.last_seen),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/server/register/0.1";
@@ -555,6 +797,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        },\n        \"lastSeen\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\",\n        \"lastSeen\"\n      ],\n      \"title\": \"Server Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

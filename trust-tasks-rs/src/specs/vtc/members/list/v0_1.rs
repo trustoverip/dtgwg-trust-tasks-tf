@@ -254,6 +254,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct MemberResponse {
     ///Id of the member's current role Verifiable Endorsement Credential, if issued.
     #[serde(
@@ -325,6 +326,11 @@ pub struct MemberResponse {
     )]
     pub status_list_index: ::std::option::Option<i64>,
 }
+impl MemberResponse {
+    pub fn builder() -> builder::MemberResponse {
+        Default::default()
+    }
+}
 ///How the member's record is handled on departure.
 ///
 /// <details><summary>JSON schema</summary>
@@ -354,6 +360,7 @@ pub struct MemberResponse {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum MemberResponseDeparturePreference {
     #[serde(rename = "purge")]
     Purge,
@@ -581,6 +588,7 @@ impl<'de> ::serde::Deserialize<'de> for MemberResponseRole {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -602,6 +610,11 @@ impl ::std::default::Default for Payload {
             limit: Default::default(),
             role: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Filter to members with this role (wire form, e.g. `admin`, `custom:editor`).
@@ -716,6 +729,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRole {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -735,6 +749,450 @@ pub struct Response {
     )]
     pub total_estimate: ::std::option::Option<i64>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct MemberResponse {
+        current_role_vec_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        current_vmc_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        departure_preference:
+            ::std::result::Result<super::MemberResponseDeparturePreference, ::std::string::String>,
+        did: ::std::result::Result<super::MemberResponseDid, ::std::string::String>,
+        extensions: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        joined_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        joined_via_invitation:
+            ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        member_vmc_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        member_vmc_received_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        personhood: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        personhood_asserted_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        publish_consent: ::std::result::Result<bool, ::std::string::String>,
+        role: ::std::result::Result<super::MemberResponseRole, ::std::string::String>,
+        status_list_index: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for MemberResponse {
+        fn default() -> Self {
+            Self {
+                current_role_vec_id: Ok(Default::default()),
+                current_vmc_id: Ok(Default::default()),
+                departure_preference: Err("no value supplied for departure_preference".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                extensions: Err("no value supplied for extensions".to_string()),
+                joined_at: Err("no value supplied for joined_at".to_string()),
+                joined_via_invitation: Ok(Default::default()),
+                label: Ok(Default::default()),
+                member_vmc_id: Ok(Default::default()),
+                member_vmc_received_at: Ok(Default::default()),
+                personhood: Ok(Default::default()),
+                personhood_asserted_at: Ok(Default::default()),
+                publish_consent: Err("no value supplied for publish_consent".to_string()),
+                role: Err("no value supplied for role".to_string()),
+                status_list_index: Ok(Default::default()),
+            }
+        }
+    }
+    impl MemberResponse {
+        pub fn current_role_vec_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.current_role_vec_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for current_role_vec_id: {e}")
+            });
+            self
+        }
+        pub fn current_vmc_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.current_vmc_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for current_vmc_id: {e}"));
+            self
+        }
+        pub fn departure_preference<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::MemberResponseDeparturePreference>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.departure_preference = value.try_into().map_err(|e| {
+                format!("error converting supplied value for departure_preference: {e}")
+            });
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::MemberResponseDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn extensions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extensions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extensions: {e}"));
+            self
+        }
+        pub fn joined_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.joined_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for joined_at: {e}"));
+            self
+        }
+        pub fn joined_via_invitation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.joined_via_invitation = value.try_into().map_err(|e| {
+                format!("error converting supplied value for joined_via_invitation: {e}")
+            });
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn member_vmc_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.member_vmc_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for member_vmc_id: {e}"));
+            self
+        }
+        pub fn member_vmc_received_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.member_vmc_received_at = value.try_into().map_err(|e| {
+                format!("error converting supplied value for member_vmc_received_at: {e}")
+            });
+            self
+        }
+        pub fn personhood<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.personhood = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for personhood: {e}"));
+            self
+        }
+        pub fn personhood_asserted_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.personhood_asserted_at = value.try_into().map_err(|e| {
+                format!("error converting supplied value for personhood_asserted_at: {e}")
+            });
+            self
+        }
+        pub fn publish_consent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.publish_consent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for publish_consent: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::MemberResponseRole>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+        pub fn status_list_index<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status_list_index = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status_list_index: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<MemberResponse> for super::MemberResponse {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: MemberResponse,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                current_role_vec_id: value.current_role_vec_id?,
+                current_vmc_id: value.current_vmc_id?,
+                departure_preference: value.departure_preference?,
+                did: value.did?,
+                extensions: value.extensions?,
+                joined_at: value.joined_at?,
+                joined_via_invitation: value.joined_via_invitation?,
+                label: value.label?,
+                member_vmc_id: value.member_vmc_id?,
+                member_vmc_received_at: value.member_vmc_received_at?,
+                personhood: value.personhood?,
+                personhood_asserted_at: value.personhood_asserted_at?,
+                publish_consent: value.publish_consent?,
+                role: value.role?,
+                status_list_index: value.status_list_index?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::MemberResponse> for MemberResponse {
+        fn from(value: super::MemberResponse) -> Self {
+            Self {
+                current_role_vec_id: Ok(value.current_role_vec_id),
+                current_vmc_id: Ok(value.current_vmc_id),
+                departure_preference: Ok(value.departure_preference),
+                did: Ok(value.did),
+                extensions: Ok(value.extensions),
+                joined_at: Ok(value.joined_at),
+                joined_via_invitation: Ok(value.joined_via_invitation),
+                label: Ok(value.label),
+                member_vmc_id: Ok(value.member_vmc_id),
+                member_vmc_received_at: Ok(value.member_vmc_received_at),
+                personhood: Ok(value.personhood),
+                personhood_asserted_at: Ok(value.personhood_asserted_at),
+                publish_consent: Ok(value.publish_consent),
+                role: Ok(value.role),
+                status_list_index: Ok(value.status_list_index),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        role:
+            ::std::result::Result<::std::option::Option<super::PayloadRole>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+                role: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadRole>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                ext: value.ext?,
+                limit: value.limit?,
+                role: value.role?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+                role: Ok(value.role),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        items: ::std::result::Result<::std::vec::Vec<super::MemberResponse>, ::std::string::String>,
+        next_cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        total_estimate: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                items: Err("no value supplied for items".to_string()),
+                next_cursor: Ok(Default::default()),
+                total_estimate: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn items<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::MemberResponse>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.items = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for items: {e}"));
+            self
+        }
+        pub fn next_cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_cursor: {e}"));
+            self
+        }
+        pub fn total_estimate<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.total_estimate = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for total_estimate: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                items: value.items?,
+                next_cursor: value.next_cursor?,
+                total_estimate: value.total_estimate?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                items: Ok(value.items),
+                next_cursor: Ok(value.next_cursor),
+                total_estimate: Ok(value.total_estimate),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/members/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -748,6 +1206,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberResponse\": {\n      \"$anchor\": \"memberResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"One community member as the maintainer sees it: the membership record joined with its ACL role.\",\n      \"properties\": {\n        \"currentRoleVecId\": {\n          \"description\": \"Id of the member's current role Verifiable Endorsement Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"currentVmcId\": {\n          \"description\": \"Id of the member's current Verifiable Membership Credential, if issued.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"departurePreference\": {\n          \"description\": \"How the member's record is handled on departure.\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\",\n            \"policydefault\"\n          ],\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The member's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation).\",\n          \"type\": \"object\"\n        },\n        \"joinedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"joinedViaInvitation\": {\n          \"description\": \"Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart.\",\n          \"type\": \"boolean\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcId\": {\n          \"description\": \"`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"memberVmcReceivedAt\": {\n          \"description\": \"When that reciprocal credential was received. Paired with `memberVmcId`.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"personhood\": {\n          \"description\": \"Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.\",\n          \"type\": \"boolean\"\n        },\n        \"personhoodAssertedAt\": {\n          \"description\": \"When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"publishConsent\": {\n          \"description\": \"Whether the member consented to being published in the community directory.\",\n          \"type\": \"boolean\"\n        },\n        \"role\": {\n          \"description\": \"The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The member's slot on the community's membership status list, when allocated.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"role\",\n        \"joinedAt\",\n        \"publishConsent\",\n        \"departurePreference\",\n        \"extensions\"\n      ],\n      \"title\": \"MemberResponse\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/MemberResponse\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page, or null when this is the last.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"description\": \"Approximate total matching members, when the maintainer can cheaply estimate it.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Members List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

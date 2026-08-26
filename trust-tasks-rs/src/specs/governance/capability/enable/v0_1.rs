@@ -157,6 +157,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CapabilityManifest {
     ///The capability's namespace slug, e.g. `git-trust`.
     pub capability: CapabilityManifestCapability,
@@ -210,6 +211,11 @@ pub struct CapabilityManifest {
     pub version: CapabilityManifestVersion,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub vocabulary: ::std::option::Option<CapabilityManifestVocabulary>,
+}
+impl CapabilityManifest {
+    pub fn builder() -> builder::CapabilityManifest {
+        Default::default()
+    }
 }
 ///The capability's namespace slug, e.g. `git-trust`.
 ///
@@ -309,6 +315,7 @@ impl<'de> ::serde::Deserialize<'de> for CapabilityManifestCapability {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CapabilityManifestConsentClassValue {
     #[serde(rename = "normal")]
     Normal,
@@ -386,12 +393,18 @@ impl ::std::convert::TryFrom<::std::string::String> for CapabilityManifestConsen
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CapabilityManifestExternalAdaptersItem {
     ///Adapter type, e.g. `github-action`, `webhook`.
     pub kind: ::std::string::String,
     ///Where the adapter lives, e.g. a repository path or URL.
     #[serde(rename = "ref")]
     pub ref_: ::std::string::String,
+}
+impl CapabilityManifestExternalAdaptersItem {
+    pub fn builder() -> builder::CapabilityManifestExternalAdaptersItem {
+        Default::default()
+    }
 }
 ///Manifest/capability version, `MAJOR.MINOR`.
 ///
@@ -495,6 +508,7 @@ impl<'de> ::serde::Deserialize<'de> for CapabilityManifestVersion {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CapabilityManifestVocabulary {
     ///TRQP `action` values this capability owns, e.g. `git.commit.sign`.
     pub actions: ::std::vec::Vec<::std::string::String>,
@@ -505,6 +519,11 @@ pub struct CapabilityManifestVocabulary {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource_pattern: ::std::option::Option<::std::string::String>,
+}
+impl CapabilityManifestVocabulary {
+    pub fn builder() -> builder::CapabilityManifestVocabulary {
+        Default::default()
+    }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
@@ -666,6 +685,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Namespace slug of the capability to enable, e.g. `git-trust`.
     pub capability: PayloadCapability,
@@ -682,6 +702,11 @@ pub struct Payload {
     pub manifest: ::std::option::Option<CapabilityManifest>,
     ///Capability version to enable.
     pub version: PayloadVersion,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Namespace slug of the capability to enable, e.g. `git-trust`.
 ///
@@ -868,6 +893,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVersion {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub capability: ::std::string::String,
     ///True once the capability is active for the community.
@@ -887,6 +913,603 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub version: ::std::option::Option<::std::string::String>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct CapabilityManifest {
+        capability:
+            ::std::result::Result<super::CapabilityManifestCapability, ::std::string::String>,
+        config_schema: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        consent_class: ::std::result::Result<
+            ::std::collections::HashMap<
+                ::std::string::String,
+                super::CapabilityManifestConsentClassValue,
+            >,
+            ::std::string::String,
+        >,
+        description: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        external_adapters: ::std::result::Result<
+            ::std::vec::Vec<super::CapabilityManifestExternalAdaptersItem>,
+            ::std::string::String,
+        >,
+        lifecycle_hooks:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        roles: ::std::result::Result<
+            ::std::collections::HashMap<
+                ::std::string::String,
+                ::std::vec::Vec<::std::string::String>,
+            >,
+            ::std::string::String,
+        >,
+        specs: ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        title: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        version: ::std::result::Result<super::CapabilityManifestVersion, ::std::string::String>,
+        vocabulary: ::std::result::Result<
+            ::std::option::Option<super::CapabilityManifestVocabulary>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for CapabilityManifest {
+        fn default() -> Self {
+            Self {
+                capability: Err("no value supplied for capability".to_string()),
+                config_schema: Ok(Default::default()),
+                consent_class: Ok(Default::default()),
+                description: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                external_adapters: Ok(Default::default()),
+                lifecycle_hooks: Ok(Default::default()),
+                roles: Ok(Default::default()),
+                specs: Err("no value supplied for specs".to_string()),
+                title: Ok(Default::default()),
+                version: Err("no value supplied for version".to_string()),
+                vocabulary: Ok(Default::default()),
+            }
+        }
+    }
+    impl CapabilityManifest {
+        pub fn capability<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CapabilityManifestCapability>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.capability = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for capability: {e}"));
+            self
+        }
+        pub fn config_schema<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.config_schema = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for config_schema: {e}"));
+            self
+        }
+        pub fn consent_class<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::collections::HashMap<
+                    ::std::string::String,
+                    super::CapabilityManifestConsentClassValue,
+                >,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consent_class = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consent_class: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn external_adapters<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::vec::Vec<super::CapabilityManifestExternalAdaptersItem>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.external_adapters = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for external_adapters: {e}"));
+            self
+        }
+        pub fn lifecycle_hooks<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.lifecycle_hooks = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for lifecycle_hooks: {e}"));
+            self
+        }
+        pub fn roles<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::collections::HashMap<
+                    ::std::string::String,
+                    ::std::vec::Vec<::std::string::String>,
+                >,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.roles = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for roles: {e}"));
+            self
+        }
+        pub fn specs<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.specs = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for specs: {e}"));
+            self
+        }
+        pub fn title<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.title = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for title: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CapabilityManifestVersion>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+        pub fn vocabulary<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::CapabilityManifestVocabulary>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vocabulary = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vocabulary: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CapabilityManifest> for super::CapabilityManifest {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CapabilityManifest,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                capability: value.capability?,
+                config_schema: value.config_schema?,
+                consent_class: value.consent_class?,
+                description: value.description?,
+                ext: value.ext?,
+                external_adapters: value.external_adapters?,
+                lifecycle_hooks: value.lifecycle_hooks?,
+                roles: value.roles?,
+                specs: value.specs?,
+                title: value.title?,
+                version: value.version?,
+                vocabulary: value.vocabulary?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CapabilityManifest> for CapabilityManifest {
+        fn from(value: super::CapabilityManifest) -> Self {
+            Self {
+                capability: Ok(value.capability),
+                config_schema: Ok(value.config_schema),
+                consent_class: Ok(value.consent_class),
+                description: Ok(value.description),
+                ext: Ok(value.ext),
+                external_adapters: Ok(value.external_adapters),
+                lifecycle_hooks: Ok(value.lifecycle_hooks),
+                roles: Ok(value.roles),
+                specs: Ok(value.specs),
+                title: Ok(value.title),
+                version: Ok(value.version),
+                vocabulary: Ok(value.vocabulary),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CapabilityManifestExternalAdaptersItem {
+        kind: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ref_: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for CapabilityManifestExternalAdaptersItem {
+        fn default() -> Self {
+            Self {
+                kind: Err("no value supplied for kind".to_string()),
+                ref_: Err("no value supplied for ref_".to_string()),
+            }
+        }
+    }
+    impl CapabilityManifestExternalAdaptersItem {
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn ref_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ref_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ref_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CapabilityManifestExternalAdaptersItem>
+        for super::CapabilityManifestExternalAdaptersItem
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CapabilityManifestExternalAdaptersItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                kind: value.kind?,
+                ref_: value.ref_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CapabilityManifestExternalAdaptersItem>
+        for CapabilityManifestExternalAdaptersItem
+    {
+        fn from(value: super::CapabilityManifestExternalAdaptersItem) -> Self {
+            Self {
+                kind: Ok(value.kind),
+                ref_: Ok(value.ref_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CapabilityManifestVocabulary {
+        actions:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        resource_pattern: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for CapabilityManifestVocabulary {
+        fn default() -> Self {
+            Self {
+                actions: Err("no value supplied for actions".to_string()),
+                resource_pattern: Ok(Default::default()),
+            }
+        }
+    }
+    impl CapabilityManifestVocabulary {
+        pub fn actions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.actions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for actions: {e}"));
+            self
+        }
+        pub fn resource_pattern<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource_pattern = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource_pattern: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CapabilityManifestVocabulary> for super::CapabilityManifestVocabulary {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CapabilityManifestVocabulary,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                actions: value.actions?,
+                resource_pattern: value.resource_pattern?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CapabilityManifestVocabulary> for CapabilityManifestVocabulary {
+        fn from(value: super::CapabilityManifestVocabulary) -> Self {
+            Self {
+                actions: Ok(value.actions),
+                resource_pattern: Ok(value.resource_pattern),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        capability: ::std::result::Result<super::PayloadCapability, ::std::string::String>,
+        config: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        delegate: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        manifest: ::std::result::Result<
+            ::std::option::Option<super::CapabilityManifest>,
+            ::std::string::String,
+        >,
+        version: ::std::result::Result<super::PayloadVersion, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                capability: Err("no value supplied for capability".to_string()),
+                config: Ok(Default::default()),
+                delegate: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                manifest: Ok(Default::default()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn capability<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadCapability>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.capability = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for capability: {e}"));
+            self
+        }
+        pub fn config<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.config = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for config: {e}"));
+            self
+        }
+        pub fn delegate<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.delegate = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for delegate: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn manifest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::CapabilityManifest>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.manifest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for manifest: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadVersion>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                capability: value.capability?,
+                config: value.config?,
+                delegate: value.delegate?,
+                ext: value.ext?,
+                manifest: value.manifest?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                capability: Ok(value.capability),
+                config: Ok(value.config),
+                delegate: Ok(value.delegate),
+                ext: Ok(value.ext),
+                manifest: Ok(value.manifest),
+                version: Ok(value.version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        capability: ::std::result::Result<::std::string::String, ::std::string::String>,
+        enabled: ::std::result::Result<bool, ::std::string::String>,
+        enabled_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        message: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        version: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                capability: Err("no value supplied for capability".to_string()),
+                enabled: Err("no value supplied for enabled".to_string()),
+                enabled_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                message: Ok(Default::default()),
+                version: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn capability<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.capability = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for capability: {e}"));
+            self
+        }
+        pub fn enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled: {e}"));
+            self
+        }
+        pub fn enabled_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                capability: value.capability?,
+                enabled: value.enabled?,
+                enabled_at: value.enabled_at?,
+                ext: value.ext?,
+                message: value.message?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                capability: Ok(value.capability),
+                enabled: Ok(value.enabled),
+                enabled_at: Ok(value.enabled_at),
+                ext: Ok(value.ext),
+                message: Ok(value.message),
+                version: Ok(value.version),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/governance/capability/enable/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -903,6 +1526,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CapabilityManifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.\",\n      \"properties\": {\n        \"capability\": {\n          \"description\": \"The capability's namespace slug, e.g. `git-trust`.\",\n          \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n          \"type\": \"string\"\n        },\n        \"configSchema\": {\n          \"description\": \"Spec slug of the JSON schema the per-community `config` document must validate against.\",\n          \"type\": \"string\"\n        },\n        \"consentClass\": {\n          \"additionalProperties\": {\n            \"enum\": [\n              \"normal\",\n              \"elevated\",\n              \"destructive\"\n            ],\n            \"type\": \"string\"\n          },\n          \"description\": \"Map of capability operation to the consent class its execution requires under the host's delegated-execution policy.\",\n          \"type\": \"object\"\n        },\n        \"description\": {\n          \"description\": \"One-paragraph description for management surfaces.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"externalAdapters\": {\n          \"description\": \"Out-of-stack components that consume this capability's trust decisions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"kind\": {\n                \"description\": \"Adapter type, e.g. `github-action`, `webhook`.\",\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"Where the adapter lives, e.g. a repository path or URL.\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"kind\",\n              \"ref\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"lifecycleHooks\": {\n          \"description\": \"Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"roles\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"type\": \"string\"\n            },\n            \"type\": \"array\"\n          },\n          \"description\": \"Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.\",\n          \"type\": \"object\"\n        },\n        \"specs\": {\n          \"description\": \"Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"title\": {\n          \"description\": \"Human-readable capability name for management surfaces.\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Manifest/capability version, `MAJOR.MINOR`.\",\n          \"pattern\": \"^[0-9]+\\\\.[0-9]+$\",\n          \"type\": \"string\"\n        },\n        \"vocabulary\": {\n          \"additionalProperties\": false,\n          \"description\": \"The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.\",\n          \"properties\": {\n            \"actions\": {\n              \"description\": \"TRQP `action` values this capability owns, e.g. `git.commit.sign`.\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"resourcePattern\": {\n              \"description\": \"Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"actions\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"version\",\n        \"specs\"\n      ],\n      \"title\": \"CapabilityManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"capability\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"True once the capability is active for the community.\",\n          \"type\": \"boolean\"\n        },\n        \"enabledAt\": {\n          \"description\": \"When the enablement took effect, per the host clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"enabled\"\n      ],\n      \"title\": \"Governance Capability Enable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

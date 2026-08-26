@@ -3,6 +3,16 @@
 All notable changes to `trust-tasks-capability-client` are documented in this
 file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.0] - 2026-08-26
+
+### Changed
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.14, whose generated payload types
+  are `#[non_exhaustive]` and carry builders. Code in this crate's reach that
+  built a payload with a struct literal now uses `X::builder()`; a `match` on a
+  generated enum needs a wildcard arm. See `trust-tasks-rs` 0.14.0 for the
+  migration note. No change to this crate's own API.
+
 ## [0.13.0] - 2026-08-26
 
 ### Changed

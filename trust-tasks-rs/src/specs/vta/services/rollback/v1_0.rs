@@ -164,10 +164,16 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub service: ServiceKind,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.
 ///
@@ -196,10 +202,16 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub result: RollbackResult,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
 ///
@@ -261,6 +273,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct RollbackResult {
     ///When that drain completes.
     #[serde(
@@ -305,6 +318,11 @@ pub struct RollbackResult {
     )]
     pub vta_did: ::std::option::Option<::std::string::String>,
 }
+impl RollbackResult {
+    pub fn builder() -> builder::RollbackResult {
+        Default::default()
+    }
+}
 ///What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
 ///
 /// <details><summary>JSON schema</summary>
@@ -334,6 +352,7 @@ pub struct RollbackResult {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum RollbackResultKind {
     #[serde(rename = "disabled")]
     Disabled,
@@ -418,6 +437,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RollbackResultKind {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ServiceKind {
     #[serde(rename = "didcomm")]
     Didcomm,
@@ -472,6 +492,270 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceKind {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        service: ::std::result::Result<super::ServiceKind, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                service: Err("no value supplied for service".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn service<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ServiceKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.service = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for service: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                service: value.service?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                service: Ok(value.service),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        result: ::std::result::Result<super::RollbackResult, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                result: Err("no value supplied for result".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn result<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RollbackResult>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.result = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for result: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                result: value.result?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                result: Ok(value.result),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RollbackResult {
+        drain_until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        draining_mediator: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        effective_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        kind: ::std::result::Result<super::RollbackResultKind, ::std::string::String>,
+        log_entry_version_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        serverless: ::std::result::Result<bool, ::std::string::String>,
+        vta_did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for RollbackResult {
+        fn default() -> Self {
+            Self {
+                drain_until: Ok(Default::default()),
+                draining_mediator: Ok(Default::default()),
+                effective_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                kind: Err("no value supplied for kind".to_string()),
+                log_entry_version_id: Ok(Default::default()),
+                serverless: Ok(Default::default()),
+                vta_did: Ok(Default::default()),
+            }
+        }
+    }
+    impl RollbackResult {
+        pub fn drain_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.drain_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for drain_until: {e}"));
+            self
+        }
+        pub fn draining_mediator<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.draining_mediator = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for draining_mediator: {e}"));
+            self
+        }
+        pub fn effective_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.effective_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for effective_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RollbackResultKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn log_entry_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.log_entry_version_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for log_entry_version_id: {e}")
+            });
+            self
+        }
+        pub fn serverless<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.serverless = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for serverless: {e}"));
+            self
+        }
+        pub fn vta_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vta_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vta_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RollbackResult> for super::RollbackResult {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RollbackResult,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                drain_until: value.drain_until?,
+                draining_mediator: value.draining_mediator?,
+                effective_at: value.effective_at?,
+                ext: value.ext?,
+                kind: value.kind?,
+                log_entry_version_id: value.log_entry_version_id?,
+                serverless: value.serverless?,
+                vta_did: value.vta_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RollbackResult> for RollbackResult {
+        fn from(value: super::RollbackResult) -> Self {
+            Self {
+                drain_until: Ok(value.drain_until),
+                draining_mediator: Ok(value.draining_mediator),
+                effective_at: Ok(value.effective_at),
+                ext: Ok(value.ext),
+                kind: Ok(value.kind),
+                log_entry_version_id: Ok(value.log_entry_version_id),
+                serverless: Ok(value.serverless),
+                vta_did: Ok(value.vta_did),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/rollback/1.0";
     const IS_PROOF_REQUIRED: bool = true;
@@ -487,6 +771,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/RollbackResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Rollback — response payload\",\n      \"type\": \"object\"\n    },\n    \"RollbackResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \\\"noOp\\\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"When that drain completes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"Present when rolling back DIDComm left a mediator draining.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the rollback took effect. Absent for `noOp`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"description\": \"What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.\",\n          \"enum\": [\n            \"disabled\",\n            \"enabled\",\n            \"updated\",\n            \"noOp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.\",\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"RollbackResult\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

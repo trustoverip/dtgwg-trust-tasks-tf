@@ -141,6 +141,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AclEntry {
     ///Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent.
     #[serde(
@@ -204,6 +205,11 @@ pub struct AclEntry {
     )]
     pub updated_by: ::std::option::Option<::std::string::String>,
 }
+impl AclEntry {
+    pub fn builder() -> builder::AclEntry {
+        Default::default()
+    }
+}
 /**
 Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.
 
@@ -237,6 +243,7 @@ A subject with approve-authority is NOT thereby authorized to act. Consumers MUS
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AclEntryApprove {
     ///The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.
     #[serde(default)]
@@ -251,6 +258,11 @@ impl ::std::default::Default for AclEntryApprove {
             all: Default::default(),
             scopes: Default::default(),
         }
+    }
+}
+impl AclEntryApprove {
+    pub fn builder() -> builder::AclEntryApprove {
+        Default::default()
     }
 }
 ///Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).
@@ -281,6 +293,7 @@ impl ::std::default::Default for AclEntryApprove {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AclEntryStepUp {
     ///VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -295,6 +308,11 @@ impl ::std::default::Default for AclEntryStepUp {
             approver: Default::default(),
             require: Default::default(),
         }
+    }
+}
+impl AclEntryStepUp {
+    pub fn builder() -> builder::AclEntryStepUp {
+        Default::default()
     }
 }
 ///Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
@@ -324,6 +342,7 @@ impl ::std::default::Default for AclEntryStepUp {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum AclEntryStepUpRequire {
     #[serde(rename = "self")]
     Self_,
@@ -519,6 +538,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -531,6 +551,11 @@ pub struct Payload {
     pub scopes: ::std::vec::Vec<PayloadScopesItem>,
     ///VID of the party being revoked (or scope-reduced).
     pub subject: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadScopesItem`
 ///
@@ -636,12 +661,514 @@ impl<'de> ::serde::Deserialize<'de> for PayloadScopesItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.
     pub entry: ::std::option::Option<AclEntry>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AclEntry {
+        allowed_keys: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+        approve: ::std::result::Result<
+            ::std::option::Option<super::AclEntryApprove>,
+            ::std::string::String,
+        >,
+        created_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        created_by: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        role: ::std::result::Result<::std::string::String, ::std::string::String>,
+        scopes:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        step_up: ::std::result::Result<
+            ::std::option::Option<super::AclEntryStepUp>,
+            ::std::string::String,
+        >,
+        subject: ::std::result::Result<::std::string::String, ::std::string::String>,
+        updated_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        updated_by: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AclEntry {
+        fn default() -> Self {
+            Self {
+                allowed_keys: Ok(Default::default()),
+                approve: Ok(Default::default()),
+                created_at: Ok(Default::default()),
+                created_by: Ok(Default::default()),
+                expires_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                label: Ok(Default::default()),
+                role: Err("no value supplied for role".to_string()),
+                scopes: Ok(Default::default()),
+                step_up: Ok(Default::default()),
+                subject: Err("no value supplied for subject".to_string()),
+                updated_at: Ok(Default::default()),
+                updated_by: Ok(Default::default()),
+            }
+        }
+    }
+    impl AclEntry {
+        pub fn allowed_keys<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.allowed_keys = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for allowed_keys: {e}"));
+            self
+        }
+        pub fn approve<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AclEntryApprove>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approve = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approve: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn created_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_by: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+        pub fn scopes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scopes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scopes: {e}"));
+            self
+        }
+        pub fn step_up<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AclEntryStepUp>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.step_up = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for step_up: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn updated_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_by: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AclEntry> for super::AclEntry {
+        type Error = super::error::ConversionError;
+        fn try_from(value: AclEntry) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                allowed_keys: value.allowed_keys?,
+                approve: value.approve?,
+                created_at: value.created_at?,
+                created_by: value.created_by?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                label: value.label?,
+                role: value.role?,
+                scopes: value.scopes?,
+                step_up: value.step_up?,
+                subject: value.subject?,
+                updated_at: value.updated_at?,
+                updated_by: value.updated_by?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AclEntry> for AclEntry {
+        fn from(value: super::AclEntry) -> Self {
+            Self {
+                allowed_keys: Ok(value.allowed_keys),
+                approve: Ok(value.approve),
+                created_at: Ok(value.created_at),
+                created_by: Ok(value.created_by),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                label: Ok(value.label),
+                role: Ok(value.role),
+                scopes: Ok(value.scopes),
+                step_up: Ok(value.step_up),
+                subject: Ok(value.subject),
+                updated_at: Ok(value.updated_at),
+                updated_by: Ok(value.updated_by),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AclEntryApprove {
+        all: ::std::result::Result<bool, ::std::string::String>,
+        scopes:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+    }
+    impl ::std::default::Default for AclEntryApprove {
+        fn default() -> Self {
+            Self {
+                all: Ok(Default::default()),
+                scopes: Ok(Default::default()),
+            }
+        }
+    }
+    impl AclEntryApprove {
+        pub fn all<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.all = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for all: {e}"));
+            self
+        }
+        pub fn scopes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scopes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scopes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AclEntryApprove> for super::AclEntryApprove {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AclEntryApprove,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                all: value.all?,
+                scopes: value.scopes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AclEntryApprove> for AclEntryApprove {
+        fn from(value: super::AclEntryApprove) -> Self {
+            Self {
+                all: Ok(value.all),
+                scopes: Ok(value.scopes),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AclEntryStepUp {
+        approver: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        require: ::std::result::Result<
+            ::std::option::Option<super::AclEntryStepUpRequire>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AclEntryStepUp {
+        fn default() -> Self {
+            Self {
+                approver: Ok(Default::default()),
+                require: Ok(Default::default()),
+            }
+        }
+    }
+    impl AclEntryStepUp {
+        pub fn approver<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approver = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approver: {e}"));
+            self
+        }
+        pub fn require<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AclEntryStepUpRequire>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.require = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for require: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AclEntryStepUp> for super::AclEntryStepUp {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AclEntryStepUp,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                approver: value.approver?,
+                require: value.require?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AclEntryStepUp> for AclEntryStepUp {
+        fn from(value: super::AclEntryStepUp) -> Self {
+            Self {
+                approver: Ok(value.approver),
+                require: Ok(value.require),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        scopes:
+            ::std::result::Result<::std::vec::Vec<super::PayloadScopesItem>, ::std::string::String>,
+        subject: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                scopes: Ok(Default::default()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn scopes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadScopesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scopes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scopes: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                scopes: value.scopes?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                scopes: Ok(value.scopes),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        entry: ::std::result::Result<::std::option::Option<super::AclEntry>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                entry: Err("no value supplied for entry".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn entry<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AclEntry>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                entry: value.entry?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                entry: Ok(value.entry),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/acl/revoke/0.1";
@@ -658,6 +1185,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AclEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"allowedKeys\": {\n          \"description\": \"Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": [\n            \"array\",\n            \"null\"\n          ]\n        },\n        \"approve\": {\n          \"additionalProperties\": false,\n          \"description\": \"Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\\n\\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \\\"this subject may ratify nothing\\\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\\n\\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \\\"may this party ratify X\\\" and `scopes` to answer \\\"may this party do X\\\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.\",\n          \"properties\": {\n            \"all\": {\n              \"default\": false,\n              \"description\": \"The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.\",\n              \"type\": \"boolean\"\n            },\n            \"scopes\": {\n              \"description\": \"Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the party that originally added this entry.\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional time after which the entry is no longer effective.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Opaque role identifier interpreted by the ACL maintainer.\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"stepUp\": {\n          \"additionalProperties\": false,\n          \"description\": \"Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).\",\n          \"properties\": {\n            \"approver\": {\n              \"description\": \"VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.\",\n              \"type\": \"string\"\n            },\n            \"require\": {\n              \"description\": \"Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).\",\n              \"enum\": [\n                \"self\",\n                \"delegated\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the party that last modified this entry.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\"\n      ],\n      \"title\": \"AclEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.\",\n      \"properties\": {\n        \"entry\": {\n          \"description\": \"The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.\",\n          \"oneOf\": [\n            {\n              \"type\": \"null\"\n            },\n            {\n              \"$ref\": \"#/$defs/AclEntry\"\n            }\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"ACL Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

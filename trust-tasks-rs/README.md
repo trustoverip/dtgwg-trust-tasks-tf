@@ -188,20 +188,40 @@ sibling [`trust-tasks-codegen`](../trust-tasks-codegen) crate. Each module
 exposes:
 
 - A `Payload` struct (the request payload) with an `impl Payload` pinning the
-  request Type URI.
+  request Type URI, plus an `impl RequestPayload` naming the response type
+  where the spec defines one.
 - A `Response` struct (when the spec defines a success response, SPEC §4.4.1)
   with a second `impl Payload` carrying the `#response` fragment.
 - Any shared `$defs` types — for example, `AclEntry` for the ACL specs.
+- A `builder` module with one builder per struct.
+
+Every generated struct is `#[non_exhaustive]` and is constructed through its
+builder, so **a member added to a schema is not a source break**: it arrives as
+one more optional setter and every existing call site keeps compiling. Reading
+is unchanged — the fields are `pub`.
 
 ```rust,ignore
-use trust_tasks_rs::{specs::acl::grant::v0_1::*, Payload, TrustTask};
+use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, TrustTask};
 
-let req = TrustTask::for_payload("req-1", Payload {
-    entry: AclEntry { subject: "did:web:alice.example".into(), role: "admin".parse()?, .. },
-    reason: None,
-});
-assert_eq!(req.type_uri, Payload::type_uri());
+let entry: grant::AclEntry = grant::AclEntry::builder()
+    .subject("did:web:alice.example")
+    .role("admin")
+    .try_into()?;
+let payload: grant::Payload = grant::Payload::builder()
+    .entry(entry)
+    .try_into()?;
+
+let req = TrustTask::for_payload("req-1", payload);
+assert_eq!(req.type_uri, grant::Payload::type_uri());
 ```
+
+A struct whose members are all optional also implements `Default`, so
+`acl::list::v0_1::Payload::default()` is the whole construction.
+
+`RequestPayload` pairs a request with its response type, which is how a
+transport infers the response instead of being told it — see
+`HttpsClient::send` in `trust-tasks-https`. A spec that defines no success
+response implements no `RequestPayload`.
 
 **Regenerate when a `payload.schema.json` changes:**
 

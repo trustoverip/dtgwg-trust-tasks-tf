@@ -86,16 +86,16 @@ async fn spawn_server_with(verifier: VerifierMode) -> SocketAddr {
         .local_vid(SERVER_VID)
         .with_auth(auth)
         .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, _ctx| {
-            Ok(grant::v0_1::Response {
-                entry: req.payload.entry.clone(),
-                ext: None,
-            })
+            Ok(grant::v0_1::Response::builder()
+                .entry(req.payload.entry.clone())
+                .try_into()
+                .expect("acl grant response builder"))
         })
         .on::<revoke::v0_1::Payload, revoke::v0_1::Response, _>(|_req, _ctx| {
-            Ok(revoke::v0_1::Response {
-                entry: None,
-                ext: None,
-            })
+            Ok(revoke::v0_1::Response::builder()
+                .entry(Option::<revoke::v0_1::AclEntry>::None)
+                .try_into()
+                .expect("acl revoke response builder"))
         })
         // acl/list is `proofRequirement: RECOMMENDED` — the binding
         // accepts proofless requests for it regardless of verifier
@@ -118,13 +118,7 @@ async fn spawn_server_with(verifier: VerifierMode) -> SocketAddr {
                 Some("did:web:alice.example")
             );
             assert_eq!(ctx.resolved.recipient.as_deref(), Some(SERVER_VID));
-            Ok(list::v0_1::Response {
-                entries: vec![],
-                cursor: None,
-                redacted_fields: vec![],
-                truncated: false,
-                ext: None,
-            })
+            Ok(list_response())
         })
         // Auto-advertise the registered handlers (and discovery itself) via
         // trust-task-discovery/0.1.
@@ -155,21 +149,26 @@ async fn spawn_server() -> SocketAddr {
 }
 
 fn entry() -> grant::v0_1::AclEntry {
-    grant::v0_1::AclEntry {
-        subject: "did:web:carol.example".into(),
-        role: "admin".parse().unwrap(),
-        scopes: vec![],
-        allowed_keys: None,
-        label: None,
-        created_at: None,
-        created_by: None,
-        updated_at: None,
-        updated_by: None,
-        expires_at: None,
-        approve: None,
-        step_up: None,
-        ext: None,
-    }
+    grant::v0_1::AclEntry::builder()
+        .subject("did:web:carol.example")
+        .role("admin")
+        .try_into()
+        .expect("acl entry builder")
+}
+
+fn grant_payload() -> grant::v0_1::Payload {
+    grant::v0_1::Payload::builder()
+        .entry(entry())
+        .try_into()
+        .expect("acl grant payload builder")
+}
+
+fn list_response() -> list::v0_1::Response {
+    list::v0_1::Response::builder()
+        .entries(Vec::new())
+        .truncated(false)
+        .try_into()
+        .expect("acl list response builder")
 }
 
 fn build_client(addr: SocketAddr, my_vid: &str, my_token: Option<&str>) -> HttpsClient {
@@ -191,23 +190,9 @@ async fn happy_path_acl_list() {
     let addr = spawn_server().await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
-    let req = TrustTask::for_payload(
-        "urn:uuid:test-list-1",
-        list::v0_1::Payload {
-            role: None,
-            scope: None,
-            direction: None,
-            subject_prefix: None,
-            page_size: None,
-            cursor: None,
-            ext: None,
-        },
-    );
+    let req = TrustTask::for_payload("urn:uuid:test-list-1", list::v0_1::Payload::default());
 
-    let resp = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
-        .await
-        .unwrap();
+    let resp = client.send::<list::v0_1::Payload>(req).await.unwrap();
 
     assert_eq!(
         resp.type_uri,
@@ -228,19 +213,9 @@ async fn identity_mismatch_when_in_band_issuer_differs_from_token() {
     // Send as alice (bearer = alice) but claim to be carol (in-band issuer).
     let client = build_client(addr, "did:web:carol.example", Some("alice"));
 
-    let req = TrustTask::for_payload(
-        "urn:uuid:test-mismatch",
-        grant::v0_1::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let req = TrustTask::for_payload("urn:uuid:test-mismatch", grant_payload());
 
-    let err = client
-        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<grant::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { http_status, error } => {
@@ -265,16 +240,13 @@ async fn unsupported_type_for_unregistered_uri() {
     // handler for it, so the dispatcher returns UnsupportedType.
     let req = TrustTask::for_payload(
         "urn:uuid:test-unsupported",
-        show::v0_1::Payload {
-            subject: "did:web:bob.example".parse().unwrap(),
-            ext: None,
-        },
+        show::v0_1::Payload::builder()
+            .subject("did:web:bob.example")
+            .try_into()
+            .expect("acl show payload builder"),
     );
 
-    let err = client
-        .send::<show::v0_1::Payload, show::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<show::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { http_status, error } => {
@@ -291,15 +263,9 @@ async fn discovery_advertises_registered_handlers() {
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
     // Empty pattern list ⇒ "give me everything".
-    let req = TrustTask::for_payload(
-        "urn:uuid:test-discover-all",
-        discovery::Payload { patterns: vec![] },
-    );
+    let req = TrustTask::for_payload("urn:uuid:test-discover-all", discovery::Payload::default());
 
-    let resp = client
-        .send::<discovery::Payload, discovery::Response>(req)
-        .await
-        .unwrap();
+    let resp = client.send::<discovery::Payload>(req).await.unwrap();
 
     let mut got: Vec<&str> = resp.payload.supported_types.iter().map(uri_of).collect();
     got.sort();
@@ -335,15 +301,15 @@ async fn discovery_filter_returns_only_matching_slugs() {
 
     let req = TrustTask::for_payload(
         "urn:uuid:test-discover-acl",
-        discovery::Payload {
-            patterns: vec!["acl/*".parse().unwrap()],
-        },
+        discovery::Payload::builder()
+            .patterns(vec!["acl/*"
+                .parse::<discovery::PayloadPatternsItem>()
+                .unwrap()])
+            .try_into()
+            .expect("discovery payload builder"),
     );
 
-    let resp = client
-        .send::<discovery::Payload, discovery::Response>(req)
-        .await
-        .unwrap();
+    let resp = client.send::<discovery::Payload>(req).await.unwrap();
 
     let mut got: Vec<&str> = resp.payload.supported_types.iter().map(uri_of).collect();
     got.sort();
@@ -362,6 +328,9 @@ fn uri_of(entry: &discovery::ResponseSupportedTypesItem) -> &str {
     match entry {
         discovery::ResponseSupportedTypesItem::Uri(s) => s.as_str(),
         discovery::ResponseSupportedTypesItem::Object { type_, .. } => type_.as_str(),
+        // Generated enums are `#[non_exhaustive]` as of trust-tasks-rs 0.14:
+        // a variant added to the schema is no longer a source break here.
+        _ => panic!("unrecognised discovery entry variant"),
     }
 }
 
@@ -376,19 +345,9 @@ async fn proof_required_when_spec_requires_and_doc_lacks_proof() {
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
     // No proof on a REQUIRED spec.
-    let req = TrustTask::for_payload(
-        "urn:uuid:test-proof-required",
-        grant::v0_1::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let req = TrustTask::for_payload("urn:uuid:test-proof-required", grant_payload());
 
-    let err = client
-        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<grant::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { http_status, error } => {
@@ -411,14 +370,7 @@ async fn proof_bearing_with_identity_mismatch_routes_to_transport_peer() {
     // Send as alice (bearer = alice) but claim to be carol (in-band issuer).
     let client = build_client(addr, "did:web:carol.example", Some("alice"));
 
-    let mut req = TrustTask::for_payload(
-        "urn:uuid:test-proof-and-mismatch",
-        grant::v0_1::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let mut req = TrustTask::for_payload("urn:uuid:test-proof-and-mismatch", grant_payload());
     req.proof = Some(Proof {
         proof_type: "DataIntegrityProof".into(),
         cryptosuite: "eddsa-rdfc-2022".into(),
@@ -429,10 +381,7 @@ async fn proof_bearing_with_identity_mismatch_routes_to_transport_peer() {
         extra: Default::default(),
     });
 
-    let err = client
-        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<grant::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { http_status, error } => {
@@ -462,14 +411,7 @@ async fn proof_bearing_document_rejected_when_server_has_no_verifier() {
     let addr = spawn_server_with(VerifierMode::None).await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
-    let mut req = TrustTask::for_payload(
-        "urn:uuid:test-proof-rejected",
-        grant::v0_1::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let mut req = TrustTask::for_payload("urn:uuid:test-proof-rejected", grant_payload());
     req.proof = Some(Proof {
         proof_type: "DataIntegrityProof".into(),
         cryptosuite: "eddsa-rdfc-2022".into(),
@@ -480,10 +422,7 @@ async fn proof_bearing_document_rejected_when_server_has_no_verifier() {
         extra: Default::default(),
     });
 
-    let err = client
-        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<grant::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { http_status, error } => {
@@ -515,14 +454,7 @@ async fn happy_path_acl_grant_with_verifier() {
     let addr = spawn_server().await; // default fixture: AcceptAll
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
-    let mut req = TrustTask::for_payload(
-        "urn:uuid:test-grant-verified",
-        grant::v0_1::Payload {
-            entry: entry(),
-            reason: None,
-            ext: None,
-        },
-    );
+    let mut req = TrustTask::for_payload("urn:uuid:test-grant-verified", grant_payload());
     req.proof = Some(Proof {
         proof_type: "DataIntegrityProof".into(),
         cryptosuite: "eddsa-rdfc-2022".into(),
@@ -533,10 +465,7 @@ async fn happy_path_acl_grant_with_verifier() {
         extra: Default::default(),
     });
 
-    let resp = client
-        .send::<grant::v0_1::Payload, grant::v0_1::Response>(req)
-        .await
-        .unwrap();
+    let resp = client.send::<grant::v0_1::Payload>(req).await.unwrap();
 
     assert_eq!(
         resp.type_uri,
@@ -577,15 +506,7 @@ async fn proof_invalid_wire_message_withholds_the_verifier_description() {
     // rejects path from the IS_PROOF_REQUIRED path.
     let mut req = TrustTask::for_payload(
         "urn:uuid:test-proof-invalid",
-        list::v0_1::Payload {
-            role: None,
-            scope: None,
-            direction: None,
-            subject_prefix: None,
-            page_size: None,
-            cursor: None,
-            ext: None,
-        },
+        list::v0_1::Payload::default(),
     );
     req.proof = Some(Proof {
         proof_type: "DataIntegrityProof".into(),
@@ -597,10 +518,7 @@ async fn proof_invalid_wire_message_withholds_the_verifier_description() {
         extra: Default::default(),
     });
 
-    let err = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<list::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { http_status, error } => {
@@ -644,21 +562,10 @@ async fn permission_denied_from_spec_handler() {
 
     let req = TrustTask::for_payload(
         "urn:uuid:test-list-unauthorized",
-        list::v0_1::Payload {
-            role: None,
-            scope: None,
-            direction: None,
-            subject_prefix: None,
-            page_size: None,
-            cursor: None,
-            ext: None,
-        },
+        list::v0_1::Payload::default(),
     );
 
-    let err = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<list::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { http_status, error } => {
@@ -830,32 +737,11 @@ async fn client_times_out_on_a_silent_server() {
 
     let request = trust_tasks_rs::TrustTask::for_payload(
         "urn:uuid:timeout-test".to_string(),
-        grant::Payload {
-            entry: grant::AclEntry {
-                subject: "did:web:carol.example".into(),
-                role: "moderator".into(),
-                scopes: vec![],
-                allowed_keys: None,
-                label: None,
-                created_at: None,
-                created_by: None,
-                updated_at: None,
-                updated_by: None,
-                expires_at: None,
-                approve: None,
-                step_up: None,
-                ext: None,
-            },
-            reason: None,
-            ext: None,
-        },
+        timeout_payload(),
     );
 
     let started = std::time::Instant::now();
-    let err = client
-        .send::<grant::Payload, grant::Response>(request)
-        .await
-        .unwrap_err();
+    let err = client.send::<grant::Payload>(request).await.unwrap_err();
     assert!(
         started.elapsed() < Duration::from_secs(5),
         "the call must fail fast, not hang"
@@ -884,13 +770,7 @@ async fn spawn_spy_server(require_attribution: bool) -> (SocketAddr, Arc<Mutex<V
                 .lock()
                 .unwrap()
                 .push(ctx.resolved.issuer.clone().unwrap_or_default());
-            Ok(list::v0_1::Response {
-                entries: vec![],
-                cursor: None,
-                redacted_fields: vec![],
-                truncated: false,
-                ext: None,
-            })
+            Ok(list_response())
         })
         .build();
 
@@ -903,16 +783,22 @@ async fn spawn_spy_server(require_attribution: bool) -> (SocketAddr, Arc<Mutex<V
     (addr, seen)
 }
 
+/// `acl/grant` request for the client-timeout test, built through the
+/// generated builder rather than a struct literal.
+fn timeout_payload() -> grant::v0_1::Payload {
+    let entry: grant::v0_1::AclEntry = grant::v0_1::AclEntry::builder()
+        .subject("did:web:carol.example")
+        .role("moderator")
+        .try_into()
+        .expect("acl entry builder");
+    grant::v0_1::Payload::builder()
+        .entry(entry)
+        .try_into()
+        .expect("acl grant payload builder")
+}
+
 fn list_payload() -> list::v0_1::Payload {
-    list::v0_1::Payload {
-        role: None,
-        scope: None,
-        direction: None,
-        subject_prefix: None,
-        page_size: None,
-        cursor: None,
-        ext: None,
-    }
+    list::v0_1::Payload::default()
 }
 
 /// REGRESSION (attribution-open default). A document arriving with neither a
@@ -929,7 +815,7 @@ async fn unattributable_document_is_rejected_before_the_handler() {
     let client = build_client(addr, "did:web:victim.example", None);
 
     let err = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(TrustTask::for_payload(
+        .send::<list::v0_1::Payload>(TrustTask::for_payload(
             "urn:uuid:test-unattributable",
             list_payload(),
         ))
@@ -971,10 +857,7 @@ async fn proof_bearing_document_passes_the_attribution_gate() {
         extra: Default::default(),
     });
 
-    let err = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<list::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { error, .. } => assert_eq!(
@@ -994,7 +877,7 @@ async fn require_attribution_false_restores_the_permissive_path() {
     let client = build_client(addr, "did:web:victim.example", None);
 
     client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(TrustTask::for_payload(
+        .send::<list::v0_1::Payload>(TrustTask::for_payload(
             "urn:uuid:test-optout",
             list_payload(),
         ))
@@ -1038,15 +921,7 @@ async fn unknown_type_is_rejected_before_the_verifier_is_called() {
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
         .with_verifier(SpyVerifier(Arc::clone(&calls)))
         // Deliberately registers only acl/list — acl/show is unknown.
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| {
-            Ok(list::v0_1::Response {
-                entries: vec![],
-                cursor: None,
-                redacted_fields: vec![],
-                truncated: false,
-                ext: None,
-            })
-        })
+        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
         .build();
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -1058,10 +933,10 @@ async fn unknown_type_is_rejected_before_the_verifier_is_called() {
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
     let mut req = TrustTask::for_payload(
         "urn:uuid:test-ssrf-ordering",
-        show::v0_1::Payload {
-            subject: "did:web:bob.example".parse().unwrap(),
-            ext: None,
-        },
+        show::v0_1::Payload::builder()
+            .subject("did:web:bob.example")
+            .try_into()
+            .expect("acl show payload builder"),
     );
     req.proof = Some(Proof {
         proof_type: "DataIntegrityProof".into(),
@@ -1074,10 +949,7 @@ async fn unknown_type_is_rejected_before_the_verifier_is_called() {
         extra: Default::default(),
     });
 
-    let err = client
-        .send::<show::v0_1::Payload, show::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<show::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { error, .. } => {
@@ -1102,15 +974,7 @@ async fn disallowed_did_method_never_reaches_the_verifier() {
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
         .with_verifier(SpyVerifier(Arc::clone(&calls)))
         .allowed_did_methods(["key"])
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| {
-            Ok(list::v0_1::Response {
-                entries: vec![],
-                cursor: None,
-                redacted_fields: vec![],
-                truncated: false,
-                ext: None,
-            })
-        })
+        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
         .build();
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -1131,10 +995,7 @@ async fn disallowed_did_method_never_reaches_the_verifier() {
         extra: Default::default(),
     });
 
-    let err = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(req)
-        .await
-        .unwrap_err();
+    let err = client.send::<list::v0_1::Payload>(req).await.unwrap_err();
 
     match err {
         ClientError::TrustTaskError { error, .. } => {
@@ -1182,16 +1043,7 @@ fn well_formed_list_response(request_id: &str) -> serde_json::Value {
     let mut req = TrustTask::for_payload(request_id.to_string(), list_payload());
     req.issuer = Some("did:web:alice.example".into());
     req.recipient = Some(SERVER_VID.into());
-    let resp = req.respond_with(
-        "urn:uuid:canned-response",
-        list::v0_1::Response {
-            entries: vec![],
-            cursor: None,
-            redacted_fields: vec![],
-            truncated: false,
-            ext: None,
-        },
-    );
+    let resp = req.respond_with("urn:uuid:canned-response", list_response());
     serde_json::to_value(&resp).unwrap()
 }
 
@@ -1199,7 +1051,7 @@ async fn send_against_canned(body: serde_json::Value, request_id: &str) -> Clien
     let addr = spawn_canned_server(200, body).await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
     client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(TrustTask::for_payload(
+        .send::<list::v0_1::Payload>(TrustTask::for_payload(
             request_id.to_string(),
             list_payload(),
         ))
@@ -1288,7 +1140,7 @@ async fn well_formed_response_passes_every_binding_check() {
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
 
     let resp = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(TrustTask::for_payload(
+        .send::<list::v0_1::Payload>(TrustTask::for_payload(
             "urn:uuid:test-binding-happy",
             list_payload(),
         ))
@@ -1322,7 +1174,7 @@ async fn error_response_about_another_document_is_rejected() {
     let addr = spawn_canned_server(403, body).await;
     let client = build_client(addr, "did:web:alice.example", Some("alice"));
     let err = client
-        .send::<list::v0_1::Payload, list::v0_1::Response>(TrustTask::for_payload(
+        .send::<list::v0_1::Payload>(TrustTask::for_payload(
             "urn:uuid:test-error-binding",
             list_payload(),
         ))
@@ -1347,15 +1199,7 @@ async fn spawn_discovery_server(public: bool) -> SocketAddr {
         // Isolate the discovery gate from the attribution gate, which would
         // otherwise reject an unauthenticated caller further upstream.
         .require_attribution(false)
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| {
-            Ok(list::v0_1::Response {
-                entries: vec![],
-                cursor: None,
-                redacted_fields: vec![],
-                truncated: false,
-                ext: None,
-            })
-        })
+        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
         .enable_discovery();
     if public {
         builder = builder.public_discovery();
@@ -1379,9 +1223,9 @@ async fn discovery_requires_an_authenticated_sender_by_default() {
     let client = build_client(addr, "did:web:stranger.example", None);
 
     let err = client
-        .send::<discovery::Payload, discovery::Response>(TrustTask::for_payload(
+        .send::<discovery::Payload>(TrustTask::for_payload(
             "urn:uuid:test-discovery-unauth",
-            discovery::Payload { patterns: vec![] },
+            discovery::Payload::default(),
         ))
         .await
         .unwrap_err();
@@ -1407,9 +1251,9 @@ async fn public_discovery_opt_in_answers_unauthenticated_callers() {
     let client = build_client(addr, "did:web:stranger.example", None);
 
     let resp = client
-        .send::<discovery::Payload, discovery::Response>(TrustTask::for_payload(
+        .send::<discovery::Payload>(TrustTask::for_payload(
             "urn:uuid:test-discovery-public",
-            discovery::Payload { patterns: vec![] },
+            discovery::Payload::default(),
         ))
         .await
         .unwrap();
@@ -1493,15 +1337,7 @@ async fn stalled_request_body_is_cut_off_with_408() {
         .local_vid(SERVER_VID)
         .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
         .request_timeout(std::time::Duration::from_millis(150))
-        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| {
-            Ok(list::v0_1::Response {
-                entries: vec![],
-                cursor: None,
-                redacted_fields: vec![],
-                truncated: false,
-                ext: None,
-            })
-        })
+        .on::<list::v0_1::Payload, list::v0_1::Response, _>(|_req, _ctx| Ok(list_response()))
         .build();
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -1675,13 +1511,7 @@ async fn spawn_replay_server(
                 }
                 HandlerBehaviour::RefuseFirst => {}
             }
-            Ok(list::v0_1::Response {
-                entries: vec![],
-                cursor: None,
-                redacted_fields: vec![],
-                truncated: false,
-                ext: None,
-            })
+            Ok(list_response())
         });
 
     let server = configure(builder).build();

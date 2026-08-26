@@ -66,6 +66,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ConsumerContext {
     ///Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.
     #[serde(
@@ -96,6 +97,11 @@ impl ::std::default::Default for ConsumerContext {
             last_user_verification_at: Default::default(),
             network_class: Default::default(),
         }
+    }
+}
+impl ConsumerContext {
+    pub fn builder() -> builder::ConsumerContext {
+        Default::default()
     }
 }
 ///Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.
@@ -197,6 +203,7 @@ impl<'de> ::serde::Deserialize<'de> for ConsumerContextDeviceId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ConsumerContextNetworkClass {
     #[serde(rename = "unknown")]
     Unknown,
@@ -405,6 +412,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Caller's situational context — fed to the policy engine.
     #[serde(
@@ -428,6 +436,11 @@ pub struct Payload {
     ///The Trust Task document to sign. MUST satisfy the framework's structural requirements (id/type/issuer/recipient/issuedAt/payload). MUST NOT carry a `proof`. `issuer` MUST equal the referenced entry's principalDid — the maintainer refuses to silently rewrite `issuer` (see `envelopeIssuerMismatch`).
     #[serde(rename = "unsignedEnvelope")]
     pub unsigned_envelope: UnsignedTrustTaskEnvelope,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Identifier of the vault entry whose principal will sign. The maintainer rejects with `notSignable` when `entry.secretKind` is not `didSelfIssued` or `didcommPeer` (other kinds have no DID-based signing identity).
 ///
@@ -534,11 +547,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEntryId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "signedEnvelope")]
     pub signed_envelope: ResponseSignedEnvelope,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.
 ///
@@ -561,6 +580,7 @@ pub struct Response {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
 pub struct ResponseSignedEnvelope {
     pub id: ::serde_json::Value,
     #[serde(rename = "issuedAt")]
@@ -571,6 +591,11 @@ pub struct ResponseSignedEnvelope {
     pub recipient: ::serde_json::Value,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl ResponseSignedEnvelope {
+    pub fn builder() -> builder::ResponseSignedEnvelope {
+        Default::default()
+    }
 }
 ///`StepUpProof`
 ///
@@ -610,6 +635,7 @@ pub struct ResponseSignedEnvelope {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct StepUpProof {
     ///Maintainer-issued challenge id the proof responds to.
     #[serde(rename = "challengeId")]
@@ -617,6 +643,11 @@ pub struct StepUpProof {
     pub kind: StepUpProofKind,
     ///Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.
     pub proof: ::std::string::String,
+}
+impl StepUpProof {
+    pub fn builder() -> builder::StepUpProof {
+        Default::default()
+    }
 }
 ///Maintainer-issued challenge id the proof responds to.
 ///
@@ -714,6 +745,7 @@ impl<'de> ::serde::Deserialize<'de> for StepUpProofChallengeId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum StepUpProofKind {
     #[serde(rename = "webauthnUv")]
     WebauthnUv,
@@ -835,6 +867,7 @@ impl ::std::convert::TryFrom<::std::string::String> for StepUpProofKind {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
 pub struct UnsignedTrustTaskEnvelope {
     ///Optional inner-task expiry. The maintainer rejects with `envelopeExpired` when this is in the past at sign time.
     #[serde(
@@ -866,6 +899,11 @@ pub struct UnsignedTrustTaskEnvelope {
     ///Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`).
     #[serde(rename = "type")]
     pub type_: ::std::string::String,
+}
+impl UnsignedTrustTaskEnvelope {
+    pub fn builder() -> builder::UnsignedTrustTaskEnvelope {
+        Default::default()
+    }
 }
 ///Envelope identifier. Set by the producer of the inner task.
 ///
@@ -1143,6 +1181,597 @@ impl<'de> ::serde::Deserialize<'de> for UnsignedTrustTaskEnvelopeThreadId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ConsumerContext {
+        device_id: ::std::result::Result<
+            ::std::option::Option<super::ConsumerContextDeviceId>,
+            ::std::string::String,
+        >,
+        last_user_verification_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        network_class: ::std::result::Result<
+            ::std::option::Option<super::ConsumerContextNetworkClass>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ConsumerContext {
+        fn default() -> Self {
+            Self {
+                device_id: Ok(Default::default()),
+                last_user_verification_at: Ok(Default::default()),
+                network_class: Ok(Default::default()),
+            }
+        }
+    }
+    impl ConsumerContext {
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ConsumerContextDeviceId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn last_user_verification_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_user_verification_at = value.try_into().map_err(|e| {
+                format!("error converting supplied value for last_user_verification_at: {e}")
+            });
+            self
+        }
+        pub fn network_class<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ConsumerContextNetworkClass>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.network_class = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for network_class: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ConsumerContext> for super::ConsumerContext {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ConsumerContext,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_id: value.device_id?,
+                last_user_verification_at: value.last_user_verification_at?,
+                network_class: value.network_class?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ConsumerContext> for ConsumerContext {
+        fn from(value: super::ConsumerContext) -> Self {
+            Self {
+                device_id: Ok(value.device_id),
+                last_user_verification_at: Ok(value.last_user_verification_at),
+                network_class: Ok(value.network_class),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        consumer_context: ::std::result::Result<
+            ::std::option::Option<super::ConsumerContext>,
+            ::std::string::String,
+        >,
+        entry_id: ::std::result::Result<super::PayloadEntryId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        step_up_proof:
+            ::std::result::Result<::std::option::Option<super::StepUpProof>, ::std::string::String>,
+        unsigned_envelope:
+            ::std::result::Result<super::UnsignedTrustTaskEnvelope, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                consumer_context: Ok(Default::default()),
+                entry_id: Err("no value supplied for entry_id".to_string()),
+                ext: Ok(Default::default()),
+                step_up_proof: Ok(Default::default()),
+                unsigned_envelope: Err("no value supplied for unsigned_envelope".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn consumer_context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ConsumerContext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumer_context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consumer_context: {e}"));
+            self
+        }
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadEntryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn step_up_proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::StepUpProof>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.step_up_proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for step_up_proof: {e}"));
+            self
+        }
+        pub fn unsigned_envelope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UnsignedTrustTaskEnvelope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.unsigned_envelope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for unsigned_envelope: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                consumer_context: value.consumer_context?,
+                entry_id: value.entry_id?,
+                ext: value.ext?,
+                step_up_proof: value.step_up_proof?,
+                unsigned_envelope: value.unsigned_envelope?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                consumer_context: Ok(value.consumer_context),
+                entry_id: Ok(value.entry_id),
+                ext: Ok(value.ext),
+                step_up_proof: Ok(value.step_up_proof),
+                unsigned_envelope: Ok(value.unsigned_envelope),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        signed_envelope:
+            ::std::result::Result<super::ResponseSignedEnvelope, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                signed_envelope: Err("no value supplied for signed_envelope".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn signed_envelope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseSignedEnvelope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signed_envelope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signed_envelope: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                signed_envelope: value.signed_envelope?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                signed_envelope: Ok(value.signed_envelope),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseSignedEnvelope {
+        id: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        issued_at: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        issuer: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        payload: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        proof: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        recipient: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseSignedEnvelope {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                issuer: Err("no value supplied for issuer".to_string()),
+                payload: Err("no value supplied for payload".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+                recipient: Err("no value supplied for recipient".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl ResponseSignedEnvelope {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn issuer<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issuer = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issuer: {e}"));
+            self
+        }
+        pub fn payload<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.payload = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for payload: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+        pub fn recipient<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recipient = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recipient: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseSignedEnvelope> for super::ResponseSignedEnvelope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseSignedEnvelope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                issued_at: value.issued_at?,
+                issuer: value.issuer?,
+                payload: value.payload?,
+                proof: value.proof?,
+                recipient: value.recipient?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseSignedEnvelope> for ResponseSignedEnvelope {
+        fn from(value: super::ResponseSignedEnvelope) -> Self {
+            Self {
+                id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
+                issuer: Ok(value.issuer),
+                payload: Ok(value.payload),
+                proof: Ok(value.proof),
+                recipient: Ok(value.recipient),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct StepUpProof {
+        challenge_id: ::std::result::Result<super::StepUpProofChallengeId, ::std::string::String>,
+        kind: ::std::result::Result<super::StepUpProofKind, ::std::string::String>,
+        proof: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for StepUpProof {
+        fn default() -> Self {
+            Self {
+                challenge_id: Err("no value supplied for challenge_id".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+            }
+        }
+    }
+    impl StepUpProof {
+        pub fn challenge_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::StepUpProofChallengeId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge_id: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::StepUpProofKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<StepUpProof> for super::StepUpProof {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: StepUpProof,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                challenge_id: value.challenge_id?,
+                kind: value.kind?,
+                proof: value.proof?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::StepUpProof> for StepUpProof {
+        fn from(value: super::StepUpProof) -> Self {
+            Self {
+                challenge_id: Ok(value.challenge_id),
+                kind: Ok(value.kind),
+                proof: Ok(value.proof),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct UnsignedTrustTaskEnvelope {
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::UnsignedTrustTaskEnvelopeId, ::std::string::String>,
+        issued_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        issuer:
+            ::std::result::Result<super::UnsignedTrustTaskEnvelopeIssuer, ::std::string::String>,
+        payload: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        recipient:
+            ::std::result::Result<super::UnsignedTrustTaskEnvelopeRecipient, ::std::string::String>,
+        thread_id: ::std::result::Result<
+            ::std::option::Option<super::UnsignedTrustTaskEnvelopeThreadId>,
+            ::std::string::String,
+        >,
+        type_: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for UnsignedTrustTaskEnvelope {
+        fn default() -> Self {
+            Self {
+                expires_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                issuer: Err("no value supplied for issuer".to_string()),
+                payload: Err("no value supplied for payload".to_string()),
+                recipient: Err("no value supplied for recipient".to_string()),
+                thread_id: Ok(Default::default()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl UnsignedTrustTaskEnvelope {
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UnsignedTrustTaskEnvelopeId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn issuer<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UnsignedTrustTaskEnvelopeIssuer>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issuer = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issuer: {e}"));
+            self
+        }
+        pub fn payload<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.payload = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for payload: {e}"));
+            self
+        }
+        pub fn recipient<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UnsignedTrustTaskEnvelopeRecipient>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recipient = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recipient: {e}"));
+            self
+        }
+        pub fn thread_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::UnsignedTrustTaskEnvelopeThreadId>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.thread_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for thread_id: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<UnsignedTrustTaskEnvelope> for super::UnsignedTrustTaskEnvelope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: UnsignedTrustTaskEnvelope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                id: value.id?,
+                issued_at: value.issued_at?,
+                issuer: value.issuer?,
+                payload: value.payload?,
+                recipient: value.recipient?,
+                thread_id: value.thread_id?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::UnsignedTrustTaskEnvelope> for UnsignedTrustTaskEnvelope {
+        fn from(value: super::UnsignedTrustTaskEnvelope) -> Self {
+            Self {
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
+                issuer: Ok(value.issuer),
+                payload: Ok(value.payload),
+                recipient: Ok(value.recipient),
+                thread_id: Ok(value.thread_id),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vault/sign-trust-task/0.2";
     const IS_PROOF_REQUIRED: bool = true;
@@ -1158,6 +1787,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ConsumerContext\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deviceId\": {\n          \"description\": \"Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastUserVerificationAt\": {\n          \"description\": \"Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"networkClass\": {\n          \"description\": \"Producer-supplied network classification. Advisory.\",\n          \"enum\": [\n            \"unknown\",\n            \"home\",\n            \"corp\",\n            \"public\",\n            \"vpn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"ConsumerContext\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"signedEnvelope\": {\n          \"description\": \"The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.\",\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"issuedAt\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"signedEnvelope\"\n      ],\n      \"title\": \"Vault Sign Trust Task — response payload\",\n      \"type\": \"object\"\n    },\n    \"StepUpProof\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"challengeId\": {\n          \"description\": \"Maintainer-issued challenge id the proof responds to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"enum\": [\n            \"webauthnUv\",\n            \"pushApproval\",\n            \"totp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"proof\",\n        \"challengeId\"\n      ],\n      \"title\": \"StepUpProof\",\n      \"type\": \"object\"\n    },\n    \"UnsignedTrustTaskEnvelope\": {\n      \"$anchor\": \"unsigned-envelope\",\n      \"description\": \"Permissive shape for an unsigned Trust Task document — the framework-required members MUST be present, and `proof` MUST NOT be. The maintainer does not validate the inner `payload` against the embedded `type`'s schema; that validation is the recipient's responsibility.\",\n      \"not\": {\n        \"required\": [\n          \"proof\"\n        ]\n      },\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"Optional inner-task expiry. The maintainer rejects with `envelopeExpired` when this is in the past at sign time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Envelope identifier. Set by the producer of the inner task.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"Producer's wall-clock when the inner task was constructed. Maintainer copies through; the proof's `created` is the maintainer's wall-clock at signing.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"Issuer DID of the inner task. MUST equal the vault entry's principalDid — the maintainer rejects mismatches with `envelopeIssuerMismatch` rather than overwriting.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"Inner task's payload object. Opaque to the maintainer — passed through unchanged into the signed envelope.\"\n        },\n        \"recipient\": {\n          \"description\": \"Recipient DID — the relying party / audience the signed envelope will be delivered to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"threadId\": {\n          \"description\": \"Optional thread/correlation id, per framework §4.x.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"description\": \"Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`).\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\"\n      ],\n      \"title\": \"Unsigned Trust Task envelope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

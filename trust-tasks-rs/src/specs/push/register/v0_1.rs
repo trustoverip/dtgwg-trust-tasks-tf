@@ -171,6 +171,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.
     #[serde(rename = "controllerVtaDid")]
@@ -179,6 +180,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The platform push channel (token). Held by the gateway only — never disclosed to any other party.
     pub registration: PushRegistration,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.
 ///
@@ -357,6 +363,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadControllerVtaDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "platform", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum PushRegistration {
     ///Apns
     #[serde(rename = "apns")]
@@ -410,6 +417,7 @@ pub enum PushRegistration {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PushRegistrationEnvironment {
     #[serde(rename = "sandbox")]
     Sandbox,
@@ -486,11 +494,17 @@ impl ::std::convert::TryFrom<::std::string::String> for PushRegistrationEnvironm
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PushRegistrationKeys {
     ///base64url-encoded auth secret.
     pub auth: PushRegistrationKeysAuth,
     ///base64url-encoded P-256 ECDH public key.
     pub p256dh: PushRegistrationKeysP256dh,
+}
+impl PushRegistrationKeys {
+    pub fn builder() -> builder::PushRegistrationKeys {
+        Default::default()
+    }
 }
 ///base64url-encoded auth secret.
 ///
@@ -795,12 +809,18 @@ impl<'de> ::serde::Deserialize<'de> for PushRegistrationTopic {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.
     #[serde(rename = "wakeHandle")]
     pub wake_handle: WakeHandle,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.
 ///
@@ -833,11 +853,17 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct WakeHandle {
     ///The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.
     pub gateway: WakeHandleGateway,
     ///Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.
     pub handle: WakeHandleHandle,
+}
+impl WakeHandle {
+    pub fn builder() -> builder::WakeHandle {
+        Default::default()
+    }
 }
 ///The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.
 ///
@@ -977,6 +1003,236 @@ impl<'de> ::serde::Deserialize<'de> for WakeHandleHandle {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        controller_vta_did:
+            ::std::result::Result<super::PayloadControllerVtaDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        registration: ::std::result::Result<super::PushRegistration, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                controller_vta_did: Err("no value supplied for controller_vta_did".to_string()),
+                ext: Ok(Default::default()),
+                registration: Err("no value supplied for registration".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn controller_vta_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadControllerVtaDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.controller_vta_did = value.try_into().map_err(|e| {
+                format!("error converting supplied value for controller_vta_did: {e}")
+            });
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn registration<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PushRegistration>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registration = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registration: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                controller_vta_did: value.controller_vta_did?,
+                ext: value.ext?,
+                registration: value.registration?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                controller_vta_did: Ok(value.controller_vta_did),
+                ext: Ok(value.ext),
+                registration: Ok(value.registration),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PushRegistrationKeys {
+        auth: ::std::result::Result<super::PushRegistrationKeysAuth, ::std::string::String>,
+        p256dh: ::std::result::Result<super::PushRegistrationKeysP256dh, ::std::string::String>,
+    }
+    impl ::std::default::Default for PushRegistrationKeys {
+        fn default() -> Self {
+            Self {
+                auth: Err("no value supplied for auth".to_string()),
+                p256dh: Err("no value supplied for p256dh".to_string()),
+            }
+        }
+    }
+    impl PushRegistrationKeys {
+        pub fn auth<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PushRegistrationKeysAuth>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.auth = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for auth: {e}"));
+            self
+        }
+        pub fn p256dh<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PushRegistrationKeysP256dh>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.p256dh = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for p256dh: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PushRegistrationKeys> for super::PushRegistrationKeys {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PushRegistrationKeys,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                auth: value.auth?,
+                p256dh: value.p256dh?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PushRegistrationKeys> for PushRegistrationKeys {
+        fn from(value: super::PushRegistrationKeys) -> Self {
+            Self {
+                auth: Ok(value.auth),
+                p256dh: Ok(value.p256dh),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        wake_handle: ::std::result::Result<super::WakeHandle, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                wake_handle: Err("no value supplied for wake_handle".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn wake_handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WakeHandle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.wake_handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for wake_handle: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                wake_handle: value.wake_handle?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                wake_handle: Ok(value.wake_handle),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct WakeHandle {
+        gateway: ::std::result::Result<super::WakeHandleGateway, ::std::string::String>,
+        handle: ::std::result::Result<super::WakeHandleHandle, ::std::string::String>,
+    }
+    impl ::std::default::Default for WakeHandle {
+        fn default() -> Self {
+            Self {
+                gateway: Err("no value supplied for gateway".to_string()),
+                handle: Err("no value supplied for handle".to_string()),
+            }
+        }
+    }
+    impl WakeHandle {
+        pub fn gateway<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WakeHandleGateway>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.gateway = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for gateway: {e}"));
+            self
+        }
+        pub fn handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WakeHandleHandle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for handle: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<WakeHandle> for super::WakeHandle {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: WakeHandle,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                gateway: value.gateway?,
+                handle: value.handle?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::WakeHandle> for WakeHandle {
+        fn from(value: super::WakeHandle) -> Self {
+            Self {
+                gateway: Ok(value.gateway),
+                handle: Ok(value.handle),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/push/register/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -990,6 +1246,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PushRegistration\": {\n      \"description\": \"A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"environment\": {\n              \"description\": \"Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.\",\n              \"enum\": [\n                \"sandbox\",\n                \"production\"\n              ],\n              \"type\": \"string\"\n            },\n            \"platform\": {\n              \"const\": \"apns\"\n            },\n            \"token\": {\n              \"description\": \"APNs device token (hex string issued by Apple Push Notification service).\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"topic\": {\n              \"description\": \"APNs topic — typically the app bundle identifier the gateway pushes to.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"token\",\n            \"topic\"\n          ],\n          \"title\": \"Apns\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"platform\": {\n              \"const\": \"fcm\"\n            },\n            \"token\": {\n              \"description\": \"Firebase Cloud Messaging registration token. The gateway sends a data message (not a notification message) so the app controls wake and display.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"token\"\n          ],\n          \"title\": \"Fcm\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"endpoint\": {\n              \"description\": \"RFC 8030 Web Push subscription endpoint.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            },\n            \"keys\": {\n              \"additionalProperties\": false,\n              \"description\": \"Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.\",\n              \"properties\": {\n                \"auth\": {\n                  \"description\": \"base64url-encoded auth secret.\",\n                  \"minLength\": 1,\n                  \"type\": \"string\"\n                },\n                \"p256dh\": {\n                  \"description\": \"base64url-encoded P-256 ECDH public key.\",\n                  \"minLength\": 1,\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"p256dh\",\n                \"auth\"\n              ],\n              \"type\": \"object\"\n            },\n            \"platform\": {\n              \"const\": \"webpush\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"endpoint\",\n            \"keys\"\n          ],\n          \"title\": \"WebPush\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"PushRegistration\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"wakeHandle\": {\n          \"$ref\": \"#/$defs/WakeHandle\",\n          \"description\": \"The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.\"\n        }\n      },\n      \"required\": [\n        \"wakeHandle\"\n      ],\n      \"title\": \"Push Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeHandle\": {\n      \"additionalProperties\": false,\n      \"description\": \"An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.\",\n      \"properties\": {\n        \"gateway\": {\n          \"description\": \"The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"handle\": {\n          \"description\": \"Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"gateway\",\n        \"handle\"\n      ],\n      \"title\": \"WakeHandle\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

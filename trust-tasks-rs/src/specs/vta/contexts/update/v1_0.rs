@@ -80,6 +80,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ContextPolicy {
     ///Whether material in this context may leave it through an export. Defaults to true; set it to false for a context whose contents must not be extractable.
     #[serde(rename = "exportAllowed", default = "defaults::default_bool::<true>")]
@@ -121,6 +122,11 @@ impl ::std::default::Default for ContextPolicy {
             signable_keys: Default::default(),
             trusted_verifiers: Default::default(),
         }
+    }
+}
+impl ContextPolicy {
+    pub fn builder() -> builder::ContextPolicy {
+        Default::default()
     }
 }
 ///A context as the VTA holds it.
@@ -186,6 +192,7 @@ impl ::std::default::Default for ContextPolicy {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ContextRecord {
     ///Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.
     #[serde(rename = "basePath")]
@@ -211,6 +218,11 @@ pub struct ContextRecord {
     ///RFC 3339.
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
+}
+impl ContextRecord {
+    pub fn builder() -> builder::ContextRecord {
+        Default::default()
+    }
 }
 ///Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.
 ///
@@ -504,6 +516,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Replacement policy for the context. Supplied whole: the members present in the new policy are the policy, and one omitted from it becomes unrestricted rather than retaining its previous value.
     #[serde(
@@ -525,6 +538,11 @@ pub struct Payload {
     ///New human-readable name.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub name: ::std::option::Option<PayloadName>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Context to update. Not itself changeable: an id is what ACL scopes name, so renaming one would silently unhook every grant that referenced it.
 ///
@@ -696,6 +714,408 @@ impl ::std::convert::From<ContextRecord> for Response {
         Self(value)
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ContextPolicy {
+        export_allowed: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        presentable_types:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        quotas: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        signable_keys:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        trusted_verifiers:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ContextPolicy {
+        fn default() -> Self {
+            Self {
+                export_allowed: Ok(super::defaults::default_bool::<true>()),
+                ext: Ok(Default::default()),
+                presentable_types: Ok(Default::default()),
+                quotas: Ok(Default::default()),
+                signable_keys: Ok(Default::default()),
+                trusted_verifiers: Ok(Default::default()),
+            }
+        }
+    }
+    impl ContextPolicy {
+        pub fn export_allowed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.export_allowed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for export_allowed: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn presentable_types<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.presentable_types = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for presentable_types: {e}"));
+            self
+        }
+        pub fn quotas<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.quotas = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for quotas: {e}"));
+            self
+        }
+        pub fn signable_keys<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signable_keys = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signable_keys: {e}"));
+            self
+        }
+        pub fn trusted_verifiers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.trusted_verifiers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for trusted_verifiers: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ContextPolicy> for super::ContextPolicy {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ContextPolicy,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                export_allowed: value.export_allowed?,
+                ext: value.ext?,
+                presentable_types: value.presentable_types?,
+                quotas: value.quotas?,
+                signable_keys: value.signable_keys?,
+                trusted_verifiers: value.trusted_verifiers?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ContextPolicy> for ContextPolicy {
+        fn from(value: super::ContextPolicy) -> Self {
+            Self {
+                export_allowed: Ok(value.export_allowed),
+                ext: Ok(value.ext),
+                presentable_types: Ok(value.presentable_types),
+                quotas: Ok(value.quotas),
+                signable_keys: Ok(value.signable_keys),
+                trusted_verifiers: Ok(value.trusted_verifiers),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ContextRecord {
+        base_path: ::std::result::Result<::std::string::String, ::std::string::String>,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        description: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::ContextRecordId, ::std::string::String>,
+        name: ::std::result::Result<super::ContextRecordName, ::std::string::String>,
+        parent: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ContextRecord {
+        fn default() -> Self {
+            Self {
+                base_path: Err("no value supplied for base_path".to_string()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                description: Ok(Default::default()),
+                did: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                name: Err("no value supplied for name".to_string()),
+                parent: Ok(Default::default()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+            }
+        }
+    }
+    impl ContextRecord {
+        pub fn base_path<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.base_path = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for base_path: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ContextRecordId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ContextRecordName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn parent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.parent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for parent: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ContextRecord> for super::ContextRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ContextRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                base_path: value.base_path?,
+                created_at: value.created_at?,
+                description: value.description?,
+                did: value.did?,
+                ext: value.ext?,
+                id: value.id?,
+                name: value.name?,
+                parent: value.parent?,
+                updated_at: value.updated_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ContextRecord> for ContextRecord {
+        fn from(value: super::ContextRecord) -> Self {
+            Self {
+                base_path: Ok(value.base_path),
+                created_at: Ok(value.created_at),
+                description: Ok(value.description),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                name: Ok(value.name),
+                parent: Ok(value.parent),
+                updated_at: Ok(value.updated_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_policy: ::std::result::Result<
+            ::std::option::Option<super::ContextPolicy>,
+            ::std::string::String,
+        >,
+        description: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::PayloadId, ::std::string::String>,
+        name:
+            ::std::result::Result<::std::option::Option<super::PayloadName>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_policy: Ok(Default::default()),
+                description: Ok(Default::default()),
+                did: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                name: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_policy<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ContextPolicy>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_policy = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_policy: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadName>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_policy: value.context_policy?,
+                description: value.description?,
+                did: value.did?,
+                ext: value.ext?,
+                id: value.id?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_policy: Ok(value.context_policy),
+                description: Ok(value.description),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                id: Ok(value.id),
+                name: Ok(value.name),
+            }
+        }
+    }
+}
 /// Generation of default values for serde.
 pub mod defaults {
     pub(super) fn default_bool<const V: bool>() -> bool {
@@ -717,6 +1137,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ContextPolicy\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-context restrictions the VTA enforces. Every member is optional, and **absence means unrestricted, not empty** — a policy that omits `presentableTypes` permits every type, while one that sets it to `[]` permits none. The two are opposite instructions and a consumer MUST NOT collapse them.\",\n      \"properties\": {\n        \"exportAllowed\": {\n          \"default\": true,\n          \"description\": \"Whether material in this context may leave it through an export. Defaults to true; set it to false for a context whose contents must not be extractable.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"presentableTypes\": {\n          \"description\": \"Credential types that may be presented from this context. Absent: any type. Present-but-empty: none.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"quotas\": {\n          \"additionalProperties\": true,\n          \"description\": \"Resource limits for the context. Shape is maintainer-defined.\",\n          \"type\": \"object\"\n        },\n        \"signableKeys\": {\n          \"description\": \"Key ids the signing oracle may be invoked on within this context. Absent: every key the context holds. Present-but-empty: no keys.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"trustedVerifiers\": {\n          \"description\": \"VIDs permitted to receive presentations from this context. Absent: any verifier. Present-but-empty: none.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"title\": \"ContextPolicy\",\n      \"type\": \"object\"\n    },\n    \"ContextRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A context as the VTA holds it.\",\n      \"properties\": {\n        \"basePath\": {\n          \"description\": \"Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Free-form description.\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"parent\": {\n          \"description\": \"Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"basePath\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ContextRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/ContextRecord\",\n      \"description\": \"Success response to vta/contexts/update: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update/1.0#response.\",\n      \"title\": \"VTA Contexts Update — response payload\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -191,11 +191,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     pub config: PayloadConfig,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub service: ServiceKind,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Kind-specific settings. Which member applies is decided by `service`, and the two must agree — a `rest` request carrying `mediatorDid` is malformed, not a request with an ignored field. `didcomm` and `tsp` take `mediatorDid`; `rest` and `webauthn` take `url`.
 ///
@@ -232,6 +238,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadConfig {
     ///`didcomm` only: skip the mediator handshake except for DID resolution. Absent means the handshake runs, which is the safe reading — this carries no schema-level default on purpose, because a default would materialise the field into a `rest` or `webauthn` config where it has no meaning. The handshake is what proves the mediator is reachable and willing, so forcing past it can advertise a mediator that cannot actually deliver.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -262,6 +269,11 @@ impl ::std::default::Default for PayloadConfig {
             mediator_did: Default::default(),
             url: Default::default(),
         }
+    }
+}
+impl PayloadConfig {
+    pub fn builder() -> builder::PayloadConfig {
+        Default::default()
     }
 }
 ///Mediator to route through. Applies to `didcomm` and `tsp`.
@@ -429,10 +441,16 @@ impl<'de> ::serde::Deserialize<'de> for PayloadConfigUrl {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub result: ServiceMutationResult,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
 ///
@@ -464,6 +482,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ServiceKind {
     #[serde(rename = "didcomm")]
     Didcomm,
@@ -570,6 +589,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceKind {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ServiceMutationResult {
     ///Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.
     #[serde(
@@ -603,6 +623,11 @@ pub struct ServiceMutationResult {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vta_did: ::std::option::Option<::std::string::String>,
+}
+impl ServiceMutationResult {
+    pub fn builder() -> builder::ServiceMutationResult {
+        Default::default()
+    }
 }
 ///Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
 ///
@@ -673,6 +698,357 @@ impl<'de> ::serde::Deserialize<'de> for ServiceMutationResultLogEntryVersionId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        config: ::std::result::Result<super::PayloadConfig, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        service: ::std::result::Result<super::ServiceKind, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                config: Err("no value supplied for config".to_string()),
+                ext: Ok(Default::default()),
+                service: Err("no value supplied for service".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn config<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadConfig>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.config = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for config: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn service<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ServiceKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.service = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for service: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                config: value.config?,
+                ext: value.ext?,
+                service: value.service?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                config: Ok(value.config),
+                ext: Ok(value.ext),
+                service: Ok(value.service),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadConfig {
+        force: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        handshake_timeout_secs: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        mediator_did: ::std::result::Result<
+            ::std::option::Option<super::PayloadConfigMediatorDid>,
+            ::std::string::String,
+        >,
+        url: ::std::result::Result<
+            ::std::option::Option<super::PayloadConfigUrl>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for PayloadConfig {
+        fn default() -> Self {
+            Self {
+                force: Ok(Default::default()),
+                handshake_timeout_secs: Ok(Default::default()),
+                mediator_did: Ok(Default::default()),
+                url: Ok(Default::default()),
+            }
+        }
+    }
+    impl PayloadConfig {
+        pub fn force<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.force = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for force: {e}"));
+            self
+        }
+        pub fn handshake_timeout_secs<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.handshake_timeout_secs = value.try_into().map_err(|e| {
+                format!("error converting supplied value for handshake_timeout_secs: {e}")
+            });
+            self
+        }
+        pub fn mediator_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadConfigMediatorDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mediator_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mediator_did: {e}"));
+            self
+        }
+        pub fn url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadConfigUrl>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for url: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadConfig> for super::PayloadConfig {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadConfig,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                force: value.force?,
+                handshake_timeout_secs: value.handshake_timeout_secs?,
+                mediator_did: value.mediator_did?,
+                url: value.url?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadConfig> for PayloadConfig {
+        fn from(value: super::PayloadConfig) -> Self {
+            Self {
+                force: Ok(value.force),
+                handshake_timeout_secs: Ok(value.handshake_timeout_secs),
+                mediator_did: Ok(value.mediator_did),
+                url: Ok(value.url),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        result: ::std::result::Result<super::ServiceMutationResult, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                result: Err("no value supplied for result".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn result<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ServiceMutationResult>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.result = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for result: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                result: value.result?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                result: Ok(value.result),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ServiceMutationResult {
+        drain_until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        draining_mediator: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        effective_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        log_entry_version_id: ::std::result::Result<
+            super::ServiceMutationResultLogEntryVersionId,
+            ::std::string::String,
+        >,
+        serverless: ::std::result::Result<bool, ::std::string::String>,
+        vta_did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ServiceMutationResult {
+        fn default() -> Self {
+            Self {
+                drain_until: Ok(Default::default()),
+                draining_mediator: Ok(Default::default()),
+                effective_at: Err("no value supplied for effective_at".to_string()),
+                ext: Ok(Default::default()),
+                log_entry_version_id: Err("no value supplied for log_entry_version_id".to_string()),
+                serverless: Ok(Default::default()),
+                vta_did: Ok(Default::default()),
+            }
+        }
+    }
+    impl ServiceMutationResult {
+        pub fn drain_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.drain_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for drain_until: {e}"));
+            self
+        }
+        pub fn draining_mediator<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.draining_mediator = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for draining_mediator: {e}"));
+            self
+        }
+        pub fn effective_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.effective_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for effective_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn log_entry_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ServiceMutationResultLogEntryVersionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.log_entry_version_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for log_entry_version_id: {e}")
+            });
+            self
+        }
+        pub fn serverless<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.serverless = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for serverless: {e}"));
+            self
+        }
+        pub fn vta_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vta_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vta_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ServiceMutationResult> for super::ServiceMutationResult {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ServiceMutationResult,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                drain_until: value.drain_until?,
+                draining_mediator: value.draining_mediator?,
+                effective_at: value.effective_at?,
+                ext: value.ext?,
+                log_entry_version_id: value.log_entry_version_id?,
+                serverless: value.serverless?,
+                vta_did: value.vta_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ServiceMutationResult> for ServiceMutationResult {
+        fn from(value: super::ServiceMutationResult) -> Self {
+            Self {
+                drain_until: Ok(value.drain_until),
+                draining_mediator: Ok(value.draining_mediator),
+                effective_at: Ok(value.effective_at),
+                ext: Ok(value.ext),
+                log_entry_version_id: Ok(value.log_entry_version_id),
+                serverless: Ok(value.serverless),
+                vta_did: Ok(value.vta_did),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/enable/1.0";
     const IS_PROOF_REQUIRED: bool = true;
@@ -688,6 +1064,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/enable. Type https://trusttasks.org/spec/vta/services/enable/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/ServiceMutationResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Enable — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceMutationResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"The mediator being drained, when `drainUntil` is present.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"logEntryVersionId\",\n        \"effectiveAt\"\n      ],\n      \"title\": \"ServiceMutationResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

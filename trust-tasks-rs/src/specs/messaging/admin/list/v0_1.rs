@@ -59,6 +59,7 @@ pub mod error {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum AccountType {
     #[serde(rename = "standard")]
     Standard,
@@ -142,12 +143,18 @@ impl ::std::convert::TryFrom<::std::string::String> for AccountType {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AdminAccount {
     ///The admin role; one of `admin` or `rootAdmin`.
     #[serde(rename = "accountType")]
     pub account_type: AccountType,
     ///The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).
     pub did: Vid,
+}
+impl AdminAccount {
+    pub fn builder() -> builder::AdminAccount {
+        Default::default()
+    }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
@@ -289,6 +296,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -307,6 +315,11 @@ impl ::std::default::Default for Payload {
             ext: Default::default(),
             limit: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
@@ -415,6 +428,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The page of admin accounts.
     pub admins: ::std::vec::Vec<AdminAccount>,
@@ -428,6 +442,11 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.
 ///
@@ -568,6 +587,204 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AdminAccount {
+        account_type: ::std::result::Result<super::AccountType, ::std::string::String>,
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+    }
+    impl ::std::default::Default for AdminAccount {
+        fn default() -> Self {
+            Self {
+                account_type: Err("no value supplied for account_type".to_string()),
+                did: Err("no value supplied for did".to_string()),
+            }
+        }
+    }
+    impl AdminAccount {
+        pub fn account_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AccountType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.account_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for account_type: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AdminAccount> for super::AdminAccount {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AdminAccount,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                account_type: value.account_type?,
+                did: value.did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AdminAccount> for AdminAccount {
+        fn from(value: super::AdminAccount) -> Self {
+            Self {
+                account_type: Ok(value.account_type),
+                did: Ok(value.did),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        cursor: ::std::result::Result<
+            ::std::option::Option<super::PayloadCursor>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadCursor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                ext: value.ext?,
+                limit: value.limit?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        admins: ::std::result::Result<::std::vec::Vec<super::AdminAccount>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        next_cursor: ::std::result::Result<
+            ::std::option::Option<super::ResponseNextCursor>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                admins: Err("no value supplied for admins".to_string()),
+                ext: Ok(Default::default()),
+                next_cursor: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn admins<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AdminAccount>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admins = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for admins: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn next_cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseNextCursor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_cursor: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                admins: value.admins?,
+                ext: value.ext?,
+                next_cursor: value.next_cursor?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                admins: Ok(value.admins),
+                ext: Ok(value.ext),
+                next_cursor: Ok(value.next_cursor),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/admin/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -581,4 +798,7 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"AdminAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A privileged account at the mediator (an `admin` or `rootAdmin`).\",\n      \"properties\": {\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\",\n          \"description\": \"The admin role; one of `admin` or `rootAdmin`.\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\"\n      ],\n      \"title\": \"AdminAccount\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.\",\n      \"properties\": {\n        \"admins\": {\n          \"description\": \"The page of admin accounts.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AdminAccount\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"admins\"\n      ],\n      \"title\": \"Messaging List Admins — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }

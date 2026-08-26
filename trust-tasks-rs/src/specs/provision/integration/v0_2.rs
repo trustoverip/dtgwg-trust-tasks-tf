@@ -69,6 +69,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AdminRotationAsk {
     ///Admin-DID template. MUST be registered at the maintainer and MUST declare `kind == "admin"`.
     #[serde(rename = "adminTemplate")]
@@ -85,6 +86,11 @@ pub struct AdminRotationAsk {
     pub note: ::std::option::Option<AdminRotationAskNote>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl AdminRotationAsk {
+    pub fn builder() -> builder::AdminRotationAsk {
+        Default::default()
+    }
 }
 ///Hint for the admin grant's target context. The wire `payload.context` is authoritative.
 ///
@@ -250,6 +256,7 @@ impl<'de> ::serde::Deserialize<'de> for AdminRotationAskNote {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum BootstrapAsk {
     TemplateBootstrapAsk(TemplateBootstrapAsk),
     AdminRotationAsk(AdminRotationAsk),
@@ -345,6 +352,7 @@ impl ::std::convert::From<AdminRotationAsk> for BootstrapAsk {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct BootstrapRequest {
     ///What the holder is asking the maintainer to do. Tagged on `type`; see `TemplateBootstrapAsk` and `AdminRotationAsk`.
     pub ask: BootstrapAsk,
@@ -368,6 +376,11 @@ pub struct BootstrapRequest {
     ///Freshness bound for the VP. RFC 3339 UTC. Maintainers SHOULD allow ±5 minutes of clock skew.
     #[serde(rename = "validUntil")]
     pub valid_until: ::chrono::DateTime<::chrono::offset::Utc>,
+}
+impl BootstrapRequest {
+    pub fn builder() -> builder::BootstrapRequest {
+        Default::default()
+    }
 }
 ///The integration's ephemeral did:key (Ed25519). Identifies the party the returned bundle is HPKE-sealed for; the VP proof verifies under this DID's verification method.
 ///
@@ -776,6 +789,7 @@ impl<'de> ::serde::Deserialize<'de> for BootstrapRequestTypeItem {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
 pub struct DataIntegrityProof {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -791,6 +805,11 @@ pub struct DataIntegrityProof {
     ///DID URL with fragment. The DID portion (left of `#`) MUST equal `holder`.
     #[serde(rename = "verificationMethod")]
     pub verification_method: DataIntegrityProofVerificationMethod,
+}
+impl DataIntegrityProof {
+    pub fn builder() -> builder::DataIntegrityProof {
+        Default::default()
+    }
 }
 ///This version pins `eddsa-jcs-2022`. Maintainers MUST reject other values until a future minor extends the allowlist.
 ///
@@ -1032,12 +1051,18 @@ impl<'de> ::serde::Deserialize<'de> for DataIntegrityProofVerificationMethod {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DidTemplateRef {
     ///Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`.
     pub name: DidTemplateRefName,
     ///Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl DidTemplateRef {
+    pub fn builder() -> builder::DidTemplateRef {
+        Default::default()
+    }
 }
 ///Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`.
 ///
@@ -1274,6 +1299,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Producer-assertion mode the maintainer should apply to the returned sealed bundle. `didSigned` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinnedOnly` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertionUnsupported` to unsupported requests.
     #[serde(default = "defaults::payload_assertion")]
@@ -1296,6 +1322,11 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vc_validity_seconds: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Producer-assertion mode the maintainer should apply to the returned sealed bundle. `didSigned` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinnedOnly` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertionUnsupported` to unsupported requests.
 ///
@@ -1325,6 +1356,7 @@ pub struct Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadAssertion {
     #[serde(rename = "didSigned")]
     DidSigned,
@@ -1529,6 +1561,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContext {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ProvisionSummary {
     ///Long-term admin DID after this provisioning. Equals `clientDid` when no admin rollover occurred (TemplateBootstrap with no `adminTemplate`); equals the freshly-minted admin DID when `adminTemplate` was used or when the ask was `adminRotation`. Maintainers that pre-date admin rollover MAY omit this; consumers SHOULD default it to `clientDid` for backward compatibility.
     #[serde(
@@ -1590,6 +1623,11 @@ pub struct ProvisionSummary {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub webvh_server_id: ::std::option::Option<ProvisionSummaryWebvhServerId>,
+}
+impl ProvisionSummary {
+    pub fn builder() -> builder::ProvisionSummary {
+        Default::default()
+    }
 }
 ///Long-term admin DID after this provisioning. Equals `clientDid` when no admin rollover occurred (TemplateBootstrap with no `adminTemplate`); equals the freshly-minted admin DID when `adminTemplate` was used or when the ask was `adminRotation`. Maintainers that pre-date admin rollover MAY omit this; consumers SHOULD default it to `clientDid` for backward compatibility.
 ///
@@ -2185,6 +2223,7 @@ impl<'de> ::serde::Deserialize<'de> for ProvisionSummaryWebvhServerId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///OpenPGP-style ASCII-armored ciphertext of `SealedPayloadV1`. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`. Recipient is the X25519 derivation of `request.holder`'s Ed25519 pubkey.
     pub bundle: ResponseBundle,
@@ -2194,6 +2233,11 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field.
     pub summary: ProvisionSummary,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///OpenPGP-style ASCII-armored ciphertext of `SealedPayloadV1`. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`. Recipient is the X25519 derivation of `request.holder`'s Ed25519 pubkey.
 ///
@@ -2379,6 +2423,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDigest {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct TemplateBootstrapAsk {
     ///Optional admin-DID template. When present, the maintainer mints a fresh long-term admin DID + keys, binds the authorization VC + ACL row to it, and rolls the holder over from the ephemeral did:key in the same transaction. When absent, the authorization VC's subject and ACL row are bound to the ephemeral `holder`, which the operator is expected to swap via `acl/swap-key/0.1` before steady-state operation. MUST declare `kind == "admin"` when present.
     #[serde(
@@ -2401,6 +2446,11 @@ pub struct TemplateBootstrapAsk {
     pub template: DidTemplateRef,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl TemplateBootstrapAsk {
+    pub fn builder() -> builder::TemplateBootstrapAsk {
+        Default::default()
+    }
 }
 ///Hint for the integration's target context. The wire `payload.context` is authoritative; this hint exists for documentation / cross-check only.
 ///
@@ -2544,6 +2594,954 @@ impl<'de> ::serde::Deserialize<'de> for TemplateBootstrapAskNote {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AdminRotationAsk {
+        admin_template: ::std::result::Result<super::DidTemplateRef, ::std::string::String>,
+        context_hint: ::std::result::Result<
+            ::std::option::Option<super::AdminRotationAskContextHint>,
+            ::std::string::String,
+        >,
+        note: ::std::result::Result<
+            ::std::option::Option<super::AdminRotationAskNote>,
+            ::std::string::String,
+        >,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for AdminRotationAsk {
+        fn default() -> Self {
+            Self {
+                admin_template: Err("no value supplied for admin_template".to_string()),
+                context_hint: Ok(Default::default()),
+                note: Ok(Default::default()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl AdminRotationAsk {
+        pub fn admin_template<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DidTemplateRef>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admin_template = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for admin_template: {e}"));
+            self
+        }
+        pub fn context_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AdminRotationAskContextHint>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_hint: {e}"));
+            self
+        }
+        pub fn note<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AdminRotationAskNote>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.note = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for note: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AdminRotationAsk> for super::AdminRotationAsk {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AdminRotationAsk,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                admin_template: value.admin_template?,
+                context_hint: value.context_hint?,
+                note: value.note?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AdminRotationAsk> for AdminRotationAsk {
+        fn from(value: super::AdminRotationAsk) -> Self {
+            Self {
+                admin_template: Ok(value.admin_template),
+                context_hint: Ok(value.context_hint),
+                note: Ok(value.note),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct BootstrapRequest {
+        ask: ::std::result::Result<super::BootstrapAsk, ::std::string::String>,
+        context:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        holder: ::std::result::Result<super::BootstrapRequestHolder, ::std::string::String>,
+        id: ::std::result::Result<super::BootstrapRequestId, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::BootstrapRequestLabel>,
+            ::std::string::String,
+        >,
+        nonce: ::std::result::Result<super::BootstrapRequestNonce, ::std::string::String>,
+        proof: ::std::result::Result<super::DataIntegrityProof, ::std::string::String>,
+        type_: ::std::result::Result<
+            ::std::vec::Vec<super::BootstrapRequestTypeItem>,
+            ::std::string::String,
+        >,
+        valid_until:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for BootstrapRequest {
+        fn default() -> Self {
+            Self {
+                ask: Err("no value supplied for ask".to_string()),
+                context: Err("no value supplied for context".to_string()),
+                holder: Err("no value supplied for holder".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                label: Ok(Default::default()),
+                nonce: Err("no value supplied for nonce".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+                valid_until: Err("no value supplied for valid_until".to_string()),
+            }
+        }
+    }
+    impl BootstrapRequest {
+        pub fn ask<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BootstrapAsk>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ask = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ask: {e}"));
+            self
+        }
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn holder<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BootstrapRequestHolder>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.holder = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for holder: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BootstrapRequestId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::BootstrapRequestLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn nonce<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BootstrapRequestNonce>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.nonce = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for nonce: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DataIntegrityProof>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::BootstrapRequestTypeItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn valid_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.valid_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for valid_until: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<BootstrapRequest> for super::BootstrapRequest {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: BootstrapRequest,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ask: value.ask?,
+                context: value.context?,
+                holder: value.holder?,
+                id: value.id?,
+                label: value.label?,
+                nonce: value.nonce?,
+                proof: value.proof?,
+                type_: value.type_?,
+                valid_until: value.valid_until?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::BootstrapRequest> for BootstrapRequest {
+        fn from(value: super::BootstrapRequest) -> Self {
+            Self {
+                ask: Ok(value.ask),
+                context: Ok(value.context),
+                holder: Ok(value.holder),
+                id: Ok(value.id),
+                label: Ok(value.label),
+                nonce: Ok(value.nonce),
+                proof: Ok(value.proof),
+                type_: Ok(value.type_),
+                valid_until: Ok(value.valid_until),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct DataIntegrityProof {
+        created: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        cryptosuite:
+            ::std::result::Result<super::DataIntegrityProofCryptosuite, ::std::string::String>,
+        proof_purpose: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        proof_value:
+            ::std::result::Result<super::DataIntegrityProofProofValue, ::std::string::String>,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        verification_method: ::std::result::Result<
+            super::DataIntegrityProofVerificationMethod,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for DataIntegrityProof {
+        fn default() -> Self {
+            Self {
+                created: Ok(Default::default()),
+                cryptosuite: Err("no value supplied for cryptosuite".to_string()),
+                proof_purpose: Err("no value supplied for proof_purpose".to_string()),
+                proof_value: Err("no value supplied for proof_value".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+                verification_method: Err("no value supplied for verification_method".to_string()),
+            }
+        }
+    }
+    impl DataIntegrityProof {
+        pub fn created<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created: {e}"));
+            self
+        }
+        pub fn cryptosuite<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DataIntegrityProofCryptosuite>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cryptosuite = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cryptosuite: {e}"));
+            self
+        }
+        pub fn proof_purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof_purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof_purpose: {e}"));
+            self
+        }
+        pub fn proof_value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DataIntegrityProofProofValue>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof_value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof_value: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn verification_method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DataIntegrityProofVerificationMethod>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification_method = value.try_into().map_err(|e| {
+                format!("error converting supplied value for verification_method: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DataIntegrityProof> for super::DataIntegrityProof {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DataIntegrityProof,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created: value.created?,
+                cryptosuite: value.cryptosuite?,
+                proof_purpose: value.proof_purpose?,
+                proof_value: value.proof_value?,
+                type_: value.type_?,
+                verification_method: value.verification_method?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DataIntegrityProof> for DataIntegrityProof {
+        fn from(value: super::DataIntegrityProof) -> Self {
+            Self {
+                created: Ok(value.created),
+                cryptosuite: Ok(value.cryptosuite),
+                proof_purpose: Ok(value.proof_purpose),
+                proof_value: Ok(value.proof_value),
+                type_: Ok(value.type_),
+                verification_method: Ok(value.verification_method),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct DidTemplateRef {
+        name: ::std::result::Result<super::DidTemplateRefName, ::std::string::String>,
+        vars: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for DidTemplateRef {
+        fn default() -> Self {
+            Self {
+                name: Err("no value supplied for name".to_string()),
+                vars: Ok(Default::default()),
+            }
+        }
+    }
+    impl DidTemplateRef {
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DidTemplateRefName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn vars<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vars = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vars: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DidTemplateRef> for super::DidTemplateRef {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DidTemplateRef,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                name: value.name?,
+                vars: value.vars?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DidTemplateRef> for DidTemplateRef {
+        fn from(value: super::DidTemplateRef) -> Self {
+            Self {
+                name: Ok(value.name),
+                vars: Ok(value.vars),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        assertion: ::std::result::Result<super::PayloadAssertion, ::std::string::String>,
+        context: ::std::result::Result<
+            ::std::option::Option<super::PayloadContext>,
+            ::std::string::String,
+        >,
+        create_context: ::std::result::Result<bool, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        request: ::std::result::Result<super::BootstrapRequest, ::std::string::String>,
+        vc_validity_seconds: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                assertion: Ok(super::defaults::payload_assertion()),
+                context: Ok(Default::default()),
+                create_context: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                request: Err("no value supplied for request".to_string()),
+                vc_validity_seconds: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn assertion<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadAssertion>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.assertion = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for assertion: {e}"));
+            self
+        }
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn create_context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.create_context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for create_context: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn request<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BootstrapRequest>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.request = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for request: {e}"));
+            self
+        }
+        pub fn vc_validity_seconds<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vc_validity_seconds = value.try_into().map_err(|e| {
+                format!("error converting supplied value for vc_validity_seconds: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                assertion: value.assertion?,
+                context: value.context?,
+                create_context: value.create_context?,
+                ext: value.ext?,
+                request: value.request?,
+                vc_validity_seconds: value.vc_validity_seconds?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                assertion: Ok(value.assertion),
+                context: Ok(value.context),
+                create_context: Ok(value.create_context),
+                ext: Ok(value.ext),
+                request: Ok(value.request),
+                vc_validity_seconds: Ok(value.vc_validity_seconds),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ProvisionSummary {
+        admin_did: ::std::result::Result<
+            ::std::option::Option<super::ProvisionSummaryAdminDid>,
+            ::std::string::String,
+        >,
+        admin_rolled_over: ::std::result::Result<bool, ::std::string::String>,
+        admin_template_name: ::std::result::Result<
+            ::std::option::Option<super::ProvisionSummaryAdminTemplateName>,
+            ::std::string::String,
+        >,
+        bundle_id_hex:
+            ::std::result::Result<super::ProvisionSummaryBundleIdHex, ::std::string::String>,
+        client_did: ::std::result::Result<super::ProvisionSummaryClientDid, ::std::string::String>,
+        context_created: ::std::result::Result<bool, ::std::string::String>,
+        integration_did: ::std::result::Result<
+            ::std::option::Option<super::ProvisionSummaryIntegrationDid>,
+            ::std::string::String,
+        >,
+        output_count: ::std::result::Result<u64, ::std::string::String>,
+        secret_count: ::std::result::Result<u64, ::std::string::String>,
+        template_kind: ::std::result::Result<
+            ::std::option::Option<super::ProvisionSummaryTemplateKind>,
+            ::std::string::String,
+        >,
+        template_name: ::std::result::Result<
+            ::std::option::Option<super::ProvisionSummaryTemplateName>,
+            ::std::string::String,
+        >,
+        webvh_server_id: ::std::result::Result<
+            ::std::option::Option<super::ProvisionSummaryWebvhServerId>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ProvisionSummary {
+        fn default() -> Self {
+            Self {
+                admin_did: Ok(Default::default()),
+                admin_rolled_over: Ok(Default::default()),
+                admin_template_name: Ok(Default::default()),
+                bundle_id_hex: Err("no value supplied for bundle_id_hex".to_string()),
+                client_did: Err("no value supplied for client_did".to_string()),
+                context_created: Ok(Default::default()),
+                integration_did: Ok(Default::default()),
+                output_count: Err("no value supplied for output_count".to_string()),
+                secret_count: Err("no value supplied for secret_count".to_string()),
+                template_kind: Ok(Default::default()),
+                template_name: Ok(Default::default()),
+                webvh_server_id: Ok(Default::default()),
+            }
+        }
+    }
+    impl ProvisionSummary {
+        pub fn admin_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ProvisionSummaryAdminDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admin_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for admin_did: {e}"));
+            self
+        }
+        pub fn admin_rolled_over<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admin_rolled_over = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for admin_rolled_over: {e}"));
+            self
+        }
+        pub fn admin_template_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ProvisionSummaryAdminTemplateName>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admin_template_name = value.try_into().map_err(|e| {
+                format!("error converting supplied value for admin_template_name: {e}")
+            });
+            self
+        }
+        pub fn bundle_id_hex<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ProvisionSummaryBundleIdHex>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.bundle_id_hex = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for bundle_id_hex: {e}"));
+            self
+        }
+        pub fn client_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ProvisionSummaryClientDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for client_did: {e}"));
+            self
+        }
+        pub fn context_created<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_created = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_created: {e}"));
+            self
+        }
+        pub fn integration_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ProvisionSummaryIntegrationDid>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.integration_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for integration_did: {e}"));
+            self
+        }
+        pub fn output_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.output_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for output_count: {e}"));
+            self
+        }
+        pub fn secret_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.secret_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for secret_count: {e}"));
+            self
+        }
+        pub fn template_kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ProvisionSummaryTemplateKind>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.template_kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for template_kind: {e}"));
+            self
+        }
+        pub fn template_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ProvisionSummaryTemplateName>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.template_name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for template_name: {e}"));
+            self
+        }
+        pub fn webvh_server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ProvisionSummaryWebvhServerId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.webvh_server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for webvh_server_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ProvisionSummary> for super::ProvisionSummary {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ProvisionSummary,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                admin_did: value.admin_did?,
+                admin_rolled_over: value.admin_rolled_over?,
+                admin_template_name: value.admin_template_name?,
+                bundle_id_hex: value.bundle_id_hex?,
+                client_did: value.client_did?,
+                context_created: value.context_created?,
+                integration_did: value.integration_did?,
+                output_count: value.output_count?,
+                secret_count: value.secret_count?,
+                template_kind: value.template_kind?,
+                template_name: value.template_name?,
+                webvh_server_id: value.webvh_server_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ProvisionSummary> for ProvisionSummary {
+        fn from(value: super::ProvisionSummary) -> Self {
+            Self {
+                admin_did: Ok(value.admin_did),
+                admin_rolled_over: Ok(value.admin_rolled_over),
+                admin_template_name: Ok(value.admin_template_name),
+                bundle_id_hex: Ok(value.bundle_id_hex),
+                client_did: Ok(value.client_did),
+                context_created: Ok(value.context_created),
+                integration_did: Ok(value.integration_did),
+                output_count: Ok(value.output_count),
+                secret_count: Ok(value.secret_count),
+                template_kind: Ok(value.template_kind),
+                template_name: Ok(value.template_name),
+                webvh_server_id: Ok(value.webvh_server_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        bundle: ::std::result::Result<super::ResponseBundle, ::std::string::String>,
+        digest: ::std::result::Result<super::ResponseDigest, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        summary: ::std::result::Result<super::ProvisionSummary, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                bundle: Err("no value supplied for bundle".to_string()),
+                digest: Err("no value supplied for digest".to_string()),
+                ext: Ok(Default::default()),
+                summary: Err("no value supplied for summary".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn bundle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseBundle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.bundle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for bundle: {e}"));
+            self
+        }
+        pub fn digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseDigest>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for digest: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn summary<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ProvisionSummary>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.summary = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for summary: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                bundle: value.bundle?,
+                digest: value.digest?,
+                ext: value.ext?,
+                summary: value.summary?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                bundle: Ok(value.bundle),
+                digest: Ok(value.digest),
+                ext: Ok(value.ext),
+                summary: Ok(value.summary),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct TemplateBootstrapAsk {
+        admin_template: ::std::result::Result<
+            ::std::option::Option<super::DidTemplateRef>,
+            ::std::string::String,
+        >,
+        context_hint: ::std::result::Result<
+            ::std::option::Option<super::TemplateBootstrapAskContextHint>,
+            ::std::string::String,
+        >,
+        note: ::std::result::Result<
+            ::std::option::Option<super::TemplateBootstrapAskNote>,
+            ::std::string::String,
+        >,
+        template: ::std::result::Result<super::DidTemplateRef, ::std::string::String>,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for TemplateBootstrapAsk {
+        fn default() -> Self {
+            Self {
+                admin_template: Ok(Default::default()),
+                context_hint: Ok(Default::default()),
+                note: Ok(Default::default()),
+                template: Err("no value supplied for template".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl TemplateBootstrapAsk {
+        pub fn admin_template<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DidTemplateRef>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admin_template = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for admin_template: {e}"));
+            self
+        }
+        pub fn context_hint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::TemplateBootstrapAskContextHint>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_hint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_hint: {e}"));
+            self
+        }
+        pub fn note<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::TemplateBootstrapAskNote>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.note = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for note: {e}"));
+            self
+        }
+        pub fn template<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DidTemplateRef>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.template = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for template: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<TemplateBootstrapAsk> for super::TemplateBootstrapAsk {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: TemplateBootstrapAsk,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                admin_template: value.admin_template?,
+                context_hint: value.context_hint?,
+                note: value.note?,
+                template: value.template?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::TemplateBootstrapAsk> for TemplateBootstrapAsk {
+        fn from(value: super::TemplateBootstrapAsk) -> Self {
+            Self {
+                admin_template: Ok(value.admin_template),
+                context_hint: Ok(value.context_hint),
+                note: Ok(value.note),
+                template: Ok(value.template),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+}
 /// Generation of default values for serde.
 pub mod defaults {
     pub(super) fn payload_assertion() -> super::PayloadAssertion {
@@ -2564,6 +3562,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AdminRotationAsk\": {\n      \"$anchor\": \"admin-rotation-ask\",\n      \"additionalProperties\": false,\n      \"description\": \"Admin-only mint. No integration DID is produced. Used by holders that bring (or will mint elsewhere) their own integration-side identity and only need an admin credential at this maintainer.\",\n      \"properties\": {\n        \"adminTemplate\": {\n          \"$ref\": \"#/$defs/DidTemplateRef\",\n          \"description\": \"Admin-DID template. MUST be registered at the maintainer and MUST declare `kind == \\\"admin\\\"`.\"\n        },\n        \"contextHint\": {\n          \"description\": \"Hint for the admin grant's target context. The wire `payload.context` is authoritative.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"note\": {\n          \"description\": \"Free-form operator note carried into the maintainer's audit log.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"adminRotation\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"adminTemplate\"\n      ],\n      \"title\": \"AdminRotationAsk\",\n      \"type\": \"object\"\n    },\n    \"BootstrapAsk\": {\n      \"$anchor\": \"bootstrap-ask\",\n      \"description\": \"Discriminated union of bootstrap intents. Extensible — future minor versions MAY add variants.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/TemplateBootstrapAsk\"\n        },\n        {\n          \"$ref\": \"#/$defs/AdminRotationAsk\"\n        }\n      ],\n      \"title\": \"BootstrapAsk\"\n    },\n    \"BootstrapRequest\": {\n      \"$anchor\": \"bootstrap-request\",\n      \"additionalProperties\": false,\n      \"description\": \"W3C Verifiable Presentation 2.0 (§6.1: VPs MAY omit `verifiableCredential`). Custom members `nonce`, `validUntil`, `label`, and `ask` sit alongside the standard VP fields and are covered by the same DataIntegrityProof.\",\n      \"properties\": {\n        \"@context\": {\n          \"description\": \"JSON-LD contexts. MUST contain both `https://www.w3.org/ns/credentials/v2` and `https://openvtc.org/contexts/bootstrap-v1`. Maintainers verifying the proof MAY refuse other shapes.\",\n          \"items\": {\n            \"format\": \"uri\",\n            \"type\": \"string\"\n          },\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"ask\": {\n          \"$ref\": \"#/$defs/BootstrapAsk\",\n          \"description\": \"What the holder is asking the maintainer to do. Tagged on `type`; see `TemplateBootstrapAsk` and `AdminRotationAsk`.\"\n        },\n        \"holder\": {\n          \"description\": \"The integration's ephemeral did:key (Ed25519). Identifies the party the returned bundle is HPKE-sealed for; the VP proof verifies under this DID's verification method.\",\n          \"minLength\": 1,\n          \"pattern\": \"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"URN-shaped identifier for this presentation. `urn:uuid:<v4>` is RECOMMENDED.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label carried into the maintainer's audit log.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"16 random bytes encoded as base64url-no-pad (22 characters). The maintainer treats this as the sealed bundle's `bundleId` (decoded to hex, exposed in `summary.bundleIdHex`) and SHOULD enforce one-shot semantics — a second provisioning with the same nonce MUST be refused as a replay.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{22}$\",\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/DataIntegrityProof\",\n          \"description\": \"Data Integrity proof signed by the holder's Ed25519 key. Cryptosuite MUST equal `eddsa-jcs-2022`. `proofPurpose` MUST equal `authentication`. `verificationMethod` MUST resolve under `holder`. Signs the JCS canonicalisation of the VP with `proof` removed.\"\n        },\n        \"type\": {\n          \"description\": \"VP types. MUST contain both `VerifiablePresentation` and `BootstrapRequest`. Additional task-specific types MAY be present.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"validUntil\": {\n          \"description\": \"Freshness bound for the VP. RFC 3339 UTC. Maintainers SHOULD allow ±5 minutes of clock skew.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"@context\",\n        \"type\",\n        \"id\",\n        \"holder\",\n        \"nonce\",\n        \"validUntil\",\n        \"ask\",\n        \"proof\"\n      ],\n      \"title\": \"BootstrapRequest\",\n      \"type\": \"object\"\n    },\n    \"DataIntegrityProof\": {\n      \"$anchor\": \"data-integrity-proof\",\n      \"additionalProperties\": true,\n      \"description\": \"W3C Data Integrity proof. Spec body pins cryptosuite and proofPurpose; this schema permits the standard property bag so future cryptosuites can ride the same shape.\",\n      \"properties\": {\n        \"created\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"cryptosuite\": {\n          \"description\": \"This version pins `eddsa-jcs-2022`. Maintainers MUST reject other values until a future minor extends the allowlist.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"proofPurpose\": {\n          \"const\": \"authentication\"\n        },\n        \"proofValue\": {\n          \"description\": \"Multibase-encoded Ed25519 signature.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"DataIntegrityProof\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"DID URL with fragment. The DID portion (left of `#`) MUST equal `holder`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"cryptosuite\",\n        \"verificationMethod\",\n        \"proofPurpose\",\n        \"proofValue\"\n      ],\n      \"title\": \"DataIntegrityProof\",\n      \"type\": \"object\"\n    },\n    \"DidTemplateRef\": {\n      \"$anchor\": \"did-template-ref\",\n      \"additionalProperties\": false,\n      \"description\": \"Reference to a DID template already registered at the maintainer. Inline template definitions are deliberately not supported — templates must be uploaded out-of-band first (operator-authored or built-in) so the maintainer can validate `vars` against the template's declared schema.\",\n      \"properties\": {\n        \"name\": {\n          \"description\": \"Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"vars\": {\n          \"additionalProperties\": true,\n          \"default\": {},\n          \"description\": \"Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"name\"\n      ],\n      \"title\": \"DidTemplateRef\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProvisionSummary\": {\n      \"$anchor\": \"provision-summary\",\n      \"additionalProperties\": false,\n      \"description\": \"Audit-grade metadata about the provisioning outcome. Mirrors the existing `vta_sdk::provision_integration::http::ProvisionSummary` Rust type but uses camelCase wire fields per Trust Task convention.\",\n      \"properties\": {\n        \"adminDid\": {\n          \"description\": \"Long-term admin DID after this provisioning. Equals `clientDid` when no admin rollover occurred (TemplateBootstrap with no `adminTemplate`); equals the freshly-minted admin DID when `adminTemplate` was used or when the ask was `adminRotation`. Maintainers that pre-date admin rollover MAY omit this; consumers SHOULD default it to `clientDid` for backward compatibility.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"adminRolledOver\": {\n          \"default\": false,\n          \"description\": \"True when the maintainer minted a fresh long-term admin DID and bound the authorization VC + ACL row to it (i.e. `adminDid != clientDid`).\",\n          \"type\": \"boolean\"\n        },\n        \"adminTemplateName\": {\n          \"description\": \"Name of the admin template that was rendered. Present when an admin DID was minted (either via `TemplateBootstrap.adminTemplate` or `adminRotation`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"bundleIdHex\": {\n          \"description\": \"VP nonce as lowercase hex (32 characters = 16 bytes). MUST equal the `Bundle-Id` armor header of `bundle`. Cross-check anchor: a holder that decodes the VP nonce can verify the bundle they opened matches the one the maintainer minted for them.\",\n          \"pattern\": \"^[0-9a-f]{32}$\",\n          \"type\": \"string\"\n        },\n        \"clientDid\": {\n          \"description\": \"Ephemeral did:key the holder signed the VP with and opens the sealed bundle with. Echo of `request.holder`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextCreated\": {\n          \"default\": false,\n          \"description\": \"True when `payload.createContext` was honoured and the maintainer provisioned the target context inline. False when the context already existed (or when `createContext` was omitted / false).\",\n          \"type\": \"boolean\"\n        },\n        \"integrationDid\": {\n          \"description\": \"DID rendered from the integration template. Absent for `adminRotation` (no integration was rendered).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"outputCount\": {\n          \"description\": \"Number of template-declared side outputs the sealed bundle carries (`did.jsonl` logs, DIDComm service advertisements, etc.). Always 0 for `adminRotation`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"secretCount\": {\n          \"description\": \"Number of DIDs the sealed bundle carries private key material for. `templateBootstrap` with no adminTemplate typically yields 1 (the integration DID's keys). `adminRotation` yields 0 (the `admin` field is top-level, not under `secrets`).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"templateKind\": {\n          \"description\": \"`kind` of the integration template (e.g. `mediator`, `did-hosting-control`, `app`). Absent for `adminRotation`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"templateName\": {\n          \"description\": \"Name of the integration template that was rendered. Absent for `adminRotation`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"webvhServerId\": {\n          \"description\": \"Identifier of the registered webvh hosting server the maintainer published the integration's `did.jsonl` to, if any. Absent when the integration is self-hosted or when the template did not declare a webvh server var.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"clientDid\",\n        \"bundleIdHex\",\n        \"secretCount\",\n        \"outputCount\"\n      ],\n      \"title\": \"ProvisionSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/provision/integration/0.1#response. The sealed `bundle` is the secret-bearing artefact; `summary` is non-secret audit metadata.\",\n      \"properties\": {\n        \"bundle\": {\n          \"description\": \"OpenPGP-style ASCII-armored ciphertext of `SealedPayloadV1`. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`. Recipient is the X25519 derivation of `request.holder`'s Ed25519 pubkey.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"digest\": {\n          \"description\": \"SHA-256 of the armored ciphertext, lowercase hex. Used by holders that pin the bundle out-of-band.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"summary\": {\n          \"$ref\": \"#/$defs/ProvisionSummary\",\n          \"description\": \"Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field.\"\n        }\n      },\n      \"required\": [\n        \"bundle\",\n        \"digest\",\n        \"summary\"\n      ],\n      \"title\": \"Provision Integration — response payload\",\n      \"type\": \"object\"\n    },\n    \"TemplateBootstrapAsk\": {\n      \"$anchor\": \"template-bootstrap-ask\",\n      \"additionalProperties\": false,\n      \"description\": \"Mint an integration DID from `template`, and (when `adminTemplate` is present) atomically roll over the holder to a fresh long-term admin DID minted from `adminTemplate`.\",\n      \"properties\": {\n        \"adminTemplate\": {\n          \"$ref\": \"#/$defs/DidTemplateRef\",\n          \"description\": \"Optional admin-DID template. When present, the maintainer mints a fresh long-term admin DID + keys, binds the authorization VC + ACL row to it, and rolls the holder over from the ephemeral did:key in the same transaction. When absent, the authorization VC's subject and ACL row are bound to the ephemeral `holder`, which the operator is expected to swap via `acl/swap-key/0.1` before steady-state operation. MUST declare `kind == \\\"admin\\\"` when present.\"\n        },\n        \"contextHint\": {\n          \"description\": \"Hint for the integration's target context. The wire `payload.context` is authoritative; this hint exists for documentation / cross-check only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"note\": {\n          \"description\": \"Free-form operator note carried into the maintainer's audit log.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"template\": {\n          \"$ref\": \"#/$defs/DidTemplateRef\",\n          \"description\": \"Integration template. MUST be registered at the maintainer; MUST declare a `kind` other than `\\\"admin\\\"`.\"\n        },\n        \"type\": {\n          \"const\": \"templateBootstrap\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"template\"\n      ],\n      \"title\": \"TemplateBootstrapAsk\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

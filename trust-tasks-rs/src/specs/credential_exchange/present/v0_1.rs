@@ -168,11 +168,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The OID4VP `vp_token`, format-agnostic by design. A JSON **string** is an SD-JWT-VC presentation: the consented disclosures plus a mandatory key-binding JWT over the verifier's nonce and audience. A JSON **object** is a W3C Data-Integrity VP whose proof carries the same nonce and domain. A consumer selects the verification path from the value's type rather than a separate format discriminator, so a new credential format needs no new member here. snake_case is OID4VP's own name for this field.
     pub vp_token: PayloadVpToken,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The OID4VP `vp_token`, format-agnostic by design. A JSON **string** is an SD-JWT-VC presentation: the consented disclosures plus a mandatory key-binding JWT over the verifier's nonce and audience. A JSON **object** is a W3C Data-Integrity VP whose proof carries the same nonce and domain. A consumer selects the verification path from the value's type rather than a separate format discriminator, so a new credential format needs no new member here. snake_case is OID4VP's own name for this field.
 ///
@@ -190,6 +196,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum PayloadVpToken {
     Object(::serde_json::Map<::std::string::String, ::serde_json::Value>),
     String(::std::string::String),
@@ -199,6 +206,61 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 {
     fn from(value: ::serde_json::Map<::std::string::String, ::serde_json::Value>) -> Self {
         Self::Object(value)
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        vp_token: ::std::result::Result<super::PayloadVpToken, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                vp_token: Err("no value supplied for vp_token".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn vp_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadVpToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vp_token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vp_token: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                vp_token: value.vp_token?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                vp_token: Ok(value.vp_token),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

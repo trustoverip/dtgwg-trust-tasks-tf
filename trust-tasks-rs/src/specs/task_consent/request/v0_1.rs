@@ -165,6 +165,7 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Effect {
     ///OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -182,6 +183,11 @@ pub struct Effect {
     pub path: ::std::option::Option<::std::string::String>,
     ///REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.
     pub summary: EffectSummary,
+}
+impl Effect {
+    pub fn builder() -> builder::Effect {
+        Default::default()
+    }
 }
 ///Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.
 ///
@@ -357,12 +363,18 @@ impl<'de> ::serde::Deserialize<'de> for EffectSummary {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Exposure {
     ///Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.
     #[serde(rename = "actsAsSubject")]
     pub acts_as_subject: bool,
     ///Sensitivity of data the task returns to its caller.
     pub discloses: ExposureDiscloses,
+}
+impl Exposure {
+    pub fn builder() -> builder::Exposure {
+        Default::default()
+    }
 }
 ///Sensitivity of data the task returns to its caller.
 ///
@@ -392,6 +404,7 @@ pub struct Exposure {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ExposureDiscloses {
     #[serde(rename = "none")]
     None,
@@ -668,6 +681,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Name of the approver set the policy's `requireConsent` named.
     #[serde(rename = "approverSet")]
@@ -724,6 +738,11 @@ pub struct Payload {
     ///Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one.
     #[serde(rename = "taskType")]
     pub task_type: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.
 ///
@@ -963,6 +982,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNote {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadSideEffects {
     #[serde(rename = "none")]
     None,
@@ -1049,6 +1069,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadSideEffects {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -1057,6 +1078,11 @@ pub struct Response {
     pub reason: ::std::option::Option<::std::string::String>,
     ///`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.
 ///
@@ -1085,6 +1111,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "prompted")]
     Prompted,
@@ -1162,11 +1189,17 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct StatePin {
     ///Identifier of the pinned resource (usually the subject DID).
     pub resource: StatePinResource,
     ///Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.
     pub version: StatePinVersion,
+}
+impl StatePin {
+    pub fn builder() -> builder::StatePin {
+        Default::default()
+    }
 }
 ///Identifier of the pinned resource (usually the subject DID).
 ///
@@ -1306,6 +1339,595 @@ impl<'de> ::serde::Deserialize<'de> for StatePinVersion {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Effect {
+        after: ::std::result::Result<
+            ::std::option::Option<::serde_json::Value>,
+            ::std::string::String,
+        >,
+        before: ::std::result::Result<
+            ::std::option::Option<::serde_json::Value>,
+            ::std::string::String,
+        >,
+        detail: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        kind: ::std::result::Result<super::EffectKind, ::std::string::String>,
+        path: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        summary: ::std::result::Result<super::EffectSummary, ::std::string::String>,
+    }
+    impl ::std::default::Default for Effect {
+        fn default() -> Self {
+            Self {
+                after: Ok(Default::default()),
+                before: Ok(Default::default()),
+                detail: Ok(Default::default()),
+                kind: Err("no value supplied for kind".to_string()),
+                path: Ok(Default::default()),
+                summary: Err("no value supplied for summary".to_string()),
+            }
+        }
+    }
+    impl Effect {
+        pub fn after<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.after = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for after: {e}"));
+            self
+        }
+        pub fn before<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.before = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for before: {e}"));
+            self
+        }
+        pub fn detail<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.detail = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for detail: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EffectKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn path<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.path = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for path: {e}"));
+            self
+        }
+        pub fn summary<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EffectSummary>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.summary = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for summary: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Effect> for super::Effect {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Effect) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                after: value.after?,
+                before: value.before?,
+                detail: value.detail?,
+                kind: value.kind?,
+                path: value.path?,
+                summary: value.summary?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Effect> for Effect {
+        fn from(value: super::Effect) -> Self {
+            Self {
+                after: Ok(value.after),
+                before: Ok(value.before),
+                detail: Ok(value.detail),
+                kind: Ok(value.kind),
+                path: Ok(value.path),
+                summary: Ok(value.summary),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Exposure {
+        acts_as_subject: ::std::result::Result<bool, ::std::string::String>,
+        discloses: ::std::result::Result<super::ExposureDiscloses, ::std::string::String>,
+    }
+    impl ::std::default::Default for Exposure {
+        fn default() -> Self {
+            Self {
+                acts_as_subject: Err("no value supplied for acts_as_subject".to_string()),
+                discloses: Err("no value supplied for discloses".to_string()),
+            }
+        }
+    }
+    impl Exposure {
+        pub fn acts_as_subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acts_as_subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for acts_as_subject: {e}"));
+            self
+        }
+        pub fn discloses<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ExposureDiscloses>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.discloses = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for discloses: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Exposure> for super::Exposure {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Exposure) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acts_as_subject: value.acts_as_subject?,
+                discloses: value.discloses?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Exposure> for Exposure {
+        fn from(value: super::Exposure) -> Self {
+            Self {
+                acts_as_subject: Ok(value.acts_as_subject),
+                discloses: Ok(value.discloses),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        approver_set: ::std::result::Result<::std::string::String, ::std::string::String>,
+        challenge: ::std::result::Result<super::PayloadChallenge, ::std::string::String>,
+        consequences: ::std::result::Result<
+            ::std::vec::Vec<super::PayloadConsequencesItem>,
+            ::std::string::String,
+        >,
+        effects: ::std::result::Result<::std::vec::Vec<super::Effect>, ::std::string::String>,
+        exclude_requester: ::std::result::Result<bool, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        exposure: ::std::result::Result<super::Exposure, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        min_approvals: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        note:
+            ::std::result::Result<::std::option::Option<super::PayloadNote>, ::std::string::String>,
+        origin: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        payload_digest: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        requester: ::std::result::Result<::std::string::String, ::std::string::String>,
+        requester_device_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        side_effects: ::std::result::Result<super::PayloadSideEffects, ::std::string::String>,
+        state_pin:
+            ::std::result::Result<::std::option::Option<super::StatePin>, ::std::string::String>,
+        subject: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        task_type: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                approver_set: Err("no value supplied for approver_set".to_string()),
+                challenge: Err("no value supplied for challenge".to_string()),
+                consequences: Ok(Default::default()),
+                effects: Err("no value supplied for effects".to_string()),
+                exclude_requester: Err("no value supplied for exclude_requester".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                exposure: Err("no value supplied for exposure".to_string()),
+                ext: Ok(Default::default()),
+                min_approvals: Err("no value supplied for min_approvals".to_string()),
+                note: Ok(Default::default()),
+                origin: Ok(Default::default()),
+                payload_digest: Err("no value supplied for payload_digest".to_string()),
+                requester: Err("no value supplied for requester".to_string()),
+                requester_device_id: Ok(Default::default()),
+                side_effects: Err("no value supplied for side_effects".to_string()),
+                state_pin: Ok(Default::default()),
+                subject: Ok(Default::default()),
+                task_type: Err("no value supplied for task_type".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn approver_set<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approver_set = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approver_set: {e}"));
+            self
+        }
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn consequences<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadConsequencesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consequences = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consequences: {e}"));
+            self
+        }
+        pub fn effects<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Effect>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.effects = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for effects: {e}"));
+            self
+        }
+        pub fn exclude_requester<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.exclude_requester = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for exclude_requester: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn exposure<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Exposure>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.exposure = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for exposure: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn min_approvals<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.min_approvals = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for min_approvals: {e}"));
+            self
+        }
+        pub fn note<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadNote>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.note = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for note: {e}"));
+            self
+        }
+        pub fn origin<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.origin = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for origin: {e}"));
+            self
+        }
+        pub fn payload_digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.payload_digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for payload_digest: {e}"));
+            self
+        }
+        pub fn requester<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requester = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for requester: {e}"));
+            self
+        }
+        pub fn requester_device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requester_device_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for requester_device_id: {e}")
+            });
+            self
+        }
+        pub fn side_effects<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSideEffects>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.side_effects = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for side_effects: {e}"));
+            self
+        }
+        pub fn state_pin<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::StatePin>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.state_pin = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for state_pin: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+        pub fn task_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.task_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for task_type: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                approver_set: value.approver_set?,
+                challenge: value.challenge?,
+                consequences: value.consequences?,
+                effects: value.effects?,
+                exclude_requester: value.exclude_requester?,
+                expires_at: value.expires_at?,
+                exposure: value.exposure?,
+                ext: value.ext?,
+                min_approvals: value.min_approvals?,
+                note: value.note?,
+                origin: value.origin?,
+                payload_digest: value.payload_digest?,
+                requester: value.requester?,
+                requester_device_id: value.requester_device_id?,
+                side_effects: value.side_effects?,
+                state_pin: value.state_pin?,
+                subject: value.subject?,
+                task_type: value.task_type?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                approver_set: Ok(value.approver_set),
+                challenge: Ok(value.challenge),
+                consequences: Ok(value.consequences),
+                effects: Ok(value.effects),
+                exclude_requester: Ok(value.exclude_requester),
+                expires_at: Ok(value.expires_at),
+                exposure: Ok(value.exposure),
+                ext: Ok(value.ext),
+                min_approvals: Ok(value.min_approvals),
+                note: Ok(value.note),
+                origin: Ok(value.origin),
+                payload_digest: Ok(value.payload_digest),
+                requester: Ok(value.requester),
+                requester_device_id: Ok(value.requester_device_id),
+                side_effects: Ok(value.side_effects),
+                state_pin: Ok(value.state_pin),
+                subject: Ok(value.subject),
+                task_type: Ok(value.task_type),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                status: Ok(value.status),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct StatePin {
+        resource: ::std::result::Result<super::StatePinResource, ::std::string::String>,
+        version: ::std::result::Result<super::StatePinVersion, ::std::string::String>,
+    }
+    impl ::std::default::Default for StatePin {
+        fn default() -> Self {
+            Self {
+                resource: Err("no value supplied for resource".to_string()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl StatePin {
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::StatePinResource>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::StatePinVersion>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<StatePin> for super::StatePin {
+        type Error = super::error::ConversionError;
+        fn try_from(value: StatePin) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                resource: value.resource?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::StatePin> for StatePin {
+        fn from(value: super::StatePin) -> Self {
+            Self {
+                resource: Ok(value.resource),
+                version: Ok(value.version),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/task-consent/request/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -1321,6 +1943,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Effect\": {\n      \"additionalProperties\": false,\n      \"description\": \"One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.\",\n      \"properties\": {\n        \"after\": {\n          \"description\": \"OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.\"\n        },\n        \"before\": {\n          \"description\": \"OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.\"\n        },\n        \"detail\": {\n          \"additionalProperties\": true,\n          \"description\": \"OPTIONAL kind-specific structured extras (e.g. `{ \\\"commitments\\\": 2 }` for `preRotationRefresh`).\",\n          \"type\": \"object\"\n        },\n        \"kind\": {\n          \"description\": \"Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.\",\n          \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n          \"type\": \"string\"\n        },\n        \"path\": {\n          \"description\": \"OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).\",\n          \"type\": \"string\"\n        },\n        \"summary\": {\n          \"description\": \"REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"summary\"\n      ],\n      \"title\": \"Effect\",\n      \"type\": \"object\"\n    },\n    \"Exposure\": {\n      \"additionalProperties\": false,\n      \"description\": \"The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.\",\n      \"properties\": {\n        \"actsAsSubject\": {\n          \"description\": \"Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.\",\n          \"type\": \"boolean\"\n        },\n        \"discloses\": {\n          \"description\": \"Sensitivity of data the task returns to its caller.\",\n          \"enum\": [\n            \"none\",\n            \"metadata\",\n            \"secret\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"discloses\",\n        \"actsAsSubject\"\n      ],\n      \"title\": \"Exposure\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"REQUIRED when status is `refused`.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.\",\n          \"enum\": [\n            \"prompted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Task Consent Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"StatePin\": {\n      \"additionalProperties\": false,\n      \"description\": \"The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.\",\n      \"properties\": {\n        \"resource\": {\n          \"description\": \"Identifier of the pinned resource (usually the subject DID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"resource\",\n        \"version\"\n      ],\n      \"title\": \"StatePin\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

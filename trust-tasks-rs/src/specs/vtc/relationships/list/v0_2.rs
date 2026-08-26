@@ -263,6 +263,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
@@ -272,6 +273,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The member whose relationships to list.
 ///
@@ -418,6 +424,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -434,6 +441,11 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub total_estimate: ::std::option::Option<i64>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseItemsItem`
 ///
@@ -482,6 +494,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseItemsItem {
     #[serde(rename = "createdAt")]
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -496,6 +509,11 @@ pub struct ResponseItemsItem {
     ///The relationship credential as JSON-LD (opaque here).
     #[serde(rename = "vrcJsonld")]
     pub vrc_jsonld: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl ResponseItemsItem {
+    pub fn builder() -> builder::ResponseItemsItem {
+        Default::default()
+    }
 }
 ///`ResponseItemsItemId`
 ///
@@ -701,6 +719,296 @@ impl<'de> ::serde::Deserialize<'de> for ResponseItemsItemSubjectDid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                did: value.did?,
+                ext: value.ext?,
+                limit: value.limit?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        items:
+            ::std::result::Result<::std::vec::Vec<super::ResponseItemsItem>, ::std::string::String>,
+        next_cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        total_estimate: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                items: Err("no value supplied for items".to_string()),
+                next_cursor: Ok(Default::default()),
+                total_estimate: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn items<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseItemsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.items = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for items: {e}"));
+            self
+        }
+        pub fn next_cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_cursor: {e}"));
+            self
+        }
+        pub fn total_estimate<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.total_estimate = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for total_estimate: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                items: value.items?,
+                next_cursor: value.next_cursor?,
+                total_estimate: value.total_estimate?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                items: Ok(value.items),
+                next_cursor: Ok(value.next_cursor),
+                total_estimate: Ok(value.total_estimate),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseItemsItem {
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        id: ::std::result::Result<super::ResponseItemsItemId, ::std::string::String>,
+        issuer_did: ::std::result::Result<super::ResponseItemsItemIssuerDid, ::std::string::String>,
+        subject_did:
+            ::std::result::Result<super::ResponseItemsItemSubjectDid, ::std::string::String>,
+        vrc_digest_multibase: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        vrc_jsonld: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ResponseItemsItem {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                issuer_did: Err("no value supplied for issuer_did".to_string()),
+                subject_did: Err("no value supplied for subject_did".to_string()),
+                vrc_digest_multibase: Err("no value supplied for vrc_digest_multibase".to_string()),
+                vrc_jsonld: Err("no value supplied for vrc_jsonld".to_string()),
+            }
+        }
+    }
+    impl ResponseItemsItem {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseItemsItemId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issuer_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseItemsItemIssuerDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issuer_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issuer_did: {e}"));
+            self
+        }
+        pub fn subject_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseItemsItemSubjectDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject_did: {e}"));
+            self
+        }
+        pub fn vrc_digest_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vrc_digest_multibase = value.try_into().map_err(|e| {
+                format!("error converting supplied value for vrc_digest_multibase: {e}")
+            });
+            self
+        }
+        pub fn vrc_jsonld<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vrc_jsonld = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vrc_jsonld: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseItemsItem> for super::ResponseItemsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseItemsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                id: value.id?,
+                issuer_did: value.issuer_did?,
+                subject_did: value.subject_did?,
+                vrc_digest_multibase: value.vrc_digest_multibase?,
+                vrc_jsonld: value.vrc_jsonld?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseItemsItem> for ResponseItemsItem {
+        fn from(value: super::ResponseItemsItem) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                id: Ok(value.id),
+                issuer_did: Ok(value.issuer_did),
+                subject_did: Ok(value.subject_did),
+                vrc_digest_multibase: Ok(value.vrc_digest_multibase),
+                vrc_jsonld: Ok(value.vrc_jsonld),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/relationships/list/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -715,6 +1023,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"createdAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"id\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"issuerDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"subjectDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"vrcDigestMultibase\": {\n                \"$ref\": \"#/$defs/DigestMultibase\",\n                \"description\": \"Digest over the RFC 8785 canonicalization of the stored VRC — the value vtc/relationships/publish returned when this entry was lodged.\"\n              },\n              \"vrcJsonld\": {\n                \"description\": \"The relationship credential as JSON-LD (opaque here).\",\n                \"type\": \"object\"\n              }\n            },\n            \"required\": [\n              \"id\",\n              \"issuerDid\",\n              \"subjectDid\",\n              \"vrcJsonld\",\n              \"vrcDigestMultibase\",\n              \"createdAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Relationships List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

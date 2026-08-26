@@ -255,6 +255,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct GovernancePolicyClaims {
     ///Trust context the domain belongs to, when the issuing VTA partitions per context.
     #[serde(
@@ -277,6 +278,11 @@ pub struct GovernancePolicyClaims {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub policy_media_type: ::std::option::Option<::std::string::String>,
+}
+impl GovernancePolicyClaims {
+    pub fn builder() -> builder::GovernancePolicyClaims {
+        Default::default()
+    }
 }
 ///Trust context the domain belongs to, when the issuing VTA partitions per context.
 ///
@@ -526,6 +532,7 @@ A closure inside this definition would defeat that. Both `additionalProperties` 
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
 pub struct IssuedCredentialBase {
     ///The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -541,6 +548,11 @@ pub struct IssuedCredentialBase {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+}
+impl IssuedCredentialBase {
+    pub fn builder() -> builder::IssuedCredentialBase {
+        Default::default()
+    }
 }
 ///`Payload`
 ///
@@ -591,6 +603,7 @@ pub struct IssuedCredentialBase {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The scoped claims to attest — the share's scope. Opaque to the framework; non-empty.
     pub claims: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -612,6 +625,11 @@ pub struct Payload {
     ///Credential lifetime in seconds from issuance. The issuer MAY cap this.
     #[serde(rename = "validitySeconds")]
     pub validity_seconds: ::std::num::NonZeroU64,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///DID of the credential's subject/holder (becomes credentialSubject.id).
 ///
@@ -716,6 +734,7 @@ Composed from the shared IssuedCredential rather than restating it: that definit
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
 pub struct Response {
     ///The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -738,6 +757,458 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub supersedes: ::std::option::Option<::std::string::String>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct GovernancePolicyClaims {
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::GovernancePolicyClaimsContextId>,
+            ::std::string::String,
+        >,
+        domain: ::std::result::Result<super::GovernancePolicyClaimsDomain, ::std::string::String>,
+        policy: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        policy_hash:
+            ::std::result::Result<super::GovernancePolicyClaimsPolicyHash, ::std::string::String>,
+        policy_media_type: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for GovernancePolicyClaims {
+        fn default() -> Self {
+            Self {
+                context_id: Ok(Default::default()),
+                domain: Err("no value supplied for domain".to_string()),
+                policy: Err("no value supplied for policy".to_string()),
+                policy_hash: Err("no value supplied for policy_hash".to_string()),
+                policy_media_type: Ok(Default::default()),
+            }
+        }
+    }
+    impl GovernancePolicyClaims {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::GovernancePolicyClaimsContextId>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GovernancePolicyClaimsDomain>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn policy<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy: {e}"));
+            self
+        }
+        pub fn policy_hash<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GovernancePolicyClaimsPolicyHash>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy_hash = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy_hash: {e}"));
+            self
+        }
+        pub fn policy_media_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy_media_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy_media_type: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<GovernancePolicyClaims> for super::GovernancePolicyClaims {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: GovernancePolicyClaims,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                domain: value.domain?,
+                policy: value.policy?,
+                policy_hash: value.policy_hash?,
+                policy_media_type: value.policy_media_type?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::GovernancePolicyClaims> for GovernancePolicyClaims {
+        fn from(value: super::GovernancePolicyClaims) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                domain: Ok(value.domain),
+                policy: Ok(value.policy),
+                policy_hash: Ok(value.policy_hash),
+                policy_media_type: Ok(value.policy_media_type),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct IssuedCredentialBase {
+        credential: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        credential_id: ::std::result::Result<super::CredentialId, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        issued_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for IssuedCredentialBase {
+        fn default() -> Self {
+            Self {
+                credential: Err("no value supplied for credential".to_string()),
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                issued_at: Ok(Default::default()),
+            }
+        }
+    }
+    impl IssuedCredentialBase {
+        pub fn credential<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential: {e}"));
+            self
+        }
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<IssuedCredentialBase> for super::IssuedCredentialBase {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: IssuedCredentialBase,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential: value.credential?,
+                credential_id: value.credential_id?,
+                expires_at: value.expires_at?,
+                issued_at: value.issued_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::IssuedCredentialBase> for IssuedCredentialBase {
+        fn from(value: super::IssuedCredentialBase) -> Self {
+            Self {
+                credential: Ok(value.credential),
+                credential_id: Ok(value.credential_id),
+                expires_at: Ok(value.expires_at),
+                issued_at: Ok(value.issued_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        claims: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        credential_type: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        holder: ::std::result::Result<super::PayloadHolder, ::std::string::String>,
+        purpose: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        validity_seconds: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                claims: Err("no value supplied for claims".to_string()),
+                credential_type: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                holder: Err("no value supplied for holder".to_string()),
+                purpose: Ok(Default::default()),
+                validity_seconds: Err("no value supplied for validity_seconds".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn claims<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claims = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claims: {e}"));
+            self
+        }
+        pub fn credential_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_type: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn holder<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadHolder>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.holder = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for holder: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+        pub fn validity_seconds<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.validity_seconds = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for validity_seconds: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claims: value.claims?,
+                credential_type: value.credential_type?,
+                ext: value.ext?,
+                holder: value.holder?,
+                purpose: value.purpose?,
+                validity_seconds: value.validity_seconds?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                claims: Ok(value.claims),
+                credential_type: Ok(value.credential_type),
+                ext: Ok(value.ext),
+                holder: Ok(value.holder),
+                purpose: Ok(value.purpose),
+                validity_seconds: Ok(value.validity_seconds),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        credential: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        credential_id: ::std::result::Result<super::CredentialId, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        issued_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        supersedes: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                credential: Err("no value supplied for credential".to_string()),
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                ext: Ok(Default::default()),
+                issued_at: Ok(Default::default()),
+                supersedes: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn credential<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential: {e}"));
+            self
+        }
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn supersedes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.supersedes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for supersedes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential: value.credential?,
+                credential_id: value.credential_id?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                issued_at: value.issued_at?,
+                supersedes: value.supersedes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                credential: Ok(value.credential),
+                credential_id: Ok(value.credential_id),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                issued_at: Ok(value.issued_at),
+                supersedes: Ok(value.supersedes),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/credentials/issue/0.2";
     const IS_PROOF_REQUIRED: bool = true;
@@ -753,4 +1224,7 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GovernancePolicyClaims\": {\n      \"$anchor\": \"governancePolicyClaims\",\n      \"additionalProperties\": false,\n      \"description\": \"Claims profile activated by credentialType \\\"GovernancePolicyCredential\\\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Trust context the domain belongs to, when the issuing VTA partitions per context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"domain\": {\n          \"description\": \"The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"description\": \"The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"policyHash\": {\n          \"description\": \"Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policyMediaType\": {\n          \"description\": \"Media type of the `policy` document. Default application/json.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"domain\",\n        \"policy\",\n        \"policyHash\"\n      ],\n      \"title\": \"GovernancePolicyClaims\",\n      \"type\": \"object\"\n    },\n    \"IssuedCredentialBase\": {\n      \"$anchor\": \"issuedCredentialBase\",\n      \"description\": \"The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.\\n\\nA closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.\",\n          \"type\": \"object\"\n        },\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the credential's validUntil falls due.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"credential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"IssuedCredentialBase\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"allOf\": [\n        {\n          \"$ref\": \"#/$defs/IssuedCredentialBase\"\n        }\n      ],\n      \"description\": \"The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\\n\\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"supersedes\": {\n          \"description\": \"credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced.\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"VTA Credentials Issue — response payload\",\n      \"unevaluatedProperties\": false\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }

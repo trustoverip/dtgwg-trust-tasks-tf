@@ -189,6 +189,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///OPTIONAL. Approximate count of queued messages. Advisory only.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -205,6 +206,11 @@ pub struct Payload {
     pub urgency: ::std::option::Option<PayloadUrgency>,
     ///Push binding wire version.
     pub v: i64,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The opaque gateway-issued handle to wake.
 ///
@@ -302,6 +308,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHandle {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadUrgency {
     #[serde(rename = "interactive")]
     Interactive,
@@ -379,11 +386,17 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadUrgency {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Outcome of the wake: `delivered` (push service accepted) or `token-unregistered` (dead token; handle dropped — see push/wake:token_unregistered).
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Outcome of the wake: `delivered` (push service accepted) or `token-unregistered` (dead token; handle dropped — see push/wake:token_unregistered).
 ///
@@ -412,6 +425,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "delivered")]
     Delivered,
@@ -458,6 +472,175 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        count: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        handle: ::std::result::Result<super::PayloadHandle, ::std::string::String>,
+        mediator: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        urgency: ::std::result::Result<
+            ::std::option::Option<super::PayloadUrgency>,
+            ::std::string::String,
+        >,
+        v: ::std::result::Result<i64, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                count: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                handle: Err("no value supplied for handle".to_string()),
+                mediator: Ok(Default::default()),
+                urgency: Ok(Default::default()),
+                v: Err("no value supplied for v".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for count: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadHandle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for handle: {e}"));
+            self
+        }
+        pub fn mediator<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mediator = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mediator: {e}"));
+            self
+        }
+        pub fn urgency<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadUrgency>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.urgency = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for urgency: {e}"));
+            self
+        }
+        pub fn v<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<i64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.v = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for v: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                count: value.count?,
+                ext: value.ext?,
+                handle: value.handle?,
+                mediator: value.mediator?,
+                urgency: value.urgency?,
+                v: value.v?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                count: Ok(value.count),
+                ext: Ok(value.ext),
+                handle: Ok(value.handle),
+                mediator: Ok(value.mediator),
+                urgency: Ok(value.urgency),
+                v: Ok(value.v),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                status: Ok(value.status),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/push/wake/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -471,6 +654,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"status\": {\n          \"description\": \"Outcome of the wake: `delivered` (push service accepted) or `token-unregistered` (dead token; handle dropped — see push/wake:token_unregistered).\",\n          \"enum\": [\n            \"delivered\",\n            \"token-unregistered\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Push Wake — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

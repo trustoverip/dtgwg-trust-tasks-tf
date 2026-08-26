@@ -111,6 +111,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AuditEnvelope {
     ///The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.
     pub action: AuditEnvelopeAction,
@@ -162,6 +163,11 @@ pub struct AuditEnvelope {
     ///DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub target: ::std::option::Option<::std::string::String>,
+}
+impl AuditEnvelope {
+    pub fn builder() -> builder::AuditEnvelope {
+        Default::default()
+    }
 }
 ///The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.
 ///
@@ -628,6 +634,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Return only entries whose `action` equals this value.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -677,6 +684,11 @@ impl ::std::default::Default for Payload {
             page_size: Default::default(),
             to: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Return only entries whose `action` equals this value.
@@ -994,6 +1006,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadOutcome {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Opaque continuation token for the next page. Present iff `truncated` is true.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1004,6 +1017,494 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///True when more entries match beyond this page — `cursor` is then present to fetch them.
     pub truncated: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AuditEnvelope {
+        action: ::std::result::Result<super::AuditEnvelopeAction, ::std::string::String>,
+        actor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::AuditEnvelopeContextId>,
+            ::std::string::String,
+        >,
+        detail: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        entry_hash: ::std::result::Result<
+            ::std::option::Option<super::DigestMultibase>,
+            ::std::string::String,
+        >,
+        event_id: ::std::result::Result<super::AuditEnvelopeEventId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        outcome: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        prev_hash: ::std::result::Result<
+            ::std::option::Option<super::DigestMultibase>,
+            ::std::string::String,
+        >,
+        recorded_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        schema_version: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        target: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AuditEnvelope {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                actor: Ok(Default::default()),
+                context_id: Ok(Default::default()),
+                detail: Ok(Default::default()),
+                entry_hash: Ok(Default::default()),
+                event_id: Err("no value supplied for event_id".to_string()),
+                ext: Ok(Default::default()),
+                outcome: Ok(Default::default()),
+                prev_hash: Ok(Default::default()),
+                recorded_at: Err("no value supplied for recorded_at".to_string()),
+                schema_version: Ok(Default::default()),
+                target: Ok(Default::default()),
+            }
+        }
+    }
+    impl AuditEnvelope {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AuditEnvelopeAction>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn actor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.actor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for actor: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AuditEnvelopeContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn detail<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.detail = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for detail: {e}"));
+            self
+        }
+        pub fn entry_hash<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DigestMultibase>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_hash = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_hash: {e}"));
+            self
+        }
+        pub fn event_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AuditEnvelopeEventId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.event_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for event_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn outcome<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.outcome = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for outcome: {e}"));
+            self
+        }
+        pub fn prev_hash<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DigestMultibase>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.prev_hash = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for prev_hash: {e}"));
+            self
+        }
+        pub fn recorded_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recorded_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recorded_at: {e}"));
+            self
+        }
+        pub fn schema_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.schema_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for schema_version: {e}"));
+            self
+        }
+        pub fn target<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AuditEnvelope> for super::AuditEnvelope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AuditEnvelope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                actor: value.actor?,
+                context_id: value.context_id?,
+                detail: value.detail?,
+                entry_hash: value.entry_hash?,
+                event_id: value.event_id?,
+                ext: value.ext?,
+                outcome: value.outcome?,
+                prev_hash: value.prev_hash?,
+                recorded_at: value.recorded_at?,
+                schema_version: value.schema_version?,
+                target: value.target?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AuditEnvelope> for AuditEnvelope {
+        fn from(value: super::AuditEnvelope) -> Self {
+            Self {
+                action: Ok(value.action),
+                actor: Ok(value.actor),
+                context_id: Ok(value.context_id),
+                detail: Ok(value.detail),
+                entry_hash: Ok(value.entry_hash),
+                event_id: Ok(value.event_id),
+                ext: Ok(value.ext),
+                outcome: Ok(value.outcome),
+                prev_hash: Ok(value.prev_hash),
+                recorded_at: Ok(value.recorded_at),
+                schema_version: Ok(value.schema_version),
+                target: Ok(value.target),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        action: ::std::result::Result<
+            ::std::option::Option<super::PayloadAction>,
+            ::std::string::String,
+        >,
+        actor: ::std::result::Result<
+            ::std::option::Option<super::PayloadActor>,
+            ::std::string::String,
+        >,
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadContextId>,
+            ::std::string::String,
+        >,
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        from: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        outcome: ::std::result::Result<
+            ::std::option::Option<super::PayloadOutcome>,
+            ::std::string::String,
+        >,
+        page_size: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        to: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                action: Ok(Default::default()),
+                actor: Ok(Default::default()),
+                context_id: Ok(Default::default()),
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                from: Ok(Default::default()),
+                outcome: Ok(Default::default()),
+                page_size: Ok(Default::default()),
+                to: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAction>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn actor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadActor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.actor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for actor: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn from<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.from = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for from: {e}"));
+            self
+        }
+        pub fn outcome<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadOutcome>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.outcome = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for outcome: {e}"));
+            self
+        }
+        pub fn page_size<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.page_size = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for page_size: {e}"));
+            self
+        }
+        pub fn to<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.to = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for to: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                actor: value.actor?,
+                context_id: value.context_id?,
+                cursor: value.cursor?,
+                ext: value.ext?,
+                from: value.from?,
+                outcome: value.outcome?,
+                page_size: value.page_size?,
+                to: value.to?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                action: Ok(value.action),
+                actor: Ok(value.actor),
+                context_id: Ok(value.context_id),
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                from: Ok(value.from),
+                outcome: Ok(value.outcome),
+                page_size: Ok(value.page_size),
+                to: Ok(value.to),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        entries:
+            ::std::result::Result<::std::vec::Vec<super::AuditEnvelope>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        truncated: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                entries: Err("no value supplied for entries".to_string()),
+                ext: Ok(Default::default()),
+                truncated: Err("no value supplied for truncated".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn entries<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditEnvelope>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn truncated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.truncated = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for truncated: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                entries: value.entries?,
+                ext: value.ext?,
+                truncated: value.truncated?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                entries: Ok(value.entries),
+                ext: Ok(value.ext),
+                truncated: Ok(value.truncated),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/audit/list/0.1";
@@ -1020,6 +1521,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AuditEnvelope\": {\n      \"$anchor\": \"auditEnvelope\",\n      \"additionalProperties\": false,\n      \"description\": \"One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.\",\n      \"properties\": {\n        \"action\": {\n          \"description\": \"The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"actor\": {\n          \"description\": \"DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"contextId\": {\n          \"description\": \"Trust context the event occurred in, for a maintainer that partitions its log per context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"detail\": {\n          \"additionalProperties\": true,\n          \"description\": \"Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.\",\n          \"type\": \"object\"\n        },\n        \"entryHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.\"\n        },\n        \"eventId\": {\n          \"description\": \"Stable identifier for this event. Also the tie-breaker component of a cursor's position key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"outcome\": {\n          \"description\": \"How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.\",\n          \"type\": \"string\"\n        },\n        \"prevHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.\"\n        },\n        \"recordedAt\": {\n          \"description\": \"Wall-clock time the entry was written. The primary ordering key.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"target\": {\n          \"description\": \"DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"recordedAt\",\n        \"action\"\n      ],\n      \"title\": \"AuditEnvelope\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"description\": \"Opaque continuation token for the next page. Present iff `truncated` is true.\",\n          \"type\": \"string\"\n        },\n        \"entries\": {\n          \"description\": \"The matching audit entries, newest first.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AuditEnvelope\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"truncated\": {\n          \"description\": \"True when more entries match beyond this page — `cursor` is then present to fetch them.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"entries\",\n        \"truncated\"\n      ],\n      \"title\": \"Audit List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

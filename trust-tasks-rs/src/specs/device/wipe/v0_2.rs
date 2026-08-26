@@ -187,6 +187,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(rename = "deviceId")]
     pub device_id: PayloadDeviceId,
@@ -206,6 +207,11 @@ pub struct Payload {
     - `cacheAndKeys` — discard cache + device-local key material; consumer must re-onboard.
     - `full` — `cacheAndKeys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.*/
     pub scope: PayloadScope,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadDeviceId`
 ///
@@ -379,6 +385,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadScope {
     #[serde(rename = "cache")]
     Cache,
@@ -498,6 +505,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadScope {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "completedAt")]
     pub completed_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -508,6 +516,11 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub scope: ResponseScope,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseDiagnostics`
 ///
@@ -546,6 +559,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseDiagnostics {
     #[serde(
         rename = "cacheBytesWiped",
@@ -584,6 +598,11 @@ impl ::std::default::Default for ResponseDiagnostics {
         }
     }
 }
+impl ResponseDiagnostics {
+    pub fn builder() -> builder::ResponseDiagnostics {
+        Default::default()
+    }
+}
 ///`ResponseScope`
 ///
 /// <details><summary>JSON schema</summary>
@@ -611,6 +630,7 @@ impl ::std::default::Default for ResponseDiagnostics {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseScope {
     #[serde(rename = "cache")]
     Cache,
@@ -661,6 +681,290 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseScope {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        device_id: ::std::result::Result<super::PayloadDeviceId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        issued_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        reason: ::std::result::Result<super::PayloadReason, ::std::string::String>,
+        scope: ::std::result::Result<super::PayloadScope, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                device_id: Err("no value supplied for device_id".to_string()),
+                ext: Ok(Default::default()),
+                issued_at: Ok(Default::default()),
+                reason: Err("no value supplied for reason".to_string()),
+                scope: Err("no value supplied for scope".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDeviceId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadReason>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadScope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_id: value.device_id?,
+                ext: value.ext?,
+                issued_at: value.issued_at?,
+                reason: value.reason?,
+                scope: value.scope?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                device_id: Ok(value.device_id),
+                ext: Ok(value.ext),
+                issued_at: Ok(value.issued_at),
+                reason: Ok(value.reason),
+                scope: Ok(value.scope),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        completed_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        device_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        diagnostics: ::std::result::Result<
+            ::std::option::Option<super::ResponseDiagnostics>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        scope: ::std::result::Result<super::ResponseScope, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                completed_at: Err("no value supplied for completed_at".to_string()),
+                device_id: Err("no value supplied for device_id".to_string()),
+                diagnostics: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                scope: Err("no value supplied for scope".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn completed_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.completed_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for completed_at: {e}"));
+            self
+        }
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn diagnostics<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseDiagnostics>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.diagnostics = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for diagnostics: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseScope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                completed_at: value.completed_at?,
+                device_id: value.device_id?,
+                diagnostics: value.diagnostics?,
+                ext: value.ext?,
+                scope: value.scope?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                completed_at: Ok(value.completed_at),
+                device_id: Ok(value.device_id),
+                diagnostics: Ok(value.diagnostics),
+                ext: Ok(value.ext),
+                scope: Ok(value.scope),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseDiagnostics {
+        cache_bytes_wiped: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        keys_wiped: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        os_hooks_invoked:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        partial_reasons:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseDiagnostics {
+        fn default() -> Self {
+            Self {
+                cache_bytes_wiped: Ok(Default::default()),
+                keys_wiped: Ok(Default::default()),
+                os_hooks_invoked: Ok(Default::default()),
+                partial_reasons: Ok(Default::default()),
+            }
+        }
+    }
+    impl ResponseDiagnostics {
+        pub fn cache_bytes_wiped<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cache_bytes_wiped = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cache_bytes_wiped: {e}"));
+            self
+        }
+        pub fn keys_wiped<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.keys_wiped = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for keys_wiped: {e}"));
+            self
+        }
+        pub fn os_hooks_invoked<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.os_hooks_invoked = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for os_hooks_invoked: {e}"));
+            self
+        }
+        pub fn partial_reasons<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.partial_reasons = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for partial_reasons: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseDiagnostics> for super::ResponseDiagnostics {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseDiagnostics,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cache_bytes_wiped: value.cache_bytes_wiped?,
+                keys_wiped: value.keys_wiped?,
+                os_hooks_invoked: value.os_hooks_invoked?,
+                partial_reasons: value.partial_reasons?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseDiagnostics> for ResponseDiagnostics {
+        fn from(value: super::ResponseDiagnostics) -> Self {
+            Self {
+                cache_bytes_wiped: Ok(value.cache_bytes_wiped),
+                keys_wiped: Ok(value.keys_wiped),
+                os_hooks_invoked: Ok(value.os_hooks_invoked),
+                partial_reasons: Ok(value.partial_reasons),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/wipe/0.2";
     const IS_PROOF_REQUIRED: bool = true;
@@ -676,6 +980,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.\",\n      \"properties\": {\n        \"completedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceId\": {\n          \"type\": \"string\"\n        },\n        \"diagnostics\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cacheBytesWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"keysWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"osHooksInvoked\": {\n              \"description\": \"OS-level revocation hooks the target managed to invoke (e.g. \\\"navigator.credentials.preventSilentAccess\\\", \\\"ASCredentialIdentityStore.removeAllCredentialIdentities\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            },\n            \"partialReasons\": {\n              \"description\": \"Free-form reasons why the wipe was partial (e.g. \\\"os-keychain-unavailable\\\", \\\"extension-storage-quota-exceeded\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"scope\": {\n          \"enum\": [\n            \"cache\",\n            \"cacheAndKeys\",\n            \"full\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"scope\",\n        \"completedAt\"\n      ],\n      \"title\": \"Device Wipe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

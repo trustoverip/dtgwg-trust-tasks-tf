@@ -187,6 +187,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Suggested label for the credential. Used as a default; the invitee MAY override during redemption.
     #[serde(
@@ -208,6 +209,11 @@ pub struct Payload {
     ///Seconds the invite remains valid. Consumers SHOULD pick 1 h – 7 d; longer windows widen the attack surface.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadScopesItem`
 ///
@@ -400,6 +406,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -408,6 +415,11 @@ pub struct Response {
     pub invite: ResponseInvite,
     ///Echo of the invitee's VID.
     pub subject: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseInvite`
 ///
@@ -438,11 +450,17 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseInvite {
     ///Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.
     pub token: ResponseInviteToken,
     ///Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.
     pub url: ::std::string::String,
+}
+impl ResponseInvite {
+    pub fn builder() -> builder::ResponseInvite {
+        Default::default()
+    }
 }
 ///Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.
 ///
@@ -513,6 +531,262 @@ impl<'de> ::serde::Deserialize<'de> for ResponseInviteToken {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        device_label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        role: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        scopes:
+            ::std::result::Result<::std::vec::Vec<super::PayloadScopesItem>, ::std::string::String>,
+        subject: ::std::result::Result<super::PayloadSubject, ::std::string::String>,
+        ttl: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                device_label: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                role: Ok(Default::default()),
+                scopes: Ok(Default::default()),
+                subject: Err("no value supplied for subject".to_string()),
+                ttl: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn device_label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_label: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+        pub fn scopes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadScopesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scopes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scopes: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+        pub fn ttl<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ttl = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ttl: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                device_label: value.device_label?,
+                ext: value.ext?,
+                role: value.role?,
+                scopes: value.scopes?,
+                subject: value.subject?,
+                ttl: value.ttl?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                device_label: Ok(value.device_label),
+                ext: Ok(value.ext),
+                role: Ok(value.role),
+                scopes: Ok(value.scopes),
+                subject: Ok(value.subject),
+                ttl: Ok(value.ttl),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        invite: ::std::result::Result<super::ResponseInvite, ::std::string::String>,
+        subject: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                ext: Ok(Default::default()),
+                invite: Err("no value supplied for invite".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn invite<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseInvite>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.invite = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for invite: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                invite: value.invite?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                invite: Ok(value.invite),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseInvite {
+        token: ::std::result::Result<super::ResponseInviteToken, ::std::string::String>,
+        url: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseInvite {
+        fn default() -> Self {
+            Self {
+                token: Err("no value supplied for token".to_string()),
+                url: Err("no value supplied for url".to_string()),
+            }
+        }
+    }
+    impl ResponseInvite {
+        pub fn token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseInviteToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for token: {e}"));
+            self
+        }
+        pub fn url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for url: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseInvite> for super::ResponseInvite {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseInvite,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                token: value.token?,
+                url: value.url?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseInvite> for ResponseInvite {
+        fn from(value: super::ResponseInvite) -> Self {
+            Self {
+                token: Ok(value.token),
+                url: Ok(value.url),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -529,6 +803,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invite\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"token\": {\n              \"description\": \"Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.\",\n              \"minLength\": 16,\n              \"type\": \"string\"\n            },\n            \"url\": {\n              \"description\": \"Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"token\",\n            \"url\"\n          ],\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"Echo of the invitee's VID.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"invite\",\n        \"subject\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth Passkey Enroll Invite — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

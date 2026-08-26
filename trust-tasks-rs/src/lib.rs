@@ -73,7 +73,7 @@ pub use error::{
     UNAVAILABLE_WIRE_MESSAGE, WRONG_RECIPIENT_WIRE_MESSAGE,
 };
 pub use freshness::{FreshnessPolicy, StaleReason, DEFAULT_MAX_AGE, DEFAULT_SKEW};
-pub use payload::Payload;
+pub use payload::{Payload, RequestPayload};
 pub use proof::{
     erase_verifier, DynProofVerifier, ErasedVerifier, Proof, ProofVerifier, VerificationError,
 };

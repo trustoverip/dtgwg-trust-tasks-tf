@@ -2,7 +2,19 @@
 
 All notable changes to `trust-tasks-didcomm` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
-this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
+this crate versions independently of `trust-tasks-rs` — it takes its own
+leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
+to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
+
+## [0.15.0] - 2026-08-26
+
+### Changed
+
+- **BREAKING.** Requires `trust-tasks-rs` 0.14, whose generated payload types
+  are `#[non_exhaustive]` and carry builders. Code in this crate's reach that
+  built a payload with a struct literal now uses `X::builder()`; a `match` on a
+  generated enum needs a wildcard arm. See `trust-tasks-rs` 0.14.0 for the
+  migration note. No change to this crate's own API.
 
 ## [0.14.0] - 2026-08-26
 

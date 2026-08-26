@@ -29,6 +29,118 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.14.0] - 2026-08-26
+
+### Changed
+
+- **BREAKING, and taken once so that no additive spec change is breaking
+  again.** Every generated payload type is now `#[non_exhaustive]` and carries
+  a builder. Cross-crate construction goes through the builder or
+  `Default::default()` instead of a struct literal, and a `match` on a
+  generated enum needs a wildcard arm.
+
+  #### Migration
+
+  A minimal `acl/grant` request was a struct literal naming thirteen members
+  that carry no information — twelve `None`s and an empty `vec![]`:
+
+  ```rust
+  let payload = grant::Payload {
+      entry: grant::AclEntry {
+          subject: "did:web:alice.example".into(),
+          role: "admin".into(),
+          allowed_keys: None,
+          scopes: vec![],
+          label: None,
+          created_at: None,
+          created_by: None,
+          updated_at: None,
+          updated_by: None,
+          expires_at: None,
+          approve: None,
+          step_up: None,
+          ext: None,
+      },
+      reason: None,
+      ext: None,
+  };
+  ```
+
+  It is now the two members the specification actually requires:
+
+  ```rust
+  let entry: grant::AclEntry = grant::AclEntry::builder()
+      .subject("did:web:alice.example")
+      .role("admin")
+      .try_into()?;
+  let payload: grant::Payload = grant::Payload::builder()
+      .entry(entry)
+      .try_into()?;
+  ```
+
+  A struct whose members are all optional also has `Default`, so
+  `list::v0_1::Payload::default()` replaces a literal of seven `None`s.
+
+  **This is the last time an additive spec change breaks a construction site.**
+  The tax this CHANGELOG has recorded repeatedly — "consumers constructing
+  `AclEntry` with a struct literal must add `step_up: None`", "source-breaking
+  for Rust consumers (the wire is unchanged)" — was the direct consequence of
+  the generated structs being plain, exhaustive and builderless. A member added
+  to a schema after this release lands in the builder as one more optional
+  setter and leaves every existing call site compiling. The same now holds for
+  a value added to a schema `enum`, on the precedent `StandardCode` set in
+  0.7.0.
+
+  Reading a payload is unchanged: the fields are still `pub`, so every
+  `doc.payload.entry.role` keeps working. Only construction moved.
+
+  The builder is typify's, not this crate's: `X::builder()` returns a
+  `builder::X` with one setter per member, and `TryFrom<builder::X> for X`
+  reports a missing required member as a `Result` rather than a panic. A setter
+  takes anything that `TryInto`s the member's type, so `.role("admin")` works
+  where the member is a `String` and `.label("…".to_string())` works where it
+  is an `Option<String>`.
+
+- **BREAKING: `HttpsClient::send` in `trust-tasks-https` takes one type
+  parameter.** See that crate's CHANGELOG; the enabling change is here.
+
+### Added
+
+- **`RequestPayload`, pairing a request payload with its response type**
+  (SPEC §4.4.1). The codegen emits
+  `impl RequestPayload for Payload { type Response = Response; }` for every
+  specification that defines a `$defs.Response`, so a transport can infer the
+  response type instead of being told it — which is what removes the second
+  type parameter from `HttpsClient::send` and, with it, the class of bug where
+  `send::<grant::Payload, revoke::Response>(req)` compiled and failed against a
+  live server.
+
+  It is a **separate trait**, not an associated type on `Payload`, because
+  associated type defaults are still unstable in Rust
+  ([rust-lang/rust#29661](https://github.com/rust-lang/rust/issues/29661)): a
+  required `type Response` on `Payload` would break every hand-written
+  `Payload` impl, including this crate's own hand-modelled `trust-task-error`
+  payload. Implementing `Payload` is exactly as cheap as it was.
+
+  A specification defining no `$defs.Response` gets **no** `RequestPayload`
+  impl. There is no response document to name, and the absence says so rather
+  than a stand-in doing it badly — `()` is not a `Payload` and would let
+  `send()` compile for an exchange that returns no document, and
+  `trust_task_ok::v0_1::Payload` is being retired by framework 0.5.0 in favour
+  of a specification declaring an empty `#response` of its own. When a
+  specification adopts that empty `#response`, the codegen sees the
+  `$defs.Response`, emits the type, and emits the impl — no change needed here.
+
+### Notes
+
+- **`ext` still deserialises as `Option<Ext>`.** Mapping it to
+  `#[serde(default)] ext: Ext` so it never has to be spelled was considered and
+  rejected: `Ext` carries `minProperties: 1` in the framework schema, so an
+  empty `Ext` would serialise as `{}` and fail validation where the member is
+  today simply absent. Changing the wire is not on the table for an ergonomics
+  release, and the builder removes the need anyway — an unset `ext` is never
+  spelled.
+
 ## [0.13.4] - 2026-08-26
 
 ### Added

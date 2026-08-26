@@ -166,6 +166,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum KeyType {
     #[serde(rename = "ed25519")]
     Ed25519,
@@ -261,6 +262,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Signature algorithm. MUST be compatible with the derived key's type.
     pub algorithm: SignAlgorithm,
@@ -275,6 +277,11 @@ pub struct Payload {
     pub key_type: KeyType,
     ///The exact bytes to sign, base64url-encoded without padding. Signed verbatim — not parsed, canonicalized or wrapped.
     pub payload: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Hierarchical-deterministic path to derive at. The same path against the same seed always yields the same key, which is what makes this reproducible rather than ephemeral.
 ///
@@ -382,6 +389,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDerivationPath {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub algorithm: SignAlgorithm,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -391,6 +399,11 @@ pub struct Response {
     pub public_key: ::std::string::String,
     ///Signature bytes, base64url-encoded without padding.
     pub signature: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
 ///
@@ -420,6 +433,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum SignAlgorithm {
     #[serde(rename = "EdDSA")]
     EdDsa,
@@ -466,6 +480,183 @@ impl ::std::convert::TryFrom<::std::string::String> for SignAlgorithm {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        algorithm: ::std::result::Result<super::SignAlgorithm, ::std::string::String>,
+        derivation_path: ::std::result::Result<super::PayloadDerivationPath, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        key_type: ::std::result::Result<super::KeyType, ::std::string::String>,
+        payload: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                algorithm: Err("no value supplied for algorithm".to_string()),
+                derivation_path: Err("no value supplied for derivation_path".to_string()),
+                ext: Ok(Default::default()),
+                key_type: Err("no value supplied for key_type".to_string()),
+                payload: Err("no value supplied for payload".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn algorithm<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SignAlgorithm>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.algorithm = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for algorithm: {e}"));
+            self
+        }
+        pub fn derivation_path<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDerivationPath>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.derivation_path = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for derivation_path: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn key_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_type: {e}"));
+            self
+        }
+        pub fn payload<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.payload = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for payload: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                algorithm: value.algorithm?,
+                derivation_path: value.derivation_path?,
+                ext: value.ext?,
+                key_type: value.key_type?,
+                payload: value.payload?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                algorithm: Ok(value.algorithm),
+                derivation_path: Ok(value.derivation_path),
+                ext: Ok(value.ext),
+                key_type: Ok(value.key_type),
+                payload: Ok(value.payload),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        algorithm: ::std::result::Result<super::SignAlgorithm, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        public_key: ::std::result::Result<::std::string::String, ::std::string::String>,
+        signature: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                algorithm: Err("no value supplied for algorithm".to_string()),
+                ext: Ok(Default::default()),
+                public_key: Err("no value supplied for public_key".to_string()),
+                signature: Err("no value supplied for signature".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn algorithm<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SignAlgorithm>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.algorithm = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for algorithm: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn public_key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.public_key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for public_key: {e}"));
+            self
+        }
+        pub fn signature<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signature = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signature: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                algorithm: value.algorithm?,
+                ext: value.ext?,
+                public_key: value.public_key?,
+                signature: value.signature?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                algorithm: Ok(value.algorithm),
+                ext: Ok(value.ext),
+                public_key: Ok(value.public_key),
+                signature: Ok(value.signature),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/keys/derive-and-sign/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -481,6 +672,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"$ref\": \"#/$defs/SignAlgorithm\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"publicKey\": {\n          \"description\": \"Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored.\",\n          \"type\": \"string\"\n        },\n        \"signature\": {\n          \"description\": \"Signature bytes, base64url-encoded without padding.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"publicKey\",\n        \"signature\",\n        \"algorithm\"\n      ],\n      \"title\": \"Keys Derive-and-Sign — response payload\",\n      \"type\": \"object\"\n    },\n    \"SignAlgorithm\": {\n      \"description\": \"`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.\",\n      \"enum\": [\n        \"EdDSA\",\n        \"ES256\"\n      ],\n      \"title\": \"SignAlgorithm\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

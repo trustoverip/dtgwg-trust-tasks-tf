@@ -87,26 +87,76 @@ fn acl_grant_response_round_trips() {
 /// per-spec ergonomics the codegen exists to enable.
 #[test]
 fn for_payload_pulls_type_uri_from_trait() {
-    let payload = grant::Payload {
-        entry: grant::AclEntry {
-            allowed_keys: None,
-            subject: "did:web:alice.example".into(),
-            role: "admin".parse().unwrap(),
-            scopes: vec![],
-            label: None,
-            created_at: None,
-            created_by: None,
-            updated_at: None,
-            updated_by: None,
-            expires_at: None,
-            approve: None,
-            step_up: None,
-            ext: None,
-        },
-        reason: None,
-        ext: None,
-    };
+    let entry: grant::AclEntry = grant::AclEntry::builder()
+        .subject("did:web:alice.example")
+        .role("admin")
+        .try_into()
+        .expect("acl entry builder");
+    let payload: grant::Payload = grant::Payload::builder()
+        .entry(entry)
+        .try_into()
+        .expect("acl grant payload builder");
 
     let doc = TrustTask::for_payload("req-1", payload);
     assert_eq!(doc.type_uri, TypeUri::canonical("acl/grant", 0, 1).unwrap());
+}
+
+/// The generated types are `#[non_exhaustive]`, so this file — a separate
+/// crate from `trust-tasks-rs` — is the only place in the workspace that can
+/// assert the property a consumer sees: the builder is a *complete*
+/// construction path, naming only the members the specification requires.
+///
+/// This is the whole trade of 0.14.0. `acl/grant`'s minimal request needed a
+/// struct literal spelling 13 members that carry no information (12 `None`s
+/// and an empty `vec![]`); every member added to `acl/grant` since has been a
+/// source break for every one of those literals. The two calls below name two
+/// members, and a thirteenth member added tomorrow leaves them alone.
+#[test]
+fn the_builder_names_only_the_required_members() {
+    let entry: grant::AclEntry = grant::AclEntry::builder()
+        .subject("did:web:alice.example")
+        .role("admin")
+        .try_into()
+        .expect("acl entry builder");
+    let payload: grant::Payload = grant::Payload::builder()
+        .entry(entry)
+        .try_into()
+        .expect("acl grant payload builder");
+
+    // Absent optional members stay absent on the wire — the builder fills
+    // them with `None`, not with an empty object.
+    let json = serde_json::to_value(&payload).expect("serialise");
+    assert_eq!(
+        json,
+        serde_json::json!({
+            "entry": { "subject": "did:web:alice.example", "role": "admin" }
+        })
+    );
+}
+
+/// A missing required member is a `Result`, not a panic and not a document
+/// that fails validation at the far end.
+#[test]
+fn the_builder_reports_a_missing_required_member() {
+    let err = grant::AclEntry::try_from(grant::AclEntry::builder().role("admin"))
+        .expect_err("subject is required");
+    assert!(
+        err.to_string().contains("subject"),
+        "error should name the missing member, got: {err}"
+    );
+}
+
+/// SPEC §4.4.1 pairing, on the type. `RequestPayload::Response` is what
+/// removes the second type parameter from `HttpsClient::send`, and a
+/// mismatched pair can no longer be written.
+#[test]
+fn request_payload_names_the_response_type() {
+    fn response_uri<P: trust_tasks_rs::RequestPayload>() -> &'static str {
+        <P::Response as Payload>::TYPE_URI
+    }
+
+    assert_eq!(
+        response_uri::<grant::Payload>(),
+        "https://trusttasks.org/spec/acl/grant/0.1#response"
+    );
 }

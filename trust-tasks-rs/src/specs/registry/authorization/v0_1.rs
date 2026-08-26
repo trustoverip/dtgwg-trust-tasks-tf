@@ -183,6 +183,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The action the query is checking authorization for.
     pub action: ::std::string::String,
@@ -196,6 +197,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The resource the query is checking authorization for.
     pub resource: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.
 ///
@@ -224,6 +230,7 @@ pub struct Payload {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
 pub struct QueryContext {
     ///Optional hint for systems that need extra information to locate the records in question (authorization queries).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -233,6 +240,11 @@ pub struct QueryContext {
     pub time: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(flatten)]
     pub extra: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+}
+impl QueryContext {
+    pub fn builder() -> builder::QueryContext {
+        Default::default()
+    }
 }
 ///`Response`
 ///
@@ -295,6 +307,7 @@ pub struct QueryContext {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub action: ::std::string::String,
     pub authority_id: ::std::string::String,
@@ -315,6 +328,382 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub time_requested: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        action: ::std::result::Result<::std::string::String, ::std::string::String>,
+        authority_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        context: ::std::result::Result<
+            ::std::option::Option<super::QueryContext>,
+            ::std::string::String,
+        >,
+        entity_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        resource: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                authority_id: Err("no value supplied for authority_id".to_string()),
+                context: Ok(Default::default()),
+                entity_id: Err("no value supplied for entity_id".to_string()),
+                ext: Ok(Default::default()),
+                resource: Err("no value supplied for resource".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn authority_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authority_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authority_id: {e}"));
+            self
+        }
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::QueryContext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn entity_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entity_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entity_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                authority_id: value.authority_id?,
+                context: value.context?,
+                entity_id: value.entity_id?,
+                ext: value.ext?,
+                resource: value.resource?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                action: Ok(value.action),
+                authority_id: Ok(value.authority_id),
+                context: Ok(value.context),
+                entity_id: Ok(value.entity_id),
+                ext: Ok(value.ext),
+                resource: Ok(value.resource),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct QueryContext {
+        locator: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        time: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        extra: ::std::result::Result<
+            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for QueryContext {
+        fn default() -> Self {
+            Self {
+                locator: Ok(Default::default()),
+                time: Ok(Default::default()),
+                extra: Err("no value supplied for extra".to_string()),
+            }
+        }
+    }
+    impl QueryContext {
+        pub fn locator<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.locator = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for locator: {e}"));
+            self
+        }
+        pub fn time<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.time = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for time: {e}"));
+            self
+        }
+        pub fn extra<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extra = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extra: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<QueryContext> for super::QueryContext {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: QueryContext,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                locator: value.locator?,
+                time: value.time?,
+                extra: value.extra?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::QueryContext> for QueryContext {
+        fn from(value: super::QueryContext) -> Self {
+            Self {
+                locator: Ok(value.locator),
+                time: Ok(value.time),
+                extra: Ok(value.extra),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        action: ::std::result::Result<::std::string::String, ::std::string::String>,
+        authority_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        authorized: ::std::result::Result<bool, ::std::string::String>,
+        context: ::std::result::Result<
+            ::std::option::Option<super::QueryContext>,
+            ::std::string::String,
+        >,
+        entity_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        message: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        resource: ::std::result::Result<::std::string::String, ::std::string::String>,
+        time_evaluated:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        time_requested: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                authority_id: Err("no value supplied for authority_id".to_string()),
+                authorized: Err("no value supplied for authorized".to_string()),
+                context: Ok(Default::default()),
+                entity_id: Err("no value supplied for entity_id".to_string()),
+                ext: Ok(Default::default()),
+                message: Ok(Default::default()),
+                resource: Err("no value supplied for resource".to_string()),
+                time_evaluated: Err("no value supplied for time_evaluated".to_string()),
+                time_requested: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn authority_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authority_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authority_id: {e}"));
+            self
+        }
+        pub fn authorized<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authorized = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authorized: {e}"));
+            self
+        }
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::QueryContext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn entity_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entity_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entity_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn message<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.message = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for message: {e}"));
+            self
+        }
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+        pub fn time_evaluated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.time_evaluated = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for time_evaluated: {e}"));
+            self
+        }
+        pub fn time_requested<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.time_requested = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for time_requested: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                authority_id: value.authority_id?,
+                authorized: value.authorized?,
+                context: value.context?,
+                entity_id: value.entity_id?,
+                ext: value.ext?,
+                message: value.message?,
+                resource: value.resource?,
+                time_evaluated: value.time_evaluated?,
+                time_requested: value.time_requested?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                action: Ok(value.action),
+                authority_id: Ok(value.authority_id),
+                authorized: Ok(value.authorized),
+                context: Ok(value.context),
+                entity_id: Ok(value.entity_id),
+                ext: Ok(value.ext),
+                message: Ok(value.message),
+                resource: Ok(value.resource),
+                time_evaluated: Ok(value.time_evaluated),
+                time_requested: Ok(value.time_requested),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/registry/authorization/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -329,6 +718,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueryContext\": {\n      \"additionalProperties\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\n      \"properties\": {\n        \"locator\": {\n          \"description\": \"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\n          \"type\": \"string\"\n        },\n        \"time\": {\n          \"description\": \"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"QueryContext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"True if the action+resource authorization has been confirmed, false otherwise.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/QueryContext\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail about the authorization response.\",\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"time_evaluated\": {\n          \"description\": \"Server time the query was evaluated at, per the endpoint clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"time_requested\": {\n          \"description\": \"The requested server time, echoed from the request `context.time` when supplied.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"authorized\",\n        \"time_evaluated\"\n      ],\n      \"title\": \"Registry Authorization — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

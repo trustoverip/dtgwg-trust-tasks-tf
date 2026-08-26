@@ -182,6 +182,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(rename = "didId")]
     pub did_id: PayloadDidId,
@@ -198,6 +199,11 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub witness_content: ::std::option::Option<::std::string::String>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadDidId`
 ///
@@ -436,11 +442,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: ::std::string::String,
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseStatus`
 ///
@@ -467,6 +479,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "applied")]
     Applied,
@@ -509,6 +522,186 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did_id: ::std::result::Result<super::PayloadDidId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        log_content: ::std::result::Result<super::PayloadLogContent, ::std::string::String>,
+        mnemonic: ::std::result::Result<super::PayloadMnemonic, ::std::string::String>,
+        version_count: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        witness_content: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did_id: Err("no value supplied for did_id".to_string()),
+                ext: Ok(Default::default()),
+                log_content: Err("no value supplied for log_content".to_string()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+                version_count: Err("no value supplied for version_count".to_string()),
+                witness_content: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDidId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn log_content<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadLogContent>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.log_content = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for log_content: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadMnemonic>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+        pub fn version_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version_count: {e}"));
+            self
+        }
+        pub fn witness_content<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.witness_content = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for witness_content: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did_id: value.did_id?,
+                ext: value.ext?,
+                log_content: value.log_content?,
+                mnemonic: value.mnemonic?,
+                version_count: value.version_count?,
+                witness_content: value.witness_content?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did_id: Ok(value.did_id),
+                ext: Ok(value.ext),
+                log_content: Ok(value.log_content),
+                mnemonic: Ok(value.mnemonic),
+                version_count: Ok(value.version_count),
+                witness_content: Ok(value.witness_content),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        mnemonic: ::std::result::Result<::std::string::String, ::std::string::String>,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                mnemonic: value.mnemonic?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                mnemonic: Ok(value.mnemonic),
+                status: Ok(value.status),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/webvh/sync/update/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -522,6 +715,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"mnemonic\": {\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"applied\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"status\"\n      ],\n      \"title\": \"WebVH Sync Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

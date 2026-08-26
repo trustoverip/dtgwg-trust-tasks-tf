@@ -63,6 +63,7 @@ pub mod error {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum Capability {
     #[serde(rename = "vault-read")]
     VaultRead,
@@ -192,6 +193,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Capability {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum ConsumerKind {
     ///Companion
     #[serde(rename = "companion")]
@@ -233,6 +235,7 @@ pub enum ConsumerKind {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ConsumerKindFormFactor {
     #[serde(rename = "browser")]
     Browser,
@@ -310,6 +313,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ConsumerKindFormFactor {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ConsumerKindServiceKind {
     #[serde(rename = "mediator")]
     Mediator,
@@ -486,6 +490,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ConsumerKindServiceKind 
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum DeviceAttestation {
     ///WebAuthnAttestation
     #[serde(rename = "webauthn")]
@@ -821,6 +826,7 @@ impl<'de> ::serde::Deserialize<'de> for DeviceAttestationToken {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DeviceBinding {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub attestation: ::std::option::Option<DeviceAttestation>,
@@ -880,6 +886,11 @@ pub struct DeviceBinding {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub wiped_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+}
+impl DeviceBinding {
+    pub fn builder() -> builder::DeviceBinding {
+        Default::default()
+    }
 }
 ///The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.
 ///
@@ -1236,6 +1247,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct KeyCustody {
     ///Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).
     #[serde(
@@ -1253,6 +1265,11 @@ pub struct KeyCustody {
     pub signing_alg: ::std::option::Option<::std::string::String>,
     ///`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.
     pub tier: KeyCustodyTier,
+}
+impl KeyCustody {
+    pub fn builder() -> builder::KeyCustody {
+        Default::default()
+    }
 }
 ///`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.
 ///
@@ -1281,6 +1298,7 @@ pub struct KeyCustody {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum KeyCustodyTier {
     #[serde(rename = "hardware")]
     Hardware,
@@ -1395,6 +1413,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyCustodyTier {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(
         rename = "capabilityFilter",
@@ -1458,6 +1477,11 @@ impl ::std::default::Default for Payload {
         }
     }
 }
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
+}
 ///`PayloadConsumerKindFilter`
 ///
 /// <details><summary>JSON schema</summary>
@@ -1484,6 +1508,7 @@ impl ::std::default::Default for Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadConsumerKindFilter {
     #[serde(rename = "companion")]
     Companion,
@@ -1557,6 +1582,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadConsumerKindFilte
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadFormFactorFilter {
     #[serde(rename = "browser")]
     Browser,
@@ -1634,6 +1660,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadFormFactorFilter 
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadServiceKindFilter {
     #[serde(rename = "mediator")]
     Mediator,
@@ -1720,6 +1747,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadServiceKindFilter
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
@@ -1727,6 +1755,605 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub truncated: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct DeviceBinding {
+        attestation: ::std::result::Result<
+            ::std::option::Option<super::DeviceAttestation>,
+            ::std::string::String,
+        >,
+        capabilities: ::std::result::Result<
+            ::std::option::Option<Vec<super::Capability>>,
+            ::std::string::String,
+        >,
+        consumer_did: ::std::result::Result<super::DeviceBindingConsumerDid, ::std::string::String>,
+        consumer_kind: ::std::result::Result<super::ConsumerKind, ::std::string::String>,
+        device_id: ::std::result::Result<super::DeviceBindingDeviceId, ::std::string::String>,
+        disabled_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        display_name: ::std::result::Result<super::DeviceBindingDisplayName, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        key_custody:
+            ::std::result::Result<::std::option::Option<super::KeyCustody>, ::std::string::String>,
+        last_seen_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        platform: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        push_capable: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        registered_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        wiped_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for DeviceBinding {
+        fn default() -> Self {
+            Self {
+                attestation: Ok(Default::default()),
+                capabilities: Ok(Default::default()),
+                consumer_did: Err("no value supplied for consumer_did".to_string()),
+                consumer_kind: Err("no value supplied for consumer_kind".to_string()),
+                device_id: Err("no value supplied for device_id".to_string()),
+                disabled_at: Ok(Default::default()),
+                display_name: Err("no value supplied for display_name".to_string()),
+                ext: Ok(Default::default()),
+                key_custody: Ok(Default::default()),
+                last_seen_at: Ok(Default::default()),
+                platform: Ok(Default::default()),
+                push_capable: Ok(Default::default()),
+                registered_at: Err("no value supplied for registered_at".to_string()),
+                wiped_at: Ok(Default::default()),
+            }
+        }
+    }
+    impl DeviceBinding {
+        pub fn attestation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DeviceAttestation>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attestation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for attestation: {e}"));
+            self
+        }
+        pub fn capabilities<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::Capability>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.capabilities = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for capabilities: {e}"));
+            self
+        }
+        pub fn consumer_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DeviceBindingConsumerDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumer_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consumer_did: {e}"));
+            self
+        }
+        pub fn consumer_kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ConsumerKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumer_kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consumer_kind: {e}"));
+            self
+        }
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DeviceBindingDeviceId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn disabled_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disabled_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disabled_at: {e}"));
+            self
+        }
+        pub fn display_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DeviceBindingDisplayName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.display_name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for display_name: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn key_custody<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyCustody>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_custody = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_custody: {e}"));
+            self
+        }
+        pub fn last_seen_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_seen_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_seen_at: {e}"));
+            self
+        }
+        pub fn platform<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.platform = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for platform: {e}"));
+            self
+        }
+        pub fn push_capable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.push_capable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for push_capable: {e}"));
+            self
+        }
+        pub fn registered_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registered_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registered_at: {e}"));
+            self
+        }
+        pub fn wiped_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.wiped_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for wiped_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DeviceBinding> for super::DeviceBinding {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DeviceBinding,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                attestation: value.attestation?,
+                capabilities: value.capabilities?,
+                consumer_did: value.consumer_did?,
+                consumer_kind: value.consumer_kind?,
+                device_id: value.device_id?,
+                disabled_at: value.disabled_at?,
+                display_name: value.display_name?,
+                ext: value.ext?,
+                key_custody: value.key_custody?,
+                last_seen_at: value.last_seen_at?,
+                platform: value.platform?,
+                push_capable: value.push_capable?,
+                registered_at: value.registered_at?,
+                wiped_at: value.wiped_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DeviceBinding> for DeviceBinding {
+        fn from(value: super::DeviceBinding) -> Self {
+            Self {
+                attestation: Ok(value.attestation),
+                capabilities: Ok(value.capabilities),
+                consumer_did: Ok(value.consumer_did),
+                consumer_kind: Ok(value.consumer_kind),
+                device_id: Ok(value.device_id),
+                disabled_at: Ok(value.disabled_at),
+                display_name: Ok(value.display_name),
+                ext: Ok(value.ext),
+                key_custody: Ok(value.key_custody),
+                last_seen_at: Ok(value.last_seen_at),
+                platform: Ok(value.platform),
+                push_capable: Ok(value.push_capable),
+                registered_at: Ok(value.registered_at),
+                wiped_at: Ok(value.wiped_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct KeyCustody {
+        key_agreement_curve: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        signing_alg: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        tier: ::std::result::Result<super::KeyCustodyTier, ::std::string::String>,
+    }
+    impl ::std::default::Default for KeyCustody {
+        fn default() -> Self {
+            Self {
+                key_agreement_curve: Ok(Default::default()),
+                signing_alg: Ok(Default::default()),
+                tier: Err("no value supplied for tier".to_string()),
+            }
+        }
+    }
+    impl KeyCustody {
+        pub fn key_agreement_curve<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_agreement_curve = value.try_into().map_err(|e| {
+                format!("error converting supplied value for key_agreement_curve: {e}")
+            });
+            self
+        }
+        pub fn signing_alg<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.signing_alg = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for signing_alg: {e}"));
+            self
+        }
+        pub fn tier<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyCustodyTier>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tier = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tier: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<KeyCustody> for super::KeyCustody {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: KeyCustody,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                key_agreement_curve: value.key_agreement_curve?,
+                signing_alg: value.signing_alg?,
+                tier: value.tier?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::KeyCustody> for KeyCustody {
+        fn from(value: super::KeyCustody) -> Self {
+            Self {
+                key_agreement_curve: Ok(value.key_agreement_curve),
+                signing_alg: Ok(value.signing_alg),
+                tier: Ok(value.tier),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        capability_filter:
+            ::std::result::Result<::std::option::Option<super::Capability>, ::std::string::String>,
+        consumer_kind_filter: ::std::result::Result<
+            ::std::option::Option<super::PayloadConsumerKindFilter>,
+            ::std::string::String,
+        >,
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        form_factor_filter: ::std::result::Result<
+            ::std::option::Option<super::PayloadFormFactorFilter>,
+            ::std::string::String,
+        >,
+        include_disabled: ::std::result::Result<bool, ::std::string::String>,
+        include_wiped: ::std::result::Result<bool, ::std::string::String>,
+        last_seen_since: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        page_size: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        service_kind_filter: ::std::result::Result<
+            ::std::option::Option<super::PayloadServiceKindFilter>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                capability_filter: Ok(Default::default()),
+                consumer_kind_filter: Ok(Default::default()),
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                form_factor_filter: Ok(Default::default()),
+                include_disabled: Ok(Default::default()),
+                include_wiped: Ok(Default::default()),
+                last_seen_since: Ok(Default::default()),
+                page_size: Ok(Default::default()),
+                service_kind_filter: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn capability_filter<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Capability>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.capability_filter = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for capability_filter: {e}"));
+            self
+        }
+        pub fn consumer_kind_filter<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadConsumerKindFilter>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumer_kind_filter = value.try_into().map_err(|e| {
+                format!("error converting supplied value for consumer_kind_filter: {e}")
+            });
+            self
+        }
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn form_factor_filter<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadFormFactorFilter>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.form_factor_filter = value.try_into().map_err(|e| {
+                format!("error converting supplied value for form_factor_filter: {e}")
+            });
+            self
+        }
+        pub fn include_disabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.include_disabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for include_disabled: {e}"));
+            self
+        }
+        pub fn include_wiped<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.include_wiped = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for include_wiped: {e}"));
+            self
+        }
+        pub fn last_seen_since<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_seen_since = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_seen_since: {e}"));
+            self
+        }
+        pub fn page_size<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.page_size = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for page_size: {e}"));
+            self
+        }
+        pub fn service_kind_filter<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadServiceKindFilter>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.service_kind_filter = value.try_into().map_err(|e| {
+                format!("error converting supplied value for service_kind_filter: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                capability_filter: value.capability_filter?,
+                consumer_kind_filter: value.consumer_kind_filter?,
+                cursor: value.cursor?,
+                ext: value.ext?,
+                form_factor_filter: value.form_factor_filter?,
+                include_disabled: value.include_disabled?,
+                include_wiped: value.include_wiped?,
+                last_seen_since: value.last_seen_since?,
+                page_size: value.page_size?,
+                service_kind_filter: value.service_kind_filter?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                capability_filter: Ok(value.capability_filter),
+                consumer_kind_filter: Ok(value.consumer_kind_filter),
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                form_factor_filter: Ok(value.form_factor_filter),
+                include_disabled: Ok(value.include_disabled),
+                include_wiped: Ok(value.include_wiped),
+                last_seen_since: Ok(value.last_seen_since),
+                page_size: Ok(value.page_size),
+                service_kind_filter: Ok(value.service_kind_filter),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        devices:
+            ::std::result::Result<::std::vec::Vec<super::DeviceBinding>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        truncated: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                devices: Err("no value supplied for devices".to_string()),
+                ext: Ok(Default::default()),
+                truncated: Err("no value supplied for truncated".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn devices<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::DeviceBinding>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.devices = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for devices: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn truncated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.truncated = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for truncated: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                devices: value.devices?,
+                ext: value.ext?,
+                truncated: value.truncated?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                devices: Ok(value.devices),
+                ext: Ok(value.ext),
+                truncated: Ok(value.truncated),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/list/0.1";
@@ -1741,6 +2368,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Capability\": {\n      \"description\": \"Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each.\",\n      \"enum\": [\n        \"vault-read\",\n        \"vault-write\",\n        \"proxy-login\",\n        \"fill-release\",\n        \"policy-admin\",\n        \"device-admin\",\n        \"sign\",\n        \"key-mint\"\n      ],\n      \"title\": \"Capability\",\n      \"type\": \"string\"\n    },\n    \"ConsumerKind\": {\n      \"description\": \"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"formFactor\": {\n              \"enum\": [\n                \"browser\",\n                \"mobile\",\n                \"desktop\"\n              ],\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"companion\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"formFactor\"\n          ],\n          \"title\": \"Companion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"service\"\n            },\n            \"serviceKind\": {\n              \"enum\": [\n                \"mediator\",\n                \"ai-agent\",\n                \"daemon\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"serviceKind\"\n          ],\n          \"title\": \"Service\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ConsumerKind\"\n    },\n    \"DeviceAttestation\": {\n      \"description\": \"Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"aaguid\": {\n              \"description\": \"WebAuthn Authenticator AAGUID (UUID).\",\n              \"pattern\": \"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$\",\n              \"type\": \"string\"\n            },\n            \"attestationStatement\": {\n              \"description\": \"Base64url-encoded WebAuthn attestation statement, when supplied by the platform.\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"aaguid\"\n          ],\n          \"title\": \"WebAuthnAttestation\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"attestation\": {\n              \"type\": \"string\"\n            },\n            \"keyId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"apple-app-attest\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"keyId\",\n            \"attestation\"\n          ],\n          \"title\": \"AppleAppAttest\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"play-integrity\"\n            },\n            \"token\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"token\"\n          ],\n          \"title\": \"PlayIntegrity\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"tpm\"\n            },\n            \"quote\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"quote\"\n          ],\n          \"title\": \"Tpm\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"nitro-enclave\"\n            },\n            \"quote\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"quote\"\n          ],\n          \"title\": \"NitroEnclave\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"none\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"title\": \"NoAttestation\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"DeviceAttestation\"\n    },\n    \"DeviceBinding\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/DeviceAttestation\"\n        },\n        \"capabilities\": {\n          \"description\": \"Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Capability\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"consumerDid\": {\n          \"description\": \"The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"consumerKind\": {\n          \"$ref\": \"#/$defs/ConsumerKind\"\n        },\n        \"deviceId\": {\n          \"description\": \"Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disabledAt\": {\n          \"description\": \"Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"displayName\": {\n          \"description\": \"Human-readable name (e.g. \\\"Glenn's MacBook — Chrome\\\", \\\"iPhone 17\\\").\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyCustody\": {\n          \"$ref\": \"#/$defs/KeyCustody\",\n          \"description\": \"How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md.\"\n        },\n        \"lastSeenAt\": {\n          \"description\": \"Updated on every device/heartbeat and on any successful auth.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"platform\": {\n          \"description\": \"Free-form platform descriptor (e.g. \\\"macOS 16 / Chrome 142\\\", \\\"iOS 19.1\\\", \\\"Android 16\\\", \\\"Linux/x86_64\\\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.\",\n          \"type\": \"string\"\n        },\n        \"pushCapable\": {\n          \"description\": \"Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device.\",\n          \"type\": \"boolean\"\n        },\n        \"registeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"wipedAt\": {\n          \"description\": \"Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"consumerKind\",\n        \"displayName\",\n        \"registeredAt\",\n        \"consumerDid\"\n      ],\n      \"title\": \"DeviceBinding\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyCustody\": {\n      \"additionalProperties\": false,\n      \"description\": \"How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.\",\n      \"properties\": {\n        \"keyAgreementCurve\": {\n          \"description\": \"Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).\",\n          \"type\": \"string\"\n        },\n        \"signingAlg\": {\n          \"description\": \"JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).\",\n          \"type\": \"string\"\n        },\n        \"tier\": {\n          \"description\": \"`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.\",\n          \"enum\": [\n            \"hardware\",\n            \"software\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"tier\"\n      ],\n      \"title\": \"KeyCustody\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"type\": \"string\"\n        },\n        \"devices\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/DeviceBinding\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"truncated\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"devices\",\n        \"truncated\"\n      ],\n      \"title\": \"Device List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -269,6 +269,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -280,6 +281,11 @@ pub struct Payload {
     ///Type URI of the approved task, for correlation and display at the requester. Advisory on the same terms as the digest — the executor re-derives everything it enforces from the re-submitted payload itself.
     #[serde(rename = "taskType")]
     pub task_type: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Always `granted`. A denial sends no notice — the requester's re-submit discovers it, and a notice that could carry a denial would tempt a consumer into treating this advisory channel as the authoritative outcome, which it is not.
 ///
@@ -307,6 +313,7 @@ pub struct Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadStatus {
     #[serde(rename = "granted")]
     Granted,
@@ -347,6 +354,89 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
         value: ::std::string::String,
     ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        payload_digest: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        status: ::std::result::Result<super::PayloadStatus, ::std::string::String>,
+        task_type: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                payload_digest: Err("no value supplied for payload_digest".to_string()),
+                status: Err("no value supplied for status".to_string()),
+                task_type: Err("no value supplied for task_type".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn payload_digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.payload_digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for payload_digest: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn task_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.task_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for task_type: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                payload_digest: value.payload_digest?,
+                status: value.status?,
+                task_type: value.task_type?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                payload_digest: Ok(value.payload_digest),
+                status: Ok(value.status),
+                task_type: Ok(value.task_type),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

@@ -239,6 +239,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct JoinRequest {
     ///DID of the applicant.
     #[serde(rename = "applicantDid")]
@@ -281,6 +282,11 @@ pub struct JoinRequest {
     )]
     pub vp_claims:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+}
+impl JoinRequest {
+    pub fn builder() -> builder::JoinRequest {
+        Default::default()
+    }
 }
 ///DID of the applicant.
 ///
@@ -390,6 +396,7 @@ Distinct from `policyDecision`, which records the community's internal verdict: 
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct JoinRequestDecision {
     ///Stable refusal code, safe to branch on.
     pub code: ::std::string::String,
@@ -399,6 +406,11 @@ pub struct JoinRequestDecision {
     ///Elaboration in prose, when the decider gave one.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
+}
+impl JoinRequestDecision {
+    pub fn builder() -> builder::JoinRequestDecision {
+        Default::default()
+    }
 }
 ///Stable id of this join request (a UUID).
 ///
@@ -498,6 +510,7 @@ impl<'de> ::serde::Deserialize<'de> for JoinRequestId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum JoinRequestStatus {
     #[serde(rename = "pending")]
     Pending,
@@ -597,6 +610,7 @@ impl ::std::convert::TryFrom<::std::string::String> for JoinRequestStatus {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a prior page.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -618,6 +632,11 @@ impl ::std::default::Default for Payload {
             limit: Default::default(),
             status: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Filter to requests in this status.
@@ -650,6 +669,7 @@ impl ::std::default::Default for Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadStatus {
     #[serde(rename = "pending")]
     Pending,
@@ -749,6 +769,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -766,6 +787,450 @@ pub struct Response {
     )]
     pub total_estimate: ::std::option::Option<i64>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct JoinRequest {
+        applicant_did: ::std::result::Result<super::JoinRequestApplicantDid, ::std::string::String>,
+        decision: ::std::result::Result<
+            ::std::option::Option<super::JoinRequestDecision>,
+            ::std::string::String,
+        >,
+        extensions: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::JoinRequestId, ::std::string::String>,
+        policy_decision: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        registry_consent: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        status: ::std::result::Result<super::JoinRequestStatus, ::std::string::String>,
+        submitted_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        vp: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        vp_claims: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for JoinRequest {
+        fn default() -> Self {
+            Self {
+                applicant_did: Err("no value supplied for applicant_did".to_string()),
+                decision: Ok(Default::default()),
+                extensions: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                policy_decision: Ok(Default::default()),
+                registry_consent: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+                submitted_at: Err("no value supplied for submitted_at".to_string()),
+                vp: Err("no value supplied for vp".to_string()),
+                vp_claims: Ok(Default::default()),
+            }
+        }
+    }
+    impl JoinRequest {
+        pub fn applicant_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::JoinRequestApplicantDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.applicant_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for applicant_did: {e}"));
+            self
+        }
+        pub fn decision<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::JoinRequestDecision>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decision = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decision: {e}"));
+            self
+        }
+        pub fn extensions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extensions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extensions: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::JoinRequestId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn policy_decision<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy_decision = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy_decision: {e}"));
+            self
+        }
+        pub fn registry_consent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registry_consent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registry_consent: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::JoinRequestStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn submitted_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.submitted_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for submitted_at: {e}"));
+            self
+        }
+        pub fn vp<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vp = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vp: {e}"));
+            self
+        }
+        pub fn vp_claims<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vp_claims = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vp_claims: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<JoinRequest> for super::JoinRequest {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: JoinRequest,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                applicant_did: value.applicant_did?,
+                decision: value.decision?,
+                extensions: value.extensions?,
+                id: value.id?,
+                policy_decision: value.policy_decision?,
+                registry_consent: value.registry_consent?,
+                status: value.status?,
+                submitted_at: value.submitted_at?,
+                vp: value.vp?,
+                vp_claims: value.vp_claims?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::JoinRequest> for JoinRequest {
+        fn from(value: super::JoinRequest) -> Self {
+            Self {
+                applicant_did: Ok(value.applicant_did),
+                decision: Ok(value.decision),
+                extensions: Ok(value.extensions),
+                id: Ok(value.id),
+                policy_decision: Ok(value.policy_decision),
+                registry_consent: Ok(value.registry_consent),
+                status: Ok(value.status),
+                submitted_at: Ok(value.submitted_at),
+                vp: Ok(value.vp),
+                vp_claims: Ok(value.vp_claims),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct JoinRequestDecision {
+        code: ::std::result::Result<::std::string::String, ::std::string::String>,
+        decided_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for JoinRequestDecision {
+        fn default() -> Self {
+            Self {
+                code: Err("no value supplied for code".to_string()),
+                decided_at: Err("no value supplied for decided_at".to_string()),
+                reason: Ok(Default::default()),
+            }
+        }
+    }
+    impl JoinRequestDecision {
+        pub fn code<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.code = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for code: {e}"));
+            self
+        }
+        pub fn decided_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decided_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decided_at: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<JoinRequestDecision> for super::JoinRequestDecision {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: JoinRequestDecision,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                code: value.code?,
+                decided_at: value.decided_at?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::JoinRequestDecision> for JoinRequestDecision {
+        fn from(value: super::JoinRequestDecision) -> Self {
+            Self {
+                code: Ok(value.code),
+                decided_at: Ok(value.decided_at),
+                reason: Ok(value.reason),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        status: ::std::result::Result<
+            ::std::option::Option<super::PayloadStatus>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+                status: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadStatus>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                ext: value.ext?,
+                limit: value.limit?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+                status: Ok(value.status),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        items: ::std::result::Result<::std::vec::Vec<super::JoinRequest>, ::std::string::String>,
+        next_cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        total_estimate: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                items: Err("no value supplied for items".to_string()),
+                next_cursor: Ok(Default::default()),
+                total_estimate: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn items<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::JoinRequest>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.items = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for items: {e}"));
+            self
+        }
+        pub fn next_cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_cursor: {e}"));
+            self
+        }
+        pub fn total_estimate<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.total_estimate = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for total_estimate: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                items: value.items?,
+                next_cursor: value.next_cursor?,
+                total_estimate: value.total_estimate?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                items: Ok(value.items),
+                next_cursor: Ok(value.next_cursor),
+                total_estimate: Ok(value.total_estimate),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/join-requests/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -780,6 +1245,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"JoinRequest\": {\n      \"$anchor\": \"joinRequest\",\n      \"additionalProperties\": false,\n      \"description\": \"One application to join a Verifiable Trust Community.\",\n      \"properties\": {\n        \"applicantDid\": {\n          \"description\": \"DID of the applicant.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"decision\": {\n          \"additionalProperties\": false,\n          \"description\": \"Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\\n\\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.\",\n          \"properties\": {\n            \"code\": {\n              \"description\": \"Stable refusal code, safe to branch on.\",\n              \"type\": \"string\"\n            },\n            \"decidedAt\": {\n              \"description\": \"When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"reason\": {\n              \"description\": \"Elaboration in prose, when the decider gave one.\",\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"code\",\n            \"decidedAt\"\n          ],\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"description\": \"Stable id of this join request (a UUID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policyDecision\": {\n          \"description\": \"The community policy verdict recorded for this request (opaque here); absent while pending.\",\n          \"type\": \"object\"\n        },\n        \"registryConsent\": {\n          \"description\": \"Whether the applicant consented to trust-registry publication.\",\n          \"type\": \"boolean\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\",\n            \"deferred\"\n          ],\n          \"type\": \"string\"\n        },\n        \"submittedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"vp\": {\n          \"description\": \"The W3C Verifiable Presentation the applicant submitted (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"vpClaims\": {\n          \"description\": \"Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.\",\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"applicantDid\",\n        \"vp\",\n        \"submittedAt\",\n        \"status\"\n      ],\n      \"title\": \"JoinRequest\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/JoinRequest\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Join-Requests List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

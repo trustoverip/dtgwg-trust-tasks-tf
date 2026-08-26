@@ -172,6 +172,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -187,6 +188,11 @@ pub struct Payload {
     pub registry_consent: ::std::option::Option<bool>,
     ///The applicant's W3C Verifiable Presentation (opaque here), satisfying the community's join policy. The applicant DID is the document proof's signer — not a payload field.
     pub vp: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`Response`
 ///
@@ -221,6 +227,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -232,6 +239,11 @@ pub struct Response {
 
     `0.1` returned `status: "pending"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.*/
     pub verdict: Verdict,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Id of the created join request (a UUID).
 ///
@@ -330,9 +342,15 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRequestId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Verdict {
     pub effect: VerdictEffect,
     pub with: VerdictWith,
+}
+impl Verdict {
+    pub fn builder() -> builder::Verdict {
+        Default::default()
+    }
 }
 /**
 What the policy decided.
@@ -370,6 +388,7 @@ The four are not reducible to a pending/decided pair. `refer` and `requestMore` 
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum VerdictEffect {
     #[serde(rename = "allow")]
     Allow,
@@ -487,6 +506,7 @@ Every member is optional at the schema level and which ones are meaningful depen
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct VerdictWith {
     ///Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only.
     #[serde(
@@ -533,6 +553,11 @@ impl ::std::default::Default for VerdictWith {
             reason: Default::default(),
             role: Default::default(),
         }
+    }
+}
+impl VerdictWith {
+    pub fn builder() -> builder::VerdictWith {
+        Default::default()
     }
 }
 ///Stable refusal code, safe to branch on. `deny` only.
@@ -810,6 +835,385 @@ impl<'de> ::serde::Deserialize<'de> for VerdictWithRole {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        extensions: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        registry_consent: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        vp: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                extensions: Ok(Default::default()),
+                registry_consent: Ok(Default::default()),
+                vp: Err("no value supplied for vp".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn extensions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extensions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extensions: {e}"));
+            self
+        }
+        pub fn registry_consent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registry_consent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registry_consent: {e}"));
+            self
+        }
+        pub fn vp<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vp = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vp: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                extensions: value.extensions?,
+                registry_consent: value.registry_consent?,
+                vp: value.vp?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                extensions: Ok(value.extensions),
+                registry_consent: Ok(value.registry_consent),
+                vp: Ok(value.vp),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        request_id: ::std::result::Result<super::ResponseRequestId, ::std::string::String>,
+        verdict: ::std::result::Result<super::Verdict, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                request_id: Err("no value supplied for request_id".to_string()),
+                verdict: Err("no value supplied for verdict".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn request_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRequestId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.request_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for request_id: {e}"));
+            self
+        }
+        pub fn verdict<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Verdict>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verdict = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verdict: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                request_id: value.request_id?,
+                verdict: value.verdict?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                request_id: Ok(value.request_id),
+                verdict: Ok(value.verdict),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Verdict {
+        effect: ::std::result::Result<super::VerdictEffect, ::std::string::String>,
+        with: ::std::result::Result<super::VerdictWith, ::std::string::String>,
+    }
+    impl ::std::default::Default for Verdict {
+        fn default() -> Self {
+            Self {
+                effect: Err("no value supplied for effect".to_string()),
+                with: Err("no value supplied for with".to_string()),
+            }
+        }
+    }
+    impl Verdict {
+        pub fn effect<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VerdictEffect>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.effect = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for effect: {e}"));
+            self
+        }
+        pub fn with<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VerdictWith>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.with = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for with: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Verdict> for super::Verdict {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Verdict) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                effect: value.effect?,
+                with: value.with?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Verdict> for Verdict {
+        fn from(value: super::Verdict) -> Self {
+            Self {
+                effect: Ok(value.effect),
+                with: Ok(value.with),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct VerdictWith {
+        bundle_ref: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        code: ::std::result::Result<
+            ::std::option::Option<super::VerdictWithCode>,
+            ::std::string::String,
+        >,
+        needs: ::std::result::Result<
+            ::std::vec::Vec<super::VerdictWithNeedsItem>,
+            ::std::string::String,
+        >,
+        obligations: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        presentation_definition: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        queue: ::std::result::Result<
+            ::std::option::Option<super::VerdictWithQueue>,
+            ::std::string::String,
+        >,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        role: ::std::result::Result<
+            ::std::option::Option<super::VerdictWithRole>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for VerdictWith {
+        fn default() -> Self {
+            Self {
+                bundle_ref: Ok(Default::default()),
+                code: Ok(Default::default()),
+                needs: Ok(Default::default()),
+                obligations: Ok(Default::default()),
+                presentation_definition: Ok(Default::default()),
+                queue: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                role: Ok(Default::default()),
+            }
+        }
+    }
+    impl VerdictWith {
+        pub fn bundle_ref<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.bundle_ref = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for bundle_ref: {e}"));
+            self
+        }
+        pub fn code<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::VerdictWithCode>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.code = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for code: {e}"));
+            self
+        }
+        pub fn needs<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::VerdictWithNeedsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.needs = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for needs: {e}"));
+            self
+        }
+        pub fn obligations<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.obligations = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for obligations: {e}"));
+            self
+        }
+        pub fn presentation_definition<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.presentation_definition = value.try_into().map_err(|e| {
+                format!("error converting supplied value for presentation_definition: {e}")
+            });
+            self
+        }
+        pub fn queue<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::VerdictWithQueue>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.queue = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for queue: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::VerdictWithRole>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<VerdictWith> for super::VerdictWith {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: VerdictWith,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                bundle_ref: value.bundle_ref?,
+                code: value.code?,
+                needs: value.needs?,
+                obligations: value.obligations?,
+                presentation_definition: value.presentation_definition?,
+                queue: value.queue?,
+                reason: value.reason?,
+                role: value.role?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::VerdictWith> for VerdictWith {
+        fn from(value: super::VerdictWith) -> Self {
+            Self {
+                bundle_ref: Ok(value.bundle_ref),
+                code: Ok(value.code),
+                needs: Ok(value.needs),
+                obligations: Ok(value.obligations),
+                presentation_definition: Ok(value.presentation_definition),
+                queue: Ok(value.queue),
+                reason: Ok(value.reason),
+                role: Ok(value.role),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/join-requests/submit/0.2";
     const IS_PROOF_REQUIRED: bool = true;
@@ -826,6 +1230,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"Id of the created join request (a UUID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"verdict\": {\n          \"$ref\": \"#/$defs/Verdict\",\n          \"description\": \"What the community decided about this submission.\\n\\n`0.1` returned `status: \\\"pending\\\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"verdict\"\n      ],\n      \"title\": \"VTC Join-Requests Submit — response payload\",\n      \"type\": \"object\"\n    },\n    \"Verdict\": {\n      \"$anchor\": \"verdict\",\n      \"additionalProperties\": false,\n      \"description\": \"A ceremony decision: the effect, plus its effect-dependent detail.\",\n      \"properties\": {\n        \"effect\": {\n          \"$ref\": \"#/$defs/VerdictEffect\"\n        },\n        \"with\": {\n          \"$ref\": \"#/$defs/VerdictWith\"\n        }\n      },\n      \"required\": [\n        \"effect\",\n        \"with\"\n      ],\n      \"title\": \"Verdict\",\n      \"type\": \"object\"\n    },\n    \"VerdictEffect\": {\n      \"$anchor\": \"verdictEffect\",\n      \"description\": \"What the policy decided.\\n\\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\\n\\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.\",\n      \"enum\": [\n        \"allow\",\n        \"deny\",\n        \"refer\",\n        \"requestMore\"\n      ],\n      \"title\": \"VerdictEffect\",\n      \"type\": \"string\"\n    },\n    \"VerdictWith\": {\n      \"$anchor\": \"verdictWith\",\n      \"additionalProperties\": false,\n      \"description\": \"The effect-dependent detail of a verdict.\\n\\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.\",\n      \"properties\": {\n        \"bundleRef\": {\n          \"description\": \"Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only.\",\n          \"type\": \"object\"\n        },\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. `deny` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"needs\": {\n          \"description\": \"What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"obligations\": {\n          \"description\": \"Conditions attached to the grant. `allow` only.\",\n          \"type\": \"object\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.\",\n          \"type\": \"object\"\n        },\n        \"queue\": {\n          \"description\": \"Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. `deny` and `refer`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"role\": {\n          \"description\": \"The granted local role. `allow` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"VerdictWith\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -167,6 +167,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///How the caller's record is handled on removal. Omitted = the community's policy default.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -180,6 +181,11 @@ impl ::std::default::Default for Payload {
             disposition: Default::default(),
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///How the caller's record is handled on removal. Omitted = the community's policy default.
@@ -211,6 +217,7 @@ impl ::std::default::Default for Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadDisposition {
     #[serde(rename = "purge")]
     Purge,
@@ -307,6 +314,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadDisposition {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The removed member (the caller).
     pub did: ResponseDid,
@@ -315,6 +323,11 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub removed: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The removed member (the caller).
 ///
@@ -413,6 +426,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDid {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseDisposition {
     #[serde(rename = "purge")]
     Purge,
@@ -463,6 +477,144 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseDisposition {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        disposition: ::std::result::Result<
+            ::std::option::Option<super::PayloadDisposition>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                disposition: Ok(Default::default()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn disposition<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadDisposition>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disposition = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disposition: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                disposition: value.disposition?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                disposition: Ok(value.disposition),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
+        disposition: ::std::result::Result<super::ResponseDisposition, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        removed: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                disposition: Err("no value supplied for disposition".to_string()),
+                ext: Ok(Default::default()),
+                removed: Err("no value supplied for removed".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn disposition<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseDisposition>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disposition = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disposition: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn removed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.removed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for removed: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                disposition: value.disposition?,
+                ext: value.ext?,
+                removed: value.removed?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                did: Ok(value.did),
+                disposition: Ok(value.disposition),
+                ext: Ok(value.ext),
+                removed: Ok(value.removed),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/members/self-remove/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -479,6 +631,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The removed member (the caller).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disposition\": {\n          \"description\": \"The disposition actually applied (policydefault resolved to a concrete one).\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"removed\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"disposition\",\n        \"removed\"\n      ],\n      \"title\": \"VTC Members Self-Remove — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

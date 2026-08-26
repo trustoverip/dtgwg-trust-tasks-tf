@@ -173,6 +173,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.
     pub did: PayloadDid,
@@ -182,6 +183,11 @@ pub struct Payload {
     ///Optional operator-supplied label for the new passkey (e.g. "MacBook Touch ID"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub label: ::std::option::Option<PayloadLabel>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.
 ///
@@ -396,6 +402,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.
     #[serde(rename = "ceremonyId")]
@@ -427,6 +434,11 @@ pub struct Response {
     ///WebAuthn user name (e.g. the DID or the operator-supplied label).
     #[serde(rename = "userName")]
     pub user_name: ResponseUserName,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.
 ///
@@ -911,6 +923,229 @@ impl<'de> ::serde::Deserialize<'de> for ResponseUserName {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::PayloadLabel>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                label: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+                label: value.label?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                label: Ok(value.label),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ceremony_id: ::std::result::Result<super::ResponseCeremonyId, ::std::string::String>,
+        challenge: ::std::result::Result<super::ResponseChallenge, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        rp_id: ::std::result::Result<super::ResponseRpId, ::std::string::String>,
+        rp_name: ::std::result::Result<super::ResponseRpName, ::std::string::String>,
+        timeout_ms: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        user_display_name:
+            ::std::result::Result<super::ResponseUserDisplayName, ::std::string::String>,
+        user_handle: ::std::result::Result<super::ResponseUserHandle, ::std::string::String>,
+        user_name: ::std::result::Result<super::ResponseUserName, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ceremony_id: Err("no value supplied for ceremony_id".to_string()),
+                challenge: Err("no value supplied for challenge".to_string()),
+                ext: Ok(Default::default()),
+                rp_id: Err("no value supplied for rp_id".to_string()),
+                rp_name: Err("no value supplied for rp_name".to_string()),
+                timeout_ms: Ok(Default::default()),
+                user_display_name: Err("no value supplied for user_display_name".to_string()),
+                user_handle: Err("no value supplied for user_handle".to_string()),
+                user_name: Err("no value supplied for user_name".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ceremony_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseCeremonyId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ceremony_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ceremony_id: {e}"));
+            self
+        }
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn rp_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRpId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rp_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rp_id: {e}"));
+            self
+        }
+        pub fn rp_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRpName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rp_name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rp_name: {e}"));
+            self
+        }
+        pub fn timeout_ms<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.timeout_ms = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for timeout_ms: {e}"));
+            self
+        }
+        pub fn user_display_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseUserDisplayName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user_display_name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user_display_name: {e}"));
+            self
+        }
+        pub fn user_handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseUserHandle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user_handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user_handle: {e}"));
+            self
+        }
+        pub fn user_name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseUserName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user_name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user_name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ceremony_id: value.ceremony_id?,
+                challenge: value.challenge?,
+                ext: value.ext?,
+                rp_id: value.rp_id?,
+                rp_name: value.rp_name?,
+                timeout_ms: value.timeout_ms?,
+                user_display_name: value.user_display_name?,
+                user_handle: value.user_handle?,
+                user_name: value.user_name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ceremony_id: Ok(value.ceremony_id),
+                challenge: Ok(value.challenge),
+                ext: Ok(value.ext),
+                rp_id: Ok(value.rp_id),
+                rp_name: Ok(value.rp_name),
+                timeout_ms: Ok(value.timeout_ms),
+                user_display_name: Ok(value.user_display_name),
+                user_handle: Ok(value.user_handle),
+                user_name: Ok(value.user_name),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =
         "https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1";
@@ -928,6 +1163,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.\",\n      \"properties\": {\n        \"ceremonyId\": {\n          \"description\": \"Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"challenge\": {\n          \"description\": \"WebAuthn challenge (base64url, no padding; at least 32 random bytes).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"rpId\": {\n          \"description\": \"WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"rpName\": {\n          \"description\": \"Human-readable Relying-Party name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeoutMs\": {\n          \"description\": \"Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"userDisplayName\": {\n          \"description\": \"WebAuthn user display name.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"userHandle\": {\n          \"description\": \"Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"userName\": {\n          \"description\": \"WebAuthn user name (e.g. the DID or the operator-supplied label).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ceremonyId\",\n        \"challenge\",\n        \"rpId\",\n        \"rpName\",\n        \"userHandle\",\n        \"userName\",\n        \"userDisplayName\"\n      ],\n      \"title\": \"VTA Passkey-VM Enroll Challenge — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -68,6 +68,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ChainBreak {
     ///Identifier of the offending envelope, when it has one (an unparseable envelope may not).
     #[serde(
@@ -80,6 +81,11 @@ pub struct ChainBreak {
     pub index: u64,
     ///`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication.
     pub kind: ChainBreakKind,
+}
+impl ChainBreak {
+    pub fn builder() -> builder::ChainBreak {
+        Default::default()
+    }
 }
 ///`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication.
 ///
@@ -108,6 +114,7 @@ pub struct ChainBreak {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ChainBreakKind {
     #[serde(rename = "tamperedEntry")]
     TamperedEntry,
@@ -373,6 +380,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -382,6 +390,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.
@@ -444,6 +457,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Present iff `verified` is false — the first inconsistency found. Absent when verified.
     #[serde(
@@ -472,6 +486,259 @@ pub struct Response {
     ///True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity.
     pub verified: bool,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct ChainBreak {
+        event_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        index: ::std::result::Result<u64, ::std::string::String>,
+        kind: ::std::result::Result<super::ChainBreakKind, ::std::string::String>,
+    }
+    impl ::std::default::Default for ChainBreak {
+        fn default() -> Self {
+            Self {
+                event_id: Ok(Default::default()),
+                index: Err("no value supplied for index".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+            }
+        }
+    }
+    impl ChainBreak {
+        pub fn event_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.event_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for event_id: {e}"));
+            self
+        }
+        pub fn index<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.index = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for index: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ChainBreakKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ChainBreak> for super::ChainBreak {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ChainBreak,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                event_id: value.event_id?,
+                index: value.index?,
+                kind: value.kind?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ChainBreak> for ChainBreak {
+        fn from(value: super::ChainBreak) -> Self {
+            Self {
+                event_id: Ok(value.event_id),
+                index: Ok(value.index),
+                kind: Ok(value.kind),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        chain_break:
+            ::std::result::Result<::std::option::Option<super::ChainBreak>, ::std::string::String>,
+        entries_examined: ::std::result::Result<u64, ::std::string::String>,
+        entries_verified: ::std::result::Result<u64, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        head: ::std::result::Result<
+            ::std::option::Option<super::DigestMultibase>,
+            ::std::string::String,
+        >,
+        legacy_skipped: ::std::result::Result<u64, ::std::string::String>,
+        unparseable_skipped: ::std::result::Result<u64, ::std::string::String>,
+        verified: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                chain_break: Ok(Default::default()),
+                entries_examined: Err("no value supplied for entries_examined".to_string()),
+                entries_verified: Err("no value supplied for entries_verified".to_string()),
+                ext: Ok(Default::default()),
+                head: Ok(Default::default()),
+                legacy_skipped: Err("no value supplied for legacy_skipped".to_string()),
+                unparseable_skipped: Err("no value supplied for unparseable_skipped".to_string()),
+                verified: Err("no value supplied for verified".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn chain_break<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ChainBreak>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.chain_break = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for chain_break: {e}"));
+            self
+        }
+        pub fn entries_examined<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries_examined = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries_examined: {e}"));
+            self
+        }
+        pub fn entries_verified<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries_verified = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries_verified: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn head<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DigestMultibase>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.head = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for head: {e}"));
+            self
+        }
+        pub fn legacy_skipped<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.legacy_skipped = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for legacy_skipped: {e}"));
+            self
+        }
+        pub fn unparseable_skipped<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.unparseable_skipped = value.try_into().map_err(|e| {
+                format!("error converting supplied value for unparseable_skipped: {e}")
+            });
+            self
+        }
+        pub fn verified<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verified = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verified: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                chain_break: value.chain_break?,
+                entries_examined: value.entries_examined?,
+                entries_verified: value.entries_verified?,
+                ext: value.ext?,
+                head: value.head?,
+                legacy_skipped: value.legacy_skipped?,
+                unparseable_skipped: value.unparseable_skipped?,
+                verified: value.verified?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                chain_break: Ok(value.chain_break),
+                entries_examined: Ok(value.entries_examined),
+                entries_verified: Ok(value.entries_verified),
+                ext: Ok(value.ext),
+                head: Ok(value.head),
+                legacy_skipped: Ok(value.legacy_skipped),
+                unparseable_skipped: Ok(value.unparseable_skipped),
+                verified: Ok(value.verified),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/audit/verify/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -485,6 +752,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ChainBreak\": {\n      \"$anchor\": \"chainBreak\",\n      \"additionalProperties\": false,\n      \"description\": \"Locates the first envelope at which chain verification failed.\",\n      \"properties\": {\n        \"eventId\": {\n          \"description\": \"Identifier of the offending envelope, when it has one (an unparseable envelope may not).\",\n          \"type\": \"string\"\n        },\n        \"index\": {\n          \"description\": \"Zero-based position in chronological order of the offending envelope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"kind\": {\n          \"description\": \"`tamperedEntry`: the envelope's content changed after writing, so its `entryHash` no longer re-derives. `brokenLink`: the envelope's `prevHash` does not point at its predecessor's `entryHash` — a reorder, drop, insertion, or duplication.\",\n          \"enum\": [\n            \"tamperedEntry\",\n            \"brokenLink\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"index\"\n      ],\n      \"title\": \"ChainBreak\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.\",\n      \"properties\": {\n        \"chainBreak\": {\n          \"$ref\": \"#/$defs/ChainBreak\",\n          \"description\": \"Present iff `verified` is false — the first inconsistency found. Absent when verified.\"\n        },\n        \"entriesExamined\": {\n          \"description\": \"Total envelopes walked, including those skipped.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"entriesVerified\": {\n          \"description\": \"Envelopes whose links were actually checked (examined minus skipped).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.\"\n        },\n        \"legacySkipped\": {\n          \"description\": \"Envelopes stepped over because they predate the hash-chain format. A value > 0 on a store that should hold none is itself a finding — skipped envelopes are an insertion point, not a verified prefix.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"unparseableSkipped\": {\n          \"description\": \"Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"verified\": {\n          \"description\": \"True iff the chain is internally consistent end-to-end: every examined envelope re-derived its `entryHash` and its `prevHash` matched its predecessor. See Security & Privacy — this proves consistency, NOT authenticity.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"verified\",\n        \"entriesExamined\",\n        \"entriesVerified\",\n        \"legacySkipped\",\n        \"unparseableSkipped\"\n      ],\n      \"title\": \"Audit Verify — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

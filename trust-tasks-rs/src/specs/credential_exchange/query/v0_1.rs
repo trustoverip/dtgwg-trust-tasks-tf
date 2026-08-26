@@ -177,6 +177,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own.
     pub dcql_query: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -186,6 +187,11 @@ pub struct Payload {
     pub nonce: PayloadNonce,
     ///The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.
     pub purpose: PayloadPurpose,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.
 ///
@@ -323,6 +329,94 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPurpose {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        dcql_query: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        nonce: ::std::result::Result<super::PayloadNonce, ::std::string::String>,
+        purpose: ::std::result::Result<super::PayloadPurpose, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                dcql_query: Err("no value supplied for dcql_query".to_string()),
+                ext: Ok(Default::default()),
+                nonce: Err("no value supplied for nonce".to_string()),
+                purpose: Err("no value supplied for purpose".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn dcql_query<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.dcql_query = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for dcql_query: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn nonce<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadNonce>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.nonce = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for nonce: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadPurpose>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                dcql_query: value.dcql_query?,
+                ext: value.ext?,
+                nonce: value.nonce?,
+                purpose: value.purpose?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                dcql_query: Ok(value.dcql_query),
+                ext: Ok(value.ext),
+                nonce: Ok(value.nonce),
+                purpose: Ok(value.purpose),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

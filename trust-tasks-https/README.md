@@ -59,7 +59,9 @@ let server = HttpsServer::builder()
         ("alice", "did:web:alice.example"),
     ]))
     .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, _ctx| {
-        Ok(grant::v0_1::Response { entry: req.payload.entry.clone() })
+        Ok(grant::v0_1::Response::builder()
+            .entry(req.payload.entry.clone())
+            .try_into()?)
     })
     .build();
 
@@ -79,8 +81,16 @@ let client = HttpsClient::builder()
     .my_token("alice")
     .build()?;
 
-let req = TrustTask::for_payload("urn:uuid:...", grant::v0_1::Payload { ... });
-let resp: TrustTask<grant::v0_1::Response> = client.send(req).await?;
+// Generated payload types are `#[non_exhaustive]` and built through their
+// builder, so only the members this request carries are named.
+let payload: grant::v0_1::Payload = grant::v0_1::Payload::builder()
+    .entry(entry)
+    .try_into()?;
+let req = TrustTask::for_payload("urn:uuid:...", payload);
+
+// One type parameter: the response type is `RequestPayload::Response`, paired
+// with the request by the codegen, so a mismatched pair cannot be written.
+let resp = client.send::<grant::v0_1::Payload>(req).await?;
 ```
 
 ## Demo

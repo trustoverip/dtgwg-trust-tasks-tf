@@ -171,6 +171,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -178,6 +179,11 @@ pub struct Payload {
     pub handle: PayloadHandle,
     ///The trigger allowlist the VTA computed by its own policy — the DIDs permitted to wake this handle (typically the device's mediator and/or the VTA itself). Empty disables waking.
     pub policy: WakeTriggerPolicy,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The opaque gateway-issued handle (from push/register) whose allowlist is being set.
 ///
@@ -280,12 +286,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHandle {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub handle: ResponseHandle,
     ///The effective allowlist the gateway recorded.
     pub policy: WakeTriggerPolicy,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseHandle`
 ///
@@ -384,10 +396,16 @@ impl<'de> ::serde::Deserialize<'de> for ResponseHandle {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct WakeTriggerPolicy {
     ///DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
     #[serde(rename = "allowedTriggers")]
     pub allowed_triggers: Vec<WakeTriggerPolicyAllowedTriggersItem>,
+}
+impl WakeTriggerPolicy {
+    pub fn builder() -> builder::WakeTriggerPolicy {
+        Default::default()
+    }
 }
 ///`WakeTriggerPolicyAllowedTriggersItem`
 ///
@@ -457,6 +475,184 @@ impl<'de> ::serde::Deserialize<'de> for WakeTriggerPolicyAllowedTriggersItem {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        handle: ::std::result::Result<super::PayloadHandle, ::std::string::String>,
+        policy: ::std::result::Result<super::WakeTriggerPolicy, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                handle: Err("no value supplied for handle".to_string()),
+                policy: Err("no value supplied for policy".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadHandle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for handle: {e}"));
+            self
+        }
+        pub fn policy<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WakeTriggerPolicy>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                handle: value.handle?,
+                policy: value.policy?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                handle: Ok(value.handle),
+                policy: Ok(value.policy),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        handle: ::std::result::Result<super::ResponseHandle, ::std::string::String>,
+        policy: ::std::result::Result<super::WakeTriggerPolicy, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                handle: Err("no value supplied for handle".to_string()),
+                policy: Err("no value supplied for policy".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn handle<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseHandle>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.handle = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for handle: {e}"));
+            self
+        }
+        pub fn policy<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WakeTriggerPolicy>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                handle: value.handle?,
+                policy: value.policy?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                handle: Ok(value.handle),
+                policy: Ok(value.policy),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct WakeTriggerPolicy {
+        allowed_triggers: ::std::result::Result<
+            Vec<super::WakeTriggerPolicyAllowedTriggersItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for WakeTriggerPolicy {
+        fn default() -> Self {
+            Self {
+                allowed_triggers: Err("no value supplied for allowed_triggers".to_string()),
+            }
+        }
+    }
+    impl WakeTriggerPolicy {
+        pub fn allowed_triggers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::WakeTriggerPolicyAllowedTriggersItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.allowed_triggers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for allowed_triggers: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<WakeTriggerPolicy> for super::WakeTriggerPolicy {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: WakeTriggerPolicy,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                allowed_triggers: value.allowed_triggers?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::WakeTriggerPolicy> for WakeTriggerPolicy {
+        fn from(value: super::WakeTriggerPolicy) -> Self {
+            Self {
+                allowed_triggers: Ok(value.allowed_triggers),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/push/provision/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -470,6 +666,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n          \"description\": \"The effective allowlist the gateway recorded.\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"policy\"\n      ],\n      \"title\": \"Push Provision — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeTriggerPolicy\": {\n      \"additionalProperties\": false,\n      \"description\": \"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\n      \"properties\": {\n        \"allowedTriggers\": {\n          \"description\": \"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"allowedTriggers\"\n      ],\n      \"title\": \"WakeTriggerPolicy\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

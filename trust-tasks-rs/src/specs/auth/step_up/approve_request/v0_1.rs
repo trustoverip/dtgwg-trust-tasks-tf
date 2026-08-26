@@ -69,6 +69,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialDescriptor {
     ///base64url-encoded credential id.
     pub id: ::std::string::String,
@@ -76,6 +77,11 @@ pub struct CredentialDescriptor {
     pub transports: ::std::vec::Vec<CredentialDescriptorTransportsItem>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
+}
+impl CredentialDescriptor {
+    pub fn builder() -> builder::CredentialDescriptor {
+        Default::default()
+    }
 }
 ///`CredentialDescriptorTransportsItem`
 ///
@@ -105,6 +111,7 @@ pub struct CredentialDescriptor {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CredentialDescriptorTransportsItem {
     #[serde(rename = "usb")]
     Usb,
@@ -213,6 +220,7 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTran
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct CredentialRequestOptions {
     #[serde(
         rename = "allowCredentials",
@@ -244,6 +252,11 @@ pub struct CredentialRequestOptions {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
+}
+impl CredentialRequestOptions {
+    pub fn builder() -> builder::CredentialRequestOptions {
+        Default::default()
+    }
 }
 ///`CredentialRequestOptionsRpId`
 ///
@@ -339,6 +352,7 @@ impl<'de> ::serde::Deserialize<'de> for CredentialRequestOptionsRpId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum CredentialRequestOptionsUserVerification {
     #[serde(rename = "discouraged")]
     Discouraged,
@@ -570,6 +584,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`.
     #[serde(
@@ -603,6 +618,11 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub webauthn: ::std::option::Option<CredentialRequestOptions>,
 }
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
+}
 ///`PayloadAcceptableEvidenceItem`
 ///
 /// <details><summary>JSON schema</summary>
@@ -629,6 +649,7 @@ pub struct Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadAcceptableEvidenceItem {
     #[serde(rename = "did-signed")]
     DidSigned,
@@ -987,6 +1008,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -995,6 +1017,11 @@ pub struct Response {
     pub reason: ::std::option::Option<::std::string::String>,
     ///`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.
     pub status: ResponseStatus,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.
 ///
@@ -1023,6 +1050,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseStatus {
     #[serde(rename = "accepted")]
     Accepted,
@@ -1069,6 +1097,442 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct CredentialDescriptor {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        transports: ::std::result::Result<
+            ::std::vec::Vec<super::CredentialDescriptorTransportsItem>,
+            ::std::string::String,
+        >,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for CredentialDescriptor {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                transports: Ok(Default::default()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl CredentialDescriptor {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn transports<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::CredentialDescriptorTransportsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.transports = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for transports: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialDescriptor> for super::CredentialDescriptor {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialDescriptor,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                transports: value.transports?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialDescriptor> for CredentialDescriptor {
+        fn from(value: super::CredentialDescriptor) -> Self {
+            Self {
+                id: Ok(value.id),
+                transports: Ok(value.transports),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct CredentialRequestOptions {
+        allow_credentials: ::std::result::Result<
+            ::std::vec::Vec<super::CredentialDescriptor>,
+            ::std::string::String,
+        >,
+        challenge: ::std::result::Result<::std::string::String, ::std::string::String>,
+        extensions: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        rp_id: ::std::result::Result<
+            ::std::option::Option<super::CredentialRequestOptionsRpId>,
+            ::std::string::String,
+        >,
+        timeout: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        user_verification: ::std::result::Result<
+            ::std::option::Option<super::CredentialRequestOptionsUserVerification>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for CredentialRequestOptions {
+        fn default() -> Self {
+            Self {
+                allow_credentials: Ok(Default::default()),
+                challenge: Err("no value supplied for challenge".to_string()),
+                extensions: Ok(Default::default()),
+                rp_id: Ok(Default::default()),
+                timeout: Ok(Default::default()),
+                user_verification: Ok(Default::default()),
+            }
+        }
+    }
+    impl CredentialRequestOptions {
+        pub fn allow_credentials<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::CredentialDescriptor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.allow_credentials = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for allow_credentials: {e}"));
+            self
+        }
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn extensions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extensions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extensions: {e}"));
+            self
+        }
+        pub fn rp_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::CredentialRequestOptionsRpId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rp_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rp_id: {e}"));
+            self
+        }
+        pub fn timeout<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.timeout = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for timeout: {e}"));
+            self
+        }
+        pub fn user_verification<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::CredentialRequestOptionsUserVerification>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.user_verification = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for user_verification: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<CredentialRequestOptions> for super::CredentialRequestOptions {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: CredentialRequestOptions,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                allow_credentials: value.allow_credentials?,
+                challenge: value.challenge?,
+                extensions: value.extensions?,
+                rp_id: value.rp_id?,
+                timeout: value.timeout?,
+                user_verification: value.user_verification?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::CredentialRequestOptions> for CredentialRequestOptions {
+        fn from(value: super::CredentialRequestOptions) -> Self {
+            Self {
+                allow_credentials: Ok(value.allow_credentials),
+                challenge: Ok(value.challenge),
+                extensions: Ok(value.extensions),
+                rp_id: Ok(value.rp_id),
+                timeout: Ok(value.timeout),
+                user_verification: Ok(value.user_verification),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        acceptable_evidence: ::std::result::Result<
+            ::std::option::Option<Vec<super::PayloadAcceptableEvidenceItem>>,
+            ::std::string::String,
+        >,
+        challenge: ::std::result::Result<super::PayloadChallenge, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<super::PayloadReason, ::std::string::String>,
+        session_id: ::std::result::Result<super::PayloadSessionId, ::std::string::String>,
+        subject: ::std::result::Result<super::PayloadSubject, ::std::string::String>,
+        target_acr: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ttl: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        webauthn: ::std::result::Result<
+            ::std::option::Option<super::CredentialRequestOptions>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                acceptable_evidence: Ok(Default::default()),
+                challenge: Err("no value supplied for challenge".to_string()),
+                ext: Ok(Default::default()),
+                reason: Err("no value supplied for reason".to_string()),
+                session_id: Err("no value supplied for session_id".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+                target_acr: Ok(Default::default()),
+                ttl: Ok(Default::default()),
+                webauthn: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn acceptable_evidence<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<Vec<super::PayloadAcceptableEvidenceItem>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.acceptable_evidence = value.try_into().map_err(|e| {
+                format!("error converting supplied value for acceptable_evidence: {e}")
+            });
+            self
+        }
+        pub fn challenge<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadChallenge>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.challenge = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadReason>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn session_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSessionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session_id: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+        pub fn target_acr<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target_acr = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target_acr: {e}"));
+            self
+        }
+        pub fn ttl<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ttl = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ttl: {e}"));
+            self
+        }
+        pub fn webauthn<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::CredentialRequestOptions>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.webauthn = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for webauthn: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                acceptable_evidence: value.acceptable_evidence?,
+                challenge: value.challenge?,
+                ext: value.ext?,
+                reason: value.reason?,
+                session_id: value.session_id?,
+                subject: value.subject?,
+                target_acr: value.target_acr?,
+                ttl: value.ttl?,
+                webauthn: value.webauthn?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                acceptable_evidence: Ok(value.acceptable_evidence),
+                challenge: Ok(value.challenge),
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                session_id: Ok(value.session_id),
+                subject: Ok(value.subject),
+                target_acr: Ok(value.target_acr),
+                ttl: Ok(value.ttl),
+                webauthn: Ok(value.webauthn),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                reason: value.reason?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                status: Ok(value.status),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/step-up/approve-request/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -1085,6 +1549,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialRequestOptions\": {\n      \"$anchor\": \"credentialRequestOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\n      \"properties\": {\n        \"allowCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"rpId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"userVerification\": {\n          \"enum\": [\n            \"discouraged\",\n            \"preferred\",\n            \"required\"\n          ]\n        }\n      },\n      \"required\": [\n        \"challenge\"\n      ],\n      \"title\": \"PublicKeyCredentialRequestOptions\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

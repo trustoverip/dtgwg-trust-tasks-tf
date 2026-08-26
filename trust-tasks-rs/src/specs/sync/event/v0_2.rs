@@ -78,6 +78,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AclChangedEvent {
     pub change: AclChangedEventChange,
     pub kind: ::serde_json::Value,
@@ -86,6 +87,11 @@ pub struct AclChangedEvent {
     pub seq: ::std::num::NonZeroU64,
     ///DID of the consumer whose ACL entry changed.
     pub subject: ::std::string::String,
+}
+impl AclChangedEvent {
+    pub fn builder() -> builder::AclChangedEvent {
+        Default::default()
+    }
 }
 ///`AclChangedEventChange`
 ///
@@ -117,6 +123,7 @@ pub struct AclChangedEvent {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum AclChangedEventChange {
     #[serde(rename = "granted")]
     Granted,
@@ -226,6 +233,7 @@ impl ::std::convert::TryFrom<::std::string::String> for AclChangedEventChange {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AttachmentRef {
     ///Optional MIME type hint for the consumer UI (e.g. "text/plain", "application/x-pem-file").
     #[serde(
@@ -243,6 +251,11 @@ pub struct AttachmentRef {
     ///Size of the encrypted blob in bytes. Maintainers MAY enforce a maximum per attachment and per entry.
     #[serde(rename = "sizeBytes")]
     pub size_bytes: u64,
+}
+impl AttachmentRef {
+    pub fn builder() -> builder::AttachmentRef {
+        Default::default()
+    }
 }
 ///Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism.
 ///
@@ -592,10 +605,16 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     pub event: SyncEvent,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PolicyChangedEvent`
 ///
@@ -642,6 +661,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PolicyChangedEvent {
     pub change: PolicyChangedEventChange,
     pub kind: ::serde_json::Value,
@@ -650,6 +670,11 @@ pub struct PolicyChangedEvent {
     #[serde(rename = "policyId")]
     pub policy_id: ::std::string::String,
     pub seq: ::std::num::NonZeroU64,
+}
+impl PolicyChangedEvent {
+    pub fn builder() -> builder::PolicyChangedEvent {
+        Default::default()
+    }
 }
 ///`PolicyChangedEventChange`
 ///
@@ -678,6 +703,7 @@ pub struct PolicyChangedEvent {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PolicyChangedEventChange {
     #[serde(rename = "created")]
     Created,
@@ -770,6 +796,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyChangedEventChange
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum SecretKind {
     #[serde(rename = "password")]
     Password,
@@ -950,6 +977,7 @@ impl ::std::convert::TryFrom<::std::string::String> for SecretKind {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum SiteTarget {
     ///WebOrigin
     #[serde(rename = "webOrigin")]
@@ -1385,6 +1413,7 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetTeamId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum SyncEvent {
     VaultUpsertedEvent(VaultUpsertedEvent),
     VaultDeletedEvent(VaultDeletedEvent),
@@ -1456,6 +1485,7 @@ impl ::std::convert::From<PolicyChangedEvent> for SyncEvent {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct VaultDeletedEvent {
     #[serde(rename = "contextId")]
     pub context_id: ::std::string::String,
@@ -1466,6 +1496,11 @@ pub struct VaultDeletedEvent {
     #[serde(rename = "occurredAt")]
     pub occurred_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub seq: ::std::num::NonZeroU64,
+}
+impl VaultDeletedEvent {
+    pub fn builder() -> builder::VaultDeletedEvent {
+        Default::default()
+    }
 }
 ///`VaultEntry`
 ///
@@ -1616,6 +1651,7 @@ pub struct VaultDeletedEvent {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct VaultEntry {
     ///References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -1709,6 +1745,11 @@ pub struct VaultEntry {
     pub updated_by: ::std::option::Option<::std::string::String>,
     ///Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync.
     pub version: u64,
+}
+impl VaultEntry {
+    pub fn builder() -> builder::VaultEntry {
+        Default::default()
+    }
 }
 ///Identifier of the trust context (persona) the entry belongs to. Opaque string interpreted by the vault maintainer; corresponds to a single ContextRecord on the VTA side.
 ///
@@ -2303,12 +2344,944 @@ impl<'de> ::serde::Deserialize<'de> for VaultEntryTagsItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct VaultUpsertedEvent {
     pub entry: VaultEntry,
     pub kind: ::serde_json::Value,
     #[serde(rename = "occurredAt")]
     pub occurred_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub seq: ::std::num::NonZeroU64,
+}
+impl VaultUpsertedEvent {
+    pub fn builder() -> builder::VaultUpsertedEvent {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AclChangedEvent {
+        change: ::std::result::Result<super::AclChangedEventChange, ::std::string::String>,
+        kind: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        occurred_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        seq: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        subject: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for AclChangedEvent {
+        fn default() -> Self {
+            Self {
+                change: Err("no value supplied for change".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                occurred_at: Err("no value supplied for occurred_at".to_string()),
+                seq: Err("no value supplied for seq".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl AclChangedEvent {
+        pub fn change<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AclChangedEventChange>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.change = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for change: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn occurred_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.occurred_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for occurred_at: {e}"));
+            self
+        }
+        pub fn seq<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.seq = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for seq: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AclChangedEvent> for super::AclChangedEvent {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AclChangedEvent,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                change: value.change?,
+                kind: value.kind?,
+                occurred_at: value.occurred_at?,
+                seq: value.seq?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AclChangedEvent> for AclChangedEvent {
+        fn from(value: super::AclChangedEvent) -> Self {
+            Self {
+                change: Ok(value.change),
+                kind: Ok(value.kind),
+                occurred_at: Ok(value.occurred_at),
+                seq: Ok(value.seq),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AttachmentRef {
+        content_type: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::AttachmentRefId, ::std::string::String>,
+        name: ::std::result::Result<super::AttachmentRefName, ::std::string::String>,
+        sha256: ::std::result::Result<super::AttachmentRefSha256, ::std::string::String>,
+        size_bytes: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for AttachmentRef {
+        fn default() -> Self {
+            Self {
+                content_type: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                name: Err("no value supplied for name".to_string()),
+                sha256: Err("no value supplied for sha256".to_string()),
+                size_bytes: Err("no value supplied for size_bytes".to_string()),
+            }
+        }
+    }
+    impl AttachmentRef {
+        pub fn content_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.content_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for content_type: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AttachmentRefId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AttachmentRefName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn sha256<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AttachmentRefSha256>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sha256 = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for sha256: {e}"));
+            self
+        }
+        pub fn size_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.size_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for size_bytes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AttachmentRef> for super::AttachmentRef {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AttachmentRef,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                content_type: value.content_type?,
+                id: value.id?,
+                name: value.name?,
+                sha256: value.sha256?,
+                size_bytes: value.size_bytes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AttachmentRef> for AttachmentRef {
+        fn from(value: super::AttachmentRef) -> Self {
+            Self {
+                content_type: Ok(value.content_type),
+                id: Ok(value.id),
+                name: Ok(value.name),
+                sha256: Ok(value.sha256),
+                size_bytes: Ok(value.size_bytes),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        event: ::std::result::Result<super::SyncEvent, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                event: Err("no value supplied for event".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn event<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SyncEvent>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.event = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for event: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                event: value.event?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                event: Ok(value.event),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PolicyChangedEvent {
+        change: ::std::result::Result<super::PolicyChangedEventChange, ::std::string::String>,
+        kind: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        occurred_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        policy_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        seq: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for PolicyChangedEvent {
+        fn default() -> Self {
+            Self {
+                change: Err("no value supplied for change".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                occurred_at: Err("no value supplied for occurred_at".to_string()),
+                policy_id: Err("no value supplied for policy_id".to_string()),
+                seq: Err("no value supplied for seq".to_string()),
+            }
+        }
+    }
+    impl PolicyChangedEvent {
+        pub fn change<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PolicyChangedEventChange>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.change = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for change: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn occurred_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.occurred_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for occurred_at: {e}"));
+            self
+        }
+        pub fn policy_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for policy_id: {e}"));
+            self
+        }
+        pub fn seq<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.seq = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for seq: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PolicyChangedEvent> for super::PolicyChangedEvent {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PolicyChangedEvent,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                change: value.change?,
+                kind: value.kind?,
+                occurred_at: value.occurred_at?,
+                policy_id: value.policy_id?,
+                seq: value.seq?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PolicyChangedEvent> for PolicyChangedEvent {
+        fn from(value: super::PolicyChangedEvent) -> Self {
+            Self {
+                change: Ok(value.change),
+                kind: Ok(value.kind),
+                occurred_at: Ok(value.occurred_at),
+                policy_id: Ok(value.policy_id),
+                seq: Ok(value.seq),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct VaultDeletedEvent {
+        context_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        grace_until:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        kind: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        occurred_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        seq: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for VaultDeletedEvent {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                grace_until: Err("no value supplied for grace_until".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                occurred_at: Err("no value supplied for occurred_at".to_string()),
+                seq: Err("no value supplied for seq".to_string()),
+            }
+        }
+    }
+    impl VaultDeletedEvent {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn grace_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.grace_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for grace_until: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn occurred_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.occurred_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for occurred_at: {e}"));
+            self
+        }
+        pub fn seq<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.seq = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for seq: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<VaultDeletedEvent> for super::VaultDeletedEvent {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: VaultDeletedEvent,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                grace_until: value.grace_until?,
+                id: value.id?,
+                kind: value.kind?,
+                occurred_at: value.occurred_at?,
+                seq: value.seq?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::VaultDeletedEvent> for VaultDeletedEvent {
+        fn from(value: super::VaultDeletedEvent) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                grace_until: Ok(value.grace_until),
+                id: Ok(value.id),
+                kind: Ok(value.kind),
+                occurred_at: Ok(value.occurred_at),
+                seq: Ok(value.seq),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct VaultEntry {
+        attachments:
+            ::std::result::Result<::std::vec::Vec<super::AttachmentRef>, ::std::string::String>,
+        breached_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        context_id: ::std::result::Result<super::VaultEntryContextId, ::std::string::String>,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        created_by: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        custom_field_names: ::std::result::Result<
+            ::std::option::Option<Vec<super::VaultEntryCustomFieldNamesItem>>,
+            ::std::string::String,
+        >,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        favicon: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::VaultEntryId, ::std::string::String>,
+        label: ::std::result::Result<super::VaultEntryLabel, ::std::string::String>,
+        last_used_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        notes: ::std::result::Result<
+            ::std::option::Option<super::VaultEntryNotes>,
+            ::std::string::String,
+        >,
+        password_changed_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        principal_did: ::std::result::Result<
+            ::std::option::Option<super::VaultEntryPrincipalDid>,
+            ::std::string::String,
+        >,
+        secret_kind: ::std::result::Result<super::SecretKind, ::std::string::String>,
+        selectors: ::std::result::Result<
+            ::std::option::Option<Vec<super::VaultEntrySelectorsItem>>,
+            ::std::string::String,
+        >,
+        tags: ::std::result::Result<
+            ::std::option::Option<Vec<super::VaultEntryTagsItem>>,
+            ::std::string::String,
+        >,
+        targets: ::std::result::Result<::std::vec::Vec<super::SiteTarget>, ::std::string::String>,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        updated_by: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        version: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for VaultEntry {
+        fn default() -> Self {
+            Self {
+                attachments: Ok(Default::default()),
+                breached_at: Ok(Default::default()),
+                context_id: Err("no value supplied for context_id".to_string()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                created_by: Ok(Default::default()),
+                custom_field_names: Ok(Default::default()),
+                expires_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                favicon: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                label: Err("no value supplied for label".to_string()),
+                last_used_at: Ok(Default::default()),
+                notes: Ok(Default::default()),
+                password_changed_at: Ok(Default::default()),
+                principal_did: Ok(Default::default()),
+                secret_kind: Err("no value supplied for secret_kind".to_string()),
+                selectors: Ok(Default::default()),
+                tags: Ok(Default::default()),
+                targets: Err("no value supplied for targets".to_string()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+                updated_by: Ok(Default::default()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl VaultEntry {
+        pub fn attachments<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AttachmentRef>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attachments = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for attachments: {e}"));
+            self
+        }
+        pub fn breached_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.breached_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for breached_at: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VaultEntryContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn created_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_by: {e}"));
+            self
+        }
+        pub fn custom_field_names<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<Vec<super::VaultEntryCustomFieldNamesItem>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.custom_field_names = value.try_into().map_err(|e| {
+                format!("error converting supplied value for custom_field_names: {e}")
+            });
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn favicon<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.favicon = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for favicon: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VaultEntryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VaultEntryLabel>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn last_used_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_used_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_used_at: {e}"));
+            self
+        }
+        pub fn notes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::VaultEntryNotes>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.notes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for notes: {e}"));
+            self
+        }
+        pub fn password_changed_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.password_changed_at = value.try_into().map_err(|e| {
+                format!("error converting supplied value for password_changed_at: {e}")
+            });
+            self
+        }
+        pub fn principal_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::VaultEntryPrincipalDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.principal_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for principal_did: {e}"));
+            self
+        }
+        pub fn secret_kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SecretKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.secret_kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for secret_kind: {e}"));
+            self
+        }
+        pub fn selectors<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::VaultEntrySelectorsItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.selectors = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for selectors: {e}"));
+            self
+        }
+        pub fn tags<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::VaultEntryTagsItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tags = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tags: {e}"));
+            self
+        }
+        pub fn targets<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::SiteTarget>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.targets = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for targets: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn updated_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_by: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<VaultEntry> for super::VaultEntry {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: VaultEntry,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                attachments: value.attachments?,
+                breached_at: value.breached_at?,
+                context_id: value.context_id?,
+                created_at: value.created_at?,
+                created_by: value.created_by?,
+                custom_field_names: value.custom_field_names?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                favicon: value.favicon?,
+                id: value.id?,
+                label: value.label?,
+                last_used_at: value.last_used_at?,
+                notes: value.notes?,
+                password_changed_at: value.password_changed_at?,
+                principal_did: value.principal_did?,
+                secret_kind: value.secret_kind?,
+                selectors: value.selectors?,
+                tags: value.tags?,
+                targets: value.targets?,
+                updated_at: value.updated_at?,
+                updated_by: value.updated_by?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::VaultEntry> for VaultEntry {
+        fn from(value: super::VaultEntry) -> Self {
+            Self {
+                attachments: Ok(value.attachments),
+                breached_at: Ok(value.breached_at),
+                context_id: Ok(value.context_id),
+                created_at: Ok(value.created_at),
+                created_by: Ok(value.created_by),
+                custom_field_names: Ok(value.custom_field_names),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                favicon: Ok(value.favicon),
+                id: Ok(value.id),
+                label: Ok(value.label),
+                last_used_at: Ok(value.last_used_at),
+                notes: Ok(value.notes),
+                password_changed_at: Ok(value.password_changed_at),
+                principal_did: Ok(value.principal_did),
+                secret_kind: Ok(value.secret_kind),
+                selectors: Ok(value.selectors),
+                tags: Ok(value.tags),
+                targets: Ok(value.targets),
+                updated_at: Ok(value.updated_at),
+                updated_by: Ok(value.updated_by),
+                version: Ok(value.version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct VaultUpsertedEvent {
+        entry: ::std::result::Result<super::VaultEntry, ::std::string::String>,
+        kind: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        occurred_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        seq: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for VaultUpsertedEvent {
+        fn default() -> Self {
+            Self {
+                entry: Err("no value supplied for entry".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                occurred_at: Err("no value supplied for occurred_at".to_string()),
+                seq: Err("no value supplied for seq".to_string()),
+            }
+        }
+    }
+    impl VaultUpsertedEvent {
+        pub fn entry<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VaultEntry>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn occurred_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.occurred_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for occurred_at: {e}"));
+            self
+        }
+        pub fn seq<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.seq = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for seq: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<VaultUpsertedEvent> for super::VaultUpsertedEvent {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: VaultUpsertedEvent,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                entry: value.entry?,
+                kind: value.kind?,
+                occurred_at: value.occurred_at?,
+                seq: value.seq?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::VaultUpsertedEvent> for VaultUpsertedEvent {
+        fn from(value: super::VaultUpsertedEvent) -> Self {
+            Self {
+                entry: Ok(value.entry),
+                kind: Ok(value.kind),
+                occurred_at: Ok(value.occurred_at),
+                seq: Ok(value.seq),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/sync/event/0.2";

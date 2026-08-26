@@ -310,32 +310,22 @@ mod tests {
     use trust_tasks_rs::specs::acl::grant::v0_1 as grant;
 
     fn entry() -> grant::AclEntry {
-        grant::AclEntry {
-            allowed_keys: None,
-            subject: "did:sov:alice".into(),
-            role: "admin".into(),
-            scopes: vec![],
-            label: None,
-            created_at: None,
-            created_by: None,
-            updated_at: None,
-            updated_by: None,
-            expires_at: None,
-            approve: None,
-            step_up: None,
-            ext: None,
-        }
+        grant::AclEntry::builder()
+            .subject("did:sov:alice")
+            .role("admin")
+            .try_into()
+            .expect("acl entry builder")
+    }
+
+    fn payload() -> grant::Payload {
+        grant::Payload::builder()
+            .entry(entry())
+            .try_into()
+            .expect("acl grant payload builder")
     }
 
     fn doc() -> TrustTask<grant::Payload> {
-        TrustTask::for_payload(
-            "req-0001",
-            grant::Payload {
-                entry: entry(),
-                reason: None,
-                ext: None,
-            },
-        )
+        TrustTask::for_payload("req-0001", payload())
     }
 
     #[test]
@@ -398,14 +388,7 @@ mod tests {
     /// unrepresentable id produces a message with no thid at all.
     #[test]
     fn unrepresentable_fallback_id_is_also_omitted() {
-        let d = TrustTask::for_payload(
-            "urn:uuid:11e6c7a2-53d4-4a10-9b6e-2f01c3a9d201",
-            grant::Payload {
-                entry: entry(),
-                reason: None,
-                ext: None,
-            },
-        );
+        let d = TrustTask::for_payload("urn:uuid:11e6c7a2-53d4-4a10-9b6e-2f01c3a9d201", payload());
         let msg = build_message(&d).unwrap();
         assert_eq!(msg.explicit_thid(), None);
     }

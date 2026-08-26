@@ -65,6 +65,7 @@ pub mod error {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum AuditAction {
     #[serde(rename = "setAcl")]
     SetAcl,
@@ -186,6 +187,7 @@ impl ::std::convert::TryFrom<::std::string::String> for AuditAction {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AuditEntry {
     pub action: AuditAction,
     ///The authenticated account that made the change (an admin, or the owner for a self-service change).
@@ -197,6 +199,11 @@ pub struct AuditEntry {
     pub target: Vid,
     ///Unix epoch seconds at which the change was recorded.
     pub timestamp: u64,
+}
+impl AuditEntry {
+    pub fn builder() -> builder::AuditEntry {
+        Default::default()
+    }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
@@ -338,6 +345,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -356,6 +364,11 @@ impl ::std::default::Default for Payload {
             ext: Default::default(),
             limit: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
@@ -464,6 +477,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The page of audit-log records, newest first.
     pub entries: ::std::vec::Vec<AuditEntry>,
@@ -477,6 +491,11 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Opaque continuation token. Present only when further entries remain beyond this page; omitted on the final page.
 ///
@@ -617,6 +636,249 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AuditEntry {
+        action: ::std::result::Result<super::AuditAction, ::std::string::String>,
+        actor: ::std::result::Result<super::Vid, ::std::string::String>,
+        detail: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        target: ::std::result::Result<super::Vid, ::std::string::String>,
+        timestamp: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for AuditEntry {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                actor: Err("no value supplied for actor".to_string()),
+                detail: Ok(Default::default()),
+                target: Err("no value supplied for target".to_string()),
+                timestamp: Err("no value supplied for timestamp".to_string()),
+            }
+        }
+    }
+    impl AuditEntry {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AuditAction>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn actor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.actor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for actor: {e}"));
+            self
+        }
+        pub fn detail<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.detail = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for detail: {e}"));
+            self
+        }
+        pub fn target<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target: {e}"));
+            self
+        }
+        pub fn timestamp<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.timestamp = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for timestamp: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AuditEntry> for super::AuditEntry {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AuditEntry,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                actor: value.actor?,
+                detail: value.detail?,
+                target: value.target?,
+                timestamp: value.timestamp?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AuditEntry> for AuditEntry {
+        fn from(value: super::AuditEntry) -> Self {
+            Self {
+                action: Ok(value.action),
+                actor: Ok(value.actor),
+                detail: Ok(value.detail),
+                target: Ok(value.target),
+                timestamp: Ok(value.timestamp),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        cursor: ::std::result::Result<
+            ::std::option::Option<super::PayloadCursor>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        limit: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                limit: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadCursor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn limit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                ext: value.ext?,
+                limit: value.limit?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                limit: Ok(value.limit),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        entries: ::std::result::Result<::std::vec::Vec<super::AuditEntry>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        next_cursor: ::std::result::Result<
+            ::std::option::Option<super::ResponseNextCursor>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                entries: Err("no value supplied for entries".to_string()),
+                ext: Ok(Default::default()),
+                next_cursor: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn entries<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditEntry>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn next_cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseNextCursor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.next_cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for next_cursor: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                entries: value.entries?,
+                ext: value.ext?,
+                next_cursor: value.next_cursor?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                entries: Ok(value.entries),
+                ext: Ok(value.ext),
+                next_cursor: Ok(value.next_cursor),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -631,4 +893,7 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AuditAction\": {\n      \"description\": \"The kind of privileged change recorded in the audit log.\",\n      \"enum\": [\n        \"setAcl\",\n        \"accessListAdd\",\n        \"accessListRemove\",\n        \"accessListClear\",\n        \"accountAdd\",\n        \"accountRemove\",\n        \"accountChangeType\",\n        \"accountChangeQueueLimits\",\n        \"adminAdd\",\n        \"adminStrip\"\n      ],\n      \"title\": \"AuditAction\",\n      \"type\": \"string\"\n    },\n    \"AuditEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"One record in the mediator's privileged-change audit log: one change, by one actor, at one time.\",\n      \"properties\": {\n        \"action\": {\n          \"$ref\": \"#/$defs/AuditAction\"\n        },\n        \"actor\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The authenticated account that made the change (an admin, or the owner for a self-service change).\"\n        },\n        \"detail\": {\n          \"description\": \"Short human-readable summary of the change; not machine-parsed.\",\n          \"type\": \"string\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose record changed.\"\n        },\n        \"timestamp\": {\n          \"description\": \"Unix epoch seconds at which the change was recorded.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"timestamp\",\n        \"actor\",\n        \"target\",\n        \"action\"\n      ],\n      \"title\": \"AuditEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/admin/audit-log request (newest-first). Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"The page of audit-log records, newest first.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AuditEntry\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Opaque continuation token. Present only when further entries remain beyond this page; omitted on the final page.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entries\"\n      ],\n      \"title\": \"Messaging Audit Log — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }

@@ -35,29 +35,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("alice = {alice_did}\nbob   = {bob_did}\n");
 
-    // 2. Alice composes an acl/grant request and packs it.
-    let mut request = TrustTask::for_payload(
-        format!("urn:uuid:{}", uuid::Uuid::new_v4()),
-        grant::Payload {
-            entry: grant::AclEntry {
-                subject: "did:web:carol.example".into(),
-                role: "moderator".into(),
-                scopes: vec![],
-                allowed_keys: None,
-                label: Some("Carol — content moderation".into()),
-                created_at: None,
-                created_by: None,
-                updated_at: None,
-                updated_by: None,
-                expires_at: None,
-                approve: None,
-                step_up: None,
-                ext: None,
-            },
-            reason: Some("onboarding".into()),
-            ext: None,
-        },
-    );
+    // 2. Alice composes an acl/grant request and packs it. Generated
+    //    payload types are `#[non_exhaustive]`, so construction goes through
+    //    the builder — only the members this request carries are named.
+    let entry: grant::AclEntry = grant::AclEntry::builder()
+        .subject("did:web:carol.example")
+        .role("moderator")
+        .label("Carol — content moderation".to_string())
+        .try_into()?;
+    let payload: grant::Payload = grant::Payload::builder()
+        .entry(entry)
+        .reason("onboarding".to_string())
+        .try_into()?;
+
+    let mut request = TrustTask::for_payload(format!("urn:uuid:{}", uuid::Uuid::new_v4()), payload);
     request.issuer = Some(alice_did.clone());
     request.recipient = Some(bob_did.clone());
     request.issued_at = Some(chrono::Utc::now());
@@ -92,13 +83,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // 5. Bob's domain handler accepts and crafts a response.
-    let response_doc = received.respond_with(
-        format!("urn:uuid:{}", uuid::Uuid::new_v4()),
-        grant::Response {
-            entry: received.payload.entry.clone(),
-            ext: None,
-        },
-    );
+    let response: grant::Response = grant::Response::builder()
+        .entry(received.payload.entry.clone())
+        .try_into()?;
+    let response_doc =
+        received.respond_with(format!("urn:uuid:{}", uuid::Uuid::new_v4()), response);
 
     // 6. Bob packs the response back to alice.
     let response_wire = pack_trust_task(&response_doc, &bob_agent, &bob_did, &alice_did)?;

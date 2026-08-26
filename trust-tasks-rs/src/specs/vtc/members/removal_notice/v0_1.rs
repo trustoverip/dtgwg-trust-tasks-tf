@@ -202,6 +202,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Which removal happened. `adminRemoved` is a policy-governed removal by an administrator; `purged` is a forceful super-administrator deletion that skips the removal policy. The two differ in what recourse a member has, which is why they are distinguishable rather than a single `removed`.
     pub code: PayloadCode,
@@ -220,6 +221,11 @@ pub struct Payload {
     ///The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Which removal happened. `adminRemoved` is a policy-governed removal by an administrator; `purged` is a forceful super-administrator deletion that skips the removal policy. The two differ in what recourse a member has, which is why they are distinguishable rather than a single `removed`.
 ///
@@ -248,6 +254,7 @@ pub struct Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadCode {
     #[serde(rename = "adminRemoved")]
     AdminRemoved,
@@ -460,6 +467,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadDisposition {
     #[serde(rename = "purge")]
     Purge,
@@ -577,6 +585,135 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        code: ::std::result::Result<super::PayloadCode, ::std::string::String>,
+        decided_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        decided_by: ::std::result::Result<super::PayloadDecidedBy, ::std::string::String>,
+        did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
+        disposition: ::std::result::Result<super::PayloadDisposition, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                code: Err("no value supplied for code".to_string()),
+                decided_at: Err("no value supplied for decided_at".to_string()),
+                decided_by: Err("no value supplied for decided_by".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                disposition: Err("no value supplied for disposition".to_string()),
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn code<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadCode>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.code = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for code: {e}"));
+            self
+        }
+        pub fn decided_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decided_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decided_at: {e}"));
+            self
+        }
+        pub fn decided_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDecidedBy>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decided_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decided_by: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn disposition<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadDisposition>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disposition = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disposition: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                code: value.code?,
+                decided_at: value.decided_at?,
+                decided_by: value.decided_by?,
+                did: value.did?,
+                disposition: value.disposition?,
+                ext: value.ext?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                code: Ok(value.code),
+                decided_at: Ok(value.decided_at),
+                decided_by: Ok(value.decided_by),
+                did: Ok(value.did),
+                disposition: Ok(value.disposition),
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+            }
+        }
     }
 }
 impl crate::Payload for Payload {

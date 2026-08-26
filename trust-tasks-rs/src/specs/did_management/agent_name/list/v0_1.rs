@@ -63,6 +63,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AgentNameEntry {
     ///RFC3339 timestamp of when the name was first bound to this DID.
     #[serde(rename = "createdAt")]
@@ -71,6 +72,11 @@ pub struct AgentNameEntry {
     pub enabled: bool,
     ///The name's local part, without the `@` — `alice` for `/@alice`. Bare rather than a full URL because a name is only meaningful within its domain, which is carried once on the response.
     pub name: ::std::string::String,
+}
+impl AgentNameEntry {
+    pub fn builder() -> builder::AgentNameEntry {
+        Default::default()
+    }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
@@ -212,6 +218,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional explicit hosting domain, for disambiguation per category CONVENTIONS §3. When present it MUST match the slot's recorded domain.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -220,6 +227,11 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The hosted DID slot whose agent-name registry is being read.
     pub mnemonic: PayloadMnemonic,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The hosted DID slot whose agent-name registry is being read.
 ///
@@ -329,6 +341,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Every name bound to the slot, including parked entries. Always present — a slot with no names answers with an empty array, so a caller never has to distinguish 'no names' from 'field missing'.
     #[serde(rename = "agentNames")]
@@ -340,6 +353,236 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///The slot the listing is for, echoed.
     pub mnemonic: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AgentNameEntry {
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        enabled: ::std::result::Result<bool, ::std::string::String>,
+        name: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for AgentNameEntry {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                enabled: Err("no value supplied for enabled".to_string()),
+                name: Err("no value supplied for name".to_string()),
+            }
+        }
+    }
+    impl AgentNameEntry {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for enabled: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AgentNameEntry> for super::AgentNameEntry {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AgentNameEntry,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                enabled: value.enabled?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AgentNameEntry> for AgentNameEntry {
+        fn from(value: super::AgentNameEntry) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                enabled: Ok(value.enabled),
+                name: Ok(value.name),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        domain: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        mnemonic: ::std::result::Result<super::PayloadMnemonic, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                domain: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadMnemonic>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                domain: value.domain?,
+                ext: value.ext?,
+                mnemonic: value.mnemonic?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                mnemonic: Ok(value.mnemonic),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        agent_names:
+            ::std::result::Result<::std::vec::Vec<super::AgentNameEntry>, ::std::string::String>,
+        domain: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        mnemonic: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                agent_names: Err("no value supplied for agent_names".to_string()),
+                domain: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn agent_names<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AgentNameEntry>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.agent_names = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for agent_names: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                agent_names: value.agent_names?,
+                domain: value.domain?,
+                ext: value.ext?,
+                mnemonic: value.mnemonic?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                agent_names: Ok(value.agent_names),
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                mnemonic: Ok(value.mnemonic),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/agent-name/list/0.1";
@@ -355,6 +598,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AgentNameEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"RFC3339 timestamp of when the name was first bound to this DID.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"Whether the name currently resolves. `false` means parked, not gone: the name still belongs to this DID and nobody else can claim it.\",\n          \"type\": \"boolean\"\n        },\n        \"name\": {\n          \"description\": \"The name's local part, without the `@` — `alice` for `/@alice`. Bare rather than a full URL because a name is only meaningful within its domain, which is carried once on the response.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"enabled\",\n        \"createdAt\"\n      ],\n      \"title\": \"AgentNameEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"agentNames\": {\n          \"description\": \"Every name bound to the slot, including parked entries. Always present — a slot with no names answers with an empty array, so a caller never has to distinguish 'no names' from 'field missing'.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AgentNameEntry\"\n          },\n          \"type\": \"array\"\n        },\n        \"domain\": {\n          \"description\": \"The slot's hosting domain. Omitted (rather than empty) for an un-domained legacy slot.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"mnemonic\": {\n          \"description\": \"The slot the listing is for, echoed.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"agentNames\"\n      ],\n      \"title\": \"DID Management List Agent Names — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

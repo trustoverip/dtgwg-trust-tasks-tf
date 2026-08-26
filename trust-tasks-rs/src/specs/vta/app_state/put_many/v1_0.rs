@@ -409,6 +409,7 @@ impl<'de> ::serde::Deserialize<'de> for Namespace {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The VTA context the records are scoped to; the isolation boundary.
     #[serde(rename = "contextId")]
@@ -423,6 +424,11 @@ pub struct Payload {
     pub namespace: Namespace,
     ///The writes to apply. Keys MUST be distinct: two writes to one key in a batch have no defined order and are refused rather than serialised.
     pub writes: ::std::vec::Vec<Write>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The VTA context the records are scoped to; the isolation boundary.
 ///
@@ -522,6 +528,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadMode {
     #[serde(rename = "independent")]
     Independent,
@@ -620,6 +627,7 @@ impl ::std::default::Default for PayloadMode {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -635,6 +643,11 @@ pub struct Response {
     pub mode: ResponseMode,
     ///One result per requested write, in request order. Every write is accounted for.
     pub results: ::std::vec::Vec<WriteResult>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The mode the maintainer applied, echoed so a caller relying on the default sees what it got.
 ///
@@ -663,6 +676,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseMode {
     #[serde(rename = "independent")]
     Independent,
@@ -820,6 +834,7 @@ impl ::std::fmt::Display for Version {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
+#[non_exhaustive]
 pub enum Write {
     Variant0 {
         ///This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.
@@ -911,6 +926,7 @@ pub enum Write {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct WriteResult {
     ///On `tooLarge`: the size of the rejected value in bytes.
     #[serde(
@@ -957,6 +973,11 @@ pub struct WriteResult {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub version: ::std::option::Option<Version>,
 }
+impl WriteResult {
+    pub fn builder() -> builder::WriteResult {
+        Default::default()
+    }
+}
 ///`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.
 ///
 /// <details><summary>JSON schema</summary>
@@ -987,6 +1008,7 @@ pub struct WriteResult {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum WriteResultOutcome {
     #[serde(rename = "written")]
     Written,
@@ -1045,6 +1067,341 @@ impl ::std::convert::TryFrom<::std::string::String> for WriteResultOutcome {
         value.parse()
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_id: ::std::result::Result<super::PayloadContextId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        mode: ::std::result::Result<super::PayloadMode, ::std::string::String>,
+        namespace: ::std::result::Result<super::Namespace, ::std::string::String>,
+        writes: ::std::result::Result<::std::vec::Vec<super::Write>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                ext: Ok(Default::default()),
+                mode: Ok(super::defaults::payload_mode()),
+                namespace: Err("no value supplied for namespace".to_string()),
+                writes: Err("no value supplied for writes".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn mode<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadMode>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mode = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mode: {e}"));
+            self
+        }
+        pub fn namespace<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Namespace>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.namespace = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for namespace: {e}"));
+            self
+        }
+        pub fn writes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Write>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.writes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for writes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                ext: value.ext?,
+                mode: value.mode?,
+                namespace: value.namespace?,
+                writes: value.writes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                ext: Ok(value.ext),
+                mode: Ok(value.mode),
+                namespace: Ok(value.namespace),
+                writes: Ok(value.writes),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        high_watermark:
+            ::std::result::Result<::std::option::Option<super::Version>, ::std::string::String>,
+        mode: ::std::result::Result<super::ResponseMode, ::std::string::String>,
+        results: ::std::result::Result<::std::vec::Vec<super::WriteResult>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                high_watermark: Ok(Default::default()),
+                mode: Err("no value supplied for mode".to_string()),
+                results: Err("no value supplied for results".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn high_watermark<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Version>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.high_watermark = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for high_watermark: {e}"));
+            self
+        }
+        pub fn mode<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseMode>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mode = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mode: {e}"));
+            self
+        }
+        pub fn results<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::WriteResult>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.results = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for results: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                high_watermark: value.high_watermark?,
+                mode: value.mode?,
+                results: value.results?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                high_watermark: Ok(value.high_watermark),
+                mode: Ok(value.mode),
+                results: Ok(value.results),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct WriteResult {
+        actual_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        created: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        current_deleted: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        current_value: ::std::result::Result<
+            ::std::option::Option<::serde_json::Value>,
+            ::std::string::String,
+        >,
+        current_version:
+            ::std::result::Result<::std::option::Option<super::Version>, ::std::string::String>,
+        key: ::std::result::Result<super::Key, ::std::string::String>,
+        limit_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        outcome: ::std::result::Result<super::WriteResultOutcome, ::std::string::String>,
+        version:
+            ::std::result::Result<::std::option::Option<super::Version>, ::std::string::String>,
+    }
+    impl ::std::default::Default for WriteResult {
+        fn default() -> Self {
+            Self {
+                actual_bytes: Ok(Default::default()),
+                created: Ok(Default::default()),
+                current_deleted: Ok(Default::default()),
+                current_value: Ok(Default::default()),
+                current_version: Ok(Default::default()),
+                key: Err("no value supplied for key".to_string()),
+                limit_bytes: Ok(Default::default()),
+                outcome: Err("no value supplied for outcome".to_string()),
+                version: Ok(Default::default()),
+            }
+        }
+    }
+    impl WriteResult {
+        pub fn actual_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.actual_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for actual_bytes: {e}"));
+            self
+        }
+        pub fn created<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created: {e}"));
+            self
+        }
+        pub fn current_deleted<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.current_deleted = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for current_deleted: {e}"));
+            self
+        }
+        pub fn current_value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.current_value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for current_value: {e}"));
+            self
+        }
+        pub fn current_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Version>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.current_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for current_version: {e}"));
+            self
+        }
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Key>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn limit_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.limit_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for limit_bytes: {e}"));
+            self
+        }
+        pub fn outcome<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::WriteResultOutcome>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.outcome = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for outcome: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Version>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<WriteResult> for super::WriteResult {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: WriteResult,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                actual_bytes: value.actual_bytes?,
+                created: value.created?,
+                current_deleted: value.current_deleted?,
+                current_value: value.current_value?,
+                current_version: value.current_version?,
+                key: value.key?,
+                limit_bytes: value.limit_bytes?,
+                outcome: value.outcome?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::WriteResult> for WriteResult {
+        fn from(value: super::WriteResult) -> Self {
+            Self {
+                actual_bytes: Ok(value.actual_bytes),
+                created: Ok(value.created),
+                current_deleted: Ok(value.current_deleted),
+                current_value: Ok(value.current_value),
+                current_version: Ok(value.current_version),
+                key: Ok(value.key),
+                limit_bytes: Ok(value.limit_bytes),
+                outcome: Ok(value.outcome),
+                version: Ok(value.version),
+            }
+        }
+    }
+}
 /// Generation of default values for serde.
 pub mod defaults {
     pub(super) fn payload_mode() -> super::PayloadMode {
@@ -1067,6 +1424,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \\\"absent\\\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000]+$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Namespace\": {\n      \"description\": \"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\n      \"title\": \"Namespace\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"highWatermark\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.\"\n        },\n        \"mode\": {\n          \"description\": \"The mode the maintainer applied, echoed so a caller relying on the default sees what it got.\",\n          \"enum\": [\n            \"independent\",\n            \"atomic\"\n          ],\n          \"type\": \"string\"\n        },\n        \"results\": {\n          \"description\": \"One result per requested write, in request order. Every write is accounted for.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/WriteResult\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"mode\",\n        \"results\"\n      ],\n      \"title\": \"VTA Application State Put-Many — response payload\",\n      \"type\": \"object\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    },\n    \"Write\": {\n      \"additionalProperties\": false,\n      \"description\": \"One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.\",\n      \"oneOf\": [\n        {\n          \"not\": {\n            \"required\": [\n              \"mergePatch\"\n            ]\n          },\n          \"required\": [\n            \"value\"\n          ]\n        },\n        {\n          \"not\": {\n            \"required\": [\n              \"value\"\n            ]\n          },\n          \"required\": [\n            \"mergePatch\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"expectedVersion\": {\n          \"$ref\": \"#/$defs/ExpectedVersion\",\n          \"description\": \"This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"mergePatch\": {\n          \"description\": \"An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`.\",\n          \"type\": \"object\"\n        },\n        \"value\": {\n          \"description\": \"The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Write\",\n      \"type\": \"object\"\n    },\n    \"WriteResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.\",\n      \"properties\": {\n        \"actualBytes\": {\n          \"description\": \"On `tooLarge`: the size of the rejected value in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"created\": {\n          \"description\": \"On `written`: true when no live record existed at the address beforehand.\",\n          \"type\": \"boolean\"\n        },\n        \"currentDeleted\": {\n          \"description\": \"On `conflict`: true when the address holds a tombstone rather than a live record.\",\n          \"type\": \"boolean\"\n        },\n        \"currentValue\": {\n          \"description\": \"On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists.\"\n        },\n        \"currentVersion\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"limitBytes\": {\n          \"description\": \"On `tooLarge`: the maintainer's per-record cap in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"outcome\": {\n          \"description\": \"`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.\",\n          \"enum\": [\n            \"written\",\n            \"conflict\",\n            \"tooLarge\",\n            \"notFound\",\n            \"skipped\"\n          ],\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The new version, on `written`.\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"outcome\"\n      ],\n      \"title\": \"WriteResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

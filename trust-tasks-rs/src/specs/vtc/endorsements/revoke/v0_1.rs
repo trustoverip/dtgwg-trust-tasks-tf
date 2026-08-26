@@ -240,6 +240,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(rename = "endorsementId")]
     pub endorsement_id: PayloadEndorsementId,
@@ -248,6 +249,11 @@ pub struct Payload {
     ///Optional human-readable rationale, recorded for audit.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadEndorsementId`
 ///
@@ -424,6 +430,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "endorsementId")]
     pub endorsement_id: ResponseEndorsementId,
@@ -434,6 +441,11 @@ pub struct Response {
     ///The status-list slot whose bit was flipped, so a verifier can confirm the published effect.
     #[serde(rename = "statusListIndex")]
     pub status_list_index: u64,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseEndorsementId`
 ///
@@ -536,12 +548,225 @@ The counterpart to IssuedCredential: both concern a credential's lifecycle at it
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct RevocationReceipt {
     #[serde(rename = "credentialId")]
     pub credential_id: CredentialId,
     ///When the revocation was recorded.
     #[serde(rename = "revokedAt")]
     pub revoked_at: ::chrono::DateTime<::chrono::offset::Utc>,
+}
+impl RevocationReceipt {
+    pub fn builder() -> builder::RevocationReceipt {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        endorsement_id: ::std::result::Result<super::PayloadEndorsementId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                endorsement_id: Err("no value supplied for endorsement_id".to_string()),
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn endorsement_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadEndorsementId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.endorsement_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for endorsement_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                endorsement_id: value.endorsement_id?,
+                ext: value.ext?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                endorsement_id: Ok(value.endorsement_id),
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        endorsement_id: ::std::result::Result<super::ResponseEndorsementId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        revocation: ::std::result::Result<super::RevocationReceipt, ::std::string::String>,
+        status_list_index: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                endorsement_id: Err("no value supplied for endorsement_id".to_string()),
+                ext: Ok(Default::default()),
+                revocation: Err("no value supplied for revocation".to_string()),
+                status_list_index: Err("no value supplied for status_list_index".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn endorsement_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseEndorsementId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.endorsement_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for endorsement_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn revocation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RevocationReceipt>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revocation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revocation: {e}"));
+            self
+        }
+        pub fn status_list_index<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status_list_index = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status_list_index: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                endorsement_id: value.endorsement_id?,
+                ext: value.ext?,
+                revocation: value.revocation?,
+                status_list_index: value.status_list_index?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                endorsement_id: Ok(value.endorsement_id),
+                ext: Ok(value.ext),
+                revocation: Ok(value.revocation),
+                status_list_index: Ok(value.status_list_index),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RevocationReceipt {
+        credential_id: ::std::result::Result<super::CredentialId, ::std::string::String>,
+        revoked_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+    }
+    impl ::std::default::Default for RevocationReceipt {
+        fn default() -> Self {
+            Self {
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                revoked_at: Err("no value supplied for revoked_at".to_string()),
+            }
+        }
+    }
+    impl RevocationReceipt {
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::CredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn revoked_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revoked_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revoked_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RevocationReceipt> for super::RevocationReceipt {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RevocationReceipt,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential_id: value.credential_id?,
+                revoked_at: value.revoked_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RevocationReceipt> for RevocationReceipt {
+        fn from(value: super::RevocationReceipt) -> Self {
+            Self {
+                credential_id: Ok(value.credential_id),
+                revoked_at: Ok(value.revoked_at),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1";
@@ -559,6 +784,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revocation\": {\n          \"$ref\": \"#/$defs/RevocationReceipt\",\n          \"description\": \"The registry-wide revocation receipt for the underlying VEC.\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The status-list slot whose bit was flipped, so a verifier can confirm the published effect.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"revocation\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"VTC Endorsements Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationReceipt\": {\n      \"$anchor\": \"revocationReceipt\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \\\"I revoked it now\\\" from \\\"it was already gone\\\".\\n\\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"RevocationReceipt\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

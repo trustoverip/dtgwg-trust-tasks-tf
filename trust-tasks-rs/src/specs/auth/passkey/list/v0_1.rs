@@ -159,6 +159,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -169,6 +170,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.
@@ -220,6 +226,7 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct RegisteredCredential {
     ///Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.
     #[serde(rename = "credentialId")]
@@ -244,6 +251,11 @@ pub struct RegisteredCredential {
     ///WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub transports: ::std::option::Option<Vec<::std::string::String>>,
+}
+impl RegisteredCredential {
+    pub fn builder() -> builder::RegisteredCredential {
+        Default::default()
+    }
 }
 ///Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.
 ///
@@ -346,12 +358,219 @@ impl<'de> ::serde::Deserialize<'de> for RegisteredCredentialCredentialId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending.
     pub credentials: ::std::vec::Vec<RegisteredCredential>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RegisteredCredential {
+        credential_id:
+            ::std::result::Result<super::RegisteredCredentialCredentialId, ::std::string::String>,
+        device_label: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        last_used_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        registered_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        transports: ::std::result::Result<
+            ::std::option::Option<Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for RegisteredCredential {
+        fn default() -> Self {
+            Self {
+                credential_id: Err("no value supplied for credential_id".to_string()),
+                device_label: Ok(Default::default()),
+                last_used_at: Ok(Default::default()),
+                registered_at: Err("no value supplied for registered_at".to_string()),
+                transports: Ok(Default::default()),
+            }
+        }
+    }
+    impl RegisteredCredential {
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RegisteredCredentialCredentialId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn device_label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_label: {e}"));
+            self
+        }
+        pub fn last_used_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_used_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_used_at: {e}"));
+            self
+        }
+        pub fn registered_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registered_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registered_at: {e}"));
+            self
+        }
+        pub fn transports<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<::std::string::String>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.transports = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for transports: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RegisteredCredential> for super::RegisteredCredential {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RegisteredCredential,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential_id: value.credential_id?,
+                device_label: value.device_label?,
+                last_used_at: value.last_used_at?,
+                registered_at: value.registered_at?,
+                transports: value.transports?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RegisteredCredential> for RegisteredCredential {
+        fn from(value: super::RegisteredCredential) -> Self {
+            Self {
+                credential_id: Ok(value.credential_id),
+                device_label: Ok(value.device_label),
+                last_used_at: Ok(value.last_used_at),
+                registered_at: Ok(value.registered_at),
+                transports: Ok(value.transports),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        credentials: ::std::result::Result<
+            ::std::vec::Vec<super::RegisteredCredential>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                credentials: Err("no value supplied for credentials".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn credentials<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RegisteredCredential>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credentials = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credentials: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credentials: value.credentials?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                credentials: Ok(value.credentials),
+                ext: Ok(value.ext),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/list/0.1";
@@ -368,6 +587,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegisteredCredential\": {\n      \"$anchor\": \"registeredCredential\",\n      \"additionalProperties\": false,\n      \"description\": \"A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"Durable identifier for this credential, as issued by `auth/passkey/enroll/finish`: the base64url-encoded WebAuthn credential id. Opaque to the producer — it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"description\": \"Operator-facing label captured at enrollment (e.g. \\\"Alice's MacBook Pro\\\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke.\",\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When this credential last completed an assertion. Absent if it never has, or if the consumer does not track usage. Those two cases are deliberately NOT distinguished: a nullable variant cannot survive the round-trip through generated bindings, which map absent and null onto the same optional, so a distinction stated here would not be one any conforming implementation could rely on. Consumers that need to advertise \\\"usage is not tracked\\\" SHOULD say so under `ext`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"registeredAt\": {\n          \"description\": \"When the credential was bound to the subject.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"description\": \"WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"registeredAt\"\n      ],\n      \"title\": \"RegisteredCredential\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/list/0.1#response.\",\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"Every passkey currently bound to the producer's subject. MAY be empty — a subject who authenticates by other means has no passkeys, which is not an error. Consumers SHOULD sort by registeredAt descending.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RegisteredCredential\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"credentials\"\n      ],\n      \"title\": \"Auth Passkey List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

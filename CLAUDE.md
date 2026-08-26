@@ -181,6 +181,30 @@ at the new version (`trust_task_error_type_uri()` in `trust-tasks-rs`,
 is in the codegen's `SKIP_SLUGS`: the Rust side is hand-modelled in `error.rs`,
 so regenerating will not pick a new code up for you.
 
+### ⚠️ Generated payload types are `#[non_exhaustive]` + builders as of 0.14.0
+
+`trust-tasks-codegen` runs typify with `with_struct_builder(true)` and marks
+every generated named-field struct and every generated enum `#[non_exhaustive]`
+(tuple/newtype wrappers such as `Ext` and `ExtKey` are deliberately excluded —
+typify emits no builder for them, so the attribute would remove the only
+construction path). The consequence worth knowing:
+
+- **An additive schema change is no longer a source break.** A new optional
+  member arrives as one more builder setter; a new `enum` value lands behind a
+  wildcard arm. This is why 0.14.0 was taken as one deliberate break — don't
+  undo it to make a call site shorter.
+- **Cross-crate construction must use `X::builder()` or `X::default()`.**
+  Struct literals still work *inside* `trust-tasks-rs` (including its unit
+  tests), so a change that compiles there can still break the binding crates.
+  `cargo build --workspace --all-targets` is the check that catches it — the
+  integration tests under `trust-tasks-rs/tests/` are separate crates and are
+  the crate's only in-repo view of what a consumer sees.
+- **`RequestPayload` pairs a request payload with its response type** and is
+  what lets `HttpsClient::send` take one type parameter. It is a separate trait
+  from `Payload` because associated type defaults are unstable on stable Rust;
+  a spec with no `$defs.Response` gets no impl. `HttpsServer::on` still takes
+  both type parameters — constraining it is an open follow-up.
+
 ## Build / validate / publish
 
 ```sh

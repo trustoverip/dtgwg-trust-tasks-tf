@@ -75,6 +75,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AttachmentRef {
     ///Optional MIME type hint for the consumer UI (e.g. "text/plain", "application/x-pem-file").
     #[serde(
@@ -93,6 +94,11 @@ pub struct AttachmentRef {
     ///Size of the encrypted blob in bytes. Maintainers MAY enforce a maximum per attachment and per entry.
     #[serde(rename = "sizeBytes")]
     pub size_bytes: u64,
+}
+impl AttachmentRef {
+    pub fn builder() -> builder::AttachmentRef {
+        Default::default()
+    }
 }
 ///Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism.
 ///
@@ -533,6 +539,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional filter — when true, only entries with `breachedAt` set are returned; when false, only entries with `breachedAt` absent are returned.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -641,6 +648,11 @@ impl ::std::default::Default for Payload {
         }
     }
 }
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
+}
 ///Optional filter — only entries belonging to this trust context (persona) are returned. Omit to query across all contexts the requesting consumer has VaultRead on.
 ///
 /// <details><summary>JSON schema</summary>
@@ -740,6 +752,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadStatus {
     #[serde(rename = "active")]
     Active,
@@ -1144,6 +1157,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetIosBundleId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1162,6 +1176,11 @@ pub struct Response {
     pub redacted_fields: ::std::vec::Vec<::std::string::String>,
     ///true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent.
     pub truncated: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 /**Discriminator for the secret type stored in the entry. Definitions:
 - `password` — username + password (+ optional TOTP seed).
@@ -1205,6 +1224,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum SecretKind {
     #[serde(rename = "password")]
     Password,
@@ -1385,6 +1405,7 @@ impl ::std::convert::TryFrom<::std::string::String> for SecretKind {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
+#[non_exhaustive]
 pub enum SiteTarget {
     ///WebOrigin
     #[serde(rename = "webOrigin")]
@@ -1943,6 +1964,7 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetTeamId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct VaultEntry {
     ///References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -2036,6 +2058,11 @@ pub struct VaultEntry {
     pub updated_by: ::std::option::Option<::std::string::String>,
     ///Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync.
     pub version: u64,
+}
+impl VaultEntry {
+    pub fn builder() -> builder::VaultEntry {
+        Default::default()
+    }
 }
 ///Identifier of the trust context (persona) the entry belongs to. Opaque string interpreted by the vault maintainer; corresponds to a single ContextRecord on the VTA side.
 ///
@@ -2594,6 +2621,855 @@ impl<'de> ::serde::Deserialize<'de> for VaultEntryTagsItem {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AttachmentRef {
+        content_type: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        digest_multibase: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        id: ::std::result::Result<super::AttachmentRefId, ::std::string::String>,
+        name: ::std::result::Result<super::AttachmentRefName, ::std::string::String>,
+        size_bytes: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for AttachmentRef {
+        fn default() -> Self {
+            Self {
+                content_type: Ok(Default::default()),
+                digest_multibase: Err("no value supplied for digest_multibase".to_string()),
+                id: Err("no value supplied for id".to_string()),
+                name: Err("no value supplied for name".to_string()),
+                size_bytes: Err("no value supplied for size_bytes".to_string()),
+            }
+        }
+    }
+    impl AttachmentRef {
+        pub fn content_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.content_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for content_type: {e}"));
+            self
+        }
+        pub fn digest_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.digest_multibase = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for digest_multibase: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AttachmentRefId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AttachmentRefName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn size_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.size_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for size_bytes: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AttachmentRef> for super::AttachmentRef {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AttachmentRef,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                content_type: value.content_type?,
+                digest_multibase: value.digest_multibase?,
+                id: value.id?,
+                name: value.name?,
+                size_bytes: value.size_bytes?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AttachmentRef> for AttachmentRef {
+        fn from(value: super::AttachmentRef) -> Self {
+            Self {
+                content_type: Ok(value.content_type),
+                digest_multibase: Ok(value.digest_multibase),
+                id: Ok(value.id),
+                name: Ok(value.name),
+                size_bytes: Ok(value.size_bytes),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        breached: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadContextId>,
+            ::std::string::String,
+        >,
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        expires_before: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        never_used: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        page_size: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        secret_kind:
+            ::std::result::Result<::std::option::Option<super::SecretKind>, ::std::string::String>,
+        status: ::std::result::Result<super::PayloadStatus, ::std::string::String>,
+        tag: ::std::result::Result<::std::option::Option<super::PayloadTag>, ::std::string::String>,
+        target_android_package: ::std::result::Result<
+            ::std::option::Option<super::PayloadTargetAndroidPackage>,
+            ::std::string::String,
+        >,
+        target_did: ::std::result::Result<
+            ::std::option::Option<super::PayloadTargetDid>,
+            ::std::string::String,
+        >,
+        target_ios_bundle_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadTargetIosBundleId>,
+            ::std::string::String,
+        >,
+        target_origin_prefix: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        used_since: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                breached: Ok(Default::default()),
+                context_id: Ok(Default::default()),
+                cursor: Ok(Default::default()),
+                expires_before: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                never_used: Ok(Default::default()),
+                page_size: Ok(Default::default()),
+                secret_kind: Ok(Default::default()),
+                status: Ok(super::defaults::payload_status()),
+                tag: Ok(Default::default()),
+                target_android_package: Ok(Default::default()),
+                target_did: Ok(Default::default()),
+                target_ios_bundle_id: Ok(Default::default()),
+                target_origin_prefix: Ok(Default::default()),
+                used_since: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn breached<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.breached = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for breached: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn expires_before<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_before = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_before: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn never_used<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.never_used = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for never_used: {e}"));
+            self
+        }
+        pub fn page_size<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.page_size = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for page_size: {e}"));
+            self
+        }
+        pub fn secret_kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::SecretKind>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.secret_kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for secret_kind: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn tag<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadTag>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tag = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tag: {e}"));
+            self
+        }
+        pub fn target_android_package<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadTargetAndroidPackage>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target_android_package = value.try_into().map_err(|e| {
+                format!("error converting supplied value for target_android_package: {e}")
+            });
+            self
+        }
+        pub fn target_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadTargetDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target_did: {e}"));
+            self
+        }
+        pub fn target_ios_bundle_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadTargetIosBundleId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target_ios_bundle_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for target_ios_bundle_id: {e}")
+            });
+            self
+        }
+        pub fn target_origin_prefix<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target_origin_prefix = value.try_into().map_err(|e| {
+                format!("error converting supplied value for target_origin_prefix: {e}")
+            });
+            self
+        }
+        pub fn used_since<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.used_since = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for used_since: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                breached: value.breached?,
+                context_id: value.context_id?,
+                cursor: value.cursor?,
+                expires_before: value.expires_before?,
+                ext: value.ext?,
+                never_used: value.never_used?,
+                page_size: value.page_size?,
+                secret_kind: value.secret_kind?,
+                status: value.status?,
+                tag: value.tag?,
+                target_android_package: value.target_android_package?,
+                target_did: value.target_did?,
+                target_ios_bundle_id: value.target_ios_bundle_id?,
+                target_origin_prefix: value.target_origin_prefix?,
+                used_since: value.used_since?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                breached: Ok(value.breached),
+                context_id: Ok(value.context_id),
+                cursor: Ok(value.cursor),
+                expires_before: Ok(value.expires_before),
+                ext: Ok(value.ext),
+                never_used: Ok(value.never_used),
+                page_size: Ok(value.page_size),
+                secret_kind: Ok(value.secret_kind),
+                status: Ok(value.status),
+                tag: Ok(value.tag),
+                target_android_package: Ok(value.target_android_package),
+                target_did: Ok(value.target_did),
+                target_ios_bundle_id: Ok(value.target_ios_bundle_id),
+                target_origin_prefix: Ok(value.target_origin_prefix),
+                used_since: Ok(value.used_since),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        entries: ::std::result::Result<::std::vec::Vec<super::VaultEntry>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        redacted_fields:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        truncated: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                entries: Err("no value supplied for entries".to_string()),
+                ext: Ok(Default::default()),
+                redacted_fields: Ok(Default::default()),
+                truncated: Err("no value supplied for truncated".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn entries<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::VaultEntry>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entries = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entries: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn redacted_fields<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.redacted_fields = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for redacted_fields: {e}"));
+            self
+        }
+        pub fn truncated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.truncated = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for truncated: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                entries: value.entries?,
+                ext: value.ext?,
+                redacted_fields: value.redacted_fields?,
+                truncated: value.truncated?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                entries: Ok(value.entries),
+                ext: Ok(value.ext),
+                redacted_fields: Ok(value.redacted_fields),
+                truncated: Ok(value.truncated),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct VaultEntry {
+        attachments:
+            ::std::result::Result<::std::vec::Vec<super::AttachmentRef>, ::std::string::String>,
+        breached_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        context_id: ::std::result::Result<super::VaultEntryContextId, ::std::string::String>,
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        created_by: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        custom_field_names: ::std::result::Result<
+            ::std::option::Option<Vec<super::VaultEntryCustomFieldNamesItem>>,
+            ::std::string::String,
+        >,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        favicon: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::VaultEntryId, ::std::string::String>,
+        label: ::std::result::Result<super::VaultEntryLabel, ::std::string::String>,
+        last_used_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        notes: ::std::result::Result<
+            ::std::option::Option<super::VaultEntryNotes>,
+            ::std::string::String,
+        >,
+        password_changed_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        principal_did: ::std::result::Result<
+            ::std::option::Option<super::VaultEntryPrincipalDid>,
+            ::std::string::String,
+        >,
+        secret_kind: ::std::result::Result<super::SecretKind, ::std::string::String>,
+        selectors: ::std::result::Result<
+            ::std::option::Option<Vec<super::VaultEntrySelectorsItem>>,
+            ::std::string::String,
+        >,
+        tags: ::std::result::Result<
+            ::std::option::Option<Vec<super::VaultEntryTagsItem>>,
+            ::std::string::String,
+        >,
+        targets: ::std::result::Result<::std::vec::Vec<super::SiteTarget>, ::std::string::String>,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        updated_by: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        version: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for VaultEntry {
+        fn default() -> Self {
+            Self {
+                attachments: Ok(Default::default()),
+                breached_at: Ok(Default::default()),
+                context_id: Err("no value supplied for context_id".to_string()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                created_by: Ok(Default::default()),
+                custom_field_names: Ok(Default::default()),
+                expires_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                favicon: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                label: Err("no value supplied for label".to_string()),
+                last_used_at: Ok(Default::default()),
+                notes: Ok(Default::default()),
+                password_changed_at: Ok(Default::default()),
+                principal_did: Ok(Default::default()),
+                secret_kind: Err("no value supplied for secret_kind".to_string()),
+                selectors: Ok(Default::default()),
+                tags: Ok(Default::default()),
+                targets: Err("no value supplied for targets".to_string()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+                updated_by: Ok(Default::default()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl VaultEntry {
+        pub fn attachments<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AttachmentRef>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attachments = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for attachments: {e}"));
+            self
+        }
+        pub fn breached_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.breached_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for breached_at: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VaultEntryContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn created_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_by: {e}"));
+            self
+        }
+        pub fn custom_field_names<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<Vec<super::VaultEntryCustomFieldNamesItem>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.custom_field_names = value.try_into().map_err(|e| {
+                format!("error converting supplied value for custom_field_names: {e}")
+            });
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn favicon<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.favicon = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for favicon: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VaultEntryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::VaultEntryLabel>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn last_used_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_used_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_used_at: {e}"));
+            self
+        }
+        pub fn notes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::VaultEntryNotes>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.notes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for notes: {e}"));
+            self
+        }
+        pub fn password_changed_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.password_changed_at = value.try_into().map_err(|e| {
+                format!("error converting supplied value for password_changed_at: {e}")
+            });
+            self
+        }
+        pub fn principal_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::VaultEntryPrincipalDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.principal_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for principal_did: {e}"));
+            self
+        }
+        pub fn secret_kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SecretKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.secret_kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for secret_kind: {e}"));
+            self
+        }
+        pub fn selectors<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::VaultEntrySelectorsItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.selectors = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for selectors: {e}"));
+            self
+        }
+        pub fn tags<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::VaultEntryTagsItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tags = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tags: {e}"));
+            self
+        }
+        pub fn targets<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::SiteTarget>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.targets = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for targets: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn updated_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_by: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<VaultEntry> for super::VaultEntry {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: VaultEntry,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                attachments: value.attachments?,
+                breached_at: value.breached_at?,
+                context_id: value.context_id?,
+                created_at: value.created_at?,
+                created_by: value.created_by?,
+                custom_field_names: value.custom_field_names?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                favicon: value.favicon?,
+                id: value.id?,
+                label: value.label?,
+                last_used_at: value.last_used_at?,
+                notes: value.notes?,
+                password_changed_at: value.password_changed_at?,
+                principal_did: value.principal_did?,
+                secret_kind: value.secret_kind?,
+                selectors: value.selectors?,
+                tags: value.tags?,
+                targets: value.targets?,
+                updated_at: value.updated_at?,
+                updated_by: value.updated_by?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::VaultEntry> for VaultEntry {
+        fn from(value: super::VaultEntry) -> Self {
+            Self {
+                attachments: Ok(value.attachments),
+                breached_at: Ok(value.breached_at),
+                context_id: Ok(value.context_id),
+                created_at: Ok(value.created_at),
+                created_by: Ok(value.created_by),
+                custom_field_names: Ok(value.custom_field_names),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                favicon: Ok(value.favicon),
+                id: Ok(value.id),
+                label: Ok(value.label),
+                last_used_at: Ok(value.last_used_at),
+                notes: Ok(value.notes),
+                password_changed_at: Ok(value.password_changed_at),
+                principal_did: Ok(value.principal_did),
+                secret_kind: Ok(value.secret_kind),
+                selectors: Ok(value.selectors),
+                tags: Ok(value.tags),
+                targets: Ok(value.targets),
+                updated_at: Ok(value.updated_at),
+                updated_by: Ok(value.updated_by),
+                version: Ok(value.version),
+            }
+        }
+    }
+}
 /// Generation of default values for serde.
 pub mod defaults {
     pub(super) fn payload_status() -> super::PayloadStatus {
@@ -2613,6 +3489,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AttachmentRef\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contentType\": {\n          \"description\": \"Optional MIME type hint for the consumer UI (e.g. \\\"text/plain\\\", \\\"application/x-pem-file\\\").\",\n          \"type\": \"string\"\n        },\n        \"digestMultibase\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest over the encrypted blob bytes (post-encryption), so the consumer can verify integrity after fetch. Taken over the bytes as stored, not over a canonicalization: the blob is an opaque artifact, not a JSON document.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"User-supplied filename (e.g. \\\"recovery-codes.txt\\\").\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sizeBytes\": {\n          \"description\": \"Size of the encrypted blob in bytes. Maintainers MAY enforce a maximum per attachment and per entry.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"sizeBytes\",\n        \"digestMultibase\"\n      ],\n      \"title\": \"AttachmentRef\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vault/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vault/list/0.1#response.\",\n      \"properties\": {\n        \"cursor\": {\n          \"description\": \"Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point.\",\n          \"type\": \"string\"\n        },\n        \"entries\": {\n          \"description\": \"Matching VaultEntry items in metadata-only view, in maintainer-defined order (RECOMMENDED: most-recently-used first when no other order is implied by the filters). May be empty.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VaultEntry\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"redactedFields\": {\n          \"description\": \"Names of VaultEntry fields the maintainer redacted from every returned entry (for example, ['lastUsedAt'] when releasing to a consumer whose policy does not permit timing-data exposure).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"truncated\": {\n          \"description\": \"true when more matching entries exist beyond `entries`; false when this response is the complete result. Independent of `cursor`: a maintainer MAY truncate without supporting pagination, in which case `truncated` is true and `cursor` is absent.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"entries\",\n        \"truncated\"\n      ],\n      \"title\": \"Vault List — response payload\",\n      \"type\": \"object\"\n    },\n    \"SecretKind\": {\n      \"description\": \"Discriminator for the secret type stored in the entry. Definitions:\\n- `password` — username + password (+ optional TOTP seed).\\n- `passkey` — WebAuthn discoverable credential (private key + rpId + userHandle).\\n- `oauthTokens` — OAuth 2.0 refresh + access token bundle for a specific provider.\\n- `didSelfIssued` — Self-Issued OpenID Provider v2 (SIOP) credential: the entry points at a DID + signing key already managed by the VTA.\\n- `didcommPeer` — DIDComm peer identity used to authenticate against a DIDComm-speaking relying party.\\n- `bearerToken` — opaque bearer token carried in a maintainer-named header (covers API tokens, long-lived JWTs, personal-access tokens).\\n- `sshKey` — SSH private key + comment.\\n- `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.\",\n      \"enum\": [\n        \"password\",\n        \"passkey\",\n        \"oauthTokens\",\n        \"didSelfIssued\",\n        \"didcommPeer\",\n        \"bearerToken\",\n        \"sshKey\",\n        \"custom\"\n      ],\n      \"title\": \"SecretKind\",\n      \"type\": \"string\"\n    },\n    \"SiteTarget\": {\n      \"description\": \"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"webOrigin\"\n            },\n            \"origin\": {\n              \"description\": \"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"origin\"\n          ],\n          \"title\": \"WebOrigin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"did\": {\n              \"description\": \"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"did\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"did\"\n          ],\n          \"title\": \"Did\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"bundleId\": {\n              \"description\": \"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"iosApp\"\n            },\n            \"teamId\": {\n              \"description\": \"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Z0-9]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"bundleId\"\n          ],\n          \"title\": \"IosApp\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"androidApp\"\n            },\n            \"packageName\": {\n              \"description\": \"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\n              \"type\": \"string\"\n            },\n            \"sha256CertFingerprints\": {\n              \"description\": \"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\n              \"items\": {\n                \"pattern\": \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"packageName\",\n            \"sha256CertFingerprints\"\n          ],\n          \"title\": \"AndroidApp\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SiteTarget\"\n    },\n    \"VaultEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"attachments\": {\n          \"description\": \"References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AttachmentRef\"\n          },\n          \"type\": \"array\"\n        },\n        \"breachedAt\": {\n          \"description\": \"Set by the maintainer (via HIBP integration or equivalent) when the password material associated with this entry is known to appear in a public breach. Consumers SHOULD surface this prominently. Cleared when the user rotates the password and the new password is not in any known breach.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"Identifier of the trust context (persona) the entry belongs to. Opaque string interpreted by the vault maintainer; corresponds to a single ContextRecord on the VTA side.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the consumer that originally created the entry.\",\n          \"type\": \"string\"\n        },\n        \"customFieldNames\": {\n          \"description\": \"Names of additional fields the user has attached (e.g. [\\\"security-question-1\\\", \\\"account-number\\\"]). The VALUES live in the secret payload and are only delivered by vault/release/0.1. Exposing names in metadata lets the consumer render the right form layout before requesting release.\",\n          \"items\": {\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional time after which the credential is no longer expected to be valid (e.g. an OAuth refresh token's known expiry, a time-limited API token, an enterprise password rotation policy). Maintainers MAY surface this in the consumer UI as a warning.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"\n        },\n        \"favicon\": {\n          \"description\": \"Optional URI of an icon to display in the consumer UI. Maintainers MAY fetch and cache; consumers SHOULD treat as untrusted content and fetch via a sandboxed pipeline.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Opaque vault-maintainer-assigned identifier for the entry. ULID/UUID/base32 are common; the wire spec only requires non-empty string equality.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"Human-readable display name (e.g. \\\"Work GitHub\\\", \\\"Personal bank — checking\\\"). Maintainers MAY enforce a maximum length; the wire spec does not.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"Most recent time the entry was used (either released or proxy-login performed). Maintainers MAY return this with reduced precision (e.g. hour-floored) when releasing to a less-trusted consumer.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"notes\": {\n          \"description\": \"Non-sensitive notes the user attached to the entry. Visible in metadata view (suitable for support contact, account number, expiry policy memos). SENSITIVE notes belong in the secret payload as a `secureNotes` field — those are only released by vault/release/0.1.\",\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"passwordChangedAt\": {\n          \"description\": \"Set whenever the password component of the secret payload is rotated. Maintainers MUST update this on every secret-material change for entries of kind `password` (or any kind that carries a password component). Used by consumers to surface rotation-overdue warnings.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"principalDid\": {\n          \"description\": \"Optional cached DID the entry will act AS for DID-shaped flows — mirrors the `did` field of the entry's secret payload when `secretKind` carries one (`didSelfIssued`, `didcommPeer`). Absent for kinds that have no DID concept (`password`, `passkey`, `oauthTokens`, `bearerToken`, `sshKey`, `custom`). MAINTAINER-DERIVED, NOT CONSUMER-SUPPLIED: the maintainer MUST recompute this from the canonical secret at every upsert / secret rotation; a producer-supplied value on `vault/upsert/0.1` MUST be ignored (no error, but no honour). Read-only on the wire, present in metadata views so consumers can drive RP-side flows (e.g. fetch `/auth/challenge` keyed on the principal DID before requesting a proxy-login) without releasing the secret.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"secretKind\": {\n          \"$ref\": \"#/$defs/SecretKind\",\n          \"description\": \"Discriminator for the kind of secret this entry holds. The secret material itself is NEVER returned in metadata views; the kind is exposed so consumers can render an appropriate UI affordance and so policy decisions can route by kind.\"\n        },\n        \"selectors\": {\n          \"description\": \"Opaque maintainer-defined selector strings fed to the policy engine when this entry is requested (e.g. \\\"recent_uv_required\\\", \\\"network_class=corp\\\", \\\"step_up_push\\\"). Consumers MUST treat selectors as opaque; they exist for policy authoring on the maintainer side.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"tags\": {\n          \"description\": \"User-defined tags for organisation and filtering (e.g. [\\\"family\\\", \\\"finance\\\"]). Maintainers MAY enforce a maximum count; the wire spec does not.\",\n          \"items\": {\n            \"maxLength\": 64,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"targets\": {\n          \"description\": \"One or more binding targets — web origins, mobile app identifiers, and/or DIDs — that this credential applies to. A request from any matching target uses this entry. A typical entry for a service that exists as both a website and mobile apps will list a web origin, an iOS bundle id, and an Android package id; passkeys for that service typically list only the origin (because iOS Associated Domains and Android Asset Links bind apps to the domain at the OS level).\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SiteTarget\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the consumer that last modified the entry.\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Monotonic version counter incremented on every mutation. Used by consumers for optimistic-concurrency checks on vault/upsert and as the seq baseline for vault/sync.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"contextId\",\n        \"targets\",\n        \"label\",\n        \"secretKind\",\n        \"createdAt\",\n        \"updatedAt\",\n        \"version\"\n      ],\n      \"title\": \"VaultEntry\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

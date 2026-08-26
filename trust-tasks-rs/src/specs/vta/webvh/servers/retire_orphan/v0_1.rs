@@ -181,6 +181,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to.
     #[serde(
@@ -200,6 +201,11 @@ pub struct Payload {
     ///The slot to retire, as reported in a reconcile response's hostOnly. The slot identifier rather than the DID, because a slot reserved but never published to has no DID and is exactly as orphaned.
     #[serde(rename = "slotId")]
     pub slot_id: PayloadSlotId,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to.
 ///
@@ -517,6 +523,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSlotId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -529,6 +536,211 @@ pub struct Response {
     pub server_id: ::std::string::String,
     #[serde(rename = "slotId")]
     pub slot_id: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        expected_did: ::std::result::Result<
+            ::std::option::Option<super::PayloadExpectedDid>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+        server_id: ::std::result::Result<super::PayloadServerId, ::std::string::String>,
+        slot_id: ::std::result::Result<super::PayloadSlotId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                expected_did: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                server_id: Err("no value supplied for server_id".to_string()),
+                slot_id: Err("no value supplied for slot_id".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn expected_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadExpectedDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expected_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expected_did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadServerId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+        pub fn slot_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadSlotId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.slot_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for slot_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                expected_did: value.expected_did?,
+                ext: value.ext?,
+                reason: value.reason?,
+                server_id: value.server_id?,
+                slot_id: value.slot_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                expected_did: Ok(value.expected_did),
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                server_id: Ok(value.server_id),
+                slot_id: Ok(value.slot_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        retired: ::std::result::Result<bool, ::std::string::String>,
+        server_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        slot_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                did: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                retired: Err("no value supplied for retired".to_string()),
+                server_id: Err("no value supplied for server_id".to_string()),
+                slot_id: Err("no value supplied for slot_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn retired<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.retired = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for retired: {e}"));
+            self
+        }
+        pub fn server_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.server_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for server_id: {e}"));
+            self
+        }
+        pub fn slot_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.slot_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for slot_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                did: value.did?,
+                ext: value.ext?,
+                retired: value.retired?,
+                server_id: value.server_id?,
+                slot_id: value.slot_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                retired: Ok(value.retired),
+                server_id: Ok(value.server_id),
+                slot_id: Ok(value.slot_id),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str =
@@ -547,6 +759,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"retired\": {\n          \"description\": \"Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it.\",\n          \"type\": \"boolean\"\n        },\n        \"serverId\": {\n          \"type\": \"string\"\n        },\n        \"slotId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverId\",\n        \"slotId\",\n        \"retired\"\n      ],\n      \"title\": \"VTA WebVH Servers Retire Orphan — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

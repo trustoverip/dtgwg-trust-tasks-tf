@@ -185,6 +185,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The DIDs to add to the account's access list. Applied after `clear`. Entries already present are ignored.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -200,6 +201,11 @@ pub struct Payload {
     ///The DIDs to remove from the account's access list. Applied last. Entries not present are ignored.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub remove: ::std::vec::Vec<Vid>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.
 ///
@@ -252,6 +258,7 @@ pub struct Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///The resulting number of entries in the account's access list.
     #[serde(rename = "accessListCount")]
@@ -265,6 +272,11 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.
     pub removed: ::std::vec::Vec<Vid>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
@@ -336,6 +348,197 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        add: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        clear: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        remove: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                add: Ok(Default::default()),
+                clear: Ok(Default::default()),
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                remove: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn add<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.add = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for add: {e}"));
+            self
+        }
+        pub fn clear<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.clear = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for clear: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn remove<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.remove = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for remove: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                add: value.add?,
+                clear: value.clear?,
+                did: value.did?,
+                ext: value.ext?,
+                remove: value.remove?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                add: Ok(value.add),
+                clear: Ok(value.clear),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                remove: Ok(value.remove),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        access_list_count: ::std::result::Result<u64, ::std::string::String>,
+        added: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        did: ::std::result::Result<super::Vid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        removed: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                access_list_count: Err("no value supplied for access_list_count".to_string()),
+                added: Err("no value supplied for added".to_string()),
+                did: Err("no value supplied for did".to_string()),
+                ext: Ok(Default::default()),
+                removed: Err("no value supplied for removed".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn access_list_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access_list_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access_list_count: {e}"));
+            self
+        }
+        pub fn added<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.added = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for added: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Vid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn removed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.removed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for removed: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                access_list_count: value.access_list_count?,
+                added: value.added?,
+                did: value.did?,
+                ext: value.ext?,
+                removed: value.removed?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                access_list_count: Ok(value.access_list_count),
+                added: Ok(value.added),
+                did: Ok(value.did),
+                ext: Ok(value.ext),
+                removed: Ok(value.removed),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/access-list/update/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -352,6 +555,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"The resulting number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"added\": {\n          \"description\": \"The entries actually added (those not already present when `add` was applied).\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose access list was modified.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"removed\": {\n          \"description\": \"The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"added\",\n        \"removed\",\n        \"accessListCount\"\n      ],\n      \"title\": \"Messaging Update Access List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

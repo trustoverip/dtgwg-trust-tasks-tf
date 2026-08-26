@@ -93,6 +93,7 @@ The operation takes effect through SPEC.md §7.2 item 12: a valid, authorized co
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer controls.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
@@ -108,6 +109,11 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<::std::string::String>,
     pub target: PayloadTarget,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 /**
 The control operation requested.
@@ -141,6 +147,7 @@ This is a discriminating field. A consumer that does not recognize a value MUST 
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadOperation {
     #[serde(rename = "cancel")]
     Cancel,
@@ -221,6 +228,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadOperation {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct PayloadTarget {
     ///The `id` of the target Trust Task document. The sole identifying member.
     pub id: PayloadTargetId,
@@ -231,6 +239,11 @@ pub struct PayloadTarget {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub type_uri: ::std::option::Option<::std::string::String>,
+}
+impl PayloadTarget {
+    pub fn builder() -> builder::PayloadTarget {
+        Default::default()
+    }
 }
 ///The `id` of the target Trust Task document. The sole identifying member.
 ///
@@ -390,6 +403,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
@@ -409,6 +423,11 @@ pub struct Response {
     `unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.*/
     pub outcome: ResponseOutcome,
     pub target: ResponseTarget,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseEffectsItem`
 ///
@@ -441,6 +460,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseEffectsItem {
     ///Human-readable statement of the effect that occurred.
     pub description: ResponseEffectsItemDescription,
@@ -454,6 +474,11 @@ pub struct ResponseEffectsItem {
     ///Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reversible: ::std::option::Option<bool>,
+}
+impl ResponseEffectsItem {
+    pub fn builder() -> builder::ResponseEffectsItem {
+        Default::default()
+    }
 }
 ///Human-readable statement of the effect that occurred.
 ///
@@ -551,6 +576,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEffectsItemDescription {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseOperation {
     #[serde(rename = "cancel")]
     Cancel,
@@ -636,6 +662,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOperation {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseOutcome {
     #[serde(rename = "applied")]
     Applied,
@@ -718,6 +745,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOutcome {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseTarget {
     pub id: ResponseTargetId,
     #[serde(
@@ -726,6 +754,11 @@ pub struct ResponseTarget {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub type_uri: ::std::option::Option<::std::string::String>,
+}
+impl ResponseTarget {
+    pub fn builder() -> builder::ResponseTarget {
+        Default::default()
+    }
 }
 ///`ResponseTargetId`
 ///
@@ -795,6 +828,385 @@ impl<'de> ::serde::Deserialize<'de> for ResponseTargetId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        operation: ::std::result::Result<super::PayloadOperation, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        target: ::std::result::Result<super::PayloadTarget, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                operation: Err("no value supplied for operation".to_string()),
+                reason: Ok(Default::default()),
+                target: Err("no value supplied for target".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn operation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadOperation>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.operation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for operation: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn target<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadTarget>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                operation: value.operation?,
+                reason: value.reason?,
+                target: value.target?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                operation: Ok(value.operation),
+                reason: Ok(value.reason),
+                target: Ok(value.target),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadTarget {
+        id: ::std::result::Result<super::PayloadTargetId, ::std::string::String>,
+        type_uri: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for PayloadTarget {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                type_uri: Ok(Default::default()),
+            }
+        }
+    }
+    impl PayloadTarget {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadTargetId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadTarget> for super::PayloadTarget {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadTarget,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadTarget> for PayloadTarget {
+        fn from(value: super::PayloadTarget) -> Self {
+            Self {
+                id: Ok(value.id),
+                type_uri: Ok(value.type_uri),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        effects: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseEffectsItem>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        operation: ::std::result::Result<super::ResponseOperation, ::std::string::String>,
+        outcome: ::std::result::Result<super::ResponseOutcome, ::std::string::String>,
+        target: ::std::result::Result<super::ResponseTarget, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                effects: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                operation: Err("no value supplied for operation".to_string()),
+                outcome: Err("no value supplied for outcome".to_string()),
+                target: Err("no value supplied for target".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn effects<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseEffectsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.effects = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for effects: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn operation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseOperation>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.operation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for operation: {e}"));
+            self
+        }
+        pub fn outcome<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseOutcome>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.outcome = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for outcome: {e}"));
+            self
+        }
+        pub fn target<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseTarget>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                effects: value.effects?,
+                ext: value.ext?,
+                operation: value.operation?,
+                outcome: value.outcome?,
+                target: value.target?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                effects: Ok(value.effects),
+                ext: Ok(value.ext),
+                operation: Ok(value.operation),
+                outcome: Ok(value.outcome),
+                target: Ok(value.target),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseEffectsItem {
+        description:
+            ::std::result::Result<super::ResponseEffectsItemDescription, ::std::string::String>,
+        ref_: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        reversible: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseEffectsItem {
+        fn default() -> Self {
+            Self {
+                description: Err("no value supplied for description".to_string()),
+                ref_: Ok(Default::default()),
+                reversible: Ok(Default::default()),
+            }
+        }
+    }
+    impl ResponseEffectsItem {
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseEffectsItemDescription>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn ref_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ref_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ref_: {e}"));
+            self
+        }
+        pub fn reversible<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reversible = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reversible: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseEffectsItem> for super::ResponseEffectsItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseEffectsItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                description: value.description?,
+                ref_: value.ref_?,
+                reversible: value.reversible?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseEffectsItem> for ResponseEffectsItem {
+        fn from(value: super::ResponseEffectsItem) -> Self {
+            Self {
+                description: Ok(value.description),
+                ref_: Ok(value.ref_),
+                reversible: Ok(value.reversible),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseTarget {
+        id: ::std::result::Result<super::ResponseTargetId, ::std::string::String>,
+        type_uri: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ResponseTarget {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                type_uri: Ok(Default::default()),
+            }
+        }
+    }
+    impl ResponseTarget {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseTargetId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn type_uri<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_uri = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_uri: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseTarget> for super::ResponseTarget {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseTarget,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                type_uri: value.type_uri?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseTarget> for ResponseTarget {
+        fn from(value: super::ResponseTarget) -> Self {
+            Self {
+                id: Ok(value.id),
+                type_uri: Ok(value.type_uri),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/trust-task-control/0.1";
     const IS_PROOF_REQUIRED: bool = true;
@@ -810,4 +1222,7 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.\",\n      \"properties\": {\n        \"effects\": {\n          \"description\": \"What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"description\": {\n                \"description\": \"Human-readable statement of the effect that occurred.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"An identifier for the effect where one exists — a credential id, a record identifier, a transaction reference — so a compensating task can name it.\",\n                \"type\": \"string\"\n              },\n              \"reversible\": {\n                \"description\": \"Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`.\",\n                \"type\": \"boolean\"\n              }\n            },\n            \"required\": [\n              \"description\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"description\": \"Vendor-namespaced extension data per SPEC.md §4.5.1.\",\n          \"type\": \"object\"\n        },\n        \"operation\": {\n          \"description\": \"Echoed from the request, so the response is self-describing when retained apart from it.\",\n          \"enum\": [\n            \"cancel\",\n            \"suspend\",\n            \"resume\"\n          ]\n        },\n        \"outcome\": {\n          \"description\": \"`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\\n\\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).\\n\\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\\n\\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.\",\n          \"enum\": [\n            \"applied\",\n            \"appliedWithEffects\",\n            \"alreadyCompleted\",\n            \"unknownTask\"\n          ]\n        },\n        \"target\": {\n          \"additionalProperties\": false,\n          \"description\": \"Echoed from the request.\",\n          \"properties\": {\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"format\": \"uri\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"id\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"target\",\n        \"outcome\"\n      ],\n      \"title\": \"Trust Task Control — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }

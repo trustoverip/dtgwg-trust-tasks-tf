@@ -175,6 +175,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -186,6 +187,11 @@ pub struct Payload {
     ///RegisterPublicKeyCredential from navigator.credentials.create() (opaque here).
     #[serde(rename = "webauthnResponse")]
     pub webauthn_response: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadInstallToken`
 ///
@@ -358,6 +364,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRegistrationId {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Candidate admin DID derived from the passkey's Ed25519 public key.
     #[serde(rename = "adminDid")]
@@ -367,6 +374,11 @@ pub struct Response {
     ///EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.
     #[serde(rename = "setupSessionToken")]
     pub setup_session_token: ResponseSetupSessionToken,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///Candidate admin DID derived from the passkey's Ed25519 public key.
 ///
@@ -508,6 +520,161 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSetupSessionToken {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        install_token: ::std::result::Result<super::PayloadInstallToken, ::std::string::String>,
+        registration_id: ::std::result::Result<super::PayloadRegistrationId, ::std::string::String>,
+        webauthn_response: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                install_token: Err("no value supplied for install_token".to_string()),
+                registration_id: Err("no value supplied for registration_id".to_string()),
+                webauthn_response: Err("no value supplied for webauthn_response".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn install_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadInstallToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.install_token = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for install_token: {e}"));
+            self
+        }
+        pub fn registration_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadRegistrationId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registration_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registration_id: {e}"));
+            self
+        }
+        pub fn webauthn_response<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.webauthn_response = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for webauthn_response: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                install_token: value.install_token?,
+                registration_id: value.registration_id?,
+                webauthn_response: value.webauthn_response?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                install_token: Ok(value.install_token),
+                registration_id: Ok(value.registration_id),
+                webauthn_response: Ok(value.webauthn_response),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        admin_did: ::std::result::Result<super::ResponseAdminDid, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        setup_session_token:
+            ::std::result::Result<super::ResponseSetupSessionToken, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                admin_did: Err("no value supplied for admin_did".to_string()),
+                ext: Ok(Default::default()),
+                setup_session_token: Err("no value supplied for setup_session_token".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn admin_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseAdminDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.admin_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for admin_did: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn setup_session_token<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseSetupSessionToken>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.setup_session_token = value.try_into().map_err(|e| {
+                format!("error converting supplied value for setup_session_token: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                admin_did: value.admin_did?,
+                ext: value.ext?,
+                setup_session_token: value.setup_session_token?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                admin_did: Ok(value.admin_did),
+                ext: Ok(value.ext),
+                setup_session_token: Ok(value.setup_session_token),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/install/claim/finish/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -522,6 +689,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"adminDid\": {\n          \"description\": \"Candidate admin DID derived from the passkey's Ed25519 public key.\",\n          \"pattern\": \"^did:key:z\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"setupSessionToken\": {\n          \"description\": \"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"adminDid\",\n        \"setupSessionToken\"\n      ],\n      \"title\": \"VTC Install Claim Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

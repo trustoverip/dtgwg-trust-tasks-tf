@@ -157,6 +157,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -166,6 +167,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///`Response`
@@ -220,12 +226,18 @@ impl ::std::default::Default for Payload {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(rename = "communityDid")]
     pub community_did: ResponseCommunityDid,
     pub criteria: ::std::vec::Vec<ResponseCriteriaItem>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseCommunityDid`
 ///
@@ -325,6 +337,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCommunityDid {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseCriteriaItem {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<::std::string::String>,
@@ -332,6 +345,11 @@ pub struct ResponseCriteriaItem {
     ///The presentation-definition an applicant must satisfy for this criterion (opaque here).
     #[serde(rename = "presentationDefinition")]
     pub presentation_definition: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+}
+impl ResponseCriteriaItem {
+    pub fn builder() -> builder::ResponseCriteriaItem {
+        Default::default()
+    }
 }
 ///`ResponseCriteriaItemId`
 ///
@@ -401,6 +419,190 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCriteriaItemId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        community_did: ::std::result::Result<super::ResponseCommunityDid, ::std::string::String>,
+        criteria: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseCriteriaItem>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                community_did: Err("no value supplied for community_did".to_string()),
+                criteria: Err("no value supplied for criteria".to_string()),
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn community_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseCommunityDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.community_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for community_did: {e}"));
+            self
+        }
+        pub fn criteria<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseCriteriaItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.criteria = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for criteria: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                community_did: value.community_did?,
+                criteria: value.criteria?,
+                ext: value.ext?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                community_did: Ok(value.community_did),
+                criteria: Ok(value.criteria),
+                ext: Ok(value.ext),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseCriteriaItem {
+        description: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::ResponseCriteriaItemId, ::std::string::String>,
+        presentation_definition: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ResponseCriteriaItem {
+        fn default() -> Self {
+            Self {
+                description: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                presentation_definition: Err(
+                    "no value supplied for presentation_definition".to_string()
+                ),
+            }
+        }
+    }
+    impl ResponseCriteriaItem {
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseCriteriaItemId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn presentation_definition<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.presentation_definition = value.try_into().map_err(|e| {
+                format!("error converting supplied value for presentation_definition: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseCriteriaItem> for super::ResponseCriteriaItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseCriteriaItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                description: value.description?,
+                id: value.id?,
+                presentation_definition: value.presentation_definition?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseCriteriaItem> for ResponseCriteriaItem {
+        fn from(value: super::ResponseCriteriaItem) -> Self {
+            Self {
+                description: Ok(value.description),
+                id: Ok(value.id),
+                presentation_definition: Ok(value.presentation_definition),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -415,6 +617,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"communityDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"criteria\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"description\": {\n                \"type\": \"string\"\n              },\n              \"id\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"presentationDefinition\": {\n                \"description\": \"The presentation-definition an applicant must satisfy for this criterion (opaque here).\",\n                \"type\": \"object\"\n              }\n            },\n            \"required\": [\n              \"id\",\n              \"presentationDefinition\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"criteria\"\n      ],\n      \"title\": \"VTC Join-Requests Manifest — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

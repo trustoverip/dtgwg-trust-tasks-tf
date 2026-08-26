@@ -176,6 +176,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     pub action: ::std::string::String,
     pub authority_id: ::std::string::String,
@@ -183,6 +184,11 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub resource: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Whether the record asserts an authorization or a recognition relationship.
 ///
@@ -212,6 +218,7 @@ pub struct Payload {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum RecordType {
     #[serde(rename = "authorization")]
     Authorization,
@@ -307,6 +314,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     pub action: ::std::string::String,
     pub authority_id: ::std::string::String,
@@ -319,6 +327,249 @@ pub struct Response {
     pub recognized: ::std::option::Option<bool>,
     pub record_type: RecordType,
     pub resource: ::std::string::String,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        action: ::std::result::Result<::std::string::String, ::std::string::String>,
+        authority_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        entity_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        resource: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                authority_id: Err("no value supplied for authority_id".to_string()),
+                entity_id: Err("no value supplied for entity_id".to_string()),
+                ext: Ok(Default::default()),
+                resource: Err("no value supplied for resource".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn authority_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authority_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authority_id: {e}"));
+            self
+        }
+        pub fn entity_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entity_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entity_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                authority_id: value.authority_id?,
+                entity_id: value.entity_id?,
+                ext: value.ext?,
+                resource: value.resource?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                action: Ok(value.action),
+                authority_id: Ok(value.authority_id),
+                entity_id: Ok(value.entity_id),
+                ext: Ok(value.ext),
+                resource: Ok(value.resource),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        action: ::std::result::Result<::std::string::String, ::std::string::String>,
+        authority_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        authorized: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        context: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        entity_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        recognized: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        record_type: ::std::result::Result<super::RecordType, ::std::string::String>,
+        resource: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                authority_id: Err("no value supplied for authority_id".to_string()),
+                authorized: Ok(Default::default()),
+                context: Ok(Default::default()),
+                entity_id: Err("no value supplied for entity_id".to_string()),
+                recognized: Ok(Default::default()),
+                record_type: Err("no value supplied for record_type".to_string()),
+                resource: Err("no value supplied for resource".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn authority_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authority_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authority_id: {e}"));
+            self
+        }
+        pub fn authorized<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authorized = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authorized: {e}"));
+            self
+        }
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn entity_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entity_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entity_id: {e}"));
+            self
+        }
+        pub fn recognized<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recognized = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recognized: {e}"));
+            self
+        }
+        pub fn record_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RecordType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.record_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for record_type: {e}"));
+            self
+        }
+        pub fn resource<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.resource = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for resource: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                authority_id: value.authority_id?,
+                authorized: value.authorized?,
+                context: value.context?,
+                entity_id: value.entity_id?,
+                recognized: value.recognized?,
+                record_type: value.record_type?,
+                resource: value.resource?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                action: Ok(value.action),
+                authority_id: Ok(value.authority_id),
+                authorized: Ok(value.authorized),
+                context: Ok(value.context),
+                entity_id: Ok(value.entity_id),
+                recognized: Ok(value.recognized),
+                record_type: Ok(value.record_type),
+                resource: Ok(value.resource),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/registry/record/read/0.1";
@@ -333,6 +584,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"type\": \"object\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"type\": \"boolean\"\n        },\n        \"record_type\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"record_type\"\n      ],\n      \"title\": \"Registry Record Read — response payload (a TrustRecord)\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

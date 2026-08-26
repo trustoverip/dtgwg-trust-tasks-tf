@@ -157,6 +157,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -166,6 +167,11 @@ impl ::std::default::Default for Payload {
         Self {
             ext: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 /**
@@ -225,6 +231,7 @@ Advertised and active are reported separately: a registry that advertises a prot
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct RegistryTransport {
     ///The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -251,6 +258,11 @@ impl ::std::default::Default for RegistryTransport {
             error: Default::default(),
             url: Default::default(),
         }
+    }
+}
+impl RegistryTransport {
+    pub fn builder() -> builder::RegistryTransport {
+        Default::default()
     }
 }
 ///`RegistryTransportAdvertisedItem`
@@ -449,6 +461,7 @@ impl<'de> ::serde::Deserialize<'de> for RegistryTransportAdvertisedItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -553,6 +566,11 @@ pub struct Response {
     )]
     pub vta_did: ::std::option::Option<ResponseVtaDid>,
 }
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
 ///Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.
 ///
 /// <details><summary>JSON schema</summary>
@@ -580,6 +598,7 @@ pub struct Response {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseMessagingStatus {
     #[serde(rename = "connected")]
     Connected,
@@ -653,6 +672,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseMessagingStatus 
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum ResponseRegistryStatus {
     #[serde(rename = "active")]
     Active,
@@ -814,6 +834,7 @@ The two are separate on purpose. `advertised` is read from the DID document; `se
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct TransportStatus {
     ///Present in the DID document, so a resolving client will find it.
     pub advertised: bool,
@@ -824,6 +845,11 @@ pub struct TransportStatus {
     pub protocol: TransportStatusProtocol,
     ///This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.
     pub serviceable: bool,
+}
+impl TransportStatus {
+    pub fn builder() -> builder::TransportStatus {
+        Default::default()
+    }
 }
 ///The protocol this row describes.
 ///
@@ -894,6 +920,546 @@ impl<'de> ::serde::Deserialize<'de> for TransportStatusProtocol {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { ext: value.ext? })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self { ext: Ok(value.ext) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RegistryTransport {
+        active: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        advertised: ::std::result::Result<
+            ::std::vec::Vec<super::RegistryTransportAdvertisedItem>,
+            ::std::string::String,
+        >,
+        did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        error: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for RegistryTransport {
+        fn default() -> Self {
+            Self {
+                active: Ok(Default::default()),
+                advertised: Ok(Default::default()),
+                did: Ok(Default::default()),
+                error: Ok(Default::default()),
+                url: Ok(Default::default()),
+            }
+        }
+    }
+    impl RegistryTransport {
+        pub fn active<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.active = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for active: {e}"));
+            self
+        }
+        pub fn advertised<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RegistryTransportAdvertisedItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.advertised = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for advertised: {e}"));
+            self
+        }
+        pub fn did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did: {e}"));
+            self
+        }
+        pub fn error<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.error = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for error: {e}"));
+            self
+        }
+        pub fn url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for url: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RegistryTransport> for super::RegistryTransport {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RegistryTransport,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                active: value.active?,
+                advertised: value.advertised?,
+                did: value.did?,
+                error: value.error?,
+                url: value.url?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RegistryTransport> for RegistryTransport {
+        fn from(value: super::RegistryTransport) -> Self {
+            Self {
+                active: Ok(value.active),
+                advertised: Ok(value.advertised),
+                did: Ok(value.did),
+                error: Ok(value.error),
+                url: Ok(value.url),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        failed_count: ::std::result::Result<u64, ::std::string::String>,
+        last_error: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        last_failure_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        last_success_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        mediator_did: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        mediator_url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        messaging_status: ::std::result::Result<
+            ::std::option::Option<super::ResponseMessagingStatus>,
+            ::std::string::String,
+        >,
+        oldest_pending_age_seconds:
+            ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        queue_depth: ::std::result::Result<u64, ::std::string::String>,
+        registry_status:
+            ::std::result::Result<super::ResponseRegistryStatus, ::std::string::String>,
+        registry_transport: ::std::result::Result<
+            ::std::option::Option<super::RegistryTransport>,
+            ::std::string::String,
+        >,
+        rtbf_batched_count: ::std::result::Result<u64, ::std::string::String>,
+        syncer_enabled: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        syncer_restarts: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        syncer_running: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        transports:
+            ::std::result::Result<::std::vec::Vec<super::TransportStatus>, ::std::string::String>,
+        vta_did: ::std::result::Result<
+            ::std::option::Option<super::ResponseVtaDid>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                failed_count: Err("no value supplied for failed_count".to_string()),
+                last_error: Ok(Default::default()),
+                last_failure_at: Ok(Default::default()),
+                last_success_at: Ok(Default::default()),
+                mediator_did: Ok(Default::default()),
+                mediator_url: Ok(Default::default()),
+                messaging_status: Ok(Default::default()),
+                oldest_pending_age_seconds: Ok(Default::default()),
+                queue_depth: Err("no value supplied for queue_depth".to_string()),
+                registry_status: Err("no value supplied for registry_status".to_string()),
+                registry_transport: Ok(Default::default()),
+                rtbf_batched_count: Err("no value supplied for rtbf_batched_count".to_string()),
+                syncer_enabled: Ok(Default::default()),
+                syncer_restarts: Ok(Default::default()),
+                syncer_running: Ok(Default::default()),
+                transports: Ok(Default::default()),
+                vta_did: Ok(Default::default()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn failed_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.failed_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for failed_count: {e}"));
+            self
+        }
+        pub fn last_error<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_error = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_error: {e}"));
+            self
+        }
+        pub fn last_failure_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_failure_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_failure_at: {e}"));
+            self
+        }
+        pub fn last_success_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_success_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for last_success_at: {e}"));
+            self
+        }
+        pub fn mediator_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mediator_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mediator_did: {e}"));
+            self
+        }
+        pub fn mediator_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mediator_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mediator_url: {e}"));
+            self
+        }
+        pub fn messaging_status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseMessagingStatus>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.messaging_status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for messaging_status: {e}"));
+            self
+        }
+        pub fn oldest_pending_age_seconds<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.oldest_pending_age_seconds = value.try_into().map_err(|e| {
+                format!("error converting supplied value for oldest_pending_age_seconds: {e}")
+            });
+            self
+        }
+        pub fn queue_depth<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.queue_depth = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for queue_depth: {e}"));
+            self
+        }
+        pub fn registry_status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRegistryStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registry_status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for registry_status: {e}"));
+            self
+        }
+        pub fn registry_transport<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::RegistryTransport>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.registry_transport = value.try_into().map_err(|e| {
+                format!("error converting supplied value for registry_transport: {e}")
+            });
+            self
+        }
+        pub fn rtbf_batched_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rtbf_batched_count = value.try_into().map_err(|e| {
+                format!("error converting supplied value for rtbf_batched_count: {e}")
+            });
+            self
+        }
+        pub fn syncer_enabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.syncer_enabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for syncer_enabled: {e}"));
+            self
+        }
+        pub fn syncer_restarts<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.syncer_restarts = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for syncer_restarts: {e}"));
+            self
+        }
+        pub fn syncer_running<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.syncer_running = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for syncer_running: {e}"));
+            self
+        }
+        pub fn transports<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::TransportStatus>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.transports = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for transports: {e}"));
+            self
+        }
+        pub fn vta_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseVtaDid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.vta_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for vta_did: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                failed_count: value.failed_count?,
+                last_error: value.last_error?,
+                last_failure_at: value.last_failure_at?,
+                last_success_at: value.last_success_at?,
+                mediator_did: value.mediator_did?,
+                mediator_url: value.mediator_url?,
+                messaging_status: value.messaging_status?,
+                oldest_pending_age_seconds: value.oldest_pending_age_seconds?,
+                queue_depth: value.queue_depth?,
+                registry_status: value.registry_status?,
+                registry_transport: value.registry_transport?,
+                rtbf_batched_count: value.rtbf_batched_count?,
+                syncer_enabled: value.syncer_enabled?,
+                syncer_restarts: value.syncer_restarts?,
+                syncer_running: value.syncer_running?,
+                transports: value.transports?,
+                vta_did: value.vta_did?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                failed_count: Ok(value.failed_count),
+                last_error: Ok(value.last_error),
+                last_failure_at: Ok(value.last_failure_at),
+                last_success_at: Ok(value.last_success_at),
+                mediator_did: Ok(value.mediator_did),
+                mediator_url: Ok(value.mediator_url),
+                messaging_status: Ok(value.messaging_status),
+                oldest_pending_age_seconds: Ok(value.oldest_pending_age_seconds),
+                queue_depth: Ok(value.queue_depth),
+                registry_status: Ok(value.registry_status),
+                registry_transport: Ok(value.registry_transport),
+                rtbf_batched_count: Ok(value.rtbf_batched_count),
+                syncer_enabled: Ok(value.syncer_enabled),
+                syncer_restarts: Ok(value.syncer_restarts),
+                syncer_running: Ok(value.syncer_running),
+                transports: Ok(value.transports),
+                vta_did: Ok(value.vta_did),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct TransportStatus {
+        advertised: ::std::result::Result<bool, ::std::string::String>,
+        endpoint: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        protocol: ::std::result::Result<super::TransportStatusProtocol, ::std::string::String>,
+        serviceable: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for TransportStatus {
+        fn default() -> Self {
+            Self {
+                advertised: Err("no value supplied for advertised".to_string()),
+                endpoint: Ok(Default::default()),
+                protocol: Err("no value supplied for protocol".to_string()),
+                serviceable: Err("no value supplied for serviceable".to_string()),
+            }
+        }
+    }
+    impl TransportStatus {
+        pub fn advertised<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.advertised = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for advertised: {e}"));
+            self
+        }
+        pub fn endpoint<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.endpoint = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for endpoint: {e}"));
+            self
+        }
+        pub fn protocol<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TransportStatusProtocol>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.protocol = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for protocol: {e}"));
+            self
+        }
+        pub fn serviceable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.serviceable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for serviceable: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<TransportStatus> for super::TransportStatus {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: TransportStatus,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                advertised: value.advertised?,
+                endpoint: value.endpoint?,
+                protocol: value.protocol?,
+                serviceable: value.serviceable?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::TransportStatus> for TransportStatus {
+        fn from(value: super::TransportStatus) -> Self {
+            Self {
+                advertised: Ok(value.advertised),
+                endpoint: Ok(value.endpoint),
+                protocol: Ok(value.protocol),
+                serviceable: Ok(value.serviceable),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -908,6 +1474,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegistryTransport\": {\n      \"$anchor\": \"registryTransport\",\n      \"additionalProperties\": false,\n      \"description\": \"How a maintainer addresses its trust registry, and what the last selection chose.\\n\\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"advertised\": {\n          \"description\": \"Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"description\": \"The registry's DID, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"error\": {\n          \"description\": \"Why the last selection failed, if it did.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"url\": {\n          \"description\": \"The registry's endpoint, when addressed by one.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"title\": \"RegistryTransport\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"failedCount\": {\n          \"description\": \"Terminal-failure rows awaiting operator triage.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastError\": {\n          \"description\": \"Error from the last registry failure. May include upstream URLs/codes — treat as potentially sensitive.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastFailureAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"lastSuccessAt\": {\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator's DID, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"mediatorUrl\": {\n          \"description\": \"The mediator's endpoint, when one is configured.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"messagingStatus\": {\n          \"description\": \"Live messaging connectivity: `connected` when the delivery layer reports a live mediator connection. A re-falsifiable signal read at request time, never a boot-time latch — a maintainer that connected once and dropped must report `disconnected`.\",\n          \"enum\": [\n            \"connected\",\n            \"disconnected\"\n          ],\n          \"type\": \"string\"\n        },\n        \"oldestPendingAgeSeconds\": {\n          \"description\": \"Seconds since the oldest dispatchable pending job; null when the queue is empty.\",\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        },\n        \"queueDepth\": {\n          \"description\": \"Pending + in-flight sync jobs.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"registryStatus\": {\n          \"description\": \"Trust-registry reachability.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        },\n        \"registryTransport\": {\n          \"$ref\": \"#/$defs/RegistryTransport\",\n          \"description\": \"How this maintainer reaches its trust registry, and which protocol the last attempt actually chose.\"\n        },\n        \"rtbfBatchedCount\": {\n          \"description\": \"Pending jobs parked behind the RTBF batch window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerEnabled\": {\n          \"description\": \"Whether the membership syncer is configured to run at all — false when no trust registry is configured.\",\n          \"type\": \"boolean\"\n        },\n        \"syncerRestarts\": {\n          \"description\": \"How many times the syncer has been restarted after a panic. A rising value is the \\\"it keeps crashing\\\" signal; queue depth alone looks identical to a healthy idle queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"syncerRunning\": {\n          \"description\": \"Whether the syncer task is alive right now. `syncerEnabled && !syncerRunning` means spawned but dead — mid-restart after a panic, which no queue count reveals.\",\n          \"type\": \"boolean\"\n        },\n        \"transports\": {\n          \"description\": \"Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\\n\\nReports all protocols rather than only the advertised ones, so a client can tell \\\"not advertised\\\" from \\\"absent from an older response\\\".\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TransportStatus\"\n          },\n          \"type\": \"array\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the agent this maintainer was provisioned against. Admin-gated rather than public: infrastructure topology is not a free reconnaissance oracle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"registryStatus\",\n        \"queueDepth\",\n        \"rtbfBatchedCount\",\n        \"failedCount\"\n      ],\n      \"title\": \"VTC Registry Diagnostics — response payload\",\n      \"type\": \"object\"\n    },\n    \"TransportStatus\": {\n      \"$anchor\": \"transportStatus\",\n      \"additionalProperties\": false,\n      \"description\": \"One protocol's advertised and serviceable state.\\n\\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.\",\n      \"properties\": {\n        \"advertised\": {\n          \"description\": \"Present in the DID document, so a resolving client will find it.\",\n          \"type\": \"boolean\"\n        },\n        \"endpoint\": {\n          \"description\": \"The advertised endpoint, or null when not advertised — there is no endpoint to give.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"protocol\": {\n          \"description\": \"The protocol this row describes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serviceable\": {\n          \"description\": \"This maintainer can answer on it right now. For messaging transports that means the build supports the protocol *and* the connection is live.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"protocol\",\n        \"advertised\",\n        \"serviceable\"\n      ],\n      \"title\": \"TransportStatus\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

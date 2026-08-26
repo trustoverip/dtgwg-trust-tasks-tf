@@ -200,6 +200,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional filter — usage by this consumer DID only. Useful for "what has AI agent X been doing on my behalf".
     #[serde(
@@ -256,6 +257,11 @@ impl ::std::default::Default for Payload {
             since: Default::default(),
             until: Default::default(),
         }
+    }
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Optional filter — usage by this consumer DID only. Useful for "what has AI agent X been doing on my behalf".
@@ -491,6 +497,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEntryId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum PayloadKindFilterItem {
     #[serde(rename = "proxyLogin")]
     ProxyLogin,
@@ -573,6 +580,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadKindFilterItem {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub cursor: ::std::option::Option<::std::string::String>,
@@ -580,6 +588,11 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     pub truncated: bool,
     pub uses: ::std::vec::Vec<UsageRecord>,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`UsageRecord`
 ///
@@ -663,6 +676,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct UsageRecord {
     ///DID of the Companion/Service that initiated the use.
     #[serde(rename = "consumerDid")]
@@ -703,6 +717,11 @@ pub struct UsageRecord {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<UsageRecordSessionId>,
+}
+impl UsageRecord {
+    pub fn builder() -> builder::UsageRecord {
+        Default::default()
+    }
 }
 ///DID of the Companion/Service that initiated the use.
 ///
@@ -1071,6 +1090,7 @@ impl<'de> ::serde::Deserialize<'de> for UsageRecordId {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum UsageRecordKind {
     #[serde(rename = "proxyLogin")]
     ProxyLogin,
@@ -1148,6 +1168,7 @@ impl ::std::convert::TryFrom<::std::string::String> for UsageRecordKind {
     PartialEq,
     PartialOrd,
 )]
+#[non_exhaustive]
 pub enum UsageRecordOutcome {
     #[serde(rename = "allowed")]
     Allowed,
@@ -1283,6 +1304,463 @@ impl<'de> ::serde::Deserialize<'de> for UsageRecordSessionId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        by_consumer: ::std::result::Result<
+            ::std::option::Option<super::PayloadByConsumer>,
+            ::std::string::String,
+        >,
+        context_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadContextId>,
+            ::std::string::String,
+        >,
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        entry_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadEntryId>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        kind_filter: ::std::result::Result<
+            ::std::option::Option<Vec<super::PayloadKindFilterItem>>,
+            ::std::string::String,
+        >,
+        page_size: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        since: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                by_consumer: Ok(Default::default()),
+                context_id: Ok(Default::default()),
+                cursor: Ok(Default::default()),
+                entry_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                kind_filter: Ok(Default::default()),
+                page_size: Ok(Default::default()),
+                since: Ok(Default::default()),
+                until: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn by_consumer<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadByConsumer>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.by_consumer = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for by_consumer: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadContextId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadEntryId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn kind_filter<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::PayloadKindFilterItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind_filter = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind_filter: {e}"));
+            self
+        }
+        pub fn page_size<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.page_size = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for page_size: {e}"));
+            self
+        }
+        pub fn since<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.since = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for since: {e}"));
+            self
+        }
+        pub fn until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for until: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                by_consumer: value.by_consumer?,
+                context_id: value.context_id?,
+                cursor: value.cursor?,
+                entry_id: value.entry_id?,
+                ext: value.ext?,
+                kind_filter: value.kind_filter?,
+                page_size: value.page_size?,
+                since: value.since?,
+                until: value.until?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                by_consumer: Ok(value.by_consumer),
+                context_id: Ok(value.context_id),
+                cursor: Ok(value.cursor),
+                entry_id: Ok(value.entry_id),
+                ext: Ok(value.ext),
+                kind_filter: Ok(value.kind_filter),
+                page_size: Ok(value.page_size),
+                since: Ok(value.since),
+                until: Ok(value.until),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        truncated: ::std::result::Result<bool, ::std::string::String>,
+        uses: ::std::result::Result<::std::vec::Vec<super::UsageRecord>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                truncated: Err("no value supplied for truncated".to_string()),
+                uses: Err("no value supplied for uses".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn truncated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.truncated = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for truncated: {e}"));
+            self
+        }
+        pub fn uses<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::UsageRecord>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.uses = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for uses: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                ext: value.ext?,
+                truncated: value.truncated?,
+                uses: value.uses?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                truncated: Ok(value.truncated),
+                uses: Ok(value.uses),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct UsageRecord {
+        consumer_did: ::std::result::Result<super::UsageRecordConsumerDid, ::std::string::String>,
+        context_id: ::std::result::Result<super::UsageRecordContextId, ::std::string::String>,
+        device_id: ::std::result::Result<
+            ::std::option::Option<super::UsageRecordDeviceId>,
+            ::std::string::String,
+        >,
+        entry_id: ::std::result::Result<super::UsageRecordEntryId, ::std::string::String>,
+        error_code: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::UsageRecordId, ::std::string::String>,
+        kind: ::std::result::Result<super::UsageRecordKind, ::std::string::String>,
+        occurred_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        outcome: ::std::result::Result<super::UsageRecordOutcome, ::std::string::String>,
+        policy_decision_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        session_id: ::std::result::Result<
+            ::std::option::Option<super::UsageRecordSessionId>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for UsageRecord {
+        fn default() -> Self {
+            Self {
+                consumer_did: Err("no value supplied for consumer_did".to_string()),
+                context_id: Err("no value supplied for context_id".to_string()),
+                device_id: Ok(Default::default()),
+                entry_id: Err("no value supplied for entry_id".to_string()),
+                error_code: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                kind: Err("no value supplied for kind".to_string()),
+                occurred_at: Err("no value supplied for occurred_at".to_string()),
+                outcome: Err("no value supplied for outcome".to_string()),
+                policy_decision_id: Ok(Default::default()),
+                session_id: Ok(Default::default()),
+            }
+        }
+    }
+    impl UsageRecord {
+        pub fn consumer_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UsageRecordConsumerDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.consumer_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for consumer_did: {e}"));
+            self
+        }
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UsageRecordContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn device_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::UsageRecordDeviceId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.device_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for device_id: {e}"));
+            self
+        }
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UsageRecordEntryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn error_code<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.error_code = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for error_code: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UsageRecordId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UsageRecordKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn occurred_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.occurred_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for occurred_at: {e}"));
+            self
+        }
+        pub fn outcome<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::UsageRecordOutcome>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.outcome = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for outcome: {e}"));
+            self
+        }
+        pub fn policy_decision_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.policy_decision_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for policy_decision_id: {e}")
+            });
+            self
+        }
+        pub fn session_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::UsageRecordSessionId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<UsageRecord> for super::UsageRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: UsageRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                consumer_did: value.consumer_did?,
+                context_id: value.context_id?,
+                device_id: value.device_id?,
+                entry_id: value.entry_id?,
+                error_code: value.error_code?,
+                id: value.id?,
+                kind: value.kind?,
+                occurred_at: value.occurred_at?,
+                outcome: value.outcome?,
+                policy_decision_id: value.policy_decision_id?,
+                session_id: value.session_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::UsageRecord> for UsageRecord {
+        fn from(value: super::UsageRecord) -> Self {
+            Self {
+                consumer_did: Ok(value.consumer_did),
+                context_id: Ok(value.context_id),
+                device_id: Ok(value.device_id),
+                entry_id: Ok(value.entry_id),
+                error_code: Ok(value.error_code),
+                id: Ok(value.id),
+                kind: Ok(value.kind),
+                occurred_at: Ok(value.occurred_at),
+                outcome: Ok(value.outcome),
+                policy_decision_id: Ok(value.policy_decision_id),
+                session_id: Ok(value.session_id),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vault/usage/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -1296,6 +1774,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"truncated\": {\n          \"type\": \"boolean\"\n        },\n        \"uses\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/UsageRecord\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"uses\",\n        \"truncated\"\n      ],\n      \"title\": \"Vault Usage — response payload\",\n      \"type\": \"object\"\n    },\n    \"UsageRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"consumerDid\": {\n          \"description\": \"DID of the Companion/Service that initiated the use.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"deviceId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"entryId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"errorCode\": {\n          \"description\": \"Trust Task error code when outcome is a failure.\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"enum\": [\n            \"proxyLogin\",\n            \"release\"\n          ],\n          \"type\": \"string\"\n        },\n        \"occurredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"outcome\": {\n          \"enum\": [\n            \"allowed\",\n            \"denied\",\n            \"stepUpRequired\",\n            \"stepUpSatisfied\",\n            \"targetUnreachable\",\n            \"credentialRejected\",\n            \"policyDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"policyDecisionId\": {\n          \"description\": \"Pointer to the policy evaluation record for forensic detail.\",\n          \"type\": \"string\"\n        },\n        \"sessionId\": {\n          \"description\": \"For successful proxy-logins, the maintainer-assigned session id; absent for releases and for failures.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"entryId\",\n        \"contextId\",\n        \"consumerDid\",\n        \"kind\",\n        \"outcome\",\n        \"occurredAt\"\n      ],\n      \"title\": \"UsageRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

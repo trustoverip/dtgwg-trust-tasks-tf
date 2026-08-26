@@ -170,6 +170,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -179,6 +180,11 @@ pub struct Payload {
     ///Operator note relayed verbatim to the member, e.g. "renewal", "audit".
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The active member to request a VMC from.
 ///
@@ -357,6 +363,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -368,6 +375,11 @@ pub struct Response {
     ///Correlates the member's eventual vtc/members/vmc delivery with this solicitation.
     #[serde(rename = "threadId")]
     pub thread_id: ResponseThreadId,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///The member the request was dispatched to.
 ///
@@ -507,6 +519,158 @@ impl<'de> ::serde::Deserialize<'de> for ResponseThreadId {
             })
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        member_did: ::std::result::Result<super::PayloadMemberDid, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                member_did: Err("no value supplied for member_did".to_string()),
+                reason: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn member_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadMemberDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.member_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for member_did: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                member_did: value.member_did?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                member_did: Ok(value.member_did),
+                reason: Ok(value.reason),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        member_did: ::std::result::Result<super::ResponseMemberDid, ::std::string::String>,
+        requested: ::std::result::Result<bool, ::std::string::String>,
+        thread_id: ::std::result::Result<super::ResponseThreadId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                member_did: Err("no value supplied for member_did".to_string()),
+                requested: Err("no value supplied for requested".to_string()),
+                thread_id: Err("no value supplied for thread_id".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn member_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseMemberDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.member_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for member_did: {e}"));
+            self
+        }
+        pub fn requested<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requested = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for requested: {e}"));
+            self
+        }
+        pub fn thread_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseThreadId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.thread_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for thread_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                member_did: value.member_did?,
+                requested: value.requested?,
+                thread_id: value.thread_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                member_did: Ok(value.member_did),
+                requested: Ok(value.requested),
+                thread_id: Ok(value.thread_id),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -521,6 +685,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member the request was dispatched to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requested\": {\n          \"description\": \"The request was DISPATCHED. Not a delivery or reply receipt.\",\n          \"type\": \"boolean\"\n        },\n        \"threadId\": {\n          \"description\": \"Correlates the member's eventual vtc/members/vmc delivery with this solicitation.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"memberDid\",\n        \"requested\",\n        \"threadId\"\n      ],\n      \"title\": \"VTC Members Solicit VMC — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

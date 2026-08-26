@@ -96,6 +96,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct AppStateRecord {
     ///The VTA context the record is scoped to; the isolation boundary.
     #[serde(rename = "contextId")]
@@ -133,6 +134,11 @@ pub struct AppStateRecord {
     pub value_bytes: ::std::option::Option<u64>,
     ///The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
     pub version: Version,
+}
+impl AppStateRecord {
+    pub fn builder() -> builder::AppStateRecord {
+        Default::default()
+    }
 }
 ///The VTA context the record is scoped to; the isolation boundary.
 ///
@@ -535,6 +541,7 @@ impl<'de> ::serde::Deserialize<'de> for Namespace {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///The VTA context to enumerate; the isolation boundary.
     #[serde(rename = "contextId")]
@@ -579,6 +586,11 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The VTA context to enumerate; the isolation boundary.
 ///
@@ -768,6 +780,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPrefix {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     ///Opaque continuation token for the next page. Present only when `truncated` is true.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -793,6 +806,11 @@ pub struct Response {
     pub tombstone_retention_seconds: ::std::option::Option<u64>,
     ///True when more matching records exist beyond this page.
     pub truncated: bool,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.
 ///
@@ -849,6 +867,463 @@ impl ::std::fmt::Display for Version {
         self.0.fmt(f)
     }
 }
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct AppStateRecord {
+        context_id: ::std::result::Result<super::AppStateRecordContextId, ::std::string::String>,
+        created_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        deleted: ::std::result::Result<bool, ::std::string::String>,
+        deleted_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        key: ::std::result::Result<super::Key, ::std::string::String>,
+        namespace: ::std::result::Result<super::Namespace, ::std::string::String>,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        value: ::std::result::Result<
+            ::std::option::Option<::serde_json::Value>,
+            ::std::string::String,
+        >,
+        value_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        version: ::std::result::Result<super::Version, ::std::string::String>,
+    }
+    impl ::std::default::Default for AppStateRecord {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                created_at: Ok(Default::default()),
+                deleted: Err("no value supplied for deleted".to_string()),
+                deleted_at: Ok(Default::default()),
+                key: Err("no value supplied for key".to_string()),
+                namespace: Err("no value supplied for namespace".to_string()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+                value: Ok(Default::default()),
+                value_bytes: Ok(Default::default()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl AppStateRecord {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AppStateRecordContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn deleted<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.deleted = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for deleted: {e}"));
+            self
+        }
+        pub fn deleted_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.deleted_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for deleted_at: {e}"));
+            self
+        }
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Key>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn namespace<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Namespace>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.namespace = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for namespace: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value: {e}"));
+            self
+        }
+        pub fn value_bytes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value_bytes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value_bytes: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Version>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AppStateRecord> for super::AppStateRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AppStateRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                created_at: value.created_at?,
+                deleted: value.deleted?,
+                deleted_at: value.deleted_at?,
+                key: value.key?,
+                namespace: value.namespace?,
+                updated_at: value.updated_at?,
+                value: value.value?,
+                value_bytes: value.value_bytes?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AppStateRecord> for AppStateRecord {
+        fn from(value: super::AppStateRecord) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                created_at: Ok(value.created_at),
+                deleted: Ok(value.deleted),
+                deleted_at: Ok(value.deleted_at),
+                key: Ok(value.key),
+                namespace: Ok(value.namespace),
+                updated_at: Ok(value.updated_at),
+                value: Ok(value.value),
+                value_bytes: Ok(value.value_bytes),
+                version: Ok(value.version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        context_id: ::std::result::Result<super::PayloadContextId, ::std::string::String>,
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        include_deleted: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        include_values: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        namespace:
+            ::std::result::Result<::std::option::Option<super::Namespace>, ::std::string::String>,
+        page_size: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        prefix: ::std::result::Result<
+            ::std::option::Option<super::PayloadPrefix>,
+            ::std::string::String,
+        >,
+        since_version: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                include_deleted: Ok(Default::default()),
+                include_values: Ok(Default::default()),
+                namespace: Ok(Default::default()),
+                page_size: Ok(Default::default()),
+                prefix: Ok(Default::default()),
+                since_version: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn include_deleted<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.include_deleted = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for include_deleted: {e}"));
+            self
+        }
+        pub fn include_values<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.include_values = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for include_values: {e}"));
+            self
+        }
+        pub fn namespace<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Namespace>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.namespace = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for namespace: {e}"));
+            self
+        }
+        pub fn page_size<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.page_size = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for page_size: {e}"));
+            self
+        }
+        pub fn prefix<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadPrefix>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.prefix = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for prefix: {e}"));
+            self
+        }
+        pub fn since_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.since_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for since_version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                cursor: value.cursor?,
+                ext: value.ext?,
+                include_deleted: value.include_deleted?,
+                include_values: value.include_values?,
+                namespace: value.namespace?,
+                page_size: value.page_size?,
+                prefix: value.prefix?,
+                since_version: value.since_version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                include_deleted: Ok(value.include_deleted),
+                include_values: Ok(value.include_values),
+                namespace: Ok(value.namespace),
+                page_size: Ok(value.page_size),
+                prefix: Ok(value.prefix),
+                since_version: Ok(value.since_version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        cursor: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        high_watermark:
+            ::std::result::Result<::std::option::Option<super::Version>, ::std::string::String>,
+        records:
+            ::std::result::Result<::std::vec::Vec<super::AppStateRecord>, ::std::string::String>,
+        tombstone_retention_seconds:
+            ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        truncated: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                cursor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                high_watermark: Ok(Default::default()),
+                records: Err("no value supplied for records".to_string()),
+                tombstone_retention_seconds: Ok(Default::default()),
+                truncated: Err("no value supplied for truncated".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn cursor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cursor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cursor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn high_watermark<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Version>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.high_watermark = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for high_watermark: {e}"));
+            self
+        }
+        pub fn records<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AppStateRecord>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.records = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for records: {e}"));
+            self
+        }
+        pub fn tombstone_retention_seconds<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tombstone_retention_seconds = value.try_into().map_err(|e| {
+                format!("error converting supplied value for tombstone_retention_seconds: {e}")
+            });
+            self
+        }
+        pub fn truncated<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.truncated = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for truncated: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                cursor: value.cursor?,
+                ext: value.ext?,
+                high_watermark: value.high_watermark?,
+                records: value.records?,
+                tombstone_retention_seconds: value.tombstone_retention_seconds?,
+                truncated: value.truncated?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                cursor: Ok(value.cursor),
+                ext: Ok(value.ext),
+                high_watermark: Ok(value.high_watermark),
+                records: Ok(value.records),
+                tombstone_retention_seconds: Ok(value.tombstone_retention_seconds),
+                truncated: Ok(value.truncated),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/app-state/list/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -862,6 +1337,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"AppStateRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.\",\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"The VTA context the record is scoped to; the isolation boundary.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deleted\": {\n          \"description\": \"True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`.\",\n          \"type\": \"boolean\"\n        },\n        \"deletedAt\": {\n          \"description\": \"When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"namespace\": {\n          \"$ref\": \"#/$defs/Namespace\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the write that produced this `version` was applied. For a tombstone, when the delete was applied.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.\"\n        },\n        \"valueBytes\": {\n          \"description\": \"Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"namespace\",\n        \"key\",\n        \"version\",\n        \"deleted\",\n        \"updatedAt\"\n      ],\n      \"title\": \"AppStateRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000]+$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Namespace\": {\n      \"description\": \"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\n      \"title\": \"Namespace\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/app-state/list. Type https://trusttasks.org/spec/vta/app-state/list/1.0#response.\",\n      \"properties\": {\n        \"cursor\": {\n          \"description\": \"Opaque continuation token for the next page. Present only when `truncated` is true.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"highWatermark\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The namespace's current counter value. Present whenever `namespace` was supplied. This is what a consumer stores as its next `sinceVersion` — NOT the maximum version among `records`, which is wrong whenever a `prefix` filtered a later change out, and undefined when the page is empty. A paginating consumer MUST NOT advance its stored watermark until it has drained the final page, because the pages of one feed share this value and adopting it early would skip the records still to come.\"\n        },\n        \"records\": {\n          \"description\": \"Matching records in ascending key order in snapshot mode, and ascending version order in change-feed mode — the latter so that a consumer applying them in order reaches the same state as the maintainer. May be empty.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AppStateRecord\"\n          },\n          \"type\": \"array\"\n        },\n        \"tombstoneRetentionSeconds\": {\n          \"description\": \"How long this maintainer retains tombstones before reaping them. Advisory, and present at the maintainer's discretion, so a consumer can schedule its syncs to stay inside the window rather than discovering it has fallen out of it via vta/app-state/list:watermarkTooOld.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"truncated\": {\n          \"description\": \"True when more matching records exist beyond this page.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"records\",\n        \"truncated\"\n      ],\n      \"title\": \"VTA Application State List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {

@@ -105,6 +105,7 @@ pub mod error {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct DidRecord {
     ///RFC3339 timestamp of initial reservation.
     #[serde(rename = "createdAt")]
@@ -152,6 +153,11 @@ pub struct DidRecord {
     ///Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.
     #[serde(rename = "versionCount")]
     pub version_count: u64,
+}
+impl DidRecord {
+    pub fn builder() -> builder::DidRecord {
+        Default::default()
+    }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
@@ -292,6 +298,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Payload {
     ///Optional explicit hosting domain. See [category conventions §1](../../../_shared/0.1/CONVENTIONS.md#1-domain-resolution). Unknown domains return `did-management:unknownDomain`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -299,6 +306,11 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: PayloadMnemonic,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///`PayloadMnemonic`
 ///
@@ -407,6 +419,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -417,6 +430,11 @@ pub struct Response {
     )]
     pub log_summary: ::std::option::Option<ResponseLogSummary>,
     pub record: DidRecord,
+}
+impl Response {
+    pub fn builder() -> builder::Response {
+        Default::default()
+    }
 }
 ///`ResponseLogSummary`
 ///
@@ -440,6 +458,7 @@ pub struct Response {
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ResponseLogSummary {
     #[serde(
         rename = "latestVersionId",
@@ -462,6 +481,422 @@ impl ::std::default::Default for ResponseLogSummary {
         }
     }
 }
+impl ResponseLogSummary {
+    pub fn builder() -> builder::ResponseLogSummary {
+        Default::default()
+    }
+}
+/// Types for composing complex structures.
+pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct DidRecord {
+        created_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        did_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        did_url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        disabled: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        domain: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        method: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        mnemonic: ::std::result::Result<::std::string::String, ::std::string::String>,
+        owner: ::std::result::Result<::std::string::String, ::std::string::String>,
+        total_resolves: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        updated_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        version_count: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for DidRecord {
+        fn default() -> Self {
+            Self {
+                created_at: Err("no value supplied for created_at".to_string()),
+                did_id: Ok(Default::default()),
+                did_url: Ok(Default::default()),
+                disabled: Ok(Default::default()),
+                domain: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                method: Ok(Default::default()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+                owner: Err("no value supplied for owner".to_string()),
+                total_resolves: Ok(Default::default()),
+                updated_at: Err("no value supplied for updated_at".to_string()),
+                version_count: Err("no value supplied for version_count".to_string()),
+            }
+        }
+    }
+    impl DidRecord {
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn did_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did_id: {e}"));
+            self
+        }
+        pub fn did_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.did_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for did_url: {e}"));
+            self
+        }
+        pub fn disabled<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disabled = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disabled: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.method = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for method: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+        pub fn owner<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.owner = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for owner: {e}"));
+            self
+        }
+        pub fn total_resolves<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.total_resolves = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for total_resolves: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn version_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version_count: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<DidRecord> for super::DidRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: DidRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created_at: value.created_at?,
+                did_id: value.did_id?,
+                did_url: value.did_url?,
+                disabled: value.disabled?,
+                domain: value.domain?,
+                ext: value.ext?,
+                method: value.method?,
+                mnemonic: value.mnemonic?,
+                owner: value.owner?,
+                total_resolves: value.total_resolves?,
+                updated_at: value.updated_at?,
+                version_count: value.version_count?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::DidRecord> for DidRecord {
+        fn from(value: super::DidRecord) -> Self {
+            Self {
+                created_at: Ok(value.created_at),
+                did_id: Ok(value.did_id),
+                did_url: Ok(value.did_url),
+                disabled: Ok(value.disabled),
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                method: Ok(value.method),
+                mnemonic: Ok(value.mnemonic),
+                owner: Ok(value.owner),
+                total_resolves: Ok(value.total_resolves),
+                updated_at: Ok(value.updated_at),
+                version_count: Ok(value.version_count),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        domain: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        mnemonic: ::std::result::Result<super::PayloadMnemonic, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                domain: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                mnemonic: Err("no value supplied for mnemonic".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn mnemonic<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadMnemonic>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.mnemonic = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for mnemonic: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                domain: value.domain?,
+                ext: value.ext?,
+                mnemonic: value.mnemonic?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                domain: Ok(value.domain),
+                ext: Ok(value.ext),
+                mnemonic: Ok(value.mnemonic),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Response {
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        log_summary: ::std::result::Result<
+            ::std::option::Option<super::ResponseLogSummary>,
+            ::std::string::String,
+        >,
+        record: ::std::result::Result<super::DidRecord, ::std::string::String>,
+    }
+    impl ::std::default::Default for Response {
+        fn default() -> Self {
+            Self {
+                ext: Ok(Default::default()),
+                log_summary: Ok(Default::default()),
+                record: Err("no value supplied for record".to_string()),
+            }
+        }
+    }
+    impl Response {
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn log_summary<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseLogSummary>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.log_summary = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for log_summary: {e}"));
+            self
+        }
+        pub fn record<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DidRecord>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.record = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for record: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Response> for super::Response {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ext: value.ext?,
+                log_summary: value.log_summary?,
+                record: value.record?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Response> for Response {
+        fn from(value: super::Response) -> Self {
+            Self {
+                ext: Ok(value.ext),
+                log_summary: Ok(value.log_summary),
+                record: Ok(value.record),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseLogSummary {
+        latest_version_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        latest_version_time: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ResponseLogSummary {
+        fn default() -> Self {
+            Self {
+                latest_version_id: Ok(Default::default()),
+                latest_version_time: Ok(Default::default()),
+            }
+        }
+    }
+    impl ResponseLogSummary {
+        pub fn latest_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.latest_version_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for latest_version_id: {e}"));
+            self
+        }
+        pub fn latest_version_time<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.latest_version_time = value.try_into().map_err(|e| {
+                format!("error converting supplied value for latest_version_time: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseLogSummary> for super::ResponseLogSummary {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseLogSummary,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                latest_version_id: value.latest_version_id?,
+                latest_version_time: value.latest_version_time?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseLogSummary> for ResponseLogSummary {
+        fn from(value: super::ResponseLogSummary) -> Self {
+            Self {
+                latest_version_id: Ok(value.latest_version_id),
+                latest_version_time: Ok(value.latest_version_time),
+            }
+        }
+    }
+}
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/did/info/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
@@ -476,6 +911,9 @@ impl crate::Payload for Response {
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
         "{\n  \"$defs\": {\n    \"DidRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"RFC3339 timestamp of initial reservation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"didId\": {\n          \"description\": \"Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.\",\n          \"type\": \"string\"\n        },\n        \"didUrl\": {\n          \"description\": \"Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"disabled\": {\n          \"description\": \"When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.\",\n          \"type\": \"boolean\"\n        },\n        \"domain\": {\n          \"description\": \"Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"method\": {\n          \"description\": \"DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"owner\": {\n          \"description\": \"VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.\",\n          \"type\": \"string\"\n        },\n        \"totalResolves\": {\n          \"description\": \"Lifetime resolve counter, when the host exposes per-DID statistics.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC3339 timestamp of the most recent record mutation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"versionCount\": {\n          \"description\": \"Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"owner\",\n        \"createdAt\",\n        \"updatedAt\",\n        \"versionCount\"\n      ],\n      \"title\": \"DidRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logSummary\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"latestVersionId\": {\n              \"type\": \"string\"\n            },\n            \"latestVersionTime\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"record\": {\n          \"$ref\": \"#/$defs/DidRecord\"\n        }\n      },\n      \"required\": [\n        \"record\"\n      ],\n      \"title\": \"DID Management Info — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
+}
+impl crate::RequestPayload for Payload {
+    type Response = Response;
 }
 #[cfg(test)]
 mod conformance {
