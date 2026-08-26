@@ -260,6 +260,18 @@ impl HttpsClient {
         let body = resp.bytes().await?;
 
         if status.is_success() {
+            // A 2xx with no body is the server absorbing this document as a
+            // duplicate under SPEC §7.2 item 11 — `202` while the original
+            // execution is still running, `204` where the specification
+            // defines no success response. There is no document to correlate
+            // or verify, and treating it as a decode failure would report a
+            // parse error for a perfectly correct answer.
+            if body.is_empty() {
+                return Err(ClientError::DuplicateAbsorbed {
+                    http_status: status.as_u16(),
+                });
+            }
+
             // Parse untyped first: the proof (if any) is verified over the
             // JSON form, and the correlation checks below need no payload
             // types. Only then is the payload downcast to `Resp`.
@@ -423,6 +435,25 @@ pub enum ClientError {
     /// `TrustTask<Resp>`.
     #[error("response body did not match expected type: {0}")]
     ResponseDecode(String),
+
+    /// A 2xx response with an empty body: the consumer had already accepted
+    /// this document under SPEC §7.2 item 11 and has no result to hand back —
+    /// `202 Accepted` while the original execution is still in progress,
+    /// `204 No Content` where the *Trust Task specification* defines no
+    /// success response.
+    ///
+    /// **This is not a failure.** The effect happened; it did not happen
+    /// twice, which is the guarantee item 11 exists to give. §7.2 is explicit
+    /// that "in no case is a duplicate reported as `taskFailed`; the task did
+    /// not fail, it already happened" — a caller that folds every `Err` into
+    /// "the request failed" will misreport it. It arrives as an `Err` only
+    /// because [`HttpsClient::send`] is typed to return a response document
+    /// and there is none.
+    #[error("consumer absorbed this document as a duplicate (HTTP {http_status}); no result body")]
+    DuplicateAbsorbed {
+        /// The 2xx status carried: `202` (original still in flight) or `204`.
+        http_status: u16,
+    },
 
     /// The response's `threadId` does not correlate with the request
     /// (SPEC §4.9). The response answers some other exchange.

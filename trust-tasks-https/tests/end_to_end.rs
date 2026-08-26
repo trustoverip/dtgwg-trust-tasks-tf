@@ -18,13 +18,16 @@ use std::net::SocketAddr;
 use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 use std::sync::{Arc, Mutex};
 
+use chrono::{DateTime, Duration as ChronoDuration, Utc};
 use serde::Serialize;
 use tokio::net::TcpListener;
 use trust_tasks_https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks_rs::{
     specs::acl::{grant, list, revoke, show},
     specs::trust_task_discovery::v0_1 as discovery,
-    Proof, ProofVerifier, RejectReason, StandardCode, TrustTask, TypeUri, VerificationError,
+    DocumentDigest, FreshnessPolicy, InMemoryReplayGuard, Proof, ProofVerifier, RejectReason,
+    ReplayGuard, ReplayGuardError, ReplayVerdict, StandardCode, TrustTask, TypeUri,
+    VerificationError,
 };
 
 const SERVER_VID: &str = "did:web:maintainer.example";
@@ -776,6 +779,12 @@ async fn https_enforces_recipient_required_with_no_in_band_recipient() {
                 "id": "urn:uuid:no-recip",
                 "type": "https://trusttasks.org/spec/acl/grant/0.1",
                 "issuer": "did:web:alice.example",
+                // `issuedAt` is load-bearing here: the default freshness
+                // policy requires it, and without it this document would be
+                // refused at step 5b with the same `malformedRequest` — the
+                // assertion below would pass while never reaching the
+                // recipient-REQUIRED check it exists to exercise.
+                "issuedAt": chrono::Utc::now().to_rfc3339(),
                 "payload": { "entry": { "subject": "did:web:carol.example", "role": "admin" } }
             })
             .to_string(),
@@ -1547,4 +1556,480 @@ fn binding_uri_names_the_current_binding_version() {
         trust_tasks_https::BINDING_URI,
         "https://trusttasks.org/binding/https/0.2"
     );
+}
+
+// ─── SPEC §7.2 item 11 — duplicate-execution defence ──────────────────────
+//
+// Before this section existed, the HTTPS server ran its own §7.2 pipeline and
+// never reached `consume_inbound`, so an HTTPS deployment had **no** record of
+// what it had executed: a captured request body — or an ordinary client,
+// proxy or load-balancer retry — granted the same ACL entry as many times as
+// it arrived, and a *different* document under a reused `id` was executed
+// rather than refused with `idConflict`. Every test below fails against that
+// server.
+
+/// A [`ReplayGuard`] whose store is down. Its message deliberately names a
+/// host and a scheme, because SPEC §10.4 says none of that may reach the wire.
+struct FailingReplayGuard;
+
+#[async_trait::async_trait]
+impl ReplayGuard for FailingReplayGuard {
+    async fn claim(
+        &self,
+        _id: &str,
+        _digest: &DocumentDigest,
+        _retain_until: Option<DateTime<Utc>>,
+        _now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        Err(ReplayGuardError(
+            "connection refused: redis://replay-store.internal.example:6379".into(),
+        ))
+    }
+}
+
+/// A guard that keeps the claim but never the response — the shape a
+/// fire-and-forget specification has, and the shape any guard that declines to
+/// cache bodies has. A duplicate is then absorbed in silence rather than
+/// answered with a result.
+struct ClaimOnlyGuard(InMemoryReplayGuard);
+
+#[async_trait::async_trait]
+impl ReplayGuard for ClaimOnlyGuard {
+    async fn claim(
+        &self,
+        id: &str,
+        digest: &DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        self.0.claim(id, digest, retain_until, now).await
+    }
+
+    async fn record_response(
+        &self,
+        id: &str,
+        _response: Option<&serde_json::Value>,
+    ) -> Result<(), ReplayGuardError> {
+        // Completion is recorded; the body is not.
+        self.0.record_response(id, None).await
+    }
+
+    async fn release(&self, id: &str, digest: &DocumentDigest) -> Result<(), ReplayGuardError> {
+        self.0.release(id, digest).await
+    }
+}
+
+/// A guard that reports every arrival as a duplicate of an execution still in
+/// progress — the state SPEC §7.2 says to expose rather than begin another
+/// execution for.
+struct InFlightGuard;
+
+#[async_trait::async_trait]
+impl ReplayGuard for InFlightGuard {
+    async fn claim(
+        &self,
+        _id: &str,
+        _digest: &DocumentDigest,
+        _retain_until: Option<DateTime<Utc>>,
+        _now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        Ok(ReplayVerdict::Duplicate {
+            prior_response: None,
+            in_flight: true,
+        })
+    }
+}
+
+/// What the `acl/list` handler on a replay fixture should do.
+enum HandlerBehaviour {
+    /// Succeed every time, counting invocations.
+    Succeed,
+    /// Refuse the first invocation, succeed thereafter — exercises the
+    /// release-on-refusal path.
+    RefuseFirst,
+}
+
+/// Fixture for the replay tests: an `acl/list` handler that counts its own
+/// invocations, so a test can assert the effect happened exactly once rather
+/// than merely that *some* answer came back.
+async fn spawn_replay_server(
+    configure: impl FnOnce(
+        trust_tasks_https::HttpsServerBuilder,
+    ) -> trust_tasks_https::HttpsServerBuilder,
+    behaviour: HandlerBehaviour,
+) -> (SocketAddr, Arc<AtomicUsize>) {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let counter = Arc::clone(&calls);
+
+    let builder = HttpsServer::builder()
+        .local_vid(SERVER_VID)
+        .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
+        .on::<list::v0_1::Payload, list::v0_1::Response, _>(move |_req, _ctx| {
+            let n = counter.fetch_add(1, AtomicOrdering::SeqCst);
+            match &behaviour {
+                HandlerBehaviour::Succeed => {}
+                HandlerBehaviour::RefuseFirst if n == 0 => {
+                    return Err(RejectReason::PermissionDenied {
+                        reason: "first attempt refused".into(),
+                    });
+                }
+                HandlerBehaviour::RefuseFirst => {}
+            }
+            Ok(list::v0_1::Response {
+                entries: vec![],
+                cursor: None,
+                redacted_fields: vec![],
+                truncated: false,
+                ext: None,
+            })
+        });
+
+    let server = configure(builder).build();
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let app = server.into_router();
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    (addr, calls)
+}
+
+/// A bit-for-bit `acl/list` document. Reused verbatim by the resend tests:
+/// §8.4 defines a retry as an identical resend, and §7.2 keys the record on a
+/// digest of the canonical document, so the *same string* is the point.
+fn replay_body(id: &str, issued_at: DateTime<Utc>, page_size: Option<u32>) -> String {
+    let mut payload = serde_json::Map::new();
+    if let Some(n) = page_size {
+        payload.insert("pageSize".into(), serde_json::json!(n));
+    }
+    serde_json::json!({
+        "id": id,
+        "type": "https://trusttasks.org/spec/acl/list/0.1",
+        "issuer": "did:web:alice.example",
+        "recipient": SERVER_VID,
+        "issuedAt": issued_at.to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+        "payload": serde_json::Value::Object(payload),
+    })
+    .to_string()
+}
+
+async fn post_raw(addr: SocketAddr, body: &str) -> (u16, String) {
+    let resp = reqwest::Client::new()
+        .post(format!("http://{addr}/trust-tasks"))
+        .header("authorization", "Bearer alice")
+        .header("content-type", "application/json")
+        .body(body.to_string())
+        .send()
+        .await
+        .unwrap();
+    let status = resp.status().as_u16();
+    (status, resp.text().await.unwrap())
+}
+
+/// SPEC §7.2 item 11: a document already accepted under an `id` MUST NOT cause
+/// the effect a second time. The assertion is on the *handler*, not on the
+/// response — a server that answered identically while executing twice would
+/// pass a response-only test and still be the bug.
+#[tokio::test]
+async fn identical_resend_does_not_dispatch_the_handler_twice() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let body = replay_body("urn:uuid:replay-once", Utc::now(), None);
+
+    let (first_status, _) = post_raw(addr, &body).await;
+    let (second_status, _) = post_raw(addr, &body).await;
+
+    assert_eq!(first_status, 200);
+    assert_eq!(second_status, 200, "a duplicate is not an error (§7.2)");
+    assert_eq!(
+        calls.load(AtomicOrdering::SeqCst),
+        1,
+        "the consequential effect MUST NOT happen twice"
+    );
+}
+
+/// §7.2 (*Disposition of a duplicate*): "where the specification defines a
+/// success response, the consumer SHOULD return the previously determined
+/// result". Byte-identical, because it *is* the previous result.
+#[tokio::test]
+async fn duplicate_is_answered_with_the_recorded_response() {
+    let (addr, _calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let body = replay_body("urn:uuid:replay-recorded", Utc::now(), None);
+
+    let (_, first) = post_raw(addr, &body).await;
+    let (status, second) = post_raw(addr, &body).await;
+
+    assert_eq!(status, 200);
+    assert_eq!(
+        second, first,
+        "the duplicate must be answered with the response the first execution produced"
+    );
+    // Not a `trust-task-error`: "the task did not fail, it already happened".
+    let doc: serde_json::Value = serde_json::from_str(&second).unwrap();
+    assert_eq!(
+        doc["type"],
+        serde_json::json!("https://trusttasks.org/spec/acl/list/0.1#response")
+    );
+}
+
+/// §7.2 item 11: a *different* document under the same `id` MUST be rejected
+/// with `idConflict` and MUST NOT be treated as a retry of the original.
+#[tokio::test]
+async fn different_document_under_a_reused_id_is_an_id_conflict() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let issued = Utc::now();
+    let original = replay_body("urn:uuid:replay-conflict", issued, None);
+    // Same `id`, same instant, different content.
+    let altered = replay_body("urn:uuid:replay-conflict", issued, Some(50));
+
+    let (first_status, _) = post_raw(addr, &original).await;
+    let (status, body) = post_raw(addr, &altered).await;
+
+    assert_eq!(first_status, 200);
+    assert_eq!(status, 409);
+    let doc: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(doc["payload"]["code"], serde_json::json!("idConflict"));
+    assert_eq!(
+        calls.load(AtomicOrdering::SeqCst),
+        1,
+        "the conflicting document MUST NOT be executed"
+    );
+}
+
+/// A consumer that cannot consult its record has not satisfied item 11, so it
+/// MUST NOT execute. `unavailable` + `retryable` is the honest answer: the
+/// producer's bit-for-bit resend will be absorbed once the store is back.
+#[tokio::test]
+async fn guard_error_fails_closed_to_unavailable_and_does_not_dispatch() {
+    let (addr, calls) = spawn_replay_server(
+        |b| b.with_replay_guard(FailingReplayGuard),
+        HandlerBehaviour::Succeed,
+    )
+    .await;
+
+    let (status, body) =
+        post_raw(addr, &replay_body("urn:uuid:guard-down", Utc::now(), None)).await;
+
+    assert_eq!(status, 503);
+    let doc: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(doc["payload"]["code"], serde_json::json!("unavailable"));
+    assert_eq!(doc["payload"]["retryable"], serde_json::json!(true));
+    assert_eq!(
+        calls.load(AtomicOrdering::SeqCst),
+        0,
+        "a guard error MUST NOT be executed through"
+    );
+    // SPEC §10.4: the store's identity and failure mode stay in the log.
+    let message = doc["payload"]["message"].as_str().unwrap_or("");
+    assert!(!message.contains("redis"), "wire leak: {message}");
+    assert!(
+        !message.contains("replay-store.internal.example"),
+        "wire leak: {message}"
+    );
+}
+
+/// §7.2 (*Disposition of a duplicate*): where the specification defines no
+/// success response, silence is correct — and "in no case is a duplicate
+/// reported as `taskFailed`; the task did not fail, it already happened."
+/// `204 No Content` is the closest HTTP comes to silence.
+#[tokio::test]
+async fn duplicate_with_no_recorded_response_is_silence_not_a_failure() {
+    let (addr, calls) = spawn_replay_server(
+        |b| b.with_replay_guard(ClaimOnlyGuard(InMemoryReplayGuard::new(16))),
+        HandlerBehaviour::Succeed,
+    )
+    .await;
+    let body = replay_body("urn:uuid:replay-silent", Utc::now(), None);
+
+    let (first_status, _) = post_raw(addr, &body).await;
+    let (status, second) = post_raw(addr, &body).await;
+
+    assert_eq!(first_status, 200);
+    assert_eq!(status, 204, "silence, not a failure");
+    assert!(second.is_empty());
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+}
+
+/// §7.2: "where the original execution is still in progress, the consumer
+/// SHOULD return or expose the existing execution state rather than begin
+/// another." `202 Accepted` is HTTP's word for *accepted, outcome not yet
+/// available*, and it is the honest one: the document was accepted, it is
+/// being executed by the first delivery, and nothing failed — 200 would claim
+/// a result that does not exist yet, 409 a conflict that does not exist at
+/// all, and any error code a failure that did not happen.
+///
+/// Driven by a guard that reports the verdict rather than by racing two live
+/// deliveries: whether a second request overlaps the first is a property of
+/// the runtime's scheduling, while the disposition of an in-flight duplicate
+/// is a property of this binding — which is what is under test here.
+#[tokio::test]
+async fn in_flight_duplicate_is_accepted_not_re_executed() {
+    let (addr, calls) = spawn_replay_server(
+        |b| b.with_replay_guard(InFlightGuard),
+        HandlerBehaviour::Succeed,
+    )
+    .await;
+
+    let (status, body) = post_raw(
+        addr,
+        &replay_body("urn:uuid:replay-in-flight", Utc::now(), None),
+    )
+    .await;
+
+    assert_eq!(status, 202, "existing execution state, not a second one");
+    assert!(body.is_empty(), "202 carries no result document");
+    assert_eq!(
+        calls.load(AtomicOrdering::SeqCst),
+        0,
+        "an in-flight duplicate MUST NOT begin another execution"
+    );
+}
+
+/// A refusal downstream of the claim releases it. Otherwise the `id` would be
+/// burned for the whole retention window and a legitimate resend answered with
+/// silence — a denial of service manufactured out of a rejection.
+#[tokio::test]
+async fn a_refused_dispatch_releases_the_claim() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::RefuseFirst).await;
+    let body = replay_body("urn:uuid:replay-released", Utc::now(), None);
+
+    let (first_status, _) = post_raw(addr, &body).await;
+    let (second_status, _) = post_raw(addr, &body).await;
+
+    assert_eq!(first_status, 403, "the handler refused this one");
+    assert_eq!(
+        second_status, 200,
+        "the resend must be re-evaluated, not absorbed as a duplicate of a refusal"
+    );
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 2);
+}
+
+/// The documented escape hatch does exactly what its rustdoc warns it does:
+/// with no record kept, the same document executes as many times as it arrives.
+#[tokio::test]
+async fn replay_protection_false_restores_the_undefended_path() {
+    let (addr, calls) =
+        spawn_replay_server(|b| b.replay_protection(false), HandlerBehaviour::Succeed).await;
+    let body = replay_body("urn:uuid:replay-optout", Utc::now(), None);
+
+    post_raw(addr, &body).await;
+    post_raw(addr, &body).await;
+
+    assert_eq!(
+        calls.load(AtomicOrdering::SeqCst),
+        2,
+        "opting out means opting out"
+    );
+}
+
+// ─── SPEC §7.2 item 13 — the freshness bound ──────────────────────────────
+
+/// A document stamped further back than the acceptance window is refused —
+/// and, crucially, refused *before* it can be executed. Without this bound a
+/// captured body stayed executable indefinitely, and the replay record that
+/// bounds it would have to be retained forever.
+#[tokio::test]
+async fn a_stale_document_is_refused_and_never_dispatched() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let long_ago = Utc::now() - ChronoDuration::hours(2);
+
+    let (status, body) = post_raw(addr, &replay_body("urn:uuid:stale", long_ago, None)).await;
+
+    assert_eq!(status, 422);
+    let doc: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(doc["payload"]["code"], serde_json::json!("expired"));
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 0);
+    // §10.4: the window's size is consumer policy and naming it invites a
+    // probe for the boundary.
+    let message = doc["payload"]["message"].as_str().unwrap_or("");
+    assert!(!message.contains("2 hours"), "wire leak: {message}");
+}
+
+/// A document cannot have been produced after the moment it arrived.
+#[tokio::test]
+async fn a_future_dated_document_is_refused_and_never_dispatched() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let tomorrow = Utc::now() + ChronoDuration::days(1);
+
+    let (status, body) = post_raw(addr, &replay_body("urn:uuid:future", tomorrow, None)).await;
+
+    assert_eq!(status, 400);
+    let doc: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(
+        doc["payload"]["code"],
+        serde_json::json!("malformedRequest")
+    );
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 0);
+}
+
+/// The window is configurable, and widening it widens the replay record in
+/// lockstep — SPEC §7.2 makes them one bound, which is why there is one knob.
+#[tokio::test]
+async fn a_widened_window_accepts_what_the_default_refuses() {
+    let (addr, calls) = spawn_replay_server(
+        |b| b.freshness(FreshnessPolicy::consequential().with_max_age(ChronoDuration::hours(6))),
+        HandlerBehaviour::Succeed,
+    )
+    .await;
+    let long_ago = Utc::now() - ChronoDuration::hours(2);
+
+    let (status, _) = post_raw(addr, &replay_body("urn:uuid:widened", long_ago, None)).await;
+
+    assert_eq!(status, 200);
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+}
+
+// ─── SPEC §10.4 — the serde path must not reach the wire ──────────────────
+
+/// REGRESSION. The server rendered `serde_json::Error`'s `Display` straight
+/// onto the wire on both of its deserialisation paths — "unknown field
+/// `pageSize`, expected one of …  at line 1 column 214" — which describes this
+/// consumer's internal type layout and its framing of the body to anyone
+/// willing to POST malformed JSON. `RejectReason::malformed_from_serde` maps
+/// the failure to its category instead; the detail belongs in the log.
+#[tokio::test]
+async fn payload_deserialisation_failure_does_not_leak_the_serde_path() {
+    let (addr, _calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+
+    let body = serde_json::json!({
+        "id": "urn:uuid:bad-payload",
+        "type": "https://trusttasks.org/spec/acl/list/0.1",
+        "issuer": "did:web:alice.example",
+        "recipient": SERVER_VID,
+        "issuedAt": Utc::now().to_rfc3339(),
+        "payload": { "pageSize": "not-a-number" },
+    })
+    .to_string();
+
+    let (status, response) = post_raw(addr, &body).await;
+    assert_eq!(status, 400);
+    let doc: serde_json::Value = serde_json::from_str(&response).unwrap();
+    assert_eq!(
+        doc["payload"]["code"],
+        serde_json::json!("malformedRequest")
+    );
+    let message = doc["payload"]["message"].as_str().unwrap_or("");
+    for leak in ["pageSize", "not-a-number", "line 1", "column"] {
+        assert!(
+            !message.contains(leak),
+            "serde detail reached the wire ({leak:?}): {message}"
+        );
+    }
+}
+
+/// The same rule on the document-parse path, which had the same `format!`.
+#[tokio::test]
+async fn document_parse_failure_does_not_leak_the_serde_path() {
+    let (addr, _calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+
+    // Well-formed JSON, wrong shape for a Trust Task document.
+    let (status, response) = post_raw(addr, r#"{"id": 42}"#).await;
+    assert_eq!(status, 400);
+    let doc: serde_json::Value = serde_json::from_str(&response).unwrap();
+    let message = doc["payload"]["message"].as_str().unwrap_or("");
+    for leak in ["line 1", "column", "invalid type"] {
+        assert!(
+            !message.contains(leak),
+            "serde detail reached the wire ({leak:?}): {message}"
+        );
+    }
 }

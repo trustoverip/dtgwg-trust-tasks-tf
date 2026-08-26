@@ -33,11 +33,15 @@ The binding specification is explicit that [it "does not permit `proof` to be om
 | Default | Effect | Opt out with |
 |---|---|---|
 | `require_attribution = true` | A document arriving with **neither** a transport-authenticated peer **nor** a `proof` is rejected `proofRequired` before any handler runs. Without it, an unauthenticated POST asserting `"issuer": "did:web:victim"` reaches handlers with that string as the caller's identity. | `.require_attribution(false)` — dev and tests only |
+| `replay_protection = true` | SPEC §7.2 item 11: the server keeps a duplicate-execution record keyed on the document `id`. A bit-for-bit resend is absorbed and answered with the first execution's result instead of executing again; a *different* document under a reused `id` is refused `idConflict`. The default record is an in-process `InMemoryReplayGuard` — **replicated deployments MUST supply a shared-store guard** via `.with_replay_guard(..)`, since two replicas each holding their own map would each accept the same document once. | `.replay_protection(false)` — dev and tests only |
+| Freshness bound (`FreshnessPolicy::consequential`) | `issuedAt` is REQUIRED and a document older than a five-minute acceptance window is refused `expired`. This is not a second feature but the other half of the record above: SPEC §7.2 makes the acceptance window and the record's retention *the same bound*. | `.freshness(..)` |
 | Discovery requires authentication | `enable_discovery()` answers an unauthenticated discoverer with `permissionDenied` rather than the full route table (SPEC §10). | `.public_discovery()` |
 | Route lookup precedes proof verification | An unknown `type` is rejected before DID resolution, so the endpoint cannot be aimed at an arbitrary host by a stranger. | — |
 | `Content-Type: application/json` required | A `text/plain` cross-origin simple POST is refused with 415 instead of reaching the pipeline. | — |
 | Request timeout + concurrency limit | Slowloris and flood controls on the router. | `.request_timeout(..)`, `.max_concurrent_requests(..)` |
 | Response binding on the client | `HttpsClient::send` checks the response's `threadId`, `type`, `issuer` and `recipient` against the request before returning it. | — |
+
+A guard that cannot be consulted fails **closed**: the server answers `unavailable` (retryable) and does not execute, because a consumer that cannot establish whether a document is a duplicate has not satisfied item 11.
 
 Optionally, `.allowed_did_methods(["key"])` pre-screens `proof.verificationMethod` before the verifier resolves it, and `HttpsClient::builder().with_response_verifier(..)` requires signed responses.
 

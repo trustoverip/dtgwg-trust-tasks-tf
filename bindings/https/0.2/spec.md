@@ -73,6 +73,8 @@ The server **SHOULD** map the *Trust Task document* response to an HTTP status a
 | Outcome                                                  | HTTP status                           |
 |----------------------------------------------------------|---------------------------------------|
 | Success (a `#response`-variant document)                 | `200 OK`                              |
+| Duplicate of a document whose execution is still in progress ([§5.1](#51-freshness-and-duplicate-execution)) | `202 Accepted`, empty body |
+| Duplicate of a completed execution for which no response was retained ([§5.1](#51-freshness-and-duplicate-execution)) | `204 No Content` |
 | `malformedRequest`                                       | `400 Bad Request`                     |
 | Missing / invalid `Authorization` (transport-level, no framework error doc) | `401 Unauthorized` |
 | `permissionDenied`                                       | `403 Forbidden`                       |
@@ -82,11 +84,14 @@ The server **SHOULD** map the *Trust Task document* response to an HTTP status a
 | `wrongRecipient`                                         | `422 Unprocessable Entity`            |
 | `cancelled`                                              | `422 Unprocessable Entity`            |
 | `taskFailed`                                             | `422 Unprocessable Entity`            |
+| `idConflict`                                             | `409 Conflict`                        |
 | `unavailable`                                            | `503 Service Unavailable`             |
 | `internalError`                                          | `500 Internal Server Error`           |
 | Internal server error (transport-level, no error doc)    | `500 Internal Server Error`           |
 
-In every case where the body carries a Trust Task document — success or `trust-task-error/0.2` — the `Content-Type` **MUST** be `application/json`.
+A duplicate already accepted under [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11 is answered with the response the first execution produced, under `200 OK`, where the *consumer* retained one. The `202` and `204` rows are the two cases where there is no such response to return: an execution still in progress, and a specification that defines none. Neither is an error — §7.2 states that "in no case is a duplicate reported as `taskFailed`; the task did not fail, it already happened" — and a *producer* **MUST NOT** treat either as a failed *Trust Task*.
+
+In every case where the body carries a Trust Task document — success or `trust-task-error/0.2` — the `Content-Type` **MUST** be `application/json`. The `202` and `204` answers carry no body and therefore no `Content-Type`.
 
 A client receiving a non-2xx response with `Content-Type: application/json` **MUST** attempt to deserialise the body as a `trust-task-error/0.2` document before falling back to transport-level error handling. A client receiving a non-2xx response with any other `Content-Type` treats the response as an untyped transport-level failure.
 
@@ -105,7 +110,7 @@ The name invites the opposite conclusion, which is why this is stated rather tha
 | **Audience binding** | The server's own configured `local_vid`. This is **server-side configuration, asserted by the receiver about itself** — nothing in the request binds the producer's intent to this recipient. |
 | **Integrity across intermediaries** | **None end-to-end.** TLS protects each segment to its terminator. §Abstract places TLS termination — reverse proxy or native — outside this binding's scope, so the binding cannot say how many segments there are. |
 | **Re-origination** | **Possible and undetectable.** Any TLS-terminating intermediary — a reverse proxy, a load balancer, an API gateway, a service mesh sidecar — sees plaintext and can modify or re-originate the request body. The server has no signal that it did. |
-| **Freshness / replay** | **None.** The binding "makes no claim about token-revocation, audience-restriction, or replay protection beyond what the chosen mechanism provides" (§3). A captured request body can be re-sent by anyone holding the token. |
+| **Freshness / replay** | **None at the transport layer**, and the binding still "makes no claim about token-revocation, audience-restriction, or replay protection beyond what the chosen mechanism provides" (§3): a captured request body can be re-sent by anyone holding the token, and nothing in HTTP will stop it arriving. What the binding now requires is that the *consumer* refuse to act on it twice — see [§5.1](#51-freshness-and-duplicate-execution). |
 | **Key and credential status** | Whatever the deployment's token mechanism provides; the binding requires nothing and can assume nothing. |
 | **Where the guarantee stops** | At the first TLS terminator. Everything past it is deployment topology this binding does not see. |
 
@@ -114,7 +119,25 @@ A bearer token authenticates *whoever presents it*, which is the party that reac
 Two consequences worth stating plainly:
 
 * **Carry a `proof` for anything consequential.** A *Trust Task* with a mutating, destructive, secret-disclosing, or subject-acting effect (a *consequential Trust Task*, [SPEC §2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#2-terminology)) should carry an in-band `proof` and an in-band `recipient` over this binding, so that producer identity and intended audience survive the intermediaries the binding cannot characterise.
-* **Replay protection is the consumer's.** With no transport freshness, [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11 — duplicate-execution protection keyed on the document `id` — is the only thing standing between a captured request and a repeated effect.
+* **Replay protection is the consumer's.** With no transport freshness, [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11 — duplicate-execution protection keyed on the document `id` — is the only thing standing between a captured request and a repeated effect. §5.1 states what this binding requires of that *consumer*.
+
+### 5.1 Freshness and duplicate execution
+
+Because the transport supplies no freshness of its own, a *consumer* over this binding **MUST** implement [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11 for every *consequential Trust Task* it serves, and **MUST** apply a bounded acceptance window over `issuedAt` / `expiresAt` (§7.2, *Bounding the record*) so that the record it keeps is finite. Nothing below relaxes any rule stated elsewhere in this document; it names an obligation that §5 previously left to inference.
+
+Specifically, the *consumer*:
+
+1. **MUST** key the record on the document `id` alone, and compare arrivals under a reused `id` on the whole document's canonical serialization, `proof` included — §7.2, *Keying and comparison*. HTTP request identifiers, `Idempotency-Key`-style headers, and any execution handle the *consumer* mints **MUST NOT** substitute for the document `id`.
+2. **MUST NOT** cause the consequential effect a second time for a document already accepted under that `id`, and **MUST** reject a *different* document under the same `id` with `idConflict` ([§4](#4-status-mapping): `409 Conflict`).
+3. **MUST** record the claim at the point it commits to execute — after every other check this binding requires, and before dispatch. A record written earlier burns the `id` of documents the *consumer* then refuses.
+4. **SHOULD** answer a duplicate with the result the first execution produced; where no result was retained, it answers per the `202` / `204` rows of [§4](#4-status-mapping). A duplicate is **never** reported as `taskFailed`.
+5. **MUST** fail closed where the record cannot be consulted: answer `unavailable` with `retryable` true ([§4](#4-status-mapping): `503`) and **MUST NOT** execute. A *consumer* that cannot establish whether a document is a duplicate has not satisfied item 11.
+6. **MUST**, where it is replicated behind a load balancer or any other fan-out, share the record across every replica. Two replicas each keeping their own record each accept the same document once, which is the failure item 11 exists to prevent.
+7. **MUST** retain each record at least as long as it remains willing to execute the document. §7.2 makes the acceptance window and the record's retention **the same bound**; a *consumer* that widens one widens the other.
+
+A *producer* retries by re-sending the **same bytes** ([SPEC §8.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#84-retry-semantics)). Re-signing, re-stamping `issuedAt`, or otherwise altering the body under a reused `id` is not a retry; it is a different document, and item 11 requires the *consumer* to answer it with `idConflict`.
+
+This does not make the binding safe against replay — the request body is still capturable and replayable by anyone who holds the token or terminates TLS. It makes the *effect* happen once.
 
 A future binding version **MAY** define a profile that does support omission — mutually-authenticated TLS terminated at the receiver itself, with the peer certificate mapped to a VID, would be the obvious candidate — but that is a different identity mechanism from the bearer mapping of §3 and, per [§8](#8-versioning), a `MAJOR` bump.
 

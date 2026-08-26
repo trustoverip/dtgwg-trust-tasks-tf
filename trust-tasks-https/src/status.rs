@@ -19,11 +19,15 @@
 //! | `wrongRecipient`     | 422 Unprocessable Entity |
 //! | `cancelled`          | 422 Unprocessable Entity |
 //! | `taskFailed`         | 422 Unprocessable Entity |
+//! | `idConflict`         | 409 Conflict |
 //! | `unavailable`        | 503 Service Unavailable |
 //! | `internalError`      | 500 Internal Server Error |
 //!
-//! `idConflict` has no row in the binding's table and keeps this crate's
-//! **409 Conflict**, which is what the code means at the HTTP layer.
+//! Two outcomes have no framework error code and so no row here: a duplicate
+//! of an execution still in progress (`202 Accepted`) and a duplicate for
+//! which no response was retained (`204 No Content`). They are successes, not
+//! rejections — see the binding spec's §5.1 — and the server emits them
+//! directly rather than through this table.
 //!
 //! The flatness of the 422 bucket is the point, not an oversight. An
 //! earlier version of this table split `proofRequired` / `proofInvalid`

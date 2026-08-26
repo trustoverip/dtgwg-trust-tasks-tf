@@ -20,12 +20,33 @@
 //! 3. Bearer token → transport-authenticated peer (local lookup).
 //! 4. **Route lookup** — an unregistered `type` is `unsupportedType` here,
 //!    before anything else touches the network.
-//! 5. `resolve_parties` (§4.8.1) and `validate_basic` (expiry, recipient).
+//! 5. `resolve_parties` (§4.8.1), `validate_basic` (expiry, recipient), and
+//!    the **freshness bound** over `issuedAt` / `expiresAt` (§7.2 item 13) —
+//!    see [`HttpsServerBuilder::freshness`].
 //! 6. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
 //! 7. `proof.verificationMethod` DID-method pre-screen — see
 //!    [`HttpsServerBuilder::allowed_did_methods`].
 //! 8. Proof verification (the only step that may egress).
-//! 9. Per-spec policy + the registered handler.
+//! 9. **Duplicate-execution claim** (§7.2 item 11) — see
+//!    [`HttpsServerBuilder::replay_protection`].
+//! 10. Per-spec policy + the registered handler.
+//!
+//! ## Where the replay claim sits, and why
+//!
+//! Step 9 is the `validated → accepted` transition: the last instant at
+//! which the server can still refuse a document for a reason that has nothing
+//! to do with having seen it before, and the first at which it has committed
+//! to execute. Claiming any earlier would write a record for documents the
+//! server then refuses — burning the `id` of every malformed, stale,
+//! unattributable or badly-signed arrival, so that a corrected resend came
+//! back `idConflict` forever and a stranger could pre-burn an `id` it had
+//! merely observed. Claiming any later is not a claim at all: the effect
+//! would already have happened.
+//!
+//! The one check that runs *after* the claim is the per-spec policy inside
+//! the dispatch closure (`enforce_spec_policy`), which needs the typed
+//! payload the closure alone can produce. A refusal there releases the claim
+//! (see [`ReplayGuard::release`]), so nothing is burned by it either.
 
 use std::collections::{BTreeSet, HashMap};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -45,9 +66,11 @@ use tower::limit::ConcurrencyLimitLayer;
 use tower::timeout::TimeoutLayer;
 use tower::ServiceBuilder;
 use trust_tasks_rs::{
-    discovery::DiscoveryRegistry, erase_verifier, specs::trust_task_discovery::v0_1 as discovery,
-    DynProofVerifier, ErrorPayload, ErrorResponse, Payload, ProofVerifier, RejectReason,
-    ResolvedParties, StandardCode, TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
+    discovery::DiscoveryRegistry, document_digest, erase_verifier,
+    specs::trust_task_discovery::v0_1 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
+    ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
+    ReplayGuard, ReplayVerdict, ResolvedParties, StaleReason, StandardCode, TransportHandler,
+    TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 use uuid::Uuid;
 
@@ -115,6 +138,10 @@ struct ServerState {
     verifier: Option<Arc<dyn DynProofVerifier>>,
     require_attribution: bool,
     allowed_did_methods: Option<BTreeSet<String>>,
+    /// `None` only when the deployment called
+    /// `replay_protection(false)` — see that method's warning.
+    replay_guard: Option<Arc<dyn ReplayGuard>>,
+    freshness: FreshnessPolicy,
 }
 
 /// Builder for [`HttpsServer`].
@@ -125,6 +152,9 @@ pub struct HttpsServerBuilder {
     verifier: Option<Arc<dyn DynProofVerifier>>,
     require_attribution: bool,
     allowed_did_methods: Option<BTreeSet<String>>,
+    replay_protection: bool,
+    replay_guard: Option<Arc<dyn ReplayGuard>>,
+    freshness: FreshnessPolicy,
     /// Shared with the discovery handler closure so `.public_discovery()`
     /// can be called either side of `.enable_discovery()`.
     public_discovery: Arc<AtomicBool>,
@@ -255,6 +285,90 @@ impl HttpsServerBuilder {
         self
     }
 
+    /// Keep the SPEC §7.2 item 11 duplicate-execution record. Defaults to
+    /// `true`.
+    ///
+    /// # What it does
+    ///
+    /// Item 11 is normative and unconditional for a *consequential Trust
+    /// Task*: a document already accepted under an `id` **MUST NOT** cause the
+    /// effect a second time, and a *different* document under the same `id`
+    /// **MUST** be rejected with `idConflict`. This binding provides no
+    /// transport freshness of its own — `bindings/https/0.2` §5 — so the
+    /// record kept here is the only thing between a captured request body and
+    /// a repeated effect, and between an ordinary proxy or client retry and a
+    /// second ACL grant.
+    ///
+    /// With no [`Self::with_replay_guard`] the server builds an
+    /// [`InMemoryReplayGuard`] with its default capacity. That is correct for
+    /// a single-process consumer and **not** correct behind a load balancer:
+    /// two replicas each hold their own map, so a document accepted by one is
+    /// `Fresh` at the other and the effect happens twice. A replicated
+    /// deployment **MUST** supply a shared-store guard.
+    ///
+    /// # Turning it off
+    ///
+    /// `replay_protection(false)` restores the pre-0.13 behaviour, in which
+    /// this server keeps **no** record of what it has executed. Every
+    /// consequential handler registered on it becomes replayable by anyone who
+    /// can re-send a request body — including any TLS-terminating intermediary
+    /// this binding cannot characterise (§5, *Re-origination*) — and a
+    /// duplicate delivery from an ordinary retry is executed a second time
+    /// with no signal that it was a duplicate. Nothing downstream can recover
+    /// the distinction, because nothing downstream is told. Use it only where
+    /// every registered specification "explicitly declares repeated execution
+    /// safe and intended" (the narrow disapplication item 11 allows), or for
+    /// local development.
+    pub fn replay_protection(mut self, keep_record: bool) -> Self {
+        self.replay_protection = keep_record;
+        self
+    }
+
+    /// Supply the [`ReplayGuard`] backing [`Self::replay_protection`],
+    /// replacing the default [`InMemoryReplayGuard`].
+    ///
+    /// Use this for any deployment that is replicated, or that must survive a
+    /// process restart with its record intact: back the trait with Redis,
+    /// Postgres, DynamoDB, or whatever store every replica shares. The
+    /// implementation **MUST** make claim-and-record atomic across concurrent
+    /// calls — see [`ReplayGuard::claim`].
+    ///
+    /// Calling this does not by itself enable the record; it is enabled by
+    /// default and disabled only by `replay_protection(false)`, which
+    /// suppresses this guard too.
+    pub fn with_replay_guard<G>(mut self, guard: G) -> Self
+    where
+        G: ReplayGuard + 'static,
+    {
+        self.replay_guard = Some(Arc::new(guard));
+        self
+    }
+
+    /// The freshness bound applied to `issuedAt` / `expiresAt` (SPEC §7.2).
+    /// Defaults to [`FreshnessPolicy::consequential`].
+    ///
+    /// The default is the posture §7.2 (*Bounding the record*) describes:
+    /// `issuedAt` REQUIRED and a [`DEFAULT_MAX_AGE`](trust_tasks_rs::DEFAULT_MAX_AGE)
+    /// acceptance window. It is not a separate feature from
+    /// [`Self::replay_protection`] but the other half of it —
+    /// [`FreshnessPolicy::record_expiry`] is what tells the guard how long to
+    /// retain each record, and SPEC makes the acceptance window and that
+    /// retention *the same bound*. There is deliberately no second TTL to
+    /// configure.
+    ///
+    /// Widen `max_age` for a deployment whose intermediaries may hold a
+    /// request longer than five minutes — and understand that doing so widens
+    /// the replay record in lockstep, because it is one bound.
+    ///
+    /// A policy with no `max_age` cannot place a document that carries no
+    /// `expiresAt` in any window; while the record is being kept, such a
+    /// document is refused with `expired` rather than executed on, per §7.2's
+    /// "**MUST NOT** execute a *consequential Trust Task* on it".
+    pub fn freshness(mut self, policy: FreshnessPolicy) -> Self {
+        self.freshness = policy;
+        self
+    }
+
     /// Restrict which DID methods may appear in `proof.verificationMethod`.
     ///
     /// The check runs **before** the configured [`ProofVerifier`] is called.
@@ -382,6 +496,13 @@ impl HttpsServerBuilder {
                 verifier: self.verifier,
                 require_attribution: self.require_attribution,
                 allowed_did_methods: self.allowed_did_methods,
+                // Secure by default: the record is kept unless the deployment
+                // said otherwise, and the default guard is the in-process one.
+                replay_guard: self.replay_protection.then(|| {
+                    self.replay_guard
+                        .unwrap_or_else(|| Arc::new(InMemoryReplayGuard::default()))
+                }),
+                freshness: self.freshness,
             }),
             request_timeout: self.request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
             max_concurrent_requests: self
@@ -412,6 +533,10 @@ impl HttpsServer {
             // Secure by default: see `HttpsServerBuilder::require_attribution`.
             require_attribution: true,
             allowed_did_methods: None,
+            // Secure by default: see `HttpsServerBuilder::replay_protection`.
+            replay_protection: true,
+            replay_guard: None,
+            freshness: FreshnessPolicy::consequential(),
             public_discovery: Arc::new(AtomicBool::new(false)),
             request_timeout: None,
             max_concurrent_requests: None,
@@ -499,14 +624,15 @@ async fn dispatch_handler(
     // ─── 1. Parse the body into a TrustTask<Value>.
     let doc: TrustTask<Value> = match serde_json::from_slice(&body) {
         Ok(d) => d,
+        // `RejectReason::malformed_from_serde` rather than `format!("{e}")`:
+        // `serde_json`'s `Display` renders the member path and the byte offset
+        // it failed at ("missing field `subject` at line 1 column 214"), which
+        // on the wire describes this consumer's internal type layout and its
+        // framing of the body to anyone willing to POST malformed JSON — the
+        // §10.4 leak. The category is what a producer can act on; the detail
+        // belongs in the operator's log.
         Err(e) => {
-            return reject_response(
-                None,
-                None,
-                RejectReason::MalformedRequest {
-                    reason: format!("body did not parse as a Trust Task document: {e}"),
-                },
-            );
+            return reject_response(None, None, RejectReason::malformed_from_serde(&e));
         }
     };
 
@@ -549,6 +675,16 @@ async fn dispatch_handler(
     let now = chrono::Utc::now();
     let my_vid = state.local_vid.as_deref().unwrap_or("");
     if let Err(reason) = doc.validate_basic(now, my_vid) {
+        return reject_response(Some(&handler), Some(&doc), reason);
+    }
+
+    // ─── 5b. Freshness (§7.2 item 13). `validate_basic` honours `expiresAt`,
+    // which is optional and which a producer sets for its own reasons; on its
+    // own it leaves a document stamped years ago — or years hence — acceptable
+    // forever. This is also the bound the replay record at step 9 is retained
+    // for: §7.2 (*Bounding the record*) makes the acceptance window and the
+    // record's retention one bound, not two.
+    if let Err(reason) = doc.validate_freshness(now, &state.freshness) {
         return reject_response(Some(&handler), Some(&doc), reason);
     }
 
@@ -623,18 +759,164 @@ async fn dispatch_handler(
         }
     }
 
-    // ─── 9. Dispatch to the registered handler (which runs the per-spec
+    // ─── 9. SPEC §7.2 item 11 — claim this document `id` for execution.
+    //
+    // This is the `validated → accepted` transition: every check that could
+    // still refuse the document for a reason unrelated to having seen it
+    // before has run, and the next thing that happens is the effect. See the
+    // module docs for why claiming earlier is wrong.
+    let mut claim: Option<DocumentDigest> = None;
+    if let Some(guard) = &state.replay_guard {
+        // Keyed on `id`, compared on a digest of the whole canonical document
+        // (`proof` included) — §7.2's *Keying and comparison*. An `id` alone
+        // cannot tell the §8.4 retry it must absorb from the conflict it must
+        // reject.
+        let digest = match document_digest(&doc) {
+            Ok(digest) => digest,
+            Err(e) => {
+                return reject_response(
+                    Some(&handler),
+                    Some(&doc),
+                    RejectReason::malformed_from_serde(&e),
+                );
+            }
+        };
+
+        // §7.2 (*Bounding the record*): "A *consumer* that can establish
+        // neither an `expiresAt` nor an age for a document has no window in
+        // which to place it, and MUST NOT execute a *consequential Trust Task*
+        // on it." A guard asked to retain a record forever is not a guard.
+        let Some(retain_until) = state.freshness.record_expiry(&doc, now) else {
+            return reject_response(
+                Some(&handler),
+                Some(&doc),
+                RejectReason::Stale {
+                    detail: StaleReason::Unboundable,
+                },
+            );
+        };
+
+        match guard.claim(&doc.id, &digest, Some(retain_until), now).await {
+            // First sight. Execute, then record the result at step 10 so the
+            // next arrival is answered with it rather than re-executed.
+            Ok(ReplayVerdict::Fresh) => claim = Some(digest),
+
+            // Already executed, and the result was retained. §7.2
+            // (*Disposition of a duplicate*): "the consumer SHOULD return the
+            // previously determined result". Same 200, same body, no second
+            // dispatch — which is what makes a §8.4 bit-for-bit retry safe for
+            // the producer to send.
+            Ok(ReplayVerdict::Duplicate {
+                prior_response: Some(prior),
+                ..
+            }) => return success_response(prior),
+
+            // Already accepted; the original execution has not finished. SPEC:
+            // "the consumer SHOULD return or expose the existing execution
+            // state rather than begin another." HTTP's word for *accepted,
+            // outcome not yet available* is `202 Accepted`, and it is the
+            // honest one here: the document was accepted (it is being executed
+            // right now, by the first delivery), there is no result to return
+            // yet, and nothing failed. 200 would be a lie about having a
+            // result, 409 would claim a conflict that does not exist, and any
+            // error code would report a failure that did not happen.
+            Ok(ReplayVerdict::Duplicate {
+                in_flight: true, ..
+            }) => return StatusCode::ACCEPTED.into_response(),
+
+            // Already executed, and no result was retained — the
+            // fire-and-forget shape (§4.4.1), or a guard that keeps only the
+            // claim. §7.2: "where the specification defines no success
+            // response, silence is the correct disposition", and "in no case
+            // is a duplicate reported as `taskFailed`; the task did not fail,
+            // it already happened." `204 No Content` is silence with a status
+            // line, which is the most HTTP will allow.
+            Ok(ReplayVerdict::Duplicate { .. }) => return StatusCode::NO_CONTENT.into_response(),
+
+            // A different document under a reused `id`. §7.2 item 11 requires
+            // `idConflict` and forbids treating it as a retry of the original.
+            Ok(ReplayVerdict::Conflict) => {
+                return reject_response(Some(&handler), Some(&doc), RejectReason::IdConflict);
+            }
+
+            // `ReplayVerdict` is `#[non_exhaustive]`. A verdict this binding
+            // does not understand is not a licence to execute; fail closed on
+            // the same `unavailable` path as a guard error.
+            Ok(_) => {
+                return reject_response(
+                    Some(&handler),
+                    Some(&doc),
+                    RejectReason::Unavailable { retry_after: None },
+                );
+            }
+
+            // Fail closed. A consumer that cannot consult its record has not
+            // satisfied item 11, and executing anyway is precisely the double
+            // execution the rule forbids. `unavailable` is `retryable`, which
+            // is the honest answer: the producer's bit-for-bit resend will be
+            // absorbed correctly once the store is back. The store's identity
+            // and failure mode stay in the log — `From<ReplayGuardError>`
+            // discards them rather than putting them on the wire (§10.4).
+            Err(e) => return reject_response(Some(&handler), Some(&doc), e.into()),
+        }
+    }
+
+    // ─── 10. Dispatch to the registered handler (which runs the per-spec
     // §7.2 policy checks first).
     let ctx = RequestContext {
         authenticated_sender: handler.peer().map(str::to_string),
         local: handler.local().map(str::to_string),
         resolved,
     };
-    let dispatch_result = (route.dispatch)(doc.clone(), &ctx);
+    let dispatched = doc.clone();
+    // A panicking handler must not leave the claim standing: the `id` would be
+    // burned until `retain_until` and every honest resend absorbed in silence,
+    // which is worse than the risk of re-running an effect whose completion
+    // nobody can establish anyway. The panic itself is re-raised unchanged, so
+    // this changes nothing a caller observes except the state of the record.
+    let dispatch_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        (route.dispatch)(dispatched, &ctx)
+    }));
+    let dispatch_result = match dispatch_result {
+        Ok(result) => result,
+        Err(panic) => {
+            release_claim(&state, &doc.id, claim.as_ref()).await;
+            std::panic::resume_unwind(panic);
+        }
+    };
 
     match dispatch_result {
-        Ok(success_body) => success_response(success_body),
-        Err(reason) => reject_response(Some(&handler), Some(&doc), reason),
+        Ok(success_body) => {
+            if claim.is_some() {
+                if let Some(guard) = &state.replay_guard {
+                    // Best-effort: the effect has already happened, so failing
+                    // to cache the response cannot un-happen it. The claim —
+                    // which is what item 11 needs — is already written, so a
+                    // duplicate is still absorbed; all that is lost is the
+                    // ability to hand back the same body.
+                    let _ = guard.record_response(&doc.id, Some(&success_body)).await;
+                }
+            }
+            success_response(success_body)
+        }
+        Err(reason) => {
+            // Nothing was executed, so nothing may be remembered as executed.
+            // Holding the claim would answer a corrected — or merely
+            // better-timed — resend under this `id` with silence or
+            // `idConflict` for the whole retention window, which is a denial
+            // of service manufactured out of a refusal.
+            release_claim(&state, &doc.id, claim.as_ref()).await;
+            reject_response(Some(&handler), Some(&doc), reason)
+        }
+    }
+}
+
+/// Drop a claim whose execution produced no recorded response. Best-effort: a
+/// guard that cannot release leaves the record standing until `retain_until`,
+/// which is safe (item 11 still holds) but unkind to a legitimate retry.
+async fn release_claim(state: &ServerState, id: &str, digest: Option<&DocumentDigest>) {
+    if let (Some(guard), Some(digest)) = (&state.replay_guard, digest) {
+        let _ = guard.release(id, digest).await;
     }
 }
 
@@ -695,10 +977,11 @@ fn downcast<P: Payload>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectRea
         proof,
         extra,
     } = doc;
+    // Same §10.4 rule as the body parse above: the deserializer's rendering
+    // names the missing or unexpected member and its offset. The Type URI the
+    // sender itself chose is safe to omit, and the category is what it needs.
     let payload: P =
-        serde_json::from_value(payload).map_err(|e| RejectReason::MalformedRequest {
-            reason: format!("payload does not match {}: {e}", P::TYPE_URI),
-        })?;
+        serde_json::from_value(payload).map_err(|e| RejectReason::malformed_from_serde(&e))?;
     Ok(TrustTask {
         id,
         thread_id,
