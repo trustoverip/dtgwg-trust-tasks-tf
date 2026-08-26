@@ -89,6 +89,17 @@
 //! logged at `warn` through the [`log`] facade and reported as
 //! [`Carriage::LegacyBasicMessage`] on the handler, which is §2.3's SHOULD that
 //! an operator be able to see which peers have not moved.
+//!
+//! # Versioning
+//!
+//! This crate exposes `trust-tasks-rs` types in its own public API, so a
+//! breaking change there breaks this crate's callers even when nothing here
+//! changes. `cargo-semver-checks` cannot catch that: it compares each crate's
+//! rustdoc against that crate's own published baseline, and does not track
+//! type identity across dependency versions. The crates that share
+//! `trust-tasks-rs` in their public API are therefore released as one
+//! compatibility unit with a single shared version — see `version_group` in
+//! `release-plz.toml`.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

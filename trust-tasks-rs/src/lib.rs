@@ -27,6 +27,14 @@
 //! [`consume_inbound`] takes them together as [`ConsumeChecks`].
 //!
 //! [Trust Tasks]: https://trusttasks.org/
+//!
+//! # Versioning
+//!
+//! Every other crate in this workspace that depends on this one exposes its
+//! types in their own public API. A breaking change here is therefore a
+//! breaking change in all of them, so they are released as a single
+//! compatibility unit sharing one version — see `version_group` in
+//! `release-plz.toml`.
 
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
