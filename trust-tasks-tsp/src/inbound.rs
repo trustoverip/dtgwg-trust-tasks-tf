@@ -244,7 +244,7 @@ impl TspConsumer {
     ///
     /// Beyond that the arguments are [`consume_inbound`]'s and its outcomes
     /// are returned unchanged — including
-    /// [`ConsumeOutcome::Duplicate`](trust_tasks_rs::ConsumeOutcome::Duplicate),
+    /// [`ConsumeOutcome::Duplicate`],
     /// which is **not** an error and must never be answered with `taskFailed`.
     #[allow(clippy::too_many_arguments)]
     pub async fn receive<P, R, V, W, F, Fut>(
@@ -291,7 +291,7 @@ impl TspConsumer {
     /// The verdicts of SPEC §7.2's *Disposition of a duplicate* are applied by
     /// [`consume_inbound`]: `Fresh` dispatches and then records the response;
     /// a duplicate returns
-    /// [`ConsumeOutcome::Duplicate`](trust_tasks_rs::ConsumeOutcome::Duplicate)
+    /// [`ConsumeOutcome::Duplicate`]
     /// carrying the prior response — or `in_flight` where the first execution
     /// has not finished — **without** dispatching; a differing document under
     /// a reused `id` is rejected `idConflict`; and a guard that cannot answer

@@ -5,7 +5,7 @@
 //!
 //! # Why this type exists
 //!
-//! [`unpack_trust_task`](crate::unpack_trust_task) stops at the document. The
+//! [`unpack_trust_task`] stops at the document. The
 //! consumer obligations of SPEC §7.2 still have to run over it, and two of
 //! them are stateful — item 11's record and the acceptance window that lets
 //! that record be dropped. Leaving both to the caller meant that the crate
@@ -234,7 +234,7 @@ impl DidcommV1Consumer {
     /// Extract the document from an unpacked v1 message and run the guarded
     /// §7.2 pipeline over it.
     ///
-    /// Every rule of [`unpack_trust_task`](crate::unpack_trust_task) applies
+    /// Every rule of [`unpack_trust_task`] applies
     /// first — the authenticated-sender gate (including the
     /// verkey-bound-to-no-known-DID case v1 has and v2.1 does not), the
     /// carriage gate of §2/§2.3, the attachment lookup, and the `~thread`
@@ -243,7 +243,7 @@ impl DidcommV1Consumer {
     ///
     /// Beyond that the arguments are [`consume_inbound`]'s and its outcomes
     /// are returned unchanged — including
-    /// [`ConsumeOutcome::Duplicate`](trust_tasks_rs::ConsumeOutcome::Duplicate),
+    /// [`ConsumeOutcome::Duplicate`],
     /// which is **not** an error and must never be answered with `taskFailed`.
     #[allow(clippy::too_many_arguments)]
     pub async fn receive<P, R, V, W, F, Fut>(
@@ -288,7 +288,7 @@ impl DidcommV1Consumer {
     /// The verdicts of SPEC §7.2's *Disposition of a duplicate* are applied by
     /// [`consume_inbound`]: `Fresh` dispatches and then records the response;
     /// a duplicate returns
-    /// [`ConsumeOutcome::Duplicate`](trust_tasks_rs::ConsumeOutcome::Duplicate)
+    /// [`ConsumeOutcome::Duplicate`]
     /// carrying the prior response — or `in_flight` where the first execution
     /// has not finished — **without** dispatching; a differing document under
     /// a reused `id` is rejected `idConflict`; and a guard that cannot answer

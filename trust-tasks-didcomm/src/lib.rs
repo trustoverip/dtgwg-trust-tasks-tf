@@ -83,7 +83,7 @@
 
 mod error;
 mod handler;
-mod inbound;
+pub mod inbound;
 mod pack;
 
 pub use error::DidcommError;
