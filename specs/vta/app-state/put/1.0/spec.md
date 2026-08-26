@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A write mutates durable state that an account's recoverability depends on, and the maintainer audits it. Attribution must survive the transport that carried the request, so that an audit record read later names the application key that wrote, not merely the session it arrived on.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A put overwrites the value at a key, so two copies applied out of order leave the older value in place. Only the issue time lets the agent refuse the older one.
 sideEffects:
   level: mutating
   rationale: "Creates or replaces one record. Recoverable — the prior value is overwritten but the address remains, and a conditional write cannot clobber a version it did not see."

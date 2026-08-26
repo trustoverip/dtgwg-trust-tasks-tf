@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "A name speaks for a DID to anyone who resolves it; the VTA must attribute a change to a specific administrator independently of the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Disabling the name stops it resolving, and replayed after it was deliberately re-enabled it takes it down again. The document names the agent but not the enablement it was written about.
 sideEffects:
   level: mutating
   rationale: "Stops the name resolving. The VTA keeps holding it."

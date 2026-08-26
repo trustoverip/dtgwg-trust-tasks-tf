@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Withdraws a live credential. The revoking party is recorded and must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation cancels one invitation, and a stale copy cancels whichever invitation now occupies the same identity, typically the replacement issued to the same person.
 sideEffects:
   level: mutating
   rationale: "Flips the credential's bit in the community's published BitstringStatusList. Idempotent."

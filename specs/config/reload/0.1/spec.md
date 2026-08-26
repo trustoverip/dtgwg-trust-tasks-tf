@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A reload changes the maintainer's running behaviour by making stored config take effect. It MUST be attributable — who reloaded, and when — so the change is non-repudiable in the audit trail.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A reload re-reads configuration into a running service. Replayed, it re-applies a configuration the operator has since replaced, and it does so at a moment nobody chose.
 sideEffects:
   level: mutating
   rationale: "Updates the running in-memory configuration for hot-reloadable keys; the underlying stored values are unchanged, so it is idempotent."

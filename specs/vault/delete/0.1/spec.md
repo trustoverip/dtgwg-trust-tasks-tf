@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Delete is destructive and silently propagates to every Companion cache via sync. The producer's identity MUST be verifiable so the maintainer can attribute the deletion to a specific consumer in the audit log.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a vault entry destroys the secret it holds. Replayed after a new secret was stored under the same entry it destroys the new one, and nothing in the payload distinguishes the two.
 sideEffects:
   level: destructive
   rationale: "Tombstones a vault entry; after the grace period it is garbage-collected and unrecoverable. With `force`, there is no grace period at all — the secret bytes are zeroised immediately."

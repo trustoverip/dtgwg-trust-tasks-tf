@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Editing the community's public identity is a governance change and MUST be attributable and non-repudiable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The profile is what prospective members read before joining, and an update overwrites it. A stale copy restores wording or contact details the community has deliberately changed.
 sideEffects:
   level: mutating
   rationale: "Overwrites the supplied profile fields; recoverable by updating again."

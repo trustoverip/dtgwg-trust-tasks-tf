@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Registering a recognised endorsement type changes what the community will accept; it MUST be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Registering a type adds vocabulary every later endorsement is written against. A replay re-adds a type the community has retired, and endorsements can then be issued against it again.
 sideEffects:
   level: mutating
   rationale: "Adds an endorsement type to the community's registry."

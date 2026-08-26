@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A denial is a consent decision on the same footing as an approval and retires the request permanently. It must be attributable — otherwise an unauthenticated caller could quietly clear a holder's backlog and the holder would never learn what was asked.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A denial resolves one pending request permanently. Replayed after a new request has taken the same slot, it denies the new one on the strength of a decision made about the old.
 sideEffects:
   level: destructive
   rationale: Retires the deferral permanently. Nothing is disclosed, but the request is gone — the holder cannot reconsider it later, and the verifier would have to ask again.

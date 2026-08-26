@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: The single-use setup-session token from install/claim/finish is the gate; this task is what creates the first admin, so no prior admin key exists to sign.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Bootstrap establishes the community’s first administrator, the one moment at which the ordinary authorisation checks cannot apply. A bootstrap document that stays executable is a standing route to a second administrator, so the acceptance window carries weight here that policy cannot.
 sideEffects:
   level: mutating
   rationale: "Writes the first admin ACL entry and records the CommunityInstalled audit envelope."

@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Unassignment changes fleet routing; record retention helps cross-instance debugging.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Unassignment strips a domain from its owner and, replayed after a reassignment, strips it from the new owner instead. The document names the domain but not the assignment it was written about, so the timestamp is what scopes it.
 sideEffects:
   level: mutating
   rationale: "Removes a domain-to-server binding; reversible via assign."

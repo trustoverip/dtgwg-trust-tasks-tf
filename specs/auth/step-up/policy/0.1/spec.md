@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Setting this policy changes the security posture of every gated operation on the maintainer. Without a verified proof an attacker holding a single captured token could weaken or disable the step-up gate it is meant to defend, then proceed unchallenged.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A policy document replaces the step-up rules wholesale, so a stale copy reinstates thresholds an operator has already tightened. Weakening a policy by replaying its predecessor leaves no trace in the payload, and the timestamp is the only evidence that it happened.
 sideEffects:
   level: mutating
   rationale: "Declares the per-operation-class step-up policy the relying party enforces; changes gating for subsequent operations."

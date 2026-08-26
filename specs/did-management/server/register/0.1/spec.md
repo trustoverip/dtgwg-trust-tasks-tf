@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: A register is a fleet-membership announcement. The maintainer authenticates the producer via the transport-layer Service-role binding; a proof becomes valuable when the registration is replayed for audit but isn't strictly required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Registering a server adds an endpoint the registry will subsequently trust and route to. A replayed registration reinstates an endpoint an operator removed, and the removal is usually the security action the replay undoes.
 sideEffects:
   level: mutating
   rationale: "A server announces itself to the control plane; creates/updates a registry entry."

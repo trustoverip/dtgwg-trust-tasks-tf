@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The custodian produces a proof that will be verified by third parties as the derived identity's assertion, so it must be able to attribute the request that asked for it. Reliance by parties beyond the original consumer is exactly the §4.7.1 condition under which a proof is a MUST, and forgery of the request would yield an assertion in the subject's name that no one can trace back to a caller.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Signing exercises the subject's own authority over a document a third party will later rely on. A captured request is a signing oracle for as long as it remains acceptable, so the acceptance window bounds how long the subject's authority can be borrowed.
 sideEffects:
   level: none
   rationale: "No key record is created and no stored state changes. The proof is a durable artefact."

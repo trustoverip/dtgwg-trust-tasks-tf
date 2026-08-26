@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Withdraws a route others depend on; attributable by the same argument as enable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Disabling a service stops it. Replayed after an operator restored it, it stops it again, an availability effect with no cause visible anywhere in the payload.
 sideEffects:
   level: mutating
   rationale: "Removes the transport from the agent's DID document and republishes the signed log."

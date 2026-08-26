@@ -288,11 +288,15 @@ mod tests {
     /// A well-formed inbound `acl/grant` in untyped form. `acl/grant/0.1`
     /// declares `proof` REQUIRED, so a document that is meant to reach a
     /// handler carries one; the framework only checks presence here
-    /// (verification is `ProofVerifier`'s job).
+    /// (verification is `ProofVerifier`'s job). It also declares
+    /// `issuedAtRequirement: REQUIRED` (SPEC §7.3 item 17), so the same
+    /// document has to carry a stamped instant the consumer can place it in
+    /// an acceptance window by.
     fn inbound(type_uri: &str, with_proof: bool) -> TrustTask<Value> {
         let mut doc = TrustTask::for_payload("req-1", payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
+        doc.issued_at = Some(chrono::Utc::now());
         if with_proof {
             doc.proof = Some(crate::Proof {
                 proof_type: "DataIntegrityProof".into(),

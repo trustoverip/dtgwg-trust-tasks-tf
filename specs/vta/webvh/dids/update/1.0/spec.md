@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The agent signs a log entry that is thereafter part of a public, append-only identity history, using a key the caller does not hold and cannot be given. It must be able to attribute the request to a party authorized over the subject, and a bearer token proves only who opened the channel.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An update appends to the DID's log, and appended entries cannot be withdrawn. An update that cannot be placed in time therefore writes an unretractable entry at a moment nobody chose.
 sideEffects:
   level: destructive
   rationale: "Supplying `document` rotates the DID's update key: the key that could authorize changes before this entry cannot afterwards. That is rotation of a sole controlling key, and so authority-shifting. The published log entry is also permanent — a subsequent entry can supersede it, but nothing can unpublish it."

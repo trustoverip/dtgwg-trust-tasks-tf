@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Discards in-flight messages; the decision should be attributable to whoever made it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Cancelling a drain abandons an in-progress operation irreversibly, and which drain it cancels depends on when it executes. A document that cannot be dated cannot be matched to the drain it was written about.
 sideEffects:
   level: destructive
   rationale: "Drops a mediator that was still accepting delivery."

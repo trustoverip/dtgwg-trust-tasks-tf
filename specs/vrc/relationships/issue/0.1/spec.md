@@ -30,6 +30,9 @@ proofRequirement:
     envelope proof is what attributes the delivery itself on a relayed path.
     On the response, OPTIONAL: the receipt is consumed inside the exchange by
     the connected peer, and the transport's authcrypt authenticates it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Issuing a relationship credential creates a record third parties read as current. A replayed issuance re-asserts a relationship that may have been ended, and the credential outlives the exchange that produced it.
 sideEffects:
   level: mutating
   rationale: "The receiving party stores a credential. Not compensatable by this exchange; revocation is the issuer's own act."

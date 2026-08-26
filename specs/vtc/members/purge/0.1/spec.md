@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Irreversible erasure of a member record. The caller must be attributable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A purge erases the member and their records irrecoverably. A purge document that cannot be aged out is a standing instruction to erase whoever now holds that membership.
 sideEffects:
   level: destructive
   rationale: "Deletes the membership record and its tombstone. Not recoverable."

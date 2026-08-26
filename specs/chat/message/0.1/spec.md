@@ -28,6 +28,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Chat messages form an evidentiary chain that must be verifiable after the transport has closed. For audit and dispute resolution a third party must verify each message's author and its position in the conversation independently of the (ephemeral, authcrypted) DIDComm session that carried it — transport authentication alone is not portable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A chat message is fire-and-forget with no response to correlate it by, so the timestamp on the document is the only thing that stops a captured message being re-delivered later and read as newly said.
 sideEffects:
   level: mutating
   rationale: "Appends a signed, hash-linked message to the conversation chain; persisted history."

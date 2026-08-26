@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Activation changes which policy governs a decision slot — a different active `join` policy admits different members. The producer's identity MUST be verifiable for audit and to prevent a stealth swap of the authoritative policy.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Activation selects which policy version is in force. A stale activation reinstates a version an operator has superseded, which is a policy downgrade with nothing in the document recording it as one.
 sideEffects:
   level: mutating
   rationale: "Changes the active policy for a purpose; the previously-active policy is deactivated. Reversible by activating the previous id (returned as previousPolicyId)."

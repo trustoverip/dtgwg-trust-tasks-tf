@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: OPTIONAL
   rationale: The refreshToken itself is the secret; a proof on the document is redundant when the transport binds the producer's identity end-to-end (the typical case for refresh, which is called by an already-authenticated client). Consumers retaining refresh exchanges for audit MAY require a proof.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A refresh trades a long-lived credential for a fresh session, so a captured refresh is a session-minting oracle for as long as it stays acceptable. The acceptance window is what closes it.
 sideEffects:
   level: mutating
   rationale: "Exchanges a refresh token for a new access token; rotates session token state."

@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Updating an account is an administrative mutation — and, when it assigns a role, a privilege grant — whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An account update overwrites credentials and endpoints wholesale, so a stale copy points the mailbox back at a host or credential the owner has already rotated away from.
 sideEffects:
   level: mutating
   rationale: "Partial update of a served account's role, capabilities, and queue limits; reversible."

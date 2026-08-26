@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A member leaving the community is a significant, self-initiated action that MUST be attributable and non-repudiable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The member removes themselves irreversibly and under their own authority. Replayed after they rejoined, the document ejects them again on a decision they made about a membership that no longer exists.
 sideEffects:
   level: destructive
   rationale: "With disposition purge the member's record is irreversibly erased; tombstone/historical are recoverable, but the task can destroy data, so it declares the strongest class."

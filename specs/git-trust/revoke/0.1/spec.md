@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation is delivery- and audit-critical; it changes what CI enforcement answers and must carry transport-independent integrity.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revoking commit-signing trust, replayed after the signer has been trusted again, removes the new trust instead of the old. Verification decisions are read from whichever record survives, so the ordering the timestamp supplies is load-bearing.
 sideEffects:
   level: mutating
   rationale: "Marks the grant tuple unauthorized; the record is retained for audit, not deleted."

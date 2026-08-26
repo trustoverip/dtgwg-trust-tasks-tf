@@ -37,6 +37,9 @@ proofRequirement:
     condition in its purest form. An unproofed response here would make the
     VWC's completion evidence unattributable — the exact defect the
     qualifying profile exists to exclude.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The submission is made under the subject's own authority and carries secret material into the session. A replayed submission re-submits it into whatever session now holds the same identity.
 sideEffects:
   level: mutating
   rationale: "Successful execution mints a Verifiable Witness Credential. Not compensatable by this exchange; revocation is the witness's own act."

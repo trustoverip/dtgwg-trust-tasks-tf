@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A revocation is an evidentiary record that an issued credential was withdrawn at a point in time; it is replayed by an auditor and relied on by verifiers, so transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revocation is irreversible and is read by every verifier afterwards. Replayed after the subject was issued a replacement it revokes the replacement, and the verifiers see only the outcome.
 sideEffects:
   level: destructive
   rationale: "Revokes a previously-issued credential, ending a cross-context share before its natural expiry."

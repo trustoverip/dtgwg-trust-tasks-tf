@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: This is the act of consent itself, and it causes an irreversible disclosure of the holder's claims to a third party. It must be attributable to the party that authorized it — a disclosure nobody can be shown to have approved is a disclosure nobody agreed to.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Approving a pending exchange releases the subject's own credential material under the subject's authority, and the release is irreversible once the verifier holds it. A replayed approval releases it again to a request the subject never approved.
 sideEffects:
   level: destructive
   rationale: Discloses the holder's claims to the verifier, which cannot be undone, and retires the deferral. The record is not retained for a second decision — approval is terminal.

@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Modifying an account's access list is an administrative mutation whose record may be replayed by an auditor or relied on after the original transport has closed; transport-independent integrity and non-repudiation of the change are required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The access list decides who may send to the account, so a replayed update re-admits a sender the account holder has blocked, and the block was the whole point of the edit it reverts.
 sideEffects:
   level: mutating
   rationale: "Adds and/or removes access-list entries, optionally clearing the list first; individual entries are re-addable."
