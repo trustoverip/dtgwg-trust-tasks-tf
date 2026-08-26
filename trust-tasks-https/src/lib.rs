@@ -8,7 +8,7 @@
 //!
 //! ## Binding URI
 //!
-//! `https://trusttasks.org/binding/https/0.1`
+//! `https://trusttasks.org/binding/https/0.2`
 //!
 //! ## On the wire
 //!

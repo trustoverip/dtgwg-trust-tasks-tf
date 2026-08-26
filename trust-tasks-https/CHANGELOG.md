@@ -4,6 +4,105 @@ All notable changes to `trust-tasks-https` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this crate tracks `trust-tasks-rs`'s `MAJOR.MINOR`.
 
+## [0.11.0] - 2026-08-26
+
+Security release. **Every item under "Changed" alters the behaviour of an
+existing deployment**, most of them by refusing traffic that used to be
+accepted. Nothing on the wire moved; read the first entry before upgrading.
+
+### Changed
+
+- **BREAKING (behaviour, not API): unattributable documents are now rejected.**
+  A new `HttpsServerBuilder::require_attribution` option **defaults to `true`**.
+  A document arriving with neither a transport-authenticated peer nor a `proof`
+  is refused with `proofRequired` before any handler runs.
+
+  Previously `build()` installed a `BearerAuth` with an empty token map, the
+  peer resolved to `None`, and SPEC §4.8.1 then fell back **entirely** to the
+  document's in-band `issuer` — an unverified string the sender chose. The
+  per-spec `IS_PROOF_REQUIRED` check was the only thing standing behind it, and
+  133 of the 344 generated spec modules never set it — including mutating ones
+  (`auth/step-up/approve-response/0.2`, `did-management/did/register/0.1`,
+  `messaging/admin/add/0.1`). So an unauthenticated, proofless POST claiming
+  `"issuer": "did:web:victim"` reached a handler with that string presented as
+  the caller's identity. The binding specification says plainly that this
+  binding "does not permit `proof` to be omitted"; the runtime had no
+  representation of that rule.
+
+  **A deployment that relied on unauthenticated, proofless requests will start
+  seeing `proofRequired`/422.** The fix is to authenticate the caller (or have
+  it sign). `.require_attribution(false)` restores the old behaviour and is
+  documented for local development and tests only — its rustdoc spells out what
+  it re-opens.
+
+- **BREAKING: the request pipeline is reordered.** Route lookup, transport auth
+  and the attribution gate now run **before** proof verification. Verifying a
+  proof resolves its `verificationMethod` DID, which for `did:web` is an
+  outbound HTTPS request to a host the *sender* named — and the proof block used
+  to run at step 4a, ahead of route lookup at step 5. A stranger could therefore
+  make a server built `with_verifier` fetch an arbitrary host by POSTing a
+  document whose `type` that server does not even implement, unauthenticated and
+  unrated-limited. An unknown type or an unattributable sender is now rejected
+  before anything touches the network. Observable consequence: a request that
+  was both unroutable *and* carried a bad proof now reports `unsupportedType`
+  where it used to report `proofInvalid`.
+
+- **BREAKING: the status table now matches the binding specification's §4.**
+  `proofRequired`, `proofInvalid`, `identityMismatch`, `wrongRecipient`,
+  `unsupportedType`, `unsupportedVersion` and `expired` all map to **422**;
+  they previously mapped to 401, 401, 403, 403, 400, 400 and 400. Any client
+  branching on those HTTP statuses needs updating (the framework error code in
+  the body is unchanged and remains authoritative). The finer split was itself
+  the identity oracle the specification's flat 422 exists to avoid: it told an
+  unauthenticated prober, without reading a body, whether its proof or its
+  claimed identity was the problem. `malformedRequest`/400,
+  `permissionDenied`/403, `idConflict`/409, `unavailable`/503 and
+  `internalError`/500 are unchanged.
+
+- **BREAKING: discovery requires an authenticated discoverer by default.**
+  `enable_discovery()` / `with_discovery()` built the registry with no auth
+  predicate, so any unauthenticated POST got back the server's full route table.
+  SPEC §10 says a responder **SHOULD** authenticate the discoverer first. Opt
+  back in with the new `HttpsServerBuilder::public_discovery()`.
+
+- **BREAKING: `Content-Type: application/json` is now required**, per the
+  binding specification §2; anything else (or an absent header) is refused with
+  **415**. `dispatch_handler` took raw `Bytes` and never looked. `text/plain` is
+  one of the media types a cross-origin `fetch` or HTML form may send *without*
+  a CORS preflight, so any page in a victim's browser could drive this endpoint;
+  requiring JSON forces the preflight and the browser refuses on our behalf.
+
+- **BREAKING: `HttpsClient::send` binds each response to its request.** It used
+  to return any 2xx body that merely deserialised as `TrustTask<Resp>`. It now
+  requires the response's `threadId` to equal the request's `threadId ?? id`,
+  its `type` to be the request's `type` with `#response`, its `issuer` to be the
+  configured `server_vid` and its `recipient` to be `my_vid` — each with its own
+  `ClientError` variant. On an error response, `inResponseTo.id` must name the
+  request where the responder populated it (absent under `identityMismatch` per
+  SPEC §8.1, which stays acceptable). `ClientError` gained seven variants, which
+  is breaking for exhaustive `match`.
+
+- The binding identifier is `https://trusttasks.org/binding/https/0.2`.
+  `BINDING_URI`, the crate-level module docs and the README all said `0.1`.
+
+### Added
+
+- `HttpsServerBuilder::allowed_did_methods` — pre-screens the DID method in
+  `proof.verificationMethod` before the verifier is called, bounding where
+  proof-verification egress can go. Off by default. Depth (resolved-host
+  allow-listing, redirect policy, per-resolution timeouts) belongs in the
+  resolver behind the verifier, not at this boundary.
+- `HttpsServerBuilder::request_timeout` and
+  `HttpsServerBuilder::max_concurrent_requests`, with the constants
+  `DEFAULT_REQUEST_TIMEOUT` (30s) and `DEFAULT_MAX_CONCURRENT_REQUESTS` (512).
+  `into_router` now applies a tower `TimeoutLayer` and `ConcurrencyLimitLayer`;
+  `serve()` was previously a bare `axum::serve` with neither, so a stalled
+  request held a connection and a task open indefinitely (slowloris). An expired
+  request answers `408`.
+- `HttpsClientBuilder::with_response_verifier` — optional verification of the
+  `proof` on response documents. Configuring it makes a signed response
+  mandatory: a proofless response is rejected rather than silently downgraded.
+
 ## [0.8.0] - 2026-08-16
 
 ### Changed
