@@ -507,6 +507,33 @@ function checkProofFloor(meta, rel, hasResponse) {
   }
 }
 
+/*
+ * `parties[].identifierScope: public` (framework 0.5.0) narrows the privacy
+ * properties available to every producer of the task: it says the counterparty
+ * must be able to recognise the same identifier it sees elsewhere, which
+ * forecloses the pairwise identifiers that would otherwise stop documents of
+ * this task being joined to that party's activity. The framework asks the
+ * specification to justify that in prose rather than declare it and move on.
+ *
+ * The check is deliberately cheap and deliberately a warning: it asks only that
+ * the body discuss the declaration at all, on the reasoning that a lint cannot
+ * tell a justification from a sentence, but it can tell a justification from
+ * silence \u2014 and silence is the failure mode the framework text is aimed at.
+ */
+function checkIdentifierScopeJustification(meta, body, rel) {
+  const publicParties = (meta.parties || []).filter((p) => p?.identifierScope === 'public');
+  if (!publicParties.length) return;
+  if (/identifierScope|identifier scope/i.test(body)) return;
+  warn(
+    `${rel}/spec.md declares identifierScope: public on ${publicParties
+      .map((p) => `'${p.role}'`)
+      .join(', ')} but the prose never discusses it. Framework 0.5.0 asks a specification ` +
+      `to justify a public identifier scope: say what the task needs a recognisable, ` +
+      `reusable identifier for, and what a pairwise one would break. Add a paragraph \u2014 ` +
+      `Security & Privacy \u2192 Correlation is the natural home.`
+  );
+}
+
 function checkErrorCodeNamespaces(meta, rel) {
   const slug = meta.slug;
   if (typeof slug !== 'string') return;
@@ -780,6 +807,11 @@ function buildTask(entry, meta, schema, uses) {
     partiesDetail: meta.parties,
     proofRequirement: meta.proofRequirement,
     sideEffects: meta.sideEffects || null,
+    // Framework 0.5.0's third descriptive dimension. Carried even when absent
+    // (as null) for the same reason knownImplementations is: a reader needs to
+    // tell "not declared" from "declared transient", and a field that only
+    // appears when set makes those look alike to a machine consumer.
+    retention: meta.retention || null,
     exposure: meta.exposure || null,
     consequences: meta.consequences || [],
     subjectPath: meta.subjectPath || null,
@@ -1052,7 +1084,7 @@ function main() {
     const { slug, version, specPath, dir } = entry;
     const rel = `${slug}/${version}`;
     const src = fs.readFileSync(specPath, 'utf8');
-    const { data: meta } = splitFrontMatter(src);
+    const { data: meta, body } = splitFrontMatter(src);
     if (!meta) {
       fail(`${rel}/spec.md`, 'missing or malformed YAML front matter');
       continue;
@@ -1078,6 +1110,7 @@ function main() {
       warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
     checkErrorCodeNamespaces(meta, rel);
+    checkIdentifierScopeJustification(meta, body, rel);
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
       fail(rel, `duplicate slug+version ${idKey}`);
