@@ -718,7 +718,7 @@ The following slugs are **RESERVED** for framework-defined specifications and **
   | Slug                     | Purpose                                                                 |
   |--------------------------|-------------------------------------------------------------------------|
   | `trust-task-error`       | Error-response payload — see [§8.1](#81-the-trust-task-error-specification). |
-  | `trust-task-ok`          | Courtesy acknowledgement of a task that defines no success response — see [§8.6](#86-reserved-response-type-slugs). |
+  | `trust-task-ok`          | Courtesy acknowledgement of a task that defines no success response — **deprecated at 0.5.0**, see [§8.6](#86-reserved-response-type-slugs). The slug remains reserved permanently. |
   | `trust-task-next-step`   | Recipient-suggested continuation — see [§8.6](#86-reserved-response-type-slugs). |
   | `trust-task-discovery`   | Discovery and capability negotiation — see [§11](#11-discovery-and-capability-negotiation). |
   | `trust-task-control`     | Cancellation, suspension, and resumption of an accepted task — see [§12](#12-task-control). |
@@ -1184,6 +1184,9 @@ The consequences of deprecation are deliberately small, because the slug's own w
 * A *consumer* **SHOULD NOT** emit a `trust-task-ok` document from this version onward, and **SHOULD** emit the empty `#response` instead.
 * A *producer* **MUST** continue to accept a `trust-task-ok` document, on the terms above, for as long as the specification is served. It never conveyed anything a *producer* was entitled to act on, so accepting it costs nothing.
 * The slug and its *Type URI* remain **RESERVED** under [§6.1](#61-type-uri) permanently, whatever becomes of the specification published under it. Retirement of the registry entry itself follows [§5.3](#53-maturity-levels) and is a matter for the registry, not for this document.
+
+> **Registry note** — not part of the canonical framework text; recorded in this copy because the registry serves it.
+> The `trust-task-ok` registry entry has been **retired** under [§5.3](#53-maturity-levels) and is served frozen at that status, with no `supersededBy`: what replaces it is the framework mechanism above rather than another *Trust Task specification*, so there is no successor slug to name. Retirement is a status, not a deletion — the entry is still published, still generated into the client libraries, and a *producer* still accepts a document issued against it. The slug stays reserved permanently, as this section requires.
 
 Implementations encountering a *Trust Task document* of a reserved type whose specification is not yet published **MAY** ignore the document or **MAY** return an `unsupportedVersion` *error response*.
 

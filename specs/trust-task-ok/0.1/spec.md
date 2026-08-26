@@ -2,8 +2,8 @@
 slug: trust-task-ok
 version: "0.1"
 title: Trust Task OK
-summary: The framework-defined courtesy acknowledgement a consumer MAY return for a task that defines no success-response document of its own. Deliberately weak — a producer may never rely on receiving one, and its absence means nothing.
-status: draft
+summary: Retired. The courtesy acknowledgement a consumer MAY return for a task defining no success-response document of its own — deprecated at framework 0.5.0, which lets such a task be acknowledged with an empty `#response` instead. Producers still accept one; consumers stop sending.
+status: retired
 targetFrameworkVersion: "0.4"
 category: framework
 keywords:
@@ -75,11 +75,48 @@ and made it correctly: its acknowledgement is deferred to a task-specific
 receipt so that it is "a signed, independently-verifiable link in the chain
 rather than a transport-level ack".
 
+## Deprecation and retirement
+
+**This specification is deprecated and its registry entry is retired.** Framework
+`0.5.0` amends the request/response rules so that the *consumer* of a
+fire-and-forget *Trust Task* — one whose specification defines no
+success-response document — **MAY** return that task's own `<type>#response`
+with `payload` exactly `{}` as its courtesy acknowledgement. That was the sole
+reason this slug existed: the previous text forbade a response-less
+specification from emitting a `#response`, so "received and performed" needed a
+document of its own. It no longer does, and the fact now travels on the reply a
+*producer* was already prepared to receive rather than on a `type` bearing no
+relation to the one it sent.
+
+The consequences are deliberately small, because this document's own weakness
+makes them small — see [SPEC.md §8.6](/SPEC.md#86-reserved-response-type-slugs):
+
+* A *consumer* **SHOULD NOT** emit a `trust-task-ok` document from framework
+  `0.5.0` onward, and **SHOULD** emit the empty `#response` instead.
+* A *producer* **MUST** continue to accept one, on the terms below, for as long
+  as this specification is served. It never conveyed anything a *producer* was
+  entitled to act on, so accepting it costs nothing.
+* The slug and its *Type URI* remain **RESERVED** under
+  [SPEC.md §6.1](/SPEC.md#61-type-uri) **permanently**, whatever becomes of the
+  specification published under it. Retirement frees nothing for anyone else.
+
+There is no successor slug and no `supersededBy`: what replaces this document is
+a framework mechanism, not another *Trust Task specification*. The prose and
+schema below are frozen as at retirement and are retained unchanged so that
+already-issued documents stay verifiable.
+
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per
-[SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change
-without notice. Feedback via the
+This specification is **retired** per
+[SPEC.md §5.3](/SPEC.md#53-maturity-levels), having gone `draft` → `retired`
+under permitted transition 3. It declares no `supersededBy`: framework `0.5.0`
+deprecates it in favour of the empty `#response` acknowledgement, which is a
+framework mechanism rather than another *Trust Task specification*, so there is
+no successor slug to name and none is invented. The schema and prose are frozen
+at the moment of retirement; the entry is retained, and continues to be served
+and generated, so that already-issued documents stay verifiable. The slug stays
+reserved permanently — see [Deprecation and retirement](#deprecation-and-retirement).
+Feedback via the
 [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
 
 ## Conformance
