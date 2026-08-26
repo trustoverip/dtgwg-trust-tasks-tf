@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The producer is asserting "I, $subject, control a fresh passkey that should be bound to my VID for future authentication." The framework proof ties that assertion to the same key that signed the matching start.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Enrolment completion binds a new authenticator to the account. A replayed finish re-binds an authenticator the account holder may have since revoked, and the attestation inside carries no timestamp the maintainer can bound the document by.
 sideEffects:
   level: mutating
   rationale: "Binds a new passkey credential to the subject's VID; revocable."

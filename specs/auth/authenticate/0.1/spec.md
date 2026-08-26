@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The framework `proof` is the authentication. Without a verified proof binding the document to the subject's VID, the auth service has no basis to issue a session.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An authentication request that cannot be placed in time is a credential presentation with no expiry, which is precisely the form a captured request is replayed in. Here the acceptance window is the primary defence, not a secondary one.
 sideEffects:
   level: mutating
   rationale: "Establishes an authenticated session and issues tokens; the session is revocable state."
